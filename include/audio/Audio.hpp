@@ -31,6 +31,19 @@ class Audio
 {
 public:
 	Audio(bool in = true) : m_Input(in) { UpdateDeviceList(); }
+	~Audio()
+	{
+		LOG("STOP");
+		try {
+			// Stop the stream
+			m_Audio.stopStream();
+		}
+		catch (RtAudioError& e) {
+			e.printMessage();
+		}
+		if (m_Audio.isStreamOpen()) 
+			m_Audio.closeStream();
+	}
 
 	const std::vector<::Device> const& Devices() const { return m_Devices; }
 	
@@ -51,9 +64,39 @@ public:
 			a.Print();
 	}
 
-	int SetDevice(const ::Device& d, int sr = -1)
+	int SetDevice(const ::Device& d)
 	{
 		m_Device = d;
+		m_Samplerate = d.preferredSampleRate;
+		return UpdateStream();
+	}
+
+	int Samplerate() { return m_Samplerate; }
+	int SetSamplerate(int r)
+	{
+		int prev = m_Samplerate;
+		m_Samplerate = r;
+		if (!UpdateStream())
+		{
+			m_Samplerate = prev;
+			return UpdateStream();
+		}
+	}
+
+	int Buffersize() { return m_Buffersize; }
+	int SetBuffersize(int s)
+	{
+		int prev = m_Buffersize;
+		m_Buffersize = s;
+		if (!UpdateStream())
+		{
+			m_Buffersize = prev;
+			return UpdateStream();
+		}
+	}
+
+	int UpdateStream()
+	{
 		if (m_Audio.isStreamOpen())
 			m_Audio.closeStream();
 
@@ -61,8 +104,8 @@ public:
 		parameters.deviceId = m_Device.id;
 		parameters.nChannels = m_Input ? m_Device.inputChannels : m_Device.outputChannels;
 		parameters.firstChannel = 0;
-		unsigned int sampleRate = sr == -1 ? m_Device.preferredSampleRate : sr;
-		unsigned int bufferFrames = 256; // 256 sample frames
+		unsigned int sampleRate = m_Samplerate;
+		unsigned int bufferFrames = m_Buffersize;
 
 		try {
 			if (m_Input)
@@ -89,6 +132,7 @@ public:
 	}
 
 protected:
+	int m_Samplerate = -1, m_Buffersize = 256;
 	bool m_Input = false;
 	::Device m_Device;
 	std::vector<::Device> m_Devices;
@@ -105,9 +149,15 @@ protected:
 	{
 		double* buffer = (double*)outputBuffer;
 		Audio& me = *(Audio*)userData;
-
-		for (int i = 0; i < nBufferFrames * me.Device().outputChannels; i++)
-			*buffer++ = 1;
+		try
+		{
+			for (int i = 0; i < nBufferFrames * me.Device().outputChannels; i++)
+				*buffer++ = 1;
+		}
+		catch (int i)
+		{
+			return 0;
+		}
 
 		return 0;
 	}
