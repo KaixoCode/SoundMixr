@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#include "audio/Channel.hpp"
 
 class Device : public RtAudio::DeviceInfo
 {
@@ -13,40 +14,36 @@ public:
 	{}
 
 	unsigned int id;
-	
-	void Print()
-	{
-		LOG(name << 
-			"\n  Output Channels: " << outputChannels << 
-			"\n  Input Channels:  " << inputChannels <<
-			"\n  Duplex Channels: " << duplexChannels <<
-			"\n  Default Output:  " << isDefaultOutput <<
-			"\n  Default Input:   " << isDefaultInput <<
-			"\n  Prefered Rate:   " << preferredSampleRate
-		);
-	}
 };
 
 class Audio
 {
 public:
-	Audio(bool in = true) : m_Input(in) { UpdateDeviceList(); }
+	Audio(bool in = true) : m_Input(in) 
+	{ 
+		UpdateDeviceList(); 
+	}
+
 	~Audio()
 	{
-		LOG("STOP");
+		// Stop the stream
 		try {
-			// Stop the stream
-			m_Audio.stopStream();
+			if (m_Running && m_Audio.isStreamOpen() && m_Audio.isStreamRunning())
+				m_Audio.stopStream();
 		}
 		catch (RtAudioError& e) {
 			e.printMessage();
 		}
-		if (m_Audio.isStreamOpen()) 
+
+		if (m_Running && m_Audio.isStreamOpen())
 			m_Audio.closeStream();
 	}
 
+	::RtAudio& RtAudio() { return m_Audio; }
+	::Device&  Device() { return m_Device; }
+
 	const std::vector<::Device> const& Devices() const { return m_Devices; }
-	
+
 	void UpdateDeviceList()
 	{
 		unsigned int devices = m_Audio.getDeviceCount();
@@ -58,47 +55,53 @@ public:
 		}
 	}
 
-	void PrintDevices()
-	{
-		for (::Device& a : m_Devices)
-			a.Print();
-	}
-
-	int SetDevice(const ::Device& d)
+	bool SetDevice(const ::Device& d)
 	{
 		m_Device = d;
-		m_Samplerate = d.preferredSampleRate;
-		return UpdateStream();
+		return SetSamplerate(d.preferredSampleRate);
 	}
 
 	int Samplerate() { return m_Samplerate; }
-	int SetSamplerate(int r)
+	bool SetSamplerate(int r)
 	{
 		int prev = m_Samplerate;
 		m_Samplerate = r;
 		if (!UpdateStream())
 		{
 			m_Samplerate = prev;
-			return UpdateStream();
 		}
+		else return true;
+
+		int index = 0;
+		while (!UpdateStream())
+		{
+			m_Samplerate = m_Device.sampleRates[index];
+			index++;
+			if (index > m_Device.sampleRates.size())
+				return false;
+		}
+		return true;
 	}
 
 	int Buffersize() { return m_Buffersize; }
-	int SetBuffersize(int s)
+	bool SetBuffersize(int s)
 	{
 		int prev = m_Buffersize;
 		m_Buffersize = s;
 		if (!UpdateStream())
 		{
+			
 			m_Buffersize = prev;
 			return UpdateStream();
 		}
 	}
 
-	int UpdateStream()
+	bool UpdateStream()
 	{
 		if (m_Audio.isStreamOpen())
 			m_Audio.closeStream();
+
+		m_Running = false;
 
 		RtAudio::StreamParameters parameters;
 		parameters.deviceId = m_Device.id;
@@ -106,7 +109,6 @@ public:
 		parameters.firstChannel = 0;
 		unsigned int sampleRate = m_Samplerate;
 		unsigned int bufferFrames = m_Buffersize;
-
 		try {
 			if (m_Input)
 				m_Audio.openStream(NULL, &parameters, RTAUDIO_FLOAT64,
@@ -116,47 +118,76 @@ public:
 					sampleRate, &bufferFrames, &OutputCallback, (void*)this);
 
 			m_Audio.startStream();
+			m_Running = true;
 		}
 		catch (RtAudioError& e) {
 			e.printMessage();
-			return -1;
+			return false;
 		}
-		return 0;
+		return true;
 	}
 
-	RtAudio& GetAudio() { return m_Audio; }
-
-	::Device& Device()
+	void Connect(int id, Channel& c)
 	{
-		return m_Device;
+		m_Channels.emplace(id, c);
 	}
 
+	double avg = 0;
 protected:
-	int m_Samplerate = -1, m_Buffersize = 256;
-	bool m_Input = false;
-	::Device m_Device;
 	std::vector<::Device> m_Devices;
-	RtAudio m_Audio;
+	std::unordered_map<int, std::reference_wrapper<Channel>> m_Channels;
+	::Device  m_Device;
+	::RtAudio m_Audio;
+
+	int m_Samplerate = -1, 
+		m_Buffersize = 256;
+
+	bool m_Input = false,
+		m_Running = false;
+
+
 
 	static int InputCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
 		double streamTime, RtAudioStreamStatus status, void* userData)
 	{
+		double* _buffer = (double*)inputBuffer;
+		Audio& _me = *(Audio*)userData;
+		int _bufferSize = nBufferFrames * _me.Device().inputChannels;
+		double a = 0;
+		for (int i = 0; i < _bufferSize; i++)
+		{
+			double _sample = *_buffer++;
+			a += _sample;
+			for (auto& _c : _me.m_Channels)
+			{
+				_c.second.get().enqueue(_sample);
+			}
+		}
+		a /= (double)_bufferSize;
+		_me.avg = a;
+
 		return 0;
 	}
 
 	static int OutputCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
 		double streamTime, RtAudioStreamStatus status, void* userData)
 	{
-		double* buffer = (double*)outputBuffer;
-		Audio& me = *(Audio*)userData;
-		try
+		double* _buffer = (double*)outputBuffer;
+		Audio& _me = *(Audio*)userData;
+		int _bufferSize = nBufferFrames * _me.Device().outputChannels;
+		
+		for (int i = 0; i < _bufferSize; i++)
 		{
-			for (int i = 0; i < nBufferFrames * me.Device().outputChannels; i++)
-				*buffer++ = 1;
-		}
-		catch (int i)
-		{
-			return 0;
+			double _sample = 0;
+			
+			for (auto& _c : _me.m_Channels)
+			{
+				double _t = 0;
+				_c.second.get().try_dequeue(_t);
+				_sample += _t;
+			};
+
+			*_buffer++ = _sample;
 		}
 
 		return 0;

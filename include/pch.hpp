@@ -15,3 +15,5 @@
 #include "GuiCode/ui/window/Window.hpp"
 
 #include "RtAudio.h"
+
+#include "data/concurrentqueue.hpp"
