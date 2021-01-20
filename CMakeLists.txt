@@ -15,7 +15,7 @@ file(GLOB_RECURSE SOURCE
 include_directories(
   libs/GuiCode/include
   libs/GuiCode/libs
-  libs/rtsound/include/
+  libs/rtaudio
   include/
 )
 
