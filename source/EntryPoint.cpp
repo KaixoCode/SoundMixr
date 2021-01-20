@@ -1,7 +1,11 @@
-#include "GuiCode/pch.hpp"
+#include "Controller.hpp"
+
+Gui gui;
 
 int main()
 {
-	LOG("WOOF");
+
+	Controller _c;
+	_c.Run();
 	return 0;
 }
