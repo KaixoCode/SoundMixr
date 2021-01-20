@@ -1,0 +1,6 @@
+[submodule "libs/GuiCode"]
+	path = libs/GuiCode
+	url = https://github.com/KaixoCode/GuiCode.git
+[submodule "libs/rtaudio"]
+	path = libs/rtaudio
+	url = https://github.com/thestk/rtaudio.git
