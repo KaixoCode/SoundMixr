@@ -9,11 +9,12 @@ public:
 		: id(-1)
 	{}
 
-	Device(unsigned int id, RtAudio::DeviceInfo& a)
-		: id(id), RtAudio::DeviceInfo(a)
+	Device(unsigned int id, RtAudio::DeviceInfo& a, RtAudio::Api api = RtAudio::Api::WINDOWS_WASAPI)
+		: id(id), RtAudio::DeviceInfo(a), api(api)
 	{}
 
 	unsigned int id;
+	RtAudio::Api api;
 };
 
 
@@ -22,7 +23,7 @@ class AudioDevice
 {
 public:
 	AudioDevice(const Device& device, bool in, int samplerate = -1, int bufferSize = 256)
-		: m_BufferSize(bufferSize), m_Device(device), m_Input(in), 
+		: m_BufferSize(bufferSize), m_Device(device), m_Input(in), m_Audio(device.api),
 		m_Samplerate(samplerate == -1 ? device.preferredSampleRate : samplerate)
 	{}
 
@@ -34,6 +35,7 @@ public:
 	bool OpenDevice() 
 	{
 		try {
+			LOG("Attempting to open " << m_Device.name << "\n");
 			if (m_Audio.isStreamOpen())
 				m_Audio.closeStream();
 
@@ -47,6 +49,7 @@ public:
 
 			unsigned int sampleRate = m_Samplerate;
 			unsigned int bufferFrames = m_BufferSize;
+
 
 			if (m_Input)
 				m_Audio.openStream(NULL, &parameters, RTAUDIO_FLOAT64,
@@ -174,8 +177,6 @@ private:
 
 
 
-
-
 class AudioIO
 {
 public:
@@ -185,15 +186,27 @@ public:
 
 	void LoadDevices()
 	{
+		LOG("Loading devices\n");
 		// Load available devices
 		m_Devices.clear();
-		RtAudio::DeviceInfo info;
-		unsigned int devices = m_Audio.getDeviceCount();
+		RtAudio::DeviceInfo info; // First all ASIO
+		unsigned int devices = m_AsioAudio.getDeviceCount();
+		LOG(" ASIO device count: " << devices << "\n");
 		for (unsigned int i = 0; i < devices; i++)
 		{
-			info = m_Audio.getDeviceInfo(i);
+			info = m_AsioAudio.getDeviceInfo(i);
+			LOG("   Device " << info.name << " is " << (info.probed ? "" : "not ") << "probed\n");
 			if (info.probed == true)
-				m_Devices.emplace_back(Device{ i, info });
+				m_Devices.emplace_back(Device{ i, info, m_AsioAudio.getCurrentApi() });
+		}
+		devices = m_WasapiAudio.getDeviceCount(); // Then all WASAPI
+		LOG(" WASAPI device count: " << devices << "\n");
+		for (unsigned int i = 0; i < devices; i++)
+		{
+			info = m_WasapiAudio.getDeviceInfo(i);
+			LOG("   Device " << info.name << " is " << (info.probed ? "" : "not ") << "probed\n");
+			if (info.probed == true)
+				m_Devices.emplace_back(Device{ i, info, m_WasapiAudio.getCurrentApi() });
 		}
 
 		// Create AudioDevices
@@ -219,5 +232,6 @@ public:
 private:
 	std::vector<Device> m_Devices;
 	std::vector<AudioDevice> m_Inputs, m_Outputs;
-	RtAudio m_Audio{ RtAudio::Api::WINDOWS_WASAPI };
+	RtAudio m_AsioAudio{ RtAudio::Api::WINDOWS_ASIO };
+	RtAudio m_WasapiAudio{ RtAudio::Api::WINDOWS_WASAPI};
 };

@@ -17,6 +17,12 @@ void Controller::Run()
 {
     Theme::Load("..\\libs\\GuiCode\\themes\\dark");
 
+
+    std::vector<RtAudio::Api> apis;
+    RtAudio::getCompiledApi(apis);
+    for (auto& api : apis)
+        LOG(RtAudio::getApiName(api));
+
     namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
     using MenuButton = Button<BG::Menu, BT::Normal>;
     using TitleMenuButton = Button<BG::TitleMenu, BT::Menu<MG::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
