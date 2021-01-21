@@ -22,6 +22,10 @@
  * Ideas:
  *  - Audio per application (if possible)
  * 
+ * 
+ * 
+ *   HAVE TO CODE OWN AUDIO LIBRARY!!
+ * 
  */
 
 // -------------------------------------------------------------------------- \\
