@@ -4,15 +4,6 @@
 #include "ui/ChannelPanel.hpp"
 #include "ui/ListPanel.hpp"
 
-/*
- * Input devices
- *  - Option to add or remove devices
- *  - Select to which output devices
- * 
- * Output devices
- *  - Option to add or remove devices
- * 
- */
 
 
 
