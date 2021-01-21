@@ -2,18 +2,10 @@
 #include "pch.hpp"
 #include "ui/ChannelPanel.hpp"
 
-enum class Type
-{
-	Output = 0,
-	Input = 1,
-	Channel = 2
-};
-
-template<Type T>
-class ListPanel : public ScrollPanel
+class ChannelListPanel : public ScrollPanel
 {
 public:
-	ListPanel()
+	ChannelListPanel(AudioIO& audioio)
 	{
 		// Styling
 		Background(Theme::Get(Theme::VIEW_BACKGROUND));
@@ -23,16 +15,13 @@ public:
 		namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 		using MenuButton = Button<BG::Menu, BT::Normal>;
 		int _height = 20, _width = 140;
-		if (T == Type::Channel)
+
+		m_Menu.Emplace<MenuButton>([&] { this->Component().Emplace<ChannelPanel>(audioio); }, "Add Channel", Vec2<int>{ _width, _height });
+		m_Listener += [this](Event::MousePressed& e)
 		{
-			
-			m_Menu.Emplace<MenuButton>([&] { this->Component().Emplace<ChannelPanel>(); }, "Add Channel", Vec2<int>{ _width, _height });
-			m_Listener += [this](Event::MousePressed& e)
-			{
-				if (e.button == Event::MouseButton::RIGHT)
-					RightClickMenu::Get().Open(&m_Menu);
-			};
-		}
+			if (e.button == Event::MouseButton::RIGHT)
+				RightClickMenu::Get().Open(&m_Menu);
+		};
 	}
 
 	void Update(const Vec4<int>& viewport) override

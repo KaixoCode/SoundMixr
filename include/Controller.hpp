@@ -36,22 +36,11 @@ public:
     void Run();
 
 
-    std::vector<::Device>& Devices() { return m_Devices; }
 
-	void UpdateDeviceList()
-	{
-		unsigned int devices = m_Audio.getDeviceCount();
-		RtAudio::DeviceInfo info;
-		for (unsigned int i = 0; i < devices; i++) {
-			info = m_Audio.getDeviceInfo(i);
-			if (info.probed == true)
-				m_Devices.emplace_back(::Device{ i, info });
-		}
-	}
 
 private:
     Gui m_Gui;
     Frame& mainWindow;
-	RtAudio m_Audio { RtAudio::Api::WINDOWS_WASAPI };
-	std::vector<::Device> m_Devices;
+
+    AudioIO m_AudioIO;
 };
