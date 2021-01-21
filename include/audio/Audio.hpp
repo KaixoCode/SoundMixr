@@ -16,99 +16,34 @@ public:
 	unsigned int id;
 };
 
-class Audio
+class AudioIO
 {
 public:
-	Audio(bool in = true) : m_Input(in) 
-	{ 
-		UpdateDeviceList(); 
-	}
-
-	~Audio()
+	AudioIO(const Device& device, bool in, int samplerate = -1, int bufferSize = 256)
+		: m_BufferSize(bufferSize), m_Device(device), m_Input(in)
 	{
-		// Stop the stream
-		try {
-			if (m_Running && m_Audio.isStreamOpen() && m_Audio.isStreamRunning())
-				m_Audio.stopStream();
-		}
-		catch (RtAudioError& e) {
-			e.printMessage();
-		}
-
-		if (m_Running && m_Audio.isStreamOpen())
-			m_Audio.closeStream();
+		if (samplerate == -1)
+			m_Samplerate = m_Device.preferredSampleRate;
 	}
 
+	int  Samplerate() { return m_Samplerate; };
+	bool Samplerate(int s) { m_Samplerate = s; return true; }
 	::RtAudio& RtAudio() { return m_Audio; }
 	::Device&  Device() { return m_Device; }
 
-	const std::vector<::Device> const& Devices() const { return m_Devices; }
-
-	void UpdateDeviceList()
-	{
-		unsigned int devices = m_Audio.getDeviceCount();
-		RtAudio::DeviceInfo info;
-		for (unsigned int i = 0; i < devices; i++) {
-			info = m_Audio.getDeviceInfo(i);
-			if (info.probed == true)
-				m_Devices.emplace_back(::Device{ i, info });
-		}
-	}
-
-	bool SetDevice(const ::Device& d)
-	{
-		m_Device = d;
-		return SetSamplerate(d.preferredSampleRate);
-	}
-
-	int Samplerate() { return m_Samplerate; }
-	bool SetSamplerate(int r)
-	{
-		int prev = m_Samplerate;
-		m_Samplerate = r;
-		if (!UpdateStream())
-		{
-			m_Samplerate = prev;
-		}
-		else return true;
-
-		int index = 0;
-		while (!UpdateStream())
-		{
-			m_Samplerate = m_Device.sampleRates[index];
-			index++;
-			if (index > m_Device.sampleRates.size())
-				return false;
-		}
-		return true;
-	}
-
-	int Buffersize() { return m_Buffersize; }
-	bool SetBuffersize(int s)
-	{
-		int prev = m_Buffersize;
-		m_Buffersize = s;
-		if (!UpdateStream())
-		{
-			
-			m_Buffersize = prev;
-			return UpdateStream();
-		}
-	}
-
-	bool UpdateStream()
+	bool OpenDevice() 
 	{
 		if (m_Audio.isStreamOpen())
 			m_Audio.closeStream();
-
-		m_Running = false;
 
 		RtAudio::StreamParameters parameters;
 		parameters.deviceId = m_Device.id;
 		parameters.nChannels = m_Input ? m_Device.inputChannels : m_Device.outputChannels;
 		parameters.firstChannel = 0;
+
 		unsigned int sampleRate = m_Samplerate;
-		unsigned int bufferFrames = m_Buffersize;
+		unsigned int bufferFrames = m_BufferSize;
+
 		try {
 			if (m_Input)
 				m_Audio.openStream(NULL, &parameters, RTAUDIO_FLOAT64,
@@ -127,31 +62,24 @@ public:
 		return true;
 	}
 
-	void Connect(int id, Channel& c)
-	{
-		m_Channels.emplace(id, c);
-	}
 
-	double avg = 0;
-protected:
-	std::vector<::Device> m_Devices;
-	std::unordered_map<int, std::reference_wrapper<Channel>> m_Channels;
+
+private:
+	int m_Samplerate,
+		m_BufferSize;
+	
+	bool m_Running = false,
+		m_Input = false;
+
 	::Device  m_Device;
-	::RtAudio m_Audio;
 
-	int m_Samplerate = -1, 
-		m_Buffersize = 256;
-
-	bool m_Input = false,
-		m_Running = false;
-
-
+	::RtAudio m_Audio { RtAudio::Api::WINDOWS_WASAPI };
 
 	static int InputCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
 		double streamTime, RtAudioStreamStatus status, void* userData)
 	{
-		double* _buffer = (double*)inputBuffer;
-		Audio& _me = *(Audio*)userData;
+		/*double* _buffer = (double*)inputBuffer;
+		AudioIO& _me = *(AudioIO*)userData;
 		int _bufferSize = nBufferFrames * _me.Device().inputChannels;
 		double a = 0;
 		for (int i = 0; i < _bufferSize; i++)
@@ -164,7 +92,7 @@ protected:
 			}
 		}
 		a /= (double)_bufferSize;
-		_me.avg = a;
+		_me.avg = a;*/
 
 		return 0;
 	}
@@ -172,8 +100,8 @@ protected:
 	static int OutputCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
 		double streamTime, RtAudioStreamStatus status, void* userData)
 	{
-		double* _buffer = (double*)outputBuffer;
-		Audio& _me = *(Audio*)userData;
+		/*double* _buffer = (double*)outputBuffer;
+		AudioIO& _me = *(AudioIO*)userData;
 		int _bufferSize = nBufferFrames * _me.Device().outputChannels;
 		
 		for (int i = 0; i < _bufferSize; i++)
@@ -188,7 +116,7 @@ protected:
 			};
 
 			*_buffer++ = _sample;
-		}
+		}*/
 
 		return 0;
 	}

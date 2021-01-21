@@ -13,7 +13,7 @@ template<Type T>
 class ListPanel : public ScrollPanel
 {
 public:
-	ListPanel(std::vector<Audio*>* audios = nullptr)
+	ListPanel()
 	{
 		// Styling
 		Background(Theme::Get(Theme::VIEW_BACKGROUND));
@@ -26,7 +26,7 @@ public:
 		if (T == Type::Channel)
 		{
 			
-			m_Menu.Emplace<MenuButton>([&] { this->Component().Emplace<ChannelPanel>(audios); }, "Add Channel", Vec2<int>{ _width, _height });
+			m_Menu.Emplace<MenuButton>([&] { this->Component().Emplace<ChannelPanel>(); }, "Add Channel", Vec2<int>{ _width, _height });
 			m_Listener += [this](Event::MousePressed& e)
 			{
 				if (e.button == Event::MouseButton::RIGHT)

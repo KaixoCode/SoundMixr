@@ -3,11 +3,83 @@
 #include "audio/Audio.hpp"
 #include "ui/EndpointPanel.hpp"
 
+
+class TitleText
+{
+public:
+	static void Render(ButtonBase& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _padding = 20;
+		Color _c1{ 33, 33, 33, 255 };
+		Color _c2{ 255, 255, 255, 255 };
+
+		d.Command<Fill>(_c1);
+		d.Command<Quad>(b.Position(), b.Size());
+		d.Command<Font>(Fonts::Gidole, 24);
+		d.Command<Fill>(_c2);
+		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
+	}
+};
+
+class CloseButton
+{
+public:
+	static void Render(ButtonBase& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _padding = 8;
+		Color _c1{ 33, 33, 33, 255 };
+		Color _c2{ 255, 255, 255, 255 };
+		if (!b.Disabled() && (b.Hovering()))
+			_c1 = Color{ 30, 30, 30, 255 };
+		else if (!b.Disabled() && b.Active())
+			_c1 = Color{ 25, 25, 25, 255 };
+
+		d.Command<Fill>(_c1);
+		d.Command<Quad>(b.Position(), b.Size());
+		d.Command<Fill>(Color{ 255, 0, 0, 255 });
+		d.Command<Quad>(Vec4<int>{b.X() + _padding / 2, b.Y() + b.Height() / 2, b.Width() - _padding, 2}, 45.0f);
+		d.Command<Quad>(Vec4<int>{b.X() + _padding / 2, b.Y() + b.Height() / 2, b.Width() - _padding, 2}, 90.0f + 45.0f);
+	}
+};
+
+class NiceButton
+{
+public:
+	static void Render(ButtonBase& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _padding = 20;
+		Color _c1{ 33, 33, 33, 255 };
+		Color _c2{ 255, 255, 255, 255 };
+		if (!b.Disabled() && (b.Hovering() || b.Active()))
+			_c1 = Color{ 30, 30, 30, 255 };
+
+		d.Command<Fill>(_c1);
+		d.Command<Quad>(b.Position(), b.Size());
+
+		d.Command<Font>(Fonts::Gidole16, 16);
+		d.Command<Fill>(_c2);
+		d.Command<TextAlign>(Align::LEFT, Align::CENTER);
+		d.Command<Text>(&b.Name(), b.X() + 6, b.Y() + b.Height() / 2);
+		int _w = 16;
+		_padding = 4;
+		if (!b.Disabled())
+			d.Command<Triangle>(b.X() + b.Width() - _w / 2 - _padding, b.Y() + b.Height() / 2, _w / 2, _w / 2, -90.0f);
+	}
+};
+
+namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
+using SubMenuButton = Button<BG::SubMenu, BT::Menu<MG::Vertical, MT::Normal, BT::FocusToggle, Align::RIGHT>>;
+using MenuButton = Button<BG::Menu, BT::Normal>;
+
 class ChannelPanel : public Panel
 {
 public:
 
-	ChannelPanel(std::vector<Audio*>* audios)
+	ChannelPanel()
 		: Panel(),
 		m_IDeviceButton(Emplace<Button<NiceButton, BT::Normal>>([&]() { RightClickMenu::Get().Open(&m_IDeviceMenu);}, "Input Device", Vec2<int>{200, 24})),
 		m_ODeviceButton(Emplace<Button<NiceButton, BT::Normal>>([&]() { RightClickMenu::Get().Open(&m_ODeviceMenu);}, "Output Device", Vec2<int>{200, 24})),
@@ -22,33 +94,10 @@ public:
 		m_ODeviceButton.Position(Vec2<int>{20, Height() - 48});
 		m_Close.Position(Vec2<int>{220, Height() - 24});
 		m_Close.Visible(false);
-
-		LOG(audios);
-		// Add all available devices to the menu in other thread
-		if (audios == nullptr)
-			return;
-
-		int listid1 = BT::List::NewKey();
-		int listid2 = BT::List::NewKey();
-
-		int l = audios->size();
-		for (int k = 0; k < l; k++)
-		{
-			auto& _audio = audios->at(k);
-			Device& _d = _audio->Device();
-			std::string name = _d.name;
-			int i = name.find_first_of('(');
-			if (i < name.size()) name.resize(i, ' ');
-			LOG(name);
-
-			// Only inputs or outputs depending on type
-			if (_d.inputChannels != 0)
-				m_IDeviceMenu.Emplace<Button<BG::Menu, BT::List>>([&] { _audio->Connect(m_Id, m_Channel); }, name, Vec2<int>{220, 20}, listid1);
-
-			if (_d.outputChannels != 0)
-				m_ODeviceMenu.Emplace<Button<BG::Menu, BT::List>>([&] { _audio->Connect(m_Id, m_Channel); }, name, Vec2<int>{220, 20}, listid2);
-		}
 	}
+
+	auto& IDeviceMenu() { return m_IDeviceMenu; }
+	auto& ODeviceMenu() { return m_ODeviceMenu; }
 
 	bool Close() { return m_ClosePanel; }
 
