@@ -3,28 +3,10 @@
 #include "audio/Audio.hpp"
 
 /*
- * Input devices
- *  - Option to add or remove devices
- *  - Select to which output devices
- *
- * Output devices
- *  - Option to add or remove devices
- * 
- * Channel
- *  - Select in and out
- * 
- * 
- * Bugs:
- *  - Crash when closing application
- *  - No audio input when in ASIO api
- * 
- * 
- * Ideas:
- *  - Audio per application (if possible)
- * 
- * 
- * 
- *   HAVE TO CODE OWN AUDIO LIBRARY!!
+ * TODO:
+ *  - Add volume visuals
+ *  - Nicer GUI
+ *  - Option to make GUI vertical
  * 
  */
 
@@ -35,12 +17,8 @@
 class Controller
 {
 public:
-
     Controller();
     void Run();
-
-
-
 
 private:
     Gui m_Gui;

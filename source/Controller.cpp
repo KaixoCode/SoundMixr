@@ -1,9 +1,7 @@
 #include "Controller.hpp"
 #include "audio/Audio.hpp"
-#include "ui/EndpointPanel.hpp"
 #include "ui/ChannelPanel.hpp"
 #include "ui/ListPanel.hpp"
-
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
@@ -36,7 +34,7 @@ void Controller::Run()
     _p31.MinHeight(40);
     _p31.Height(40);
     _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels").Disable();
-    auto& _channelPanel = _p3.Emplace<ChannelListPanel>(Layout::Hint::Center, m_SarAsio);
+    auto& _channelPanel = _p3.Emplace<ListPanel>(Layout::Hint::Center, m_SarAsio);
     auto& _p33 = _channelPanel.Component<Panel>();
     _p33.Background(Color{ 40, 40, 40, 255 });
     _p33.Layout<Layout::SidewaysStack>(8);
@@ -51,6 +49,7 @@ void Controller::Run()
             PaAsio_ShowControlPanel(m_SarAsio.Device().id, mainWindow.GetWin32Handle()); 
             m_SarAsio.OpenStream();
             m_SarAsio.StartStream();
+            _channelPanel.LoadChannels(); // Reload the channels to display any new ones
         }, "SAR Control Panel", Vec2<int>{ _width, _height }, Key::CTRL_O);
 
     _file.Emplace<MenuButton>([&] { mainWindow.Close(); }, "Quit", Vec2<int>{ _width, _height }, Key::CTRL_Q);

@@ -15,7 +15,6 @@ file(GLOB_RECURSE SOURCE
 include_directories(
   libs/GuiCode/include
   libs/GuiCode/libs
-  libs/rtaudio
   libs/portaudio/include
   include/
 )
@@ -31,7 +30,6 @@ target_precompile_headers(SoundMixr PUBLIC
 )
 
 target_link_libraries(SoundMixr
-  rtaudio
   GuiCode
   portaudio
 )
