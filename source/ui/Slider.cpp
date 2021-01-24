@@ -53,13 +53,13 @@ void Slider::Render(CommandCollection& d)
 	int _h = max((VisibleRange() - Range().start) / (float)(Range().end - Range().start) * Height(), (float)MinBarSize());
 	int _y = (Value() - Range().start) / (float)(Range().end - Range().start - VisibleRange()) * -(Height() - _h) + Y() + Height() - _h;
 
-	d.Command<Fill>(Color{ 55, 55, 55, 255 });
+	d.Command<Fill>(Color{ 80, 80, 80, 255 });
 
 	int _w = Width() - _p * 2;
 	int _he = _h - _p * 2;
 	d.Command<Triangle>(Vec4<int>{X() + _p, _y + _p, 8, _he}, 0);
 	d.Command<Triangle>(Vec4<int>{X() - _p + Width(), _y + _p, 8, _he}, 180);
-	d.Command<Quad>(Vec4<int>{X() + _p, _y + _p, Width() - _p * 2, 1});
+	d.Command<Quad>(Vec4<int>{X() + _p, _y + _p - 1, Width() - _p * 2, 3});
 	
 	if (Hovering())
 	{

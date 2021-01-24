@@ -30,7 +30,7 @@ public:
 	static void Render(ButtonBase& b, CommandCollection& d)
 	{
 		using namespace Graphics;
-		Color _c2{ 255, 255, 255, 255 };
+		Color _c2{ 200, 200, 200, 255 };
 
 		d.Command<Font>(Fonts::Gidole14, 14);
 		d.Command<Fill>(_c2);
@@ -47,7 +47,7 @@ public:
 		if (b.Disabled())
 			return;
 		using namespace Graphics;
-		double _div = 1.2;
+		double _div = 1.4;
 		Color _c1{ 33, 33, 33, 255 };
 		Color _c2{ 50, 50, 50, 255 };
 		if ((b.Hovering()))
@@ -58,7 +58,7 @@ public:
 		if (b.Active())
 		{
 			_c2 = Color{ 90, 90, 90, 255 };
-			_div = 1.0;
+			_div = 1.2;
 		}
 
 		int _w = b.Width() / _div;

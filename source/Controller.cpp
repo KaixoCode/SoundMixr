@@ -8,12 +8,11 @@
 // -------------------------------------------------------------------------- \\
 
 Controller::Controller()
-    : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 800, 400))
+    : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 548, 350))
 {}
 
 void Controller::Run()
 {
-    Theme::Load("..\\libs\\GuiCode\\themes\\dark");
 
     namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
     using MenuButton = Button<BG::Menu, BT::Normal>;
@@ -28,7 +27,7 @@ void Controller::Run()
 
     auto& _p3 = _panel.Emplace<Panel>();
     _p3.Width(260);
-    _p3.Layout<Layout::Border>(0);
+    _p3.Layout<Layout::Border>(0, 0, false, false, false, false);
     auto& _p31 = _p3.Emplace<Panel>(Layout::Hint::North);
     _p31.Layout<Layout::Grid>(1, 1, 0, 0);
     _p31.MinHeight(40);
@@ -40,19 +39,19 @@ void Controller::Run()
     _p33.Layout<Layout::SidewaysStack>(8);
     _p33.AutoResize(true, false);
 
-    auto& _file = _menu.Emplace<TitleMenuButton>("File", Vec2<int>{ 40, 32 });
+    auto& _file = _menu.Emplace<TitleMenuButton>("Options", Vec2<int>{ 54, 32 });
     int _height = 20, _width = 200;
 
     _file.Emplace<MenuButton>([&]
         { 
             m_SarAsio.CloseStream(); 
             PaAsio_ShowControlPanel(m_SarAsio.Device().id, mainWindow.GetWin32Handle()); 
+            m_SarAsio.Inputs().clear();
+            m_SarAsio.Outputs().clear();
             m_SarAsio.OpenStream();
             m_SarAsio.StartStream();
             _channelPanel.LoadChannels(); // Reload the channels to display any new ones
         }, "SAR Control Panel", Vec2<int>{ _width, _height }, Key::CTRL_O);
-
-    _file.Emplace<MenuButton>([&] { mainWindow.Close(); }, "Quit", Vec2<int>{ _width, _height }, Key::CTRL_Q);
 
     _channelPanel.LoadChannels();
 

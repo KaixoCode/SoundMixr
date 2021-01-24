@@ -18,6 +18,7 @@ public:
 	void Select(StereoOutputChannel* s);
 	void Selected(bool v) { m_Selected = v; }
 	bool Selected() { return m_Selected; }
+	void Unselect() { m_HasSelect = false; routed.Disable(); }
 	void Routed(bool v) { m_Routed = v; }
 	bool Routed() { return m_Routed; }
 	bool Input() { return m_IsInput; }

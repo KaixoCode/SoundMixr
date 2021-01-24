@@ -8,6 +8,8 @@
  *  - Nicer GUI
  *  - Option to make GUI vertical
  * 
+ * 
+ *  - 'audio test' mode, notify when input hasn't received audio in a while.
  */
 
 // -------------------------------------------------------------------------- \\

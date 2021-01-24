@@ -12,25 +12,45 @@ ListPanel::ListPanel(SarAsio& sarasio)
 
 	m_Listener += [this](Event::MousePressed& e)
 	{
+		bool s = false;
 		for (auto& _panel : m_Channels)
 		{
 			ChannelPanel& _current = _panel.get();
-			if (_current.text.Hovering())
+			if (_current.WithinBounds(Vec2<int>{e.x + m_ScrollbarX->Value(), e.y - (m_ScrollbarX->NotNecessary() ? 0 : m_ScrollbarX->Height()) }))
 			{
-				for (auto& _p : m_Channels)
+				if ((!_current.routed.Hovering() || _current.routed.Disabled()))
 				{
-					ChannelPanel& _c = _p.get();
-					if (_current.Input())
-						_c.Select(_current.InputChannel());
-					else
-						_c.Select(_current.OutputChannel());
+					for (auto& _p : m_Channels)
+					{
+						ChannelPanel& _c = _p.get();
+						if (_current.Input())
+							_c.Select(_current.InputChannel());
+						else
+							_c.Select(_current.OutputChannel());
 
-					_c.Selected(false);
+						_c.Selected(false);
+					}
+					_current.Selected(true);
 				}
-				_current.Selected(true);
+				s = true;
 			}
 		}
+		if (!s && !m_ScrollbarX->Hovering())
+			for (auto& _p : m_Channels)
+			{
+				_p.get().Selected(false);
+				_p.get().Unselect();
+			}
+	};
 
+	m_Listener += [this](Event::Unfocused& e)
+	{
+		if (!m_ScrollbarX->Hovering())
+		for (auto& _p : m_Channels)
+		{
+			_p.get().Selected(false);
+			_p.get().Unselect();
+		}
 	};
 }
 
