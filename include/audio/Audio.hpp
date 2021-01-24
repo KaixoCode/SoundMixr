@@ -25,6 +25,8 @@ public:
 	std::string name;
 	int left,
 		right;
+
+	float volume = 1;
 };
 
 class StereoInputChannel
@@ -38,8 +40,9 @@ public:
 	int left,
 		right;
 
-private:
-	std::vector<StereoOutputChannel> m_Connected;
+	float volume = 1;
+
+	std::unordered_map<int, StereoOutputChannel*> connected;
 };
 
 class SarAsio
@@ -66,8 +69,8 @@ public:
 			{
 				LOG("Found SAR");
 				m_Device = std::make_unique<::Device>(i, *info);
-				if (OpenStream());
-					//StartStream();
+				if (OpenStream())
+					StartStream();
 				else
 					LOG("Couldn't open stream");
 			}
@@ -216,23 +219,38 @@ private:
 		int _inChannels = _this.Device().info.maxInputChannels;
 		int _outChannels = _this.Device().info.maxOutputChannels;
 
+		auto& _inputs = _this.Inputs();
+		auto& _outputs = _this.Outputs();
+
 		for (int i = 0; i < nBufferFrames; i++)
 		{
-			double _left = 0;
-			double _right = 0;
-			for (int j = 0; j < _inChannels; j += 2)
-			{
-				_left += *_inBuffer++;
-				_right += *_inBuffer++;
-			}
 
 			for (int j = 0; j < _outChannels; j += 2)
 			{
-				*_outBuffer++ = _left;
-				*_outBuffer++ = _right;
+				int _index = j / 2;
+				float _left = 0;
+				float _right = 0;
+
+				for (int k = 0; k < _inChannels; k += 2)
+				{
+					int _index2 = k / 2;
+					auto& _channel = _inputs[_index2];
+					if (_channel.connected.find(j) != _channel.connected.end())
+					{
+						float _volume = _channel.volume;
+				
+						_left += (_inBuffer[i * _inChannels + k]) * _volume;
+						_right += (_inBuffer[i * _inChannels + k + 1]) * _volume;
+					}
+				}
+
+				float _volume = _outputs[_index].volume;
+
+				*_outBuffer++ = _left * _volume;
+				*_outBuffer++ = _right * _volume;
 			}
 		}
-
+		
 		return 0;
 	}
 };

@@ -11,6 +11,29 @@ public:
 		// Styling
 		Background(Theme::Get(Theme::VIEW_BACKGROUND));
 		EnableScrollbars(true, false);
+
+
+		m_Listener += [this](Event::MousePressed& e)
+		{
+			for (auto& cp : m_Channels)
+			{
+				ChannelPanel& t = cp.get();
+				if (t.text.Hovering())
+				{
+					for (auto& cp : m_Channels)
+					{
+						if (t.input)
+							cp.get().Select(t.inputChannel);
+						else
+							cp.get().Select(t.outputChannel);
+
+						cp.get().Selected(false);
+					}
+					t.Selected(true);
+				}
+			}
+			
+		};
 	}
 
 	void LoadChannels()
@@ -18,14 +41,15 @@ public:
 		auto& c = Component();
 		c.Clear();
 		for (auto& i : asio.Inputs())
-			c.Emplace<ChannelPanel>(i);
+			m_Channels.emplace_back(c.Emplace<ChannelPanel>(i));
 
 		c.Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0);
 
 		for (auto& i : asio.Outputs())
-			c.Emplace<ChannelPanel>(i);
+			m_Channels.emplace_back(c.Emplace<ChannelPanel>(i));
 	}
 
 private:
 	SarAsio& asio;
+	std::vector<std::reference_wrapper<ChannelPanel>> m_Channels;
 };
