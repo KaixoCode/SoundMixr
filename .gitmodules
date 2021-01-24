@@ -4,3 +4,6 @@
 [submodule "libs/rtaudio"]
 	path = libs/rtaudio
 	url = https://github.com/thestk/rtaudio.git
+[submodule "libs/portaudio"]
+	path = libs/portaudio
+	url = https://github.com/PortAudio/portaudio.git

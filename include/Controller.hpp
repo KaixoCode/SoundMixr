@@ -46,5 +46,5 @@ private:
     Gui m_Gui;
     Frame& mainWindow;
 
-    AudioIO m_AudioIO;
+    SarAsio m_SarAsio;
 };

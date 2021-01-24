@@ -15,5 +15,7 @@
 #include "GuiCode/ui/window/Window.hpp"
 
 #include "RtAudio.h"
+#include "portaudio.h"
+#include "pa_asio.h"
 
 #include "data/concurrentqueue.hpp"

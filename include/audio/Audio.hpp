@@ -2,236 +2,237 @@
 #include "pch.hpp"
 #include "audio/Channel.hpp"
 
-class Device : public RtAudio::DeviceInfo
+
+class Device
 {
 public:
-	Device()
-		: id(-1)
+	Device(PaDeviceIndex id, const PaDeviceInfo& a)
+		: id(id), info(a)
 	{}
 
-	Device(unsigned int id, RtAudio::DeviceInfo& a, RtAudio::Api api = RtAudio::Api::WINDOWS_WASAPI)
-		: id(id), RtAudio::DeviceInfo(a), api(api)
-	{}
-
-	unsigned int id;
-	RtAudio::Api api;
+	PaDeviceIndex id;
+	const PaDeviceInfo& info;
 };
 
 
-
-class AudioDevice
+class StereoOutputChannel
 {
 public:
-	AudioDevice(const Device& device, bool in, int samplerate = -1, int bufferSize = 256)
-		: m_BufferSize(bufferSize), m_Device(device), m_Input(in), m_Audio(device.api),
-		m_Samplerate(samplerate == -1 ? device.preferredSampleRate : samplerate)
+	StereoOutputChannel(int l, int r, const std::string& name)
+		: left(l), right(r), name(name)
 	{}
 
-	int  Samplerate() { return m_Samplerate; };
-	bool Samplerate(int s) { m_Samplerate = s; return true; }
-	::RtAudio& RtAudio() { return m_Audio; }
-	::Device&  Device() { return m_Device; }
+	std::string name;
+	int left,
+		right;
+};
 
-	bool OpenDevice() 
+class StereoInputChannel
+{
+public:
+	StereoInputChannel(int l, int r, const std::string& name)
+		: left(l), right(r), name(name)
+	{}
+
+	std::string name;
+	int left,
+		right;
+
+private:
+	std::vector<StereoOutputChannel> m_Connected;
+};
+
+class SarAsio
+{
+public:
+	SarAsio()
+		: m_BufferSize(256), m_Samplerate(48000)
 	{
-		try {
-			LOG("Attempting to open " << m_Device.name << "\n");
-			if (m_Audio.isStreamOpen())
-				m_Audio.closeStream();
-
-			RtAudio::StreamParameters parameters;
-			parameters.deviceId = m_Device.id;
-			parameters.nChannels = m_Input ? m_Device.inputChannels : m_Device.outputChannels;
-			parameters.firstChannel = 0;
-
-			RtAudio::StreamOptions options;
-			options.flags = RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_SCHEDULE_REALTIME;
-
-			unsigned int sampleRate = m_Samplerate;
-			unsigned int bufferFrames = m_BufferSize;
-
-
-			if (m_Input)
-				m_Audio.openStream(NULL, &parameters, RTAUDIO_FLOAT64,
-					sampleRate, &bufferFrames, &InputCallback, (void*)this, &options);
-			else 
-				m_Audio.openStream(&parameters, NULL, RTAUDIO_FLOAT64,
-					sampleRate, &bufferFrames, &OutputCallback, (void*)this, &options);
-
-			LOG("Opened stream (" << m_Device.name << ")" <<
-				"\n type:       " << (m_Input ? "Input" : "Output") << 
-				"\n samplerate: " << m_Samplerate << 
-				"\n buffersize: " << m_BufferSize <<
-				"\n channels:   " << parameters.nChannels
-			);
-
-			m_Running = true;
+		LOG("Initializing Portaudio library");
+		PaError err;
+		err = Pa_Initialize();
+		if (err != paNoError)
+		{
+			LOG(Pa_GetErrorText(err));
+			return;
 		}
-		catch (RtAudioError& e) {
-			e.printMessage();
+
+		LOG("Finding SAR ASIO device");
+		const PaDeviceInfo* info; // First all ASIO
+		for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
+		{
+			info = Pa_GetDeviceInfo(i);
+			if (strcmp(info->name, "Synchronous Audio Router") == 0)
+			{
+				LOG("Found SAR");
+				m_Device = std::make_unique<::Device>(i, *info);
+				if (OpenStream());
+					//StartStream();
+				else
+					LOG("Couldn't open stream");
+			}
+		}
+	}
+
+	~SarAsio()
+	{
+		LOG("Destructing SAR ASIO device ");
+		CloseStream();
+	}
+
+	::Device&  Device() { return *m_Device; }
+
+	bool StreamRunning()
+	{
+		return Pa_IsStreamActive(stream);
+	}
+
+	bool OpenStream() 
+	{
+		LOG("Attempting to open SAR stream");
+		PaError err;
+		PaStreamParameters ip, op;
+		ip.device = Device().id;
+		ip.channelCount = Device().info.maxInputChannels;
+		ip.sampleFormat = paFloat32;
+		ip.suggestedLatency = Device().info.defaultLowInputLatency;
+		ip.hostApiSpecificStreamInfo = NULL;
+		op.device = Device().id;
+		op.channelCount = Device().info.maxOutputChannels;
+		op.sampleFormat = paFloat32;
+		op.suggestedLatency = Device().info.defaultLowOutputLatency;
+		op.hostApiSpecificStreamInfo = NULL;
+
+		double sampleRate = m_Samplerate;
+		unsigned int bufferFrames = m_BufferSize;
+
+		err = Pa_OpenStream(&stream, &ip, &op, sampleRate, bufferFrames, paClipOff, SarCallback, (void*)this);
+
+		if (err != paNoError)
+		{
+			LOG(Pa_GetErrorText(err));
 			return false;
 		}
+
+		LOG("Opened stream (" << Device().info.name << ")" <<
+			"\n type:       " << "SAR" << 
+			"\n samplerate: " << m_Samplerate << 
+			"\n buffersize: " << m_BufferSize <<
+			"\n inchannels: " << ip.channelCount <<
+			"\n outchannels:" << op.channelCount
+		);
+
+		for (int i = 0; i < ip.channelCount; i += 2)
+		{
+			const char* name;
+			PaAsio_GetInputChannelName(Device().id, i, &name);
+			std::string n = name;
+			n.resize(n.find_last_of(' '));
+			m_Inputs.emplace_back(i, i + 1, n);
+		}
+
+		for (int i = 0; i < op.channelCount; i += 2)
+		{
+			const char* name;
+			PaAsio_GetOutputChannelName(Device().id, i, &name);
+			std::string n = name;
+			n.resize(n.find_last_of(' '));
+			m_Outputs.emplace_back(i, i + 1, n);
+		}
+
+		LOG("Input channel names: ");
+		for (auto& i : m_Inputs)
+			LOG(i.name);
+
+		LOG("Output channel names: ");
+		for (auto& i : m_Outputs)
+			LOG(i.name);
+
 		return true;
+	}
+
+	void CloseStream()
+	{
+		LOG("Closing SAR stream...");
+		PaError err;
+		err = Pa_CloseStream(stream);		
+		if (err != paNoError)
+			LOG(Pa_GetErrorText(err));
+		else
+			LOG("Closed SAR stream");
 	}
 
 	bool StartStream()
 	{
-		if (!m_Audio.isStreamOpen() || m_Audio.isStreamRunning())
+		if (StreamRunning())
 			return false;
 
-		LOG("START");
-		m_Audio.startStream();
+		LOG("Starting SAR stream...");
+		PaError err = Pa_StartStream(stream);
+		if (err != paNoError)
+			LOG(Pa_GetErrorText(err));
+		else
+			LOG("Started SAR stream");
+
 		return true;
 	}
 
 	bool StopStream()
 	{
-		if (!m_Audio.isStreamOpen() || !m_Audio.isStreamRunning())
+		if (!StreamRunning())
 			return false;
 
-		LOG("STOP");
-		m_Audio.stopStream();
+		LOG("Stopping SAR stream...");
+		PaError err = Pa_StopStream(stream);
+		if (err != paNoError)
+			LOG(Pa_GetErrorText(err));
+		else
+			LOG("Stopped SAR stream");
+
 		return true;
 	}
 
-	void Disconnect(int id)
-	{
-		// Make sure this device is connected to the channel
-		if (m_Channels.find(id) != m_Channels.end())
-		{
-			m_Channels.erase(id);
-
-			// If now 0 connections stop stream
-			m_Connections--;
-			if (m_Connections == 0)
-				StopStream();
-		}
-	}
-
-	void Connect(int id, Channel& channel) 
-	{ 
-		// Connect to the channel
-		m_Channels.emplace(id, channel);
-
-		// Start stream if this is the first connection
-		if (m_Connections == 0)
-			StartStream();
-
-		channel.StartRead(m_BufferSize * 2 + m_Samplerate * 0.090);
-		m_Connections++;
-	}
-
-	std::unordered_map<int, std::reference_wrapper<Channel>>& Channels() { return m_Channels; };
-
-	double avg = 0;
+	std::vector<StereoInputChannel>& Inputs() { return m_Inputs; }
+	std::vector<StereoOutputChannel>& Outputs() { return m_Outputs; }
 
 private:
 	int m_Samplerate,
-		m_BufferSize,
-		m_Connections = 0;
+		m_BufferSize;
 	
-	bool m_Running = false,
-		m_Input = false;
+	PaStream* stream = nullptr;
+	std::unique_ptr<::Device> m_Device;
 
+	std::vector<StereoInputChannel> m_Inputs;
+	std::vector<StereoOutputChannel> m_Outputs;
 
-	::Device  m_Device;
-	::RtAudio m_Audio { RtAudio::Api::WINDOWS_WASAPI };
-	std::unordered_map<int, std::reference_wrapper<Channel>> m_Channels;
-
-	static int InputCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
-		double streamTime, RtAudioStreamStatus status, void* userData)
+	static int SarCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
+		const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData)
 	{
-		double* _buffer = (double*)inputBuffer;
-		AudioDevice& _me = *(AudioDevice*)userData;
-		int _bufferSize = nBufferFrames * _me.Device().inputChannels;
+		SarAsio& _this = *(SarAsio*)userData;
 
-		for (auto& _c : _me.Channels())
+		float* _inBuffer = (float*)inputBuffer;
+		float* _outBuffer = (float*)outputBuffer;
+
+		int _inChannels = _this.Device().info.maxInputChannels;
+		int _outChannels = _this.Device().info.maxOutputChannels;
+
+		for (int i = 0; i < nBufferFrames; i++)
 		{
-			_c.second.get().Push(_buffer, _bufferSize);
-		}
-		
-
-		return 0;
-	}
-
-	static int OutputCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
-		double streamTime, RtAudioStreamStatus status, void* userData)
-	{
-		double* _buffer = (double*)outputBuffer;
-		AudioDevice& _me = *(AudioDevice*)userData;
-		int _bufferSize = nBufferFrames * _me.Device().outputChannels;
-		for (int i = 0; i < _bufferSize; i++)
-		{
-			double _sample = 0;
-			
-			for (auto& _c : _me.Channels())
+			double _left = 0;
+			double _right = 0;
+			for (int j = 0; j < _inChannels; j += 2)
 			{
-				_sample += _c.second.get().Pop();
-			};
+				_left += *_inBuffer++;
+				_right += *_inBuffer++;
+			}
 
-			*_buffer++ = _sample;
+			for (int j = 0; j < _outChannels; j += 2)
+			{
+				*_outBuffer++ = _left;
+				*_outBuffer++ = _right;
+			}
 		}
+
 		return 0;
 	}
-};
-
-
-
-class AudioIO
-{
-public:
-
-	AudioIO()
-	{}
-
-	void LoadDevices()
-	{
-		LOG("Loading devices\n");
-		// Load available devices
-		m_Devices.clear();
-		RtAudio::DeviceInfo info; // First all ASIO
-		unsigned int devices = m_AsioAudio.getDeviceCount();
-		LOG(" ASIO device count: " << devices << "\n");
-		for (unsigned int i = 0; i < devices; i++)
-		{
-			info = m_AsioAudio.getDeviceInfo(i);
-			LOG("   Device " << info.name << " is " << (info.probed ? "" : "not ") << "probed\n");
-			if (info.probed == true)
-				m_Devices.emplace_back(Device{ i, info, m_AsioAudio.getCurrentApi() });
-		}
-		devices = m_WasapiAudio.getDeviceCount(); // Then all WASAPI
-		LOG(" WASAPI device count: " << devices << "\n");
-		for (unsigned int i = 0; i < devices; i++)
-		{
-			info = m_WasapiAudio.getDeviceInfo(i);
-			LOG("   Device " << info.name << " is " << (info.probed ? "" : "not ") << "probed\n");
-			if (info.probed == true)
-				m_Devices.emplace_back(Device{ i, info, m_WasapiAudio.getCurrentApi() });
-		}
-
-		// Create AudioDevices
-		auto& _d = DeviceInfos();
-		m_Inputs.clear();
-		m_Inputs.reserve(devices);
-		m_Outputs.clear();
-		m_Outputs.reserve(devices);
-		for (auto& _device : _d)
-		{
-			if (_device.inputChannels != 0)
-				m_Inputs.emplace_back(_device, true, 48000).OpenDevice();
-
-			if (_device.outputChannels != 0)
-				m_Outputs.emplace_back(_device, false, 48000).OpenDevice();
-		}
-	}
-
-	auto DeviceInfos() -> std::vector<Device>& { return m_Devices; }
-	auto InputDevices() -> std::vector<AudioDevice>& { return m_Inputs; }
-	auto OutputDevices() -> std::vector<AudioDevice>& { return m_Outputs; }
-
-private:
-	std::vector<Device> m_Devices;
-	std::vector<AudioDevice> m_Inputs, m_Outputs;
-	RtAudio m_AsioAudio{ RtAudio::Api::WINDOWS_ASIO };
-	RtAudio m_WasapiAudio{ RtAudio::Api::WINDOWS_WASAPI};
 };
