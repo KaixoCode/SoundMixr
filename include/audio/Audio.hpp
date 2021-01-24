@@ -32,6 +32,11 @@ public:
 	void  Volume(float v) { m_Volume = v; }
 	float Volume() { return m_Volume; }
 
+	float level_left = 0, 
+		level_right = 0,
+		peak_left = 0,
+		peak_right = 0;
+
 private:
 	std::string m_Name;
 	int m_Left,
@@ -58,6 +63,11 @@ public:
 	bool  Connected(StereoOutputChannel* out) const { return m_Connected.find(out->ID()) != m_Connected.end(); }
 	void  Connect(StereoOutputChannel* out) { m_Connected.emplace(out->ID(), out); }
 	void  Disconnect(StereoOutputChannel* out) { m_Connected.erase(out->ID()); }
+
+	float level_left = 0,
+		level_right = 0,
+		peak_left = 0,
+		peak_right = 0;
 
 private:
 	std::string m_Name;

@@ -56,5 +56,6 @@ void Controller::Run()
 
     _channelPanel.LoadChannels();
 
+
     while (m_Gui.Loop());
 }

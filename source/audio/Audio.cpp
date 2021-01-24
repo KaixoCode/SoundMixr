@@ -158,14 +158,46 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 	auto& _inputs = _this.Inputs();
 	auto& _outputs = _this.Outputs();
 
+	double _r = 0.9;
+
 	for (int i = 0; i < nBufferFrames; i++)
 	{
+		for (int k = 0; k < _inChannels; k += 2)
+		{
+			
+
+			int _index = k / 2;
+			auto& _inChannel = _inputs[_index];
+
+			double _left = _inBuffer[i * _inChannels + k];
+			double _right = _inBuffer[i * _inChannels + k + 1];
+
+			if (i == 0)
+			{
+				_inChannel.level_left = _inChannel.level_left * _r + (1.0 - _r) * _inChannel.peak_left;
+				_inChannel.level_right = _inChannel.level_right * _r + (1.0 - _r) * _inChannel.peak_right;
+
+				_inChannel.peak_left = 0;
+				_inChannel.peak_right = 0;
+			}
+
+			if (_inChannel.peak_left < std::abs(_left * _inChannel.Volume())) 
+				_inChannel.peak_left = std::abs(_left * _inChannel.Volume());
+			if (_inChannel.peak_right < std::abs(_right * _inChannel.Volume())) 
+				_inChannel.peak_right = std::abs(_right * _inChannel.Volume());
+
+			/*_inChannel.level_left = _inChannel.level_left * _r + (1.0 - _r) * std::abs(_left * _inChannel.Volume());
+			_inChannel.level_right = _inChannel.level_right * _r + (1.0 - _r) * std::abs(_right * _inChannel.Volume());*/
+		}
+
 		for (int j = 0; j < _outChannels; j += 2)
 		{
 			int _index = j / 2;
 			auto& _outChannel = _outputs[_index];
 			float _left = 0;
 			float _right = 0;
+
+
 
 			for (int k = 0; k < _inChannels; k += 2)
 			{
@@ -181,6 +213,23 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 			}
 
 			float _volume = _outChannel.Volume();
+
+			if (i == 0)
+			{
+				_outChannel.level_left = _outChannel.level_left * _r + (1.0 - _r) * _outChannel.peak_left;
+				_outChannel.level_right = _outChannel.level_right * _r + (1.0 - _r) * _outChannel.peak_right;
+
+				_outChannel.peak_left = 0;
+				_outChannel.peak_right = 0;
+			}
+
+			if (_outChannel.peak_left < std::abs(_left * _volume))
+				_outChannel.peak_left = std::abs(_left * _volume);
+			if (_outChannel.peak_right < std::abs(_right * _volume))
+				_outChannel.peak_right = std::abs(_right * _volume);
+
+			/*_outChannel.level_left = _outChannel.level_left * _r + (1.0 - _r) * std::abs(_left * _volume);
+			_outChannel.level_right = _outChannel.level_right * _r + (1.0 - _r) * std::abs(_right * _volume);*/
 
 			*_outBuffer++ = constrain(_left * _volume, -1.0f, 1.0f);
 			*_outBuffer++ = constrain(_right * _volume, -1.0f, 1.0f);

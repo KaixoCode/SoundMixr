@@ -25,7 +25,7 @@ public:
 	auto OutputChannel() -> StereoOutputChannel* { return m_OutputChannel; }
 
 	Button<SmallText, ButtonType::Normal>& text;
-	Button<ButtonGraphics::Menu, ButtonType::Toggle>& routed;
+	Button<RouteButton, ButtonType::Toggle>& routed;
 
 private:
 	bool m_IsInput;
@@ -49,5 +49,6 @@ private:
 		m_Routed = false;
 
 	void Init();
-	void Update(const Vec4<int>& viewport);
+	void Update(const Vec4<int>& viewport) override;
+	void Render(CommandCollection& d) override;
 };

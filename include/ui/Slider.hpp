@@ -12,7 +12,7 @@ public:
 
 	Slider();
 
-	int    MinBarSize() const override { return Width(); }
+	int    MinBarSize() const override { return 25; }
 	double SliderValue() { return std::pow((1.0 - (Value() / RATIO)) * HIGHEST, 4); }
 	void   SliderValue(double v) { Value(static_cast<int>((1.0 - (std::powf(v, 0.25) / HIGHEST)) * RATIO)); }
 	double Decibels() { return 20 * std::log10(SliderValue()); }
