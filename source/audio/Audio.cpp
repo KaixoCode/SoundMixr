@@ -25,8 +25,8 @@ SarAsio::SarAsio()
 		{
 			LOG("Found SAR");
 			m_Device = std::make_unique<::Device>(i, *info);
-			if (OpenStream());
-			//StartStream();
+			if (OpenStream())
+				StartStream();
 			else
 				LOG("Couldn't open stream");
 		}
