@@ -140,7 +140,7 @@ void ChannelPanel::Render(CommandCollection& d)
 	
 	_x = 10 + 16;
 	_y = 40;
-	_h = (_levelRight / 1.412536) * (Height() - 75);
+	_h = (_levelRight / 1.412536) * (Height() - 85);
 	_w = 14;
 
 	d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });

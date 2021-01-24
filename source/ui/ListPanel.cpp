@@ -38,6 +38,7 @@ void ListPanel::LoadChannels()
 {
 	auto& c = Component();
 	c.Clear();
+	m_Channels.clear();
 	for (auto& i : asio.Inputs())
 		m_Channels.emplace_back(c.Emplace<ChannelPanel>(i));
 
