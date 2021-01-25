@@ -286,32 +286,34 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 	return 0;
 }
 
-
 void SarAsio::SaveRouting()
 {
+	LOG("Saving Routing");
 	std::string data;
 	for (auto& _i : Inputs())
 	{
+		data += "in:";
 		data += std::to_string(_i.ID()) + ";";
 		data += std::to_string(_i.muted) + ";";
 		data += std::to_string(_i.mono) + ";";
+		data += std::to_string(_i.pan) + ";";
 		data += std::to_string(_i.volume) + ";";
 		for (auto& _c : _i.Connections())
 			data += std::to_string(_c.first) + ",";
 		data += "\n";
 	}
-	data += "-\n";
 	for (auto& _i : Outputs())
 	{
+		data += "out:";
 		data += std::to_string(_i.ID()) + ";";
 		data += std::to_string(_i.muted) + ";";
 		data += std::to_string(_i.mono) + ";";
+		data += std::to_string(_i.pan) + ";";
 		data += std::to_string(_i.volume) + "\n";
 	}
 
-	LOG(data);
-
-
-
-
+	std::ofstream _out;
+	_out.open("./routing");
+	_out << data;
+	_out.close();
 }

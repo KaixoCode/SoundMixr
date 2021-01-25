@@ -12,11 +12,11 @@ public:
 	ListPanel(SarAsio& sarasio);
 
 	void LoadChannels();
-	void Transparency(bool d) { for (auto& _c : m_Channels) _c.get().Transparency(d); };
+	void Transparency(bool d) { for (auto& _c : m_Channels) _c.second->Transparency(d); };
 
-	std::vector<std::reference_wrapper<ChannelPanel>>& Channels() { return m_Channels; };
+	std::unordered_map<int, ChannelPanel*>& Channels() { return m_Channels; };
 
 private:
 	SarAsio& asio;
-	std::vector<std::reference_wrapper<ChannelPanel>> m_Channels;
+	std::unordered_map<int, ChannelPanel*> m_Channels;
 };

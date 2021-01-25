@@ -31,6 +31,7 @@ public:
 	Button<MuteButton, ButtonType::Toggle>& muted;
 	Button<MonoButton, ButtonType::Toggle>& mono;
 	PanSlider& pan;
+	VolumeSlider& volume;
 
 private:
 	bool m_Transparency = false;
@@ -49,8 +50,6 @@ private:
 		StereoInputChannel* m_SelectedInputChannel;
 		StereoOutputChannel* m_SelectedOutputChannel;
 	};
-
-	VolumeSlider& m_VolumeSlider;
 
 	bool m_Selected = false,
 		m_Routed = false;

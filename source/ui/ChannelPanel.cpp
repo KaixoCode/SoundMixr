@@ -7,7 +7,7 @@
 ChannelPanel::ChannelPanel(StereoInputChannel& c)
 	: m_InputChannel(&c), m_IsInput(true),
 	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
-	m_VolumeSlider(Emplace<VolumeSlider>()),
+	volume(Emplace<VolumeSlider>()),
 	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "in", Vec2<int>{70, 25})),
 	muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(&c.muted, "MUTE", Vec2<int>{27, 25})),
 	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO", Vec2<int>{27, 25})),
@@ -19,7 +19,7 @@ ChannelPanel::ChannelPanel(StereoInputChannel& c)
 ChannelPanel::ChannelPanel(StereoOutputChannel& c)
 	: m_OutputChannel(&c), m_IsInput(false),
 	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
-	m_VolumeSlider(Emplace<VolumeSlider>()),
+	volume(Emplace<VolumeSlider>()),
 	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "", Vec2<int>{70, 25})),
 	muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(&c.muted, "MUTE", Vec2<int>{27, 25})),
 	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO", Vec2<int>{27, 25})),
@@ -65,7 +65,7 @@ void ChannelPanel::Select(StereoOutputChannel* s)
 void ChannelPanel::Init()
 {
 	pan.Position(Vec2<int>{4, 25});
-	m_VolumeSlider.Position(Vec2<int>{0, 95});
+	volume.Position(Vec2<int>{0, 95});
 	muted.Position(Vec2<int>{5, 50});
 	mono.Position(Vec2<int>{38, 50});
 	routed.Position(Vec2<int>{0, 0});
@@ -103,17 +103,17 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 		Background(Color{ 33, 33, 33, m_Transparency ? 245.0f : 255.0f });
 
 	text.Position(Vec2<int>{0, Height() - 24});
-	m_VolumeSlider.Size(Vec2<int>{50, Height() - 110});
+	volume.Size(Vec2<int>{50, Height() - 110});
 	pan.Size(Vec2<int>{62, 19});
 
 	if (Input())
 	{
-		m_InputChannel->volume = m_VolumeSlider.SliderValue();
+		m_InputChannel->volume = volume.SliderValue();
 		m_InputChannel->pan = pan.SliderValue();
 	}
 	else
 	{
-		m_OutputChannel->volume = m_VolumeSlider.SliderValue();
+		m_OutputChannel->volume = volume.SliderValue();
 		m_OutputChannel->pan = pan.SliderValue();
 	}
 

@@ -1,7 +1,8 @@
 #pragma once
 #include "pch.hpp"
 #include "audio/Audio.hpp"
-
+#include "ui/ChannelPanel.hpp"
+#include "ui/ListPanel.hpp"
 /*
  * TODO:
  *  - Add sound visuals
@@ -22,10 +23,13 @@ class Controller
 public:
     Controller();
     void Run();
+    void LoadRouting();
 
 private:
     Gui m_Gui;
     Frame& mainWindow;
+
+    ListPanel* m_List = nullptr;
 
     SarAsio m_SarAsio;
 };

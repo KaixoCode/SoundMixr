@@ -27,8 +27,8 @@ public:
 		: m_Left(l), m_Right(r), m_Name(name)
 	{}
 	
-	int   ID() { return m_Left; }
-	auto  Name() -> std::string& { return m_Name; }
+	int   ID() const { return m_Left; }
+	auto  Name() -> std::string& const { return m_Name; }
 
 	float level_left = 0, 
 		level_right = 0,

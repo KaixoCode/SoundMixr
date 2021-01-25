@@ -33,3 +33,5 @@ target_link_libraries(SoundMixr
   GuiCode
   portaudio
 )
+
+add_definitions(-DABSOLUTE_ASSETS_PATH=\"${SRCGUI}assets/\")
