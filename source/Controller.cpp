@@ -8,7 +8,7 @@
 // -------------------------------------------------------------------------- \\
 
 Controller::Controller()
-    : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 548, 350))
+    : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500))
 {}
 
 void Controller::Run()
@@ -16,6 +16,7 @@ void Controller::Run()
 
     namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
     using MenuButton = Button<BG::Menu, BT::Normal>;
+    using MenuToggleButton = Button<BG::Menu, BT::Toggle>;
     using TitleMenuButton = Button<BG::TitleMenu, BT::Menu<MG::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
     using SubMenuButton = Button<BG::SubMenu, BT::Menu<MG::Vertical, MT::Normal, BT::Hover, Align::RIGHT>>;
     
@@ -35,7 +36,7 @@ void Controller::Run()
     _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels").Disable();
     auto& _channelPanel = _p3.Emplace<ListPanel>(Layout::Hint::Center, m_SarAsio);
     auto& _p33 = _channelPanel.Component<Panel>();
-    _p33.Background(Color{ 40, 40, 40, 255 });
+    _p33.Background(Color{ 40, 40, 40, 245 });
     _p33.Layout<Layout::SidewaysStack>(8);
     _p33.AutoResize(true, false);
 
@@ -52,9 +53,20 @@ void Controller::Run()
             m_SarAsio.StartStream();
             _channelPanel.LoadChannels(); // Reload the channels to display any new ones
         }, "SAR Control Panel", Vec2<int>{ _width, _height }, Key::CTRL_O);
+    
+    bool _aero = false;
+    _file.Emplace<MenuToggleButton>(&_aero, "Windows Aero Effect", Vec2<int>{ _width, _height }, Key::CTRL_T);
+
+    //_file.Emplace<MenuButton>([&] { m_SarAsio.SaveRouting(); }, "Save Routing", Vec2<int>{ _width, _height }, Key::CTRL_S);
 
     _channelPanel.LoadChannels();
 
+    
+    while (m_Gui.Loop()) 
+    {
+        _p33.Background(Color{ 40, 40, 40, (_aero ? 245.0f : 255.0f) });
+        _channelPanel.Transparency(_aero);
+        mainWindow.Aero(_aero);
+    }
 
-    while (m_Gui.Loop());
 }

@@ -24,11 +24,16 @@ public:
 	bool Input() { return m_IsInput; }
 	auto InputChannel()  -> StereoInputChannel* { return m_InputChannel; }
 	auto OutputChannel() -> StereoOutputChannel* { return m_OutputChannel; }
+	void Transparency(bool t) { m_Transparency = t; }
 
 	Button<SmallText, ButtonType::Normal>& text;
 	Button<RouteButton, ButtonType::Toggle>& routed;
+	Button<MuteButton, ButtonType::Toggle>& muted;
+	Button<MonoButton, ButtonType::Toggle>& mono;
 
 private:
+	bool m_Transparency = false;
+
 	bool m_IsInput;
 	union
 	{
@@ -48,6 +53,9 @@ private:
 
 	bool m_Selected = false,
 		m_Routed = false;
+
+	std::unordered_map<int, std::string> m_Numbers;
+	std::string m_NegInf = "Inf";
 
 	void Init();
 	void Update(const Vec4<int>& viewport) override;
