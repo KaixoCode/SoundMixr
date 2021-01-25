@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.hpp"
 #include "audio/Audio.hpp"
-#include "ui/Slider.hpp"
+#include "ui/VolumeSlider.hpp"
 #include "ui/Graphics.hpp"
 
 // -------------------------------------------------------------------------- \\
@@ -30,6 +30,7 @@ public:
 	Button<RouteButton, ButtonType::Toggle>& routed;
 	Button<MuteButton, ButtonType::Toggle>& muted;
 	Button<MonoButton, ButtonType::Toggle>& mono;
+	PanSlider& pan;
 
 private:
 	bool m_Transparency = false;
@@ -49,7 +50,7 @@ private:
 		StereoOutputChannel* m_SelectedOutputChannel;
 	};
 
-	Slider& m_VolumeSlider;
+	VolumeSlider& m_VolumeSlider;
 
 	bool m_Selected = false,
 		m_Routed = false;

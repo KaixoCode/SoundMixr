@@ -29,13 +29,12 @@ public:
 	
 	int   ID() { return m_Left; }
 	auto  Name() -> std::string& { return m_Name; }
-	void  Volume(float v) { m_Volume = v; }
-	float Volume() { return m_Volume; }
 
 	float level_left = 0, 
 		level_right = 0,
 		peak_left = 0,
-		peak_right = 0;
+		peak_right = 0, 
+		pan = 0, volume = 1;
 
 	bool mono = false,
 		muted = false;
@@ -44,9 +43,6 @@ private:
 	std::string m_Name;
 	int m_Left,
 		m_Right;
-
-	float m_Volume = 1, 
-		m_Pan = 0;
 };
 
 // -------------------------------------------------------------------------- \\
@@ -62,8 +58,6 @@ public:
 
 	int   ID() { return m_Left; }
 	auto  Name() -> std::string& { return m_Name; }
-	void  Volume(float v) { m_Volume = v; }
-	float Volume() { return m_Volume; }
 	bool  Connected(StereoOutputChannel* out) const { return m_Connected.find(out->ID()) != m_Connected.end(); }
 	void  Connect(StereoOutputChannel* out) { m_Connected.emplace(out->ID(), out); }
 	void  Disconnect(StereoOutputChannel* out) { m_Connected.erase(out->ID()); }
@@ -72,7 +66,8 @@ public:
 	float level_left = 0,
 		level_right = 0,
 		peak_left = 0,
-		peak_right = 0;
+		peak_right = 0,
+		pan = 0, volume = 1;
 
 	bool mono = false,
 		muted = false;
@@ -81,9 +76,6 @@ private:
 	std::string m_Name;
 	int m_Left,
 		m_Right;
-
-	float m_Volume = 1,
-		m_Pan = 0;
 
 	std::unordered_map<int, StereoOutputChannel*> m_Connected;
 };

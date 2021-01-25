@@ -7,10 +7,11 @@
 ChannelPanel::ChannelPanel(StereoInputChannel& c)
 	: m_InputChannel(&c), m_IsInput(true),
 	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
-	m_VolumeSlider(Emplace<Slider>()),
+	m_VolumeSlider(Emplace<VolumeSlider>()),
 	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "in", Vec2<int>{70, 25})),
 	muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(&c.muted, "MUTE", Vec2<int>{27, 25})),
-	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO", Vec2<int>{27, 25}))
+	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO", Vec2<int>{27, 25})),
+	pan(Emplace<PanSlider>())
 {
 	Init();
 }
@@ -18,10 +19,11 @@ ChannelPanel::ChannelPanel(StereoInputChannel& c)
 ChannelPanel::ChannelPanel(StereoOutputChannel& c)
 	: m_OutputChannel(&c), m_IsInput(false),
 	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
-	m_VolumeSlider(Emplace<Slider>()),
+	m_VolumeSlider(Emplace<VolumeSlider>()),
 	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "", Vec2<int>{70, 25})),
 	muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(&c.muted, "MUTE", Vec2<int>{27, 25})),
-	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO", Vec2<int>{27, 25}))
+	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO", Vec2<int>{27, 25})),
+	pan(Emplace<PanSlider>())
 {
 	Init();
 }
@@ -62,6 +64,7 @@ void ChannelPanel::Select(StereoOutputChannel* s)
 
 void ChannelPanel::Init()
 {
+	pan.Position(Vec2<int>{4, 25});
 	m_VolumeSlider.Position(Vec2<int>{0, 95});
 	muted.Position(Vec2<int>{5, 50});
 	mono.Position(Vec2<int>{38, 50});
@@ -101,11 +104,18 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 
 	text.Position(Vec2<int>{0, Height() - 24});
 	m_VolumeSlider.Size(Vec2<int>{50, Height() - 110});
+	pan.Size(Vec2<int>{62, 19});
 
 	if (Input())
-		m_InputChannel->Volume(m_VolumeSlider.SliderValue());
+	{
+		m_InputChannel->volume = m_VolumeSlider.SliderValue();
+		m_InputChannel->pan = pan.SliderValue();
+	}
 	else
-		m_OutputChannel->Volume(m_VolumeSlider.SliderValue());
+	{
+		m_OutputChannel->volume = m_VolumeSlider.SliderValue();
+		m_OutputChannel->pan = pan.SliderValue();
+	}
 
 	Panel::Update(viewport);
 }
@@ -133,7 +143,7 @@ void ChannelPanel::Render(CommandCollection& d)
 	int _x = 10;
 	int _y = 100;
 	int _rh = Height() - 35 - _y;
-	int _h = (_levelLeft / 1.412536) * (_rh);
+	int _h = (min(_levelLeft, 1.412536f) / 1.412536) * (_rh);
 	int _0db = ((1.0 / 1.412536) * (_rh)) + _y;
 	int _3db = ((std::powf(std::powf(10, 3 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 	int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
@@ -162,7 +172,7 @@ void ChannelPanel::Render(CommandCollection& d)
 	}
 	
 	_x = 10 + 16;
-	_h = (_levelRight / 1.412536) * (_rh);
+	_h = (min(_levelRight, 1.412536f) / 1.412536)* (_rh);
 
 	d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
 	d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});

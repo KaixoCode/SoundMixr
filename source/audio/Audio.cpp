@@ -181,8 +181,11 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 					_inRight = 0.5 * (_inChannel.peak_left + _inChannel.peak_right);
 				}
 
-				_inChannel.level_left = _inChannel.level_left * _r + (1.0 - _r) * _inLeft;
-				_inChannel.level_right = _inChannel.level_right * _r + (1.0 - _r) * _inRight;
+				float _panLeft = (50 - max(_inChannel.pan, 0.0f)) / 50.0;
+				float _panRight = (50 - std::abs(min(_inChannel.pan, 0.0f))) / 50.0;
+
+				_inChannel.level_left = _inChannel.level_left * _r + (1.0 - _r) * _inLeft * _panLeft * _inChannel.volume;
+				_inChannel.level_right = _inChannel.level_right * _r + (1.0 - _r) * _inRight * _panRight * _inChannel.volume;
 
 				_inChannel.peak_left = 0;
 				_inChannel.peak_right = 0;
@@ -191,10 +194,10 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 			if (_inChannel.muted)
 				continue;
 
-			if (_inChannel.peak_left < std::abs(_left * _inChannel.Volume())) 
-				_inChannel.peak_left = std::abs(_left * _inChannel.Volume());
-			if (_inChannel.peak_right < std::abs(_right * _inChannel.Volume())) 
-				_inChannel.peak_right = std::abs(_right * _inChannel.Volume());
+			if (_inChannel.peak_left < std::abs(_left)) 
+				_inChannel.peak_left = std::abs(_left);
+			if (_inChannel.peak_right < std::abs(_right))
+				_inChannel.peak_right = std::abs(_right);
 		}
 
 		for (int j = 0; j < _outChannels; j += 2)
@@ -214,25 +217,29 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 
 				if (_inChannel.Connected(&_outChannel))
 				{
-					float _volume = _inChannel.Volume();
+					float _volume = _inChannel.volume;
+
+					float _panLeft = (50 - max(_inChannel.pan, 0.0f)) / 50.0;
+					float _panRight = (50 - std::abs(min(_inChannel.pan, 0.0f))) / 50.0;
 
 					float _inLeft = (_inBuffer[i * _inChannels + k]) * _volume;
 					float _inRight = (_inBuffer[i * _inChannels + k + 1]) * _volume;
 
 					if (_inChannel.mono)
 					{
-						_left += 0.5 * (_inLeft + _inRight);
-						_right += 0.5 * (_inLeft + _inRight);
+						_left += 0.5 * (_inLeft + _inRight) * _panLeft;
+						_right += 0.5 * (_inLeft + _inRight) * _panRight;
 					}
 					else
 					{
-						_left += _inLeft;
-						_right += _inRight;
+						_left += _inLeft * _panLeft;
+						_right += _inRight * _panRight;
 					}
 				}
 			}
 
-			float _volume = _outChannel.Volume();
+			float _panLeft = (50 - max(_outChannel.pan, 0.0f)) / 50.0;
+			float _panRight = (50 - std::abs(min(_outChannel.pan, 0.0f))) / 50.0;
 
 			if (i == 0)
 			{
@@ -240,13 +247,10 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 				float _outRight = _outChannel.peak_right;
 
 				if (_outChannel.mono)
-				{
-					_outLeft = 0.5 * (_outChannel.peak_left + _outChannel.peak_right);
-					_outRight = 0.5 * (_outChannel.peak_left + _outChannel.peak_right);
-				}
+					_outRight = _outLeft = 0.5 * (_outChannel.peak_left + _outChannel.peak_right);
 
-				_outChannel.level_left = _outChannel.level_left * _r + (1.0 - _r) * _outLeft;
-				_outChannel.level_right = _outChannel.level_right * _r + (1.0 - _r) * _outRight;
+				_outChannel.level_left = _outChannel.level_left * _r + (1.0 - _r) * _outLeft * _panLeft * _outChannel.volume;
+				_outChannel.level_right = _outChannel.level_right * _r + (1.0 - _r) * _outRight * _panRight * _outChannel.volume;
 
 				_outChannel.peak_left = 0;
 				_outChannel.peak_right = 0;
@@ -259,22 +263,22 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 				continue;
 			}
 
-			if (_outChannel.peak_left < std::abs(_left * _volume))
-				_outChannel.peak_left = std::abs(_left * _volume);
-			if (_outChannel.peak_right < std::abs(_right * _volume))
-				_outChannel.peak_right = std::abs(_right * _volume);
+			if (_outChannel.peak_left < std::abs(_left))
+				_outChannel.peak_left = std::abs(_left);
+			if (_outChannel.peak_right < std::abs(_right))
+				_outChannel.peak_right = std::abs(_right);
 
 			if (_outChannel.mono)
 			{
 				float _out = 0.5 * (_left + _right);
 
-				*_outBuffer++ = constrain(_out * _volume, -1.0f, 1.0f);
-				*_outBuffer++ = constrain(_out * _volume, -1.0f, 1.0f);
+				*_outBuffer++ = constrain(_out * _outChannel.volume * _panLeft, -1.0f, 1.0f);
+				*_outBuffer++ = constrain(_out * _outChannel.volume * _panRight, -1.0f, 1.0f);
 			}
 			else
 			{
-				*_outBuffer++ = constrain(_left * _volume, -1.0f, 1.0f);
-				*_outBuffer++ = constrain(_right * _volume, -1.0f, 1.0f);
+				*_outBuffer++ = constrain(_left * _outChannel.volume * _panLeft, -1.0f, 1.0f);
+				*_outBuffer++ = constrain(_right * _outChannel.volume * _panRight, -1.0f, 1.0f);
 			}
 		}
 	}
@@ -291,7 +295,7 @@ void SarAsio::SaveRouting()
 		data += std::to_string(_i.ID()) + ";";
 		data += std::to_string(_i.muted) + ";";
 		data += std::to_string(_i.mono) + ";";
-		data += std::to_string(_i.Volume()) + ";";
+		data += std::to_string(_i.volume) + ";";
 		for (auto& _c : _i.Connections())
 			data += std::to_string(_c.first) + ",";
 		data += "\n";
@@ -302,7 +306,7 @@ void SarAsio::SaveRouting()
 		data += std::to_string(_i.ID()) + ";";
 		data += std::to_string(_i.muted) + ";";
 		data += std::to_string(_i.mono) + ";";
-		data += std::to_string(_i.Volume()) + "\n";
+		data += std::to_string(_i.volume) + "\n";
 	}
 
 	LOG(data);

@@ -18,7 +18,7 @@ ListPanel::ListPanel(SarAsio& sarasio)
 			ChannelPanel& _current = _panel.get();
 			if (_current.WithinBounds(Vec2<int>{e.x + (m_ScrollbarX->NotNecessary() ? 0 : m_ScrollbarX->Value()), e.y - (m_ScrollbarX->NotNecessary() ? 0 : m_ScrollbarX->Height()) }))
 			{
-				if ((!_current.routed.Hovering() || _current.routed.Disabled()) && !_current.muted.Hovering() && !_current.mono.Hovering())
+				if ((!_current.routed.Hovering() || _current.routed.Disabled()) && !_current.muted.Hovering() && !_current.mono.Hovering() && !_current.pan.Hovering())
 				{
 					for (auto& _p : m_Channels)
 					{

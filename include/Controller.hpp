@@ -4,12 +4,13 @@
 
 /*
  * TODO:
- *  - Add volume visuals
- *  - Nicer GUI
+ *  - Add sound visuals
  *  - Option to make GUI vertical
- * 
- * 
+ *  - Individual routing volume
+ *  - Option to disable clipping
+ *  - Audio limiter to prevent clipping
  *  - 'audio test' mode, notify when input hasn't received audio in a while.
+ *  - Fix laggy text rendering
  */
 
 // -------------------------------------------------------------------------- \\

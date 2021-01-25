@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#include "ui/Slider.hpp"
 
 // -------------------------------------------------------------------------- \\
 // -------------------------- Some Graphics --------------------------------- \\
@@ -156,5 +157,68 @@ public:
 		_padding = 4;
 		if (!b.Disabled())
 			d.Command<Triangle>(b.X() + b.Width() - _w / 2 - _padding, b.Y() + b.Height() / 2, _w / 2, _w / 2, -90.0f);
+	}
+};
+
+class VolumeSliderGraphics
+{
+public:
+
+	template<typename Type>
+	static void Render(SliderBase<VolumeSliderGraphics, Type>& b, CommandCollection& d)
+	{}
+
+	template<>
+	static void Render(SliderBase<VolumeSliderGraphics, ScrollbarType::Vertical>& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+		int _h = max((b.VisibleRange() - b.Range().start) / (float)(b.Range().end - b.Range().start) * b.Height(), (float)b.MinBarSize());
+		int _y = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start - b.VisibleRange()) * -(b.Height() - _h) + b.Y() + b.Height() - _h;
+
+		d.Command<Fill>(Color{ 100, 100, 100, 255 });
+
+		int _w = b.Width() - _p * 2;
+		int _he = _h - _p * 2;
+		d.Command<Triangle>(Vec4<int>{b.X() + _p, _y + _p, 8, _he}, 0);
+		d.Command<Triangle>(Vec4<int>{b.X() - _p + b.Width(), _y + _p, 8, _he}, 180);
+		d.Command<Quad>(Vec4<int>{b.X() + _p, _y + _p - 1, b.Width() - _p * 2, 3});
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Fill>(Color{ 200, 200, 200, 255 });
+		d.Command<TextAlign>(Align::CENTER, Align::TOP);
+		d.Command<Text>(&b.ValueText(), Vec2<int>{b.X() + _p + _w / 2, b.Y()});
+	}
+};
+
+class PanSliderGraphics
+{
+public:
+
+	template<typename Type>
+	static void Render(SliderBase<PanSliderGraphics, Type>& b, CommandCollection& d)
+	{}
+
+	template<>
+	static void Render(SliderBase<PanSliderGraphics, ScrollbarType::Horizontal>& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+		int _w = (b.SliderValue() / 50.0) * (b.Width() * 0.5 - 1);
+
+
+		int _h = b.Height() - _p * 2;
+		int _we = _w - _p * 2;
+		d.Command<Fill>(Color{ 45, 45, 45, 255 });
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+		d.Command<Fill>(Color{ 15, 15, 15, 255 });
+		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+		d.Command<Fill>(Color{ 90, 90, 90, 255 });
+		d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2, b.Y() + 1, _w, b.Height() - 2});
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Fill>(Color{ 200, 200, 200, 255 });
+		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
 	}
 };
