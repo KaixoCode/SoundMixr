@@ -18,7 +18,7 @@ public:
 
 		d.Command<Fill>(_c1);
 		d.Command<Quad>(b.Position(), b.Size());
-		d.Command<Font>(Fonts::Gidole, 24);
+		d.Command<Font>(Fonts::Gidole, 24.0f);
 		d.Command<Fill>(_c2);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -33,7 +33,7 @@ public:
 		using namespace Graphics;
 		Color _c2{ 200, 200, 200, 255 };
 
-		d.Command<Font>(Fonts::Gidole14, 14);
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		d.Command<Fill>(_c2);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -96,7 +96,7 @@ public:
 		int _h = b.Height();
 		d.Command<Fill>(_c2);
 		d.Command<Quad>(Vec4<int>{b.Position(), _w, _h });
-		d.Command<Font>(Fonts::Gidole16, 11);
+		d.Command<Font>(Fonts::Gidole16, 11.0f);
 		d.Command<Fill>(_c1);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2 + 2, b.Y() + b.Height() / 2);
@@ -127,7 +127,7 @@ public:
 		int _h = b.Height();
 		d.Command<Fill>(_c2);
 		d.Command<Quad>(Vec4<int>{b.Position(), _w, _h });
-		d.Command<Font>(Fonts::Gidole16, 11);
+		d.Command<Font>(Fonts::Gidole16, 11.0f);
 		d.Command<Fill>(_c1);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2 + 2, b.Y() + b.Height() / 2);
@@ -149,7 +149,7 @@ public:
 		d.Command<Fill>(_c1);
 		d.Command<Quad>(b.Position(), b.Size());
 
-		d.Command<Font>(Fonts::Gidole16, 16);
+		d.Command<Font>(Fonts::Gidole16, 16.0f);
 		d.Command<Fill>(_c2);
 		d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + 6, b.Y() + b.Height() / 2);
@@ -177,8 +177,8 @@ public:
 
 			int _w = b.Width() - _p * 2;
 			int _he = _h - _p * 2;
-			d.Command<Triangle>(Vec4<int>{b.X() + _p, _y + _p, 8, _he}, 0);
-			d.Command<Triangle>(Vec4<int>{b.X() - _p + b.Width(), _y + _p, 8, _he}, 180);
+			d.Command<Triangle>(Vec4<int>{b.X() + _p, _y + _p, 8, _he}, 0.0f);
+			d.Command<Triangle>(Vec4<int>{b.X() - _p + b.Width(), _y + _p, 8, _he}, 180.0f);
 			d.Command<Quad>(Vec4<int>{b.X() + _p, _y + _p - 1, b.Width() - _p * 2, 3});
 
 			d.Command<Font>(Fonts::Gidole14, 14.0f);
@@ -196,8 +196,8 @@ public:
 
 			int _h = b.Height() - _p * 2;
 			int _we = _w - _p * 2;
-			d.Command<Triangle>(Vec4<int>{_x + _p, b.Y() + _p, _we, 8}, 90);
-			d.Command<Triangle>(Vec4<int>{_x + _p, b.Y() - _p + b.Height(), _we, 8}, 270);
+			d.Command<Triangle>(Vec4<int>{_x + _p, b.Y() + _p, _we, 8}, 90.0f);
+			d.Command<Triangle>(Vec4<int>{_x + _p, b.Y() - _p + b.Height(), _we, 8}, 270.0f);
 			d.Command<Quad>(Vec4<int>{_x + _p - 1, b.Y() + _p, 3, b.Height() - _p * 2});
 
 			d.Command<Font>(Fonts::Gidole14, 14.0f);
