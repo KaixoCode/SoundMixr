@@ -33,9 +33,10 @@ void Controller::Run()
     _p31.Height(40);
     _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels").Disable();
     auto& _channelPanel = _p3.Emplace<ListPanel>(Layout::Hint::Center, m_SarAsio);
+    _channelPanel.Background(Color{ 40, 40, 40, 245 });
     m_List = &_channelPanel;
     auto& _p33 = _channelPanel.Component<Panel>();
-    _p33.Background(Color{ 40, 40, 40, 245 });
+    _p33.Background(Color{ 40, 40, 40, 0 });
     _p33.Layout<Layout::SidewaysStack>(8);
     _p33.AutoResize(true, false);
 
@@ -55,12 +56,16 @@ void Controller::Run()
             LoadRouting();
         }, "SAR Control Panel", Vec2<int>{ _width, _height }, Key::CTRL_O);
     
-    bool _aero = false;
+    bool _aero = false, _vertical = false;;
     _file.Emplace<MenuToggleButton>(&_aero, "Windows Aero Effect", Vec2<int>{ _width, _height }, Key::CTRL_T);
+
+    //_file.Emplace<MenuToggleButton>(&_vertical, "Vertical UI", Vec2<int>{ _width, _height }, Key::CTRL_L);
+
 
     _channelPanel.LoadChannels();
     LoadRouting();
     int _saveCounter = 1000;
+    bool _von = false;
     while (m_Gui.Loop()) 
     {
         _p33.Background(Color{ 40, 40, 40, (_aero ? 245.0f : 255.0f) });
@@ -72,6 +77,21 @@ void Controller::Run()
         {
             _saveCounter = 60 * 60;
             m_SarAsio.SaveRouting();
+        }
+
+        if (_vertical && !_von)
+        {
+            _von = true;
+            _p33.Layout<Layout::Stack>(8);
+            _p33.AutoResize(false, true);
+            _channelPanel.Vertical();
+        }
+        else if (!_vertical && _von)
+        {
+            _von = false;
+            _p33.Layout<Layout::SidewaysStack>(8);
+            _p33.AutoResize(true, false);
+            _channelPanel.Horizontal();
         }
     }
 

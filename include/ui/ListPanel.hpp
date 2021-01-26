@@ -13,10 +13,13 @@ public:
 
 	void LoadChannels();
 	void Transparency(bool d) { for (auto& _c : m_Channels) _c.second->Transparency(d); };
+	void Vertical();
+	void Horizontal();
 
 	std::unordered_map<int, ChannelPanel*>& Channels() { return m_Channels; };
 
 private:
 	SarAsio& asio;
 	std::unordered_map<int, ChannelPanel*> m_Channels;
+	MenuAccessories::VerticalDivider* m_Divider;
 };

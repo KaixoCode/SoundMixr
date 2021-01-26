@@ -11,8 +11,8 @@
 class ChannelPanel : public Panel
 {
 public:
-	ChannelPanel(StereoInputChannel& c);
-	ChannelPanel(StereoOutputChannel& c);
+	ChannelPanel(SarAsio& sar, StereoInputChannel& c);
+	ChannelPanel(SarAsio& sar, StereoOutputChannel& c);
 
 	void Select(StereoInputChannel* s);
 	void Select(StereoOutputChannel* s);
@@ -25,6 +25,8 @@ public:
 	auto InputChannel()  -> StereoInputChannel* { return m_InputChannel; }
 	auto OutputChannel() -> StereoOutputChannel* { return m_OutputChannel; }
 	void Transparency(bool t) { m_Transparency = t; }
+	void Vertical() { m_Vertical = true; }
+	void Horizontal() { m_Vertical = false; };
 
 	Button<SmallText, ButtonType::Normal>& text;
 	Button<RouteButton, ButtonType::Toggle>& routed;
@@ -34,7 +36,10 @@ public:
 	VolumeSlider& volume;
 
 private:
+	SarAsio& m_SarAsio;
+	Menu<MenuGraphics::Vertical, MenuType::Normal> m_Menu;
 	bool m_Transparency = false;
+	bool m_Vertical = false;
 
 	bool m_IsInput;
 	union

@@ -4,8 +4,8 @@
 // -------------------------- Channel Panel --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-ChannelPanel::ChannelPanel(StereoInputChannel& c)
-	: m_InputChannel(&c), m_IsInput(true),
+ChannelPanel::ChannelPanel(SarAsio& sar, StereoInputChannel& c)
+	: m_InputChannel(&c), m_IsInput(true), m_SarAsio(sar),
 	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
 	volume(Emplace<VolumeSlider>()),
 	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "in", Vec2<int>{70, 25})),
@@ -14,10 +14,25 @@ ChannelPanel::ChannelPanel(StereoInputChannel& c)
 	pan(Emplace<PanSlider>())
 {
 	Init();
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(c.Name(), Vec2<int>{150, 20}).Disable();
+	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume", Vec2<int>{150, 20});
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan", Vec2<int>{150, 20});
+	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute", Vec2<int>{150, 20});
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono", Vec2<int>{150, 20});
+
+	m_Listener += [this](Event::MousePressed& e)
+	{
+		if (e.button == Event::MouseButton::RIGHT)
+		{
+			RightClickMenu::Get().Open(&m_Menu);
+		}
+	};
 }
 
-ChannelPanel::ChannelPanel(StereoOutputChannel& c)
-	: m_OutputChannel(&c), m_IsInput(false),
+ChannelPanel::ChannelPanel(SarAsio& sar, StereoOutputChannel& c)
+	: m_OutputChannel(&c), m_IsInput(false), m_SarAsio(sar),
 	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
 	volume(Emplace<VolumeSlider>()),
 	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "", Vec2<int>{70, 25})),
@@ -26,6 +41,21 @@ ChannelPanel::ChannelPanel(StereoOutputChannel& c)
 	pan(Emplace<PanSlider>())
 {
 	Init();
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([] { }, c.Name(), Vec2<int>{150, 20}).Disable();
+	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume", Vec2<int>{150, 20});
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan", Vec2<int>{150, 20});
+	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute", Vec2<int>{150, 20});
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono", Vec2<int>{150, 20});
+
+	m_Listener += [this](Event::MousePressed& e)
+	{
+		if (e.button == Event::MouseButton::RIGHT)
+		{
+			RightClickMenu::Get().Open(&m_Menu);
+		}
+	};
 }
 
 void ChannelPanel::Select(StereoInputChannel* s)
@@ -102,9 +132,34 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 	else
 		Background(Color{ 33, 33, 33, m_Transparency ? 245.0f : 255.0f });
 
-	text.Position(Vec2<int>{0, Height() - 24});
-	volume.Size(Vec2<int>{50, Height() - 110});
-	pan.Size(Vec2<int>{62, 19});
+	if (m_Vertical)
+	{
+		volume.Vertical(false);
+		pan.Position(Vec2<int>{4, 4});
+		volume.Position(Vec2<int>{95, 15});
+		muted.Position(Vec2<int>{38, 29});
+		mono.Position(Vec2<int>{5, 29});
+		routed.Position(Vec2<int>{0, 0});
+		text.Position(Vec2<int>{0, Height() - 24});
+		volume.Size(Vec2<int>{Width() - 135, 50});
+		pan.Size(Vec2<int>{62, 19});
+		Height(70);
+		
+	} 
+	else
+	{
+		volume.Vertical(true);
+		pan.Position(Vec2<int>{4, 25});
+		volume.Position(Vec2<int>{0, 95});
+		muted.Position(Vec2<int>{5, 50});
+		mono.Position(Vec2<int>{38, 50});
+		routed.Position(Vec2<int>{0, 0});
+		text.Position(Vec2<int>{0, Height() - 24});
+		volume.Size(Vec2<int>{50, Height() - 135});
+		pan.Size(Vec2<int>{62, 19});
+		Width(70);
+
+	}
 
 	if (Input())
 	{
@@ -140,98 +195,194 @@ void ChannelPanel::Render(CommandCollection& d)
 	_levelLeft = std::powf(_levelLeft, 0.25);
 	_levelRight = std::powf(_levelRight, 0.25);
 
-	int _x = 10;
-	int _y = 100;
-	int _rh = Height() - 35 - _y;
-	int _h = (min(_levelLeft, 1.412536f) / 1.412536) * (_rh);
-	int _0db = ((1.0 / 1.412536) * (_rh)) + _y;
-	int _3db = ((std::powf(std::powf(10, 3 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
-	int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
-	int _w = 14;
+	if (m_Vertical)
+	{ 
+		int _x = 100;
+		int _y = 25;
+		int _rw = Width() - 35 - _x;
+		int _w = (min(_levelLeft, 1.412536f) / 1.412536) * (_rw);
+		int _0db = ((1.0 / 1.412536) * (_rw)) + _x;
+		int _3db = ((std::powf(std::powf(10, 3 / 20.0), 0.25) / 1.412536) * (_rw)) + _x;
+		int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rw)) + _x;
+		int _h = 14;
 
-	d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
-	d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
-	d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
-	d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
-	d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
-	d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
-	if (_levelLeft > 1.0)
-	{
-		d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
-		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, _h - _0db + _y});
-	}	
-	if (_levelLeft > std::powf(std::powf(10, 3 / 20.0), 0.25))
-	{
-		d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
-		d.Command<Graphics::Quad>(Vec4<int>{_x, _3db, _w, _h - _3db + _y});
-	}
-	if (_levelLeft > std::powf(std::powf(10, 6 / 20.0), 0.25))
-	{
-		d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
-		d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
-	}
-	
-	_x = 10 + 16;
-	_h = (min(_levelRight, 1.412536f) / 1.412536)* (_rh);
-
-	d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
-	d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
-	d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
-	d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
-	d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
-	d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});	
-	if (_levelRight > 1.0)
-	{
-		d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
-		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, _h - _0db + _y});
-	}
-	if (_levelRight > std::powf(std::powf(10, 3 / 20.0), 0.25))
-	{
-		d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
-		d.Command<Graphics::Quad>(Vec4<int>{_x, _3db, _w, _h - _3db + _y});
-	}
-	if (_levelRight > std::powf(std::powf(10, 6 / 20.0), 0.25))
-	{
-		d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
-		d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
-	}
-
-	int _d = 3;
-	bool _b = true;
-	d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14);
-	d.Command<Graphics::TextAlign>(Align::RIGHT, Align::CENTER);
-	for (int i = 12; i > -120; i-= _d)
-	{
-		if (i < -11)
-			_d = 6;
-		if (i < -47)
-			_d = 12;
-		if (i < -71)
-			_d = 24;
-
-		if (_b)
-			d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
-		else
-			d.Command<Graphics::Fill>(Color{ 64, 64, 64, 255 });
-		
-		int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
-		d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
-		if (_b)
-		{	
-			if (m_Numbers.find(i) == m_Numbers.end())
-			{
-				m_Numbers.emplace(i,std::to_string(std::abs(i)));
-			}
-			d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
-			d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
+		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _rw, _h});
+		d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_0db, _y, 1, _h});
+		d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
+		if (_levelLeft > 1.0)
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_0db, _y, _w - _0db + _x, _h});
 		}
-		_b ^= true;
-	}
-	d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
-	d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
-	d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
-	d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
+		if (_levelLeft > std::powf(std::powf(10, 3 / 20.0), 0.25))
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_3db, _y, _w - _3db + _x, _h});
+		}
+		if (_levelLeft > std::powf(std::powf(10, 6 / 20.0), 0.25))
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_6db, _y, _w - _6db + _x, _h});
+		}
 
+		_y = 25 + 16;
+		_w = (min(_levelRight, 1.412536f) / 1.412536) * (_rw);
+
+		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _rw, _h});
+		d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_0db, _y, 1, _h});
+		d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
+		if (_levelRight > 1.0)
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_0db, _y, _w - _0db + _x, _h});
+		}
+		if (_levelRight > std::powf(std::powf(10, 3 / 20.0), 0.25))
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_3db, _y, _w - _3db + _x, _h});
+		}
+		if (_levelRight > std::powf(std::powf(10, 6 / 20.0), 0.25))
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_6db, _y, _w - _6db + _x, _h});
+		}
+
+		int _d = 3;
+		bool _b = true;
+		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14);
+		d.Command<Graphics::TextAlign>(Align::CENTER, Align::BOTTOM);
+		for (int i = 12; i > -120; i -= _d)
+		{
+			if (i < -11)
+				_d = 6;
+			if (i < -47)
+				_d = 12;
+			if (i < -71)
+				_d = 24;
+
+			if (_b)
+				d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
+			else
+				d.Command<Graphics::Fill>(Color{ 64, 64, 64, 255 });
+
+			int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rw)) + _x;
+			d.Command<Graphics::Quad>(Vec4<int>{_mdb, 20, 1, 5});
+			if (_b)
+			{
+				if (m_Numbers.find(i) == m_Numbers.end())
+				{
+					m_Numbers.emplace(i, std::to_string(std::abs(i)));
+				}
+				d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
+				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_mdb, 4 });
+			}
+			_b ^= true;
+		}
+		d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, 20, 1, 5});
+		d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
+		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x, 4});
+	}
+	else
+	{
+		int _x = 10;
+		int _y = 100;
+		int _rh = Height() - 35 - _y;
+		int _h = (min(_levelLeft, 1.412536f) / 1.412536) * (_rh);
+		int _0db = ((1.0 / 1.412536) * (_rh)) + _y;
+		int _3db = ((std::powf(std::powf(10, 3 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
+		int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
+		int _w = 14;
+
+		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
+		d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
+		d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
+		if (_levelLeft > 1.0)
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, _h - _0db + _y});
+		}	
+		if (_levelLeft > std::powf(std::powf(10, 3 / 20.0), 0.25))
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _3db, _w, _h - _3db + _y});
+		}
+		if (_levelLeft > std::powf(std::powf(10, 6 / 20.0), 0.25))
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
+		}
+	
+		_x = 10 + 16;
+		_h = (min(_levelRight, 1.412536f) / 1.412536)* (_rh);
+
+		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
+		d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
+		d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});	
+		if (_levelRight > 1.0)
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, _h - _0db + _y});
+		}
+		if (_levelRight > std::powf(std::powf(10, 3 / 20.0), 0.25))
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _3db, _w, _h - _3db + _y});
+		}
+		if (_levelRight > std::powf(std::powf(10, 6 / 20.0), 0.25))
+		{
+			d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
+		}
+
+		int _d = 3;
+		bool _b = true;
+		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14);
+		d.Command<Graphics::TextAlign>(Align::RIGHT, Align::CENTER);
+		for (int i = 12; i > -120; i-= _d)
+		{
+			if (i < -11)
+				_d = 6;
+			if (i < -47)
+				_d = 12;
+			if (i < -71)
+				_d = 24;
+
+			if (_b)
+				d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
+			else
+				d.Command<Graphics::Fill>(Color{ 64, 64, 64, 255 });
+		
+			int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
+			d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
+			if (_b)
+			{	
+				if (m_Numbers.find(i) == m_Numbers.end())
+				{
+					m_Numbers.emplace(i,std::to_string(std::abs(i)));
+				}
+				d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
+				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
+			}
+			_b ^= true;
+		}
+		d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
+		d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
+		d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
+		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
+	}
 	Container::Render(d);
 	d.Command<PopMatrix>();
 }

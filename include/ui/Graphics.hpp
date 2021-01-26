@@ -164,30 +164,47 @@ class VolumeSliderGraphics
 {
 public:
 
-	template<typename Type>
-	static void Render(SliderBase<VolumeSliderGraphics, Type>& b, CommandCollection& d)
-	{}
-
-	template<>
-	static void Render(SliderBase<VolumeSliderGraphics, ScrollbarType::Vertical>& b, CommandCollection& d)
+	static void Render(SliderBase<VolumeSliderGraphics>& b, CommandCollection& d)
 	{
 		using namespace Graphics;
-		int _p = 6;
-		int _h = max((b.VisibleRange() - b.Range().start) / (float)(b.Range().end - b.Range().start) * b.Height(), (float)b.MinBarSize());
-		int _y = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start - b.VisibleRange()) * -(b.Height() - _h) + b.Y() + b.Height() - _h;
+		if (b.Vertical())
+		{
+			int _p = 6;
+			int _h = 25;
+			int _y = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start) * -(b.Height()) + b.Y() + b.Height();
 
-		d.Command<Fill>(Color{ 100, 100, 100, 255 });
+			d.Command<Fill>(Color{ 100, 100, 100, 255 });
 
-		int _w = b.Width() - _p * 2;
-		int _he = _h - _p * 2;
-		d.Command<Triangle>(Vec4<int>{b.X() + _p, _y + _p, 8, _he}, 0);
-		d.Command<Triangle>(Vec4<int>{b.X() - _p + b.Width(), _y + _p, 8, _he}, 180);
-		d.Command<Quad>(Vec4<int>{b.X() + _p, _y + _p - 1, b.Width() - _p * 2, 3});
+			int _w = b.Width() - _p * 2;
+			int _he = _h - _p * 2;
+			d.Command<Triangle>(Vec4<int>{b.X() + _p, _y + _p, 8, _he}, 0);
+			d.Command<Triangle>(Vec4<int>{b.X() - _p + b.Width(), _y + _p, 8, _he}, 180);
+			d.Command<Quad>(Vec4<int>{b.X() + _p, _y + _p - 1, b.Width() - _p * 2, 3});
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		d.Command<Fill>(Color{ 200, 200, 200, 255 });
-		d.Command<TextAlign>(Align::CENTER, Align::TOP);
-		d.Command<Text>(&b.ValueText(), Vec2<int>{b.X() + _p + _w / 2, b.Y()});
+			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Fill>(Color{ 200, 200, 200, 255 });
+			d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			d.Command<Text>(&b.ValueText(), Vec2<int>{b.X() + _p + _w / 2, b.Y()});
+		}
+		else
+		{
+			int _p = 6;
+			int _w = 25;
+			int _x = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start) * -(b.Width()) + b.X() + b.Width();
+
+			d.Command<Fill>(Color{ 100, 100, 100, 255 });
+
+			int _h = b.Height() - _p * 2;
+			int _we = _w - _p * 2;
+			d.Command<Triangle>(Vec4<int>{_x + _p, b.Y() + _p, _we, 8}, 90);
+			d.Command<Triangle>(Vec4<int>{_x + _p, b.Y() - _p + b.Height(), _we, 8}, 270);
+			d.Command<Quad>(Vec4<int>{_x + _p - 1, b.Y() + _p, 3, b.Height() - _p * 2});
+
+			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Fill>(Color{ 200, 200, 200, 255 });
+			d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			d.Command<Text>(&b.ValueText(), Vec2<int>{b.X(), b.Y() + _p + _h / 2});
+		}
 	}
 };
 
@@ -195,17 +212,11 @@ class PanSliderGraphics
 {
 public:
 
-	template<typename Type>
-	static void Render(SliderBase<PanSliderGraphics, Type>& b, CommandCollection& d)
-	{}
-
-	template<>
-	static void Render(SliderBase<PanSliderGraphics, ScrollbarType::Horizontal>& b, CommandCollection& d)
+	static void Render(SliderBase<PanSliderGraphics>& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		int _p = 6;
-		int _w = (b.SliderValue() / 50.0) * (b.Width() * 0.5 - 1);
-
+		int _w = -(b.SliderValue() / 50.0) * (b.Width() * 0.5 - 1);
 
 		int _h = b.Height() - _p * 2;
 		int _we = _w - _p * 2;

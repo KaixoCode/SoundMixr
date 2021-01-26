@@ -7,10 +7,10 @@
 // --------------------------- Volume Slider -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class VolumeSlider : public SliderBase<VolumeSliderGraphics, ScrollbarType::Vertical>
+class VolumeSlider : public SliderBase<VolumeSliderGraphics>
 {
 public:
-	using Parent = SliderBase<VolumeSliderGraphics, ScrollbarType::Vertical>;
+	using Parent = SliderBase<VolumeSliderGraphics>;
 
 	VolumeSlider();
 
@@ -28,17 +28,16 @@ private:
 
 	std::string m_ValueText = "";
 
-	int m_Counter = 0;
 };
 
 // -------------------------------------------------------------------------- \\
 // ----------------------------- Pan Slider --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class PanSlider : public SliderBase<PanSliderGraphics, ScrollbarType::Horizontal>
+class PanSlider : public SliderBase<PanSliderGraphics>
 {
 public:
-	using Parent = SliderBase<PanSliderGraphics, ScrollbarType::Horizontal>;
+	using Parent = SliderBase<PanSliderGraphics>;
 
 	PanSlider();
 
@@ -55,6 +54,4 @@ private:
 	bool m_Hovering = false;
 
 	std::string m_ValueText = "";
-
-	int m_Counter = 0;
 };
