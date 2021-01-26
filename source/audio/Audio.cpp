@@ -181,8 +181,8 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 					_inRight = 0.5 * (_inChannel.peak_left + _inChannel.peak_right);
 				}
 
-				float _panLeft = (50 - max(_inChannel.pan, 0.0f)) / 50.0;
-				float _panRight = (50 - std::abs(min(_inChannel.pan, 0.0f))) / 50.0;
+				float _panLeft = (50 - std::abs(min(_inChannel.pan, 0.0f))) / 50.0;
+				float _panRight = (50 - max(_inChannel.pan, 0.0f)) / 50.0;
 
 				_inChannel.level_left = _inChannel.level_left * _r + (1.0 - _r) * _inLeft * _panLeft * _inChannel.volume;
 				_inChannel.level_right = _inChannel.level_right * _r + (1.0 - _r) * _inRight * _panRight * _inChannel.volume;
@@ -219,8 +219,8 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 				{
 					float _volume = _inChannel.volume;
 
-					float _panLeft = (50 - max(_inChannel.pan, 0.0f)) / 50.0;
-					float _panRight = (50 - std::abs(min(_inChannel.pan, 0.0f))) / 50.0;
+					float _panLeft = (50 - std::abs(min(_inChannel.pan, 0.0f))) / 50.0;
+					float _panRight = (50 - max(_inChannel.pan, 0.0f)) / 50.0;
 
 					float _inLeft = (_inBuffer[i * _inChannels + k]) * _volume;
 					float _inRight = (_inBuffer[i * _inChannels + k + 1]) * _volume;
@@ -238,8 +238,8 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 				}
 			}
 
-			float _panLeft = (50 - max(_outChannel.pan, 0.0f)) / 50.0;
-			float _panRight = (50 - std::abs(min(_outChannel.pan, 0.0f))) / 50.0;
+			float _panLeft = (50 - std::abs(min(_outChannel.pan, 0.0f))) / 50.0;
+			float _panRight = (50 - max(_outChannel.pan, 0.0f)) / 50.0;
 
 			if (i == 0)
 			{
