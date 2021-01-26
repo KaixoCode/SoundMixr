@@ -144,7 +144,6 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 		volume.Size(Vec2<int>{Width() - 135, 50});
 		pan.Size(Vec2<int>{62, 19});
 		Height(70);
-		
 	} 
 	else
 	{
@@ -158,7 +157,6 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 		volume.Size(Vec2<int>{50, Height() - 135});
 		pan.Size(Vec2<int>{62, 19});
 		Width(70);
-
 	}
 
 	if (Input())
@@ -255,7 +253,7 @@ void ChannelPanel::Render(CommandCollection& d)
 
 		int _d = 3;
 		bool _b = true;
-		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14);
+		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
 		d.Command<Graphics::TextAlign>(Align::CENTER, Align::BOTTOM);
 		for (int i = 12; i > -120; i -= _d)
 		{
@@ -349,7 +347,7 @@ void ChannelPanel::Render(CommandCollection& d)
 
 		int _d = 3;
 		bool _b = true;
-		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14);
+		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
 		d.Command<Graphics::TextAlign>(Align::RIGHT, Align::CENTER);
 		for (int i = 12; i > -120; i-= _d)
 		{
