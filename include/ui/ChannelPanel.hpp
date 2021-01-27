@@ -11,8 +11,8 @@
 class ChannelPanel : public Panel
 {
 public:
-	ChannelPanel(SarAsio& sar, StereoInputChannel& c);
-	ChannelPanel(SarAsio& sar, StereoOutputChannel& c);
+	ChannelPanel(AsioDevice& sar, StereoInputChannel& c);
+	ChannelPanel(AsioDevice& sar, StereoOutputChannel& c);
 
 	void Select(StereoInputChannel* s);
 	void Select(StereoOutputChannel* s);
@@ -36,7 +36,7 @@ public:
 	VolumeSlider& volume;
 
 private:
-	SarAsio& m_SarAsio;
+	AsioDevice& m_SarAsio;
 	Menu<MenuGraphics::Vertical, MenuType::Normal> m_Menu;
 	bool m_Transparency = false;
 	bool m_Vertical = false;

@@ -4,7 +4,7 @@
 // -------------------------- Channel Panel --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-ChannelPanel::ChannelPanel(SarAsio& sar, StereoInputChannel& c)
+ChannelPanel::ChannelPanel(AsioDevice& sar, StereoInputChannel& c)
 	: m_InputChannel(&c), m_IsInput(true), m_SarAsio(sar),
 	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
 	volume(Emplace<VolumeSlider>()),
@@ -31,7 +31,7 @@ ChannelPanel::ChannelPanel(SarAsio& sar, StereoInputChannel& c)
 	};
 }
 
-ChannelPanel::ChannelPanel(SarAsio& sar, StereoOutputChannel& c)
+ChannelPanel::ChannelPanel(AsioDevice& sar, StereoOutputChannel& c)
 	: m_OutputChannel(&c), m_IsInput(false), m_SarAsio(sar),
 	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
 	volume(Emplace<VolumeSlider>()),

@@ -31,5 +31,5 @@ private:
 
     ListPanel* m_List = nullptr;
 
-    SarAsio m_SarAsio;
+    AsioDevice m_AsioDevice;
 };

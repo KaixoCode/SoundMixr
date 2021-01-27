@@ -9,7 +9,7 @@
 class ListPanel : public ScrollPanel
 {
 public:
-	ListPanel(SarAsio& sarasio);
+	ListPanel(AsioDevice& sarasio);
 
 	void LoadChannels();
 	void Transparency(bool d) { for (auto& _c : m_Channels) _c.second->Transparency(d); };
@@ -19,7 +19,7 @@ public:
 	std::unordered_map<int, ChannelPanel*>& Channels() { return m_Channels; };
 
 private:
-	SarAsio& asio;
+	AsioDevice& asio;
 	std::unordered_map<int, ChannelPanel*> m_Channels;
 	MenuAccessories::VerticalDivider* m_Divider;
 };

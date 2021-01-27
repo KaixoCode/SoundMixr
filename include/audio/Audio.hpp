@@ -84,13 +84,15 @@ private:
 // -------------------------- SAR ASIO Device ------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class SarAsio
+class AsioDevice
 {
 public:
-	SarAsio();
+	AsioDevice();
 
-	~SarAsio();
+	~AsioDevice();
 
+	auto Devices() -> std::vector<::Device>& { return m_Devices; }
+	void Device(::Device& d) { m_Device = &d; }
 	auto Device() -> ::Device& { return *m_Device; }
 	bool StreamRunning() { return Pa_IsStreamActive(stream); }
 	bool OpenStream();
@@ -103,14 +105,15 @@ public:
 	std::vector<StereoOutputChannel>& Outputs() { return m_Outputs; }
 
 private:
-	int m_Samplerate,
-		m_BufferSize;
+	double m_Samplerate;
+	int m_BufferSize;
 	
 	PaStream* stream = nullptr;
-	std::unique_ptr<::Device> m_Device;
+	::Device* m_Device = nullptr;
 
 	std::vector<StereoInputChannel> m_Inputs;
 	std::vector<StereoOutputChannel> m_Outputs;
+	std::vector<::Device> m_Devices;
 
 	static int SarCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
 		const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData);

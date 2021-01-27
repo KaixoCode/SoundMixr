@@ -4,7 +4,7 @@
 // ---------------------------- List Panel ---------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-ListPanel::ListPanel(SarAsio& sarasio)
+ListPanel::ListPanel(AsioDevice& sarasio)
 	: asio(sarasio)
 {
 	Background(Theme::Get(Theme::VIEW_BACKGROUND));

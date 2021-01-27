@@ -4,7 +4,7 @@
 // -------------------------- SAR ASIO Device ------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-SarAsio::SarAsio()
+AsioDevice::AsioDevice()
 	: m_BufferSize(256), m_Samplerate(48000)
 {
 	LOG("Initializing Portaudio library");
@@ -16,32 +16,25 @@ SarAsio::SarAsio()
 		return;
 	}
 	
-	LOG("Finding SAR ASIO device");
+	LOG("Finding ASIO devices");
 	const PaDeviceInfo* info;
 	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
 	{
 		info = Pa_GetDeviceInfo(i);
-		if (strcmp(info->name, "Synchronous Audio Router") == 0)
-		{
-			LOG("Found SAR");
-			m_Device = std::make_unique<::Device>(i, *info);
-			if (OpenStream())
-				StartStream();
-			else
-				LOG("Couldn't open stream");
-		}
+		if (info->hostApi == 0)
+			m_Devices.emplace_back(i, *info);
 	}
 }
 
-SarAsio::~SarAsio()
+AsioDevice::~AsioDevice()
 {
 	LOG("Destructing SAR ASIO device ");
 	CloseStream();
 }
 
-bool SarAsio::OpenStream()
+bool AsioDevice::OpenStream()
 {
-	LOG("Attempting to open SAR stream");
+	LOG("Attempting to open ASIO stream");
 	PaError err;
 	PaStreamParameters ip, op;
 	ip.device = Device().id;
@@ -54,17 +47,21 @@ bool SarAsio::OpenStream()
 	op.sampleFormat = paFloat32;
 	op.suggestedLatency = Device().info.defaultLowOutputLatency;
 	op.hostApiSpecificStreamInfo = NULL;
-
-	double sampleRate = m_Samplerate;
 	unsigned int bufferFrames = m_BufferSize;
 
-	err = Pa_OpenStream(&stream, &ip, &op, sampleRate, bufferFrames, paClipOff, SarCallback, (void*)this);
-
-	if (err != paNoError)
+	int tries = 0;
+	double _srates[]{ 48000.0, 44100.0 };
+	do
 	{
-		LOG(Pa_GetErrorText(err));
-		return false;
-	}
+		if (tries == 2)
+		{
+			LOG(Pa_GetErrorText(err));
+			return false;
+		}
+		m_Samplerate = _srates[tries];
+		LOG("Trying samplerate " << m_Samplerate);
+		tries++;
+	} while ((err = Pa_OpenStream(&stream, &ip, &op, m_Samplerate, bufferFrames, paClipOff, SarCallback, (void*)this)) != 0);
 
 	LOG("Opened stream (" << Device().info.name << ")" <<
 		"\n type:       " << "SAR" <<
@@ -103,7 +100,7 @@ bool SarAsio::OpenStream()
 	return true;
 }
 
-void SarAsio::CloseStream()
+void AsioDevice::CloseStream()
 {
 	LOG("Closing SAR stream...");
 	PaError err;
@@ -114,7 +111,7 @@ void SarAsio::CloseStream()
 		LOG("Closed SAR stream");
 }
 
-bool SarAsio::StartStream()
+bool AsioDevice::StartStream()
 {
 	if (StreamRunning())
 		return false;
@@ -129,7 +126,7 @@ bool SarAsio::StartStream()
 	return true;
 }
 
-bool SarAsio::StopStream()
+bool AsioDevice::StopStream()
 {
 	if (!StreamRunning())
 		return false;
@@ -144,10 +141,10 @@ bool SarAsio::StopStream()
 	return true;
 }
 
-int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
+int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
 	const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData)
 {
-	SarAsio& _this = *(SarAsio*)userData;
+	AsioDevice& _this = *(AsioDevice*)userData;
 
 	float* _inBuffer = (float*)inputBuffer;
 	float* _outBuffer = (float*)outputBuffer;
@@ -286,8 +283,11 @@ int SarAsio::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned l
 	return 0;
 }
 
-void SarAsio::SaveRouting()
+void AsioDevice::SaveRouting()
 {
+	if (&Device() == nullptr)
+		return;
+
 	LOG("Saving Routing");
 	std::string data;
 	for (auto& _i : Inputs())
@@ -313,7 +313,7 @@ void SarAsio::SaveRouting()
 	}
 
 	std::ofstream _out;
-	_out.open("./routing");
+	_out.open("./routing" + std::to_string(Device().id));
 	_out << data;
 	_out.close();
 }
