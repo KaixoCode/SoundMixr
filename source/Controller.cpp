@@ -86,6 +86,11 @@ void Controller::Run()
 
     //_file.Emplace<MenuToggleButton>(&_vertical, "Vertical UI", Vec2<int>{ _width, _height }, Key::CTRL_L);
 
+    _file.Emplace<MenuButton>([&]
+        {
+            LOG("TEST");
+        }, "Soundboard", Vec2<int>{ _width, _height }, Key::CTRL_SHIFT_S);
+
     int _saveCounter = 1000;
     bool _von = false, _var = false;
     while (m_Gui.Loop()) 
