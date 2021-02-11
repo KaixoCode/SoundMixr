@@ -16,6 +16,7 @@ include_directories(
   libs/GuiCode/include
   libs/GuiCode/libs
   libs/portaudio/include
+  libs/AudioFile
   include/
 )
 
