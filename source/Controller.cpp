@@ -5,11 +5,14 @@
 // -------------------------------------------------------------------------- \\
 
 Controller::Controller()
-    : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500))
+    : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500)), 
+    soundboard(m_Gui.AddWindow<Soundboard>())
 {}
 
 void Controller::Run()
 {
+    soundboard.Hide();
+
     namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
     using MenuButton = Button<BG::Menu, BT::Normal>;
     using MenuToggleButton = Button<BG::Menu, BT::Toggle>;
@@ -88,7 +91,7 @@ void Controller::Run()
 
     _file.Emplace<MenuButton>([&]
         {
-            LOG("TEST");
+            soundboard.Show();
         }, "Soundboard", Vec2<int>{ _width, _height }, Key::CTRL_SHIFT_S);
 
     int _saveCounter = 1000;
