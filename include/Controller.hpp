@@ -3,7 +3,6 @@
 #include "audio/Audio.hpp"
 #include "ui/ChannelPanel.hpp"
 #include "ui/ListPanel.hpp"
-#include "ui/Soundboard.hpp"
 /*
  * TODO:
  *  - Add sound visuals
@@ -29,7 +28,6 @@ public:
 private:
     Gui m_Gui;
     Frame& mainWindow;
-    Soundboard& soundboard;
 
     ListPanel* m_List = nullptr;
 
