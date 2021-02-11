@@ -4,3 +4,6 @@
 [submodule "libs/portaudio"]
 	path = libs/portaudio
 	url = https://github.com/PortAudio/portaudio.git
+[submodule "libs/AudioFile"]
+	path = libs/AudioFile
+	url = https://github.com/adamstark/AudioFile.git
