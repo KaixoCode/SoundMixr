@@ -6,21 +6,22 @@
 
 ChannelPanel::ChannelPanel(AsioDevice& sar, StereoInputChannel& c)
 	: m_InputChannel(&c), m_IsInput(true), m_SarAsio(sar),
-	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
+	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name())),
 	volume(Emplace<VolumeSlider>()),
-	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "in", Vec2<int>{70, 25})),
-	muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(&c.muted, "MUTE", Vec2<int>{27, 25})),
-	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO", Vec2<int>{27, 25})),
+	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "in")),
+	muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(&c.muted, "MUTE")),
+	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO")),
 	pan(Emplace<PanSlider>())
 {
 	Init();
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(c.Name(), Vec2<int>{150, 20}).Disable();
+	m_Menu.ButtonSize({ 150, 20 });
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(c.Name()).Disable();
 	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume", Vec2<int>{150, 20});
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan", Vec2<int>{150, 20});
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
 	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute", Vec2<int>{150, 20});
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono", Vec2<int>{150, 20});
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute");
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono");
 
 	m_Listener += [this](Event::MousePressed& e)
 	{
@@ -33,22 +34,22 @@ ChannelPanel::ChannelPanel(AsioDevice& sar, StereoInputChannel& c)
 
 ChannelPanel::ChannelPanel(AsioDevice& sar, StereoOutputChannel& c)
 	: m_OutputChannel(&c), m_IsInput(false), m_SarAsio(sar),
-	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name(), Vec2<int>{70, 24})),
+	text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, c.Name())),
 	volume(Emplace<VolumeSlider>()),
-	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "", Vec2<int>{70, 25})),
-	muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(&c.muted, "MUTE", Vec2<int>{27, 25})),
-	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO", Vec2<int>{27, 25})),
+	routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, "")),
+	muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(&c.muted, "MUTE")),
+	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>(&c.mono, "MONO")),
 	pan(Emplace<PanSlider>())
 {
 	Init();
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([] { }, c.Name(), Vec2<int>{150, 20}).Disable();
+	m_Menu.ButtonSize({ 150, 20 });
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(c.Name()).Disable();
 	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume", Vec2<int>{150, 20});
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan", Vec2<int>{150, 20});
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
 	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute", Vec2<int>{150, 20});
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono", Vec2<int>{150, 20});
-
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute");
+	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono");
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		if (e.button == Event::MouseButton::RIGHT)
@@ -97,9 +98,13 @@ void ChannelPanel::Init()
 	pan.Position(Vec2<int>{4, 25});
 	volume.Position(Vec2<int>{0, 95});
 	muted.Position(Vec2<int>{5, 50});
+	muted.Size({ 27, 25 });
 	mono.Position(Vec2<int>{38, 50});
+	mono.Size({ 27, 25 });
 	routed.Position(Vec2<int>{0, 0});
+	routed.Size({ 70, 25 });
 	text.Disable();
+	text.Size({ 70, 24 });
 	routed.Disable();
 
 	Width(70);
@@ -177,12 +182,8 @@ void ChannelPanel::Render(CommandCollection& d)
 {
 	using namespace Graphics;
 	d.Command<PushMatrix>();
-	if (!m_TranslateBackground)
-		Background(d);
-
-	d.Command<Translate>(Vec2<int>{ X(), Y() });
-	if (m_TranslateBackground)
-		Background(d);
+	d.Command<Translate>(Position());
+	Background(d);
 
 	float _levelLeft = 0, _levelRight = 0;
 	if (Input())
