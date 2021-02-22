@@ -314,7 +314,7 @@ void AsioDevice::SaveRouting()
 	}
 
 	std::ofstream _out;
-	_out.open("./routing" + std::to_string(Device().id));
+	_out.open("./settings/routing" + std::to_string(Device().id));
 	_out << data;
 	_out.close();
 }

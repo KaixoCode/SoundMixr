@@ -11,8 +11,6 @@ soundboard(m_Gui.AddWindow<Soundboard>())
 
 void Controller::Run()
 {
-    soundboard.Hide();
-
     namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
     using MenuButton = Button<BG::Menu, BT::Normal>;
     using MenuToggleButton = Button<BG::Menu, BT::Toggle>;
@@ -34,7 +32,8 @@ void Controller::Run()
     _p31.Layout<Layout::Grid>(1, 1, 0, 0);
     _p31.MinHeight(40);
     _p31.Height(40);
-    _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels").Disable();
+    auto& _titleButton = _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels");
+    _titleButton.Disable();
     auto& _channelPanel = _p3.Emplace<ListPanel>(Layout::Hint::Center, m_AsioDevice);
     _channelPanel.Background(Color{ 40, 40, 40, 245 });
     m_List = &_channelPanel;
@@ -50,9 +49,27 @@ void Controller::Run()
     auto& _sub = _file.Emplace<SubMenuButton>("Select ASIO Device");
     _sub.MenuBase().ButtonSize({ 210, 20 });
     int _key = BT::List::NewKey();
+
+    LOG("Selecting default device");
+    std::ifstream _in;
+    _in.open("./settings/device");
+    std::string _line;
+    std::getline(_in, _line);
+    int _deviceId = std::atoi(_line.c_str());
+    if (!_line.empty())
+    {
+        auto _it = std::find_if(m_AsioDevice.Devices().begin(), m_AsioDevice.Devices().end(), [=](const Device& obj) {return obj.id == _deviceId; });
+        m_AsioDevice.Device(*_it);
+        m_AsioDevice.OpenStream();
+        m_AsioDevice.StartStream();
+        _titleButton.Name(_it->info.name);
+        _channelPanel.LoadChannels();
+        LoadRouting();
+    }
+
     for (auto& _d : m_AsioDevice.Devices())
     {
-        _sub.Emplace<Button<BG::Menu, BT::List>>([&]
+        auto& _button = _sub.Emplace<Button<BG::Menu, BT::List>>([&]
             {
                 if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
                     return;
@@ -62,11 +79,19 @@ void Controller::Run()
                 m_AsioDevice.Inputs().clear();
                 m_AsioDevice.Outputs().clear();
                 m_AsioDevice.Device(_d);
+                _titleButton.Name(_d.info.name);
                 m_AsioDevice.OpenStream();
                 m_AsioDevice.StartStream();
+                std::ofstream _out;
+                _out.open("./settings/device");
+                _out << std::to_string(_d.id);
+                _out.close();
                 _channelPanel.LoadChannels(); // Reload the channels to display any new ones
                 LoadRouting();
             }, _d.info.name, _key);
+
+        if (_d.id == _deviceId)
+            _button.Selected(true);
     }
 
     _file.Emplace<MenuButton>([&]
@@ -108,10 +133,10 @@ void Controller::Run()
             _p33.Background(Color{ 40, 40, 40, (s ? 245.0f : 255.0f) });
         }, "Vertical UI", Key::CTRL_L);*/
 
-    _file.Emplace<MenuToggleButton>([&] (bool s)
+    /*_file.Emplace<MenuToggleButton>([&] (bool s)
         {
             if (s) soundboard.Show(); else soundboard.Hide();
-        }, "Soundboard", Key::CTRL_SHIFT_S);
+        }, "Soundboard", Key::CTRL_SHIFT_S);*/
 
     int _saveCounter = 1000;
     while (m_Gui.Loop())
@@ -134,8 +159,9 @@ void Controller::LoadRouting()
 
     LOG("Loading Routing");
     std::ifstream _in;
-    _in.open("./routing" + std::to_string(m_AsioDevice.Device().id));
+    _in.open("./settings/routing" + std::to_string(m_AsioDevice.Device().id));
     std::string _line;
+
     while (std::getline(_in, _line))
     {
         size_t p = _line.find_first_of(":") + 1;
