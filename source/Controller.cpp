@@ -3,6 +3,7 @@
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
 // -------------------------------------------------------------------------- \\
+
 Controller::Controller()
 : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500)),
 soundboard(m_Gui.AddWindow<Soundboard>())
@@ -20,8 +21,8 @@ void Controller::Run()
 
     auto& _panel = mainWindow.Panel();
     auto& _menu = mainWindow.Menu();
-    LOG(ASSET(textures / logo.png));
-    mainWindow.Icon(ASSET(textures / logo.png));
+    LOG(ASSET("textures/logo.png"));
+    mainWindow.Icon(ASSET("textures/logo.png"));
 
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
     _panel.Background(Color{ 23, 23, 23, 255 });
@@ -84,49 +85,42 @@ void Controller::Run()
             LoadRouting();
         }, "ASIO Control Panel", Key::CTRL_O);
 
-
-    bool _aero = false, _vertical = false;;
-    _file.Emplace<MenuToggleButton>(&_aero, "Windows Aero Effect", Key::CTRL_T);
-
-    //_file.Emplace<MenuToggleButton>(&_vertical, "Vertical UI", Vec2<int>{ _width, _height }, Key::CTRL_L);
-
-    _file.Emplace<MenuButton>([&]
+    _file.Emplace<MenuToggleButton>([&](bool a)
         {
-            soundboard.Show();
-        }, "Soundboard", Vec2<int>{ _width, _height }, Key::CTRL_SHIFT_S);
+            _channelPanel.Transparency(a);
+            mainWindow.Aero(a);
+        }, "Windows Aero Effect", Key::CTRL_T);
+
+    /*_file.Emplace<MenuToggleButton>([&](bool s) 
+        {
+            if (s)
+            {
+                _p33.Layout<Layout::Stack>(8);
+                _p33.AutoResize(false, true);
+                _channelPanel.Vertical();
+            }
+            else
+            {
+                _p33.Layout<Layout::SidewaysStack>(8);
+                _p33.AutoResize(true, false);
+                _channelPanel.Horizontal();
+            }
+            _p33.Background(Color{ 40, 40, 40, (s ? 245.0f : 255.0f) });
+        }, "Vertical UI", Key::CTRL_L);*/
+
+    _file.Emplace<MenuToggleButton>([&] (bool s)
+        {
+            if (s) soundboard.Show(); else soundboard.Hide();
+        }, "Soundboard", Key::CTRL_SHIFT_S);
 
     int _saveCounter = 1000;
-    bool _von = false, _var = false;
     while (m_Gui.Loop())
     {
-        _p33.Background(Color{ 40, 40, 40, (_aero ? 245.0f : 255.0f) });
-
-        if ((_var && !_aero) || (!_var && _aero))
-        {
-            _var = _aero;
-            _channelPanel.Transparency(_aero);
-            mainWindow.Aero(_aero);
-        }
         _saveCounter--;
         if (_saveCounter <= 0)
         {
             _saveCounter = 60 * 60;
             m_AsioDevice.SaveRouting();
-        }
-
-        if (_vertical && !_von)
-        {
-            _von = true;
-            _p33.Layout<Layout::Stack>(8);
-            _p33.AutoResize(false, true);
-            _channelPanel.Vertical();
-        }
-        else if (!_vertical && _von)
-        {
-            _von = false;
-            _p33.Layout<Layout::SidewaysStack>(8);
-            _p33.AutoResize(true, false);
-            _channelPanel.Horizontal();
         }
     }
 
@@ -184,7 +178,7 @@ void Controller::LoadRouting()
             _c.pan.SliderValue(_pan);
             _c.volume.SliderValue(_volume);
 
-            _c.InputChannel()->Connections().clear();
+            _c.InputChannel()->Clear();
             auto& _out = m_AsioDevice.Outputs();
 
             while ((p = _rest.find_first_of(",")) != -1)
@@ -196,7 +190,7 @@ void Controller::LoadRouting()
                 if (_it != _out.end())
                 {
                     auto _index = std::distance(_out.begin(), _it);
-                    _c.InputChannel()->Connections().emplace(_link, &_out[_index]);
+                    _c.InputChannel()->Connect(&_out[_index]);
                 }
             }
         }

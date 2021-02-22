@@ -298,8 +298,9 @@ void AsioDevice::SaveRouting()
 		data += std::to_string(_i.mono) + ";";
 		data += std::to_string(_i.pan) + ";";
 		data += std::to_string(_i.volume) + ";";
-		for (auto& _c : _i.Connections())
-			data += std::to_string(_c.first) + ",";
+		for (int i = 0; i < MAX_CHANNELS; i++)
+			if (_i.Connections()[i] != nullptr)
+				data += std::to_string(i) + ",";
 		data += "\n";
 	}
 	for (auto& _i : Outputs())

@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#define MAX_CHANNELS 100
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Device ------------------------------------ \\
@@ -54,14 +55,17 @@ class StereoInputChannel
 public:
 	StereoInputChannel(int l, int r, const std::string& name)
 		: m_Left(l), m_Right(r), m_Name(name)
-	{}
+	{
+		Clear();
+	}
 
-	int   ID() { return m_Left; }
-	auto  Name() -> std::string& { return m_Name; }
-	bool  Connected(StereoOutputChannel* out) const { return m_Connected.find(out->ID()) != m_Connected.end(); }
-	void  Connect(StereoOutputChannel* out) { m_Connected.emplace(out->ID(), out); }
-	void  Disconnect(StereoOutputChannel* out) { m_Connected.erase(out->ID()); }
-	auto  Connections() ->std::unordered_map<int, StereoOutputChannel*>& { return m_Connected; }
+	int  ID() { return m_Left; }
+	auto Name() -> std::string& { return m_Name; }
+	bool Connected(StereoOutputChannel* out) const { return m_Connected[out->ID()] != nullptr; }
+	void Connect(StereoOutputChannel* out) { m_Connected[out->ID()] = out;  }
+	void Disconnect(StereoOutputChannel* out) { m_Connected[out->ID()] = nullptr;  }
+	auto Connections() -> StereoOutputChannel** { return m_Connected; }
+	void Clear() { for (int i = 0; i < MAX_CHANNELS; i++) m_Connected[i] = nullptr; }
 
 	float level_left = 0,
 		level_right = 0,
@@ -77,7 +81,7 @@ private:
 	int m_Left,
 		m_Right;
 
-	std::unordered_map<int, StereoOutputChannel*> m_Connected;
+	StereoOutputChannel* m_Connected[MAX_CHANNELS];
 };
 
 // -------------------------------------------------------------------------- \\
