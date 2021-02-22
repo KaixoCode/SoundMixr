@@ -1,7 +1,5 @@
 #include "Controller.hpp"
 
-Gui gui;
-
 #ifdef _DEBUG
 int main()
 {

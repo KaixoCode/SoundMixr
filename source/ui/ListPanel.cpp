@@ -7,7 +7,7 @@
 ListPanel::ListPanel(AsioDevice& sarasio)
 	: asio(sarasio)
 {
-	Background(Theme::Get(Theme::VIEW_BACKGROUND));
+	Background(Color{ 38, 38, 38, 355 });
 	EnableScrollbars(true, false);
 
 	m_Listener += [this](Event::MousePressed& e)
@@ -81,14 +81,20 @@ void ListPanel::Horizontal()
 
 void ListPanel::LoadChannels()
 {
-	auto& c = Component();
+	auto& c = Panel();
 	c.Clear();
 	m_Channels.clear();
 	for (auto& i : asio.Inputs())
-		m_Channels.emplace(i.ID(), &c.Emplace<ChannelPanel>(asio, i));
+	{
+		auto& panl = m_Channels.emplace(i.ID(), &c.Emplace<ChannelPanel>(asio, i));
+		panl.first->second->SmartPanel(true);
+	}
 
 	m_Divider = &c.Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0);
 
 	for (auto& i : asio.Outputs())
-		m_Channels.emplace(-i.ID() - 2, &c.Emplace<ChannelPanel>(asio, i));
+	{
+		auto& panl = m_Channels.emplace(-i.ID() - 2, &c.Emplace<ChannelPanel>(asio, i));
+		panl.first->second->SmartPanel(true);
+	}
 }

@@ -22,7 +22,7 @@ void Controller::Run()
     mainWindow.Icon(ASSET(textures/logo.png));
 
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
-    _panel.Background(Theme::Get(Theme::WINDOW_BACKGROUND));
+    _panel.Background(Color{ 23, 23, 23, 255 });
 
     auto& _p3 = _panel.Emplace<Panel>();
     _p3.Width(260);
@@ -35,15 +35,17 @@ void Controller::Run()
     auto& _channelPanel = _p3.Emplace<ListPanel>(Layout::Hint::Center, m_AsioDevice);
     _channelPanel.Background(Color{ 40, 40, 40, 245 });
     m_List = &_channelPanel;
-    auto& _p33 = _channelPanel.Component<Panel>();
+    auto& _p33 = _channelPanel.Panel<Panel>();
     _p33.Background(Color{ 40, 40, 40, 0 });
     _p33.Layout<Layout::SidewaysStack>(8);
     _p33.AutoResize(true, false);
 
-    auto& _file = _menu.Emplace<TitleMenuButton>("Options", Vec2<int>{ 54, 32 });
-    int _height = 20, _width = 200;
+    auto& _file = _menu.Emplace<TitleMenuButton>("Options");
+    _file.Size({ 54, 32 });
+    _file.MenuBase().ButtonSize({ 200, 20 });
 
-    auto& _sub = _file.Emplace<SubMenuButton>("Select ASIO Device", Vec2<int>{ _width, _height });
+    auto& _sub = _file.Emplace<SubMenuButton>("Select ASIO Device");
+    _sub.MenuBase().ButtonSize({ 210, 20 });
     int _key = BT::List::NewKey();
     for (auto& _d : m_AsioDevice.Devices())
     {
@@ -61,7 +63,7 @@ void Controller::Run()
                 m_AsioDevice.StartStream();
                 _channelPanel.LoadChannels(); // Reload the channels to display any new ones
                 LoadRouting();
-            }, _d.info.name, Vec2<int>{ _width + 10, _height }, _key);
+            }, _d.info.name, _key);
     }
 
     _file.Emplace<MenuButton>([&]
@@ -78,11 +80,11 @@ void Controller::Run()
             m_AsioDevice.StartStream();
             _channelPanel.LoadChannels(); // Reload the channels to display any new ones
             LoadRouting();
-        }, "ASIO Control Panel", Vec2<int>{ _width, _height }, Key::CTRL_O);
+        }, "ASIO Control Panel", Key::CTRL_O);
 
     
     bool _aero = false, _vertical = false;;
-    _file.Emplace<MenuToggleButton>(&_aero, "Windows Aero Effect", Vec2<int>{ _width, _height }, Key::CTRL_T);
+    _file.Emplace<MenuToggleButton>(&_aero, "Windows Aero Effect", Key::CTRL_T);
 
     //_file.Emplace<MenuToggleButton>(&_vertical, "Vertical UI", Vec2<int>{ _width, _height }, Key::CTRL_L);
 

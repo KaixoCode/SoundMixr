@@ -19,7 +19,7 @@ include_directories(
   include/
 )
 
-add_executable(SoundMixr WIN32
+add_executable(SoundMixr
   ${SOURCE}
 )
 

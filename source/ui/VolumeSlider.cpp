@@ -12,8 +12,6 @@ VolumeSlider::VolumeSlider()
 	SliderValue(1);
 	Vertical(true);
 	ResetValue(1);
-
-	
 }
 
 void VolumeSlider::Update(const Vec4<int>& v)
