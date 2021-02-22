@@ -199,7 +199,7 @@ void ChannelPanel::Render(CommandCollection& d)
 		int _x = 100;
 		int _y = 25;
 		int _rw = Width() - 35 - _x;
-		int _w = (min(_levelLeft, 1.412536f) / 1.412536) * (_rw);
+		int _w = (std::min(_levelLeft, 1.412536f) / 1.412536) * (_rw);
 		int _0db = ((1.0 / 1.412536) * (_rw)) + _x;
 		int _3db = ((std::powf(std::powf(10, 3 / 20.0), 0.25) / 1.412536) * (_rw)) + _x;
 		int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rw)) + _x;
@@ -228,7 +228,7 @@ void ChannelPanel::Render(CommandCollection& d)
 		}
 
 		_y = 25 + 16;
-		_w = (min(_levelRight, 1.412536f) / 1.412536) * (_rw);
+		_w = (std::min(_levelRight, 1.412536f) / 1.412536) * (_rw);
 
 		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _rw, _h});
@@ -293,7 +293,7 @@ void ChannelPanel::Render(CommandCollection& d)
 		int _x = 10;
 		int _y = 100;
 		int _rh = Height() - 35 - _y;
-		int _h = (min(_levelLeft, 1.412536f) / 1.412536) * (_rh);
+		int _h = (std::min(_levelLeft, 1.412536f) / 1.412536) * (_rh);
 		int _0db = ((1.0 / 1.412536) * (_rh)) + _y;
 		int _3db = ((std::powf(std::powf(10, 3 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 		int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
@@ -322,7 +322,7 @@ void ChannelPanel::Render(CommandCollection& d)
 		}
 	
 		_x = 10 + 16;
-		_h = (min(_levelRight, 1.412536f) / 1.412536)* (_rh);
+		_h = (std::min(_levelRight, 1.412536f) / 1.412536)* (_rh);
 
 		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});

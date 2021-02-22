@@ -16,3 +16,5 @@
 
 #include "portaudio.h"
 #include "pa_asio.h"
+
+#include <AudioFile.h>
