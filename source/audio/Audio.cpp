@@ -178,7 +178,7 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 					_inRight = 0.5 * (_inChannel.peak_left + _inChannel.peak_right);
 				}
 
-				float _panLeft = (50 - std::abs(std::min(_inChannel.pan, 0.0f))) / 50.0;
+				float _panLeft = (50 - std::max(-_inChannel.pan, 0.0f)) / 50.0;
 				float _panRight = (50 - std::max(_inChannel.pan, 0.0f)) / 50.0;
 
 				_inChannel.level_left = _inChannel.level_left * _r + (1.0 - _r) * _inLeft * _panLeft * _inChannel.volume;
@@ -216,7 +216,7 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 				{
 					float _volume = _inChannel.volume;
 
-					float _panLeft = (50 - std::abs(std::min(_inChannel.pan, 0.0f))) / 50.0;
+					float _panLeft = (50 - std::max(-_inChannel.pan, 0.0f)) / 50.0;
 					float _panRight = (50 - std::max(_inChannel.pan, 0.0f)) / 50.0;
 
 					float _inLeft = (_inBuffer[i * _inChannels + k]) * _volume;
@@ -235,7 +235,7 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 				}
 			}
 
-			float _panLeft = (50 - std::abs(std::min(_outChannel.pan, 0.0f))) / 50.0;
+			float _panLeft = (50 - std::max(-_outChannel.pan, 0.0f)) / 50.0;
 			float _panRight = (50 - std::max(_outChannel.pan, 0.0f)) / 50.0;
 
 			if (i == 0)
