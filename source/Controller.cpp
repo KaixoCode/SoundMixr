@@ -22,7 +22,7 @@ void Controller::Run()
 
     auto& _panel = mainWindow.Panel();
     auto& _menu = mainWindow.Menu();
-    mainWindow.Icon("SoundMixr.ico");
+    mainWindow.Icon(ASSET("textures/logo.png"));
 
     Menu<MG::Vertical, MT::Normal> _closeMenu;
     _closeMenu.ButtonSize({ 150, 20 });
