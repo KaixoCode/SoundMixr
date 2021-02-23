@@ -5,12 +5,15 @@
 // -------------------------------------------------------------------------- \\
 
 Controller::Controller()
-: mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500)),
+: mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500, true)),
 soundboard(m_Gui.AddWindow<Soundboard>())
 {}
 
 void Controller::Run()
 {
+
+
+
     namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
     using MenuButton = Button<BG::Menu, BT::Normal>;
     using MenuToggleButton = Button<BG::Menu, BT::Toggle>;
@@ -19,8 +22,23 @@ void Controller::Run()
 
     auto& _panel = mainWindow.Panel();
     auto& _menu = mainWindow.Menu();
-    LOG(ASSET("textures/logo.png"));
-    mainWindow.Icon(ASSET("textures/logo.png"));
+    mainWindow.Icon("SoundMixr.ico");
+
+    Menu<MG::Vertical, MT::Normal> _closeMenu;
+    _closeMenu.ButtonSize({ 150, 20 });
+    _closeMenu.Emplace<MenuButton>([] {}, "SoundMixr").Disable();
+    _closeMenu.Emplace<MenuAccessories::Divider>(150, 1, 0, 4);
+    _closeMenu.Emplace<MenuButton>([&] { mainWindow.Show(); }, "Open GUI");
+    _closeMenu.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit");
+
+    Frame::AddShellIcon("SoundMixr.ico", "SoundMixr", [&] (Event& e)
+        { 
+            if (e.button == Event::MouseButton::LEFT && e.mod)
+                mainWindow.Show();
+
+            if (e.button == Event::MouseButton::RIGHT)
+                RightClickMenu::Get().Open(&_closeMenu);
+        });
 
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
     _panel.Background(Color{ 23, 23, 23, 255 });
@@ -73,7 +91,7 @@ void Controller::Run()
             {
                 if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
                     return;
-                RightClickMenu::Get().Close();
+
                 m_AsioDevice.SaveRouting();
                 m_AsioDevice.CloseStream();
                 m_AsioDevice.Inputs().clear();

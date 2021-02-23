@@ -183,6 +183,8 @@ void ChannelPanel::Render(CommandCollection& d)
 	using namespace Graphics;
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
+	//d.Command<FrameBuffer>(m_PanelId, m_NeedsRedraw, Vec4<int>{Position(), Size() + Vec2<int>{10, 10}});
+	m_NeedsRedraw = false;
 	Background(d);
 
 	float _levelLeft = 0, _levelRight = 0;
@@ -383,5 +385,6 @@ void ChannelPanel::Render(CommandCollection& d)
 		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 	}
 	Container::Render(d);
+	//d.Command<FrameBufferEnd>();
 	d.Command<PopMatrix>();
 }

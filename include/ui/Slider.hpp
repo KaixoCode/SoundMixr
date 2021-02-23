@@ -13,6 +13,7 @@ public:
 			m_PressValue = m_Value;
 
 			m_Dragging = true;
+			m_NeedsRedraw = true;
 		};
 
 		m_Listener += [this](Event::MouseReleased& e)
@@ -29,7 +30,8 @@ public:
 		{
 			if (e.button != Event::MouseButton::LEFT || !m_Dragging)
 				return;
-
+			
+			m_NeedsRedraw = true;
 			if (Vertical())
 			{
 				m_Mouse = constrain(e.y, Y(), Height());
