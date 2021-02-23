@@ -73,7 +73,7 @@ void Controller::Run()
             {
                 if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
                     return;
-
+                RightClickMenu::Get().Close();
                 m_AsioDevice.SaveRouting();
                 m_AsioDevice.CloseStream();
                 m_AsioDevice.Inputs().clear();
