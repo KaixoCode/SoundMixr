@@ -18,6 +18,14 @@ public:
 
 	std::unordered_map<int, ChannelPanel*>& Channels() { return m_Channels; };
 
+	void Update(const Vec4<int>& s) override 
+	{ 
+		if (m_Divider)
+			m_Divider->Color(Theme<C::Divider>::Get()); 
+		
+		ScrollPanel::Update(s); 
+	}
+
 private:
 	AsioDevice& asio;
 	std::unordered_map<int, ChannelPanel*> m_Channels;

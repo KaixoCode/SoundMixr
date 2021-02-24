@@ -14,17 +14,17 @@ void Controller::Run()
 
 
 
-    namespace BG = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
-    using MenuButton = Button<BG::Menu, BT::Normal>;
-    using MenuToggleButton = Button<BG::Menu, BT::Toggle>;
-    using TitleMenuButton = Button<BG::TitleMenu, BT::Menu<MG::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
-    using SubMenuButton = Button<BG::SubMenu, BT::Menu<MG::Vertical, MT::Normal, BT::Hover, Align::RIGHT>>;
+    namespace G = SoundMixrGraphics; namespace BT = ButtonType; namespace MT = MenuType;
+    using MenuButton = Button<G::Menu, BT::Normal>;
+    using MenuToggleButton = Button<G::Menu, BT::Toggle>;
+    using TitleMenuButton = Button<G::TitleMenu, BT::Menu<G::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
+    using SubMenuButton = Button<G::SubMenu, BT::Menu<G::Vertical, MT::Normal, BT::Hover, Align::RIGHT>>;
 
     auto& _panel = mainWindow.Panel();
     auto& _menu = mainWindow.Menu();
     mainWindow.Icon(ASSET("textures/logo.png"));
 
-    Menu<MG::Vertical, MT::Normal> _closeMenu;
+    Menu<G::Vertical, MT::Normal> _closeMenu;
     _closeMenu.ButtonSize({ 150, 20 });
     _closeMenu.Emplace<MenuButton>([] {}, "SoundMixr").Disable();
     _closeMenu.Emplace<MenuAccessories::Divider>(150, 1, 0, 4);
@@ -87,7 +87,7 @@ void Controller::Run()
 
     for (auto& _d : m_AsioDevice.Devices())
     {
-        auto& _button = _sub.Emplace<Button<BG::Menu, BT::List>>([&]
+        auto& _button = _sub.Emplace<Button<G::Menu, BT::List>>([&]
             {
                 if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
                     return;
@@ -133,6 +133,30 @@ void Controller::Run()
             _channelPanel.Transparency(a);
             mainWindow.Aero(a);
         }, "Windows Aero Effect", Key::CTRL_T);
+
+
+    // Themes
+    auto& _sub2 = _file.Emplace<SubMenuButton>("Theme");
+    _sub2.MenuBase().ButtonSize({ 210, 20 });
+    _key = BT::List::NewKey();
+    _sub2.Emplace<Button<G::Menu, BT::List>>([&]
+        {
+            Themes::Theme = Themes::DARK;
+            _panel.Background(Theme<C::WindowBorder>::Get());
+            mainWindow.Color(Theme<C::WindowBorder>::Get());
+            soundboard.Color(Theme<C::WindowBorder>::Get());
+            _p33.Background(Theme<C::MainPanel>::Get());
+            _channelPanel.Background(Theme<C::MainPanel>::Get());
+        }, "Dark", _key).Selected(true);
+    _sub2.Emplace<Button<G::Menu, BT::List>>([&]
+        {
+            Themes::Theme = Themes::LIGHT;
+            _panel.Background(Theme<C::WindowBorder>::Get());
+            mainWindow.Color(Theme<C::WindowBorder>::Get());
+            soundboard.Color(Theme<C::WindowBorder>::Get());
+            _p33.Background(Theme<C::MainPanel>::Get());
+            _channelPanel.Background(Theme<C::MainPanel>::Get());
+        }, "Light", _key);
 
     /*_file.Emplace<MenuToggleButton>([&](bool s) 
         {

@@ -15,13 +15,13 @@ ChannelPanel::ChannelPanel(AsioDevice& sar, StereoInputChannel& c)
 {
 	Init();
 	m_Menu.ButtonSize({ 150, 20 });
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(c.Name()).Disable();
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(c.Name()).Disable();
 	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
 	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute");
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono");
 
 	m_Listener += [this](Event::MousePressed& e)
 	{
@@ -43,13 +43,13 @@ ChannelPanel::ChannelPanel(AsioDevice& sar, StereoOutputChannel& c)
 {
 	Init();
 	m_Menu.ButtonSize({ 150, 20 });
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(c.Name()).Disable();
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(c.Name()).Disable();
 	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
 	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute");
-	m_Menu.Emplace<Button<ButtonGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono");
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		if (e.button == Event::MouseButton::RIGHT)
@@ -132,10 +132,18 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 					m_InputChannel->Disconnect(m_SelectedOutputChannel);
 				else;
 
+	//if (Selected())
+	//	Background(Color{ 26, 26, 26, m_Transparency ? 245.0f : 255.0f });
+	//else
+	//	Background(Color{ 33, 33, 33, m_Transparency ? 245.0f : 255.0f });
+
+	Color c;
 	if (Selected())
-		Background(Color{ 26, 26, 26, m_Transparency ? 245.0f : 255.0f });
+		c = Theme<C::ChannelSelected>::Get();
 	else
-		Background(Color{ 33, 33, 33, m_Transparency ? 245.0f : 255.0f });
+		c = Theme<C::Channel>::Get();
+	c.a = m_Transparency ? 245.0f : 255.0f;
+	Background(c);
 
 	if (m_Vertical)
 	{
@@ -207,50 +215,50 @@ void ChannelPanel::Render(CommandCollection& d)
 		int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rw)) + _x;
 		int _h = 14;
 
-		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _rw, _h});
-		d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+		d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_0db, _y, 1, _h});
-		d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
 		if (_levelLeft > 1.0)
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC1>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_0db, _y, _w - _0db + _x, _h});
 		}
 		if (_levelLeft > std::powf(std::powf(10, 3 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC2>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_3db, _y, _w - _3db + _x, _h});
 		}
 		if (_levelLeft > std::powf(std::powf(10, 6 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC3>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_6db, _y, _w - _6db + _x, _h});
 		}
 
 		_y = 25 + 16;
 		_w = (std::min(_levelRight, 1.412536f) / 1.412536) * (_rw);
 
-		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _rw, _h});
-		d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+		d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_0db, _y, 1, _h});
-		d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
 		if (_levelRight > 1.0)
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC1>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_0db, _y, _w - _0db + _x, _h});
 		}
 		if (_levelRight > std::powf(std::powf(10, 3 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC2>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_3db, _y, _w - _3db + _x, _h});
 		}
 		if (_levelRight > std::powf(std::powf(10, 6 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC3>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_6db, _y, _w - _6db + _x, _h});
 		}
 
@@ -268,9 +276,9 @@ void ChannelPanel::Render(CommandCollection& d)
 				_d = 24;
 
 			if (_b)
-				d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
+				d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
 			else
-				d.Command<Graphics::Fill>(Color{ 64, 64, 64, 255 });
+				d.Command<Graphics::Fill>(Theme<C::VMeterIndD>::Get());
 
 			int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rw)) + _x;
 			d.Command<Graphics::Quad>(Vec4<int>{_mdb, 20, 1, 5});
@@ -280,14 +288,14 @@ void ChannelPanel::Render(CommandCollection& d)
 				{
 					m_Numbers.emplace(i, std::to_string(std::abs(i)));
 				}
-				d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
+				d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
 				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_mdb, 4 });
 			}
 			_b ^= true;
 		}
-		d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, 20, 1, 5});
-		d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
+		d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
 		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x, 4});
 	}
 	else
@@ -301,50 +309,50 @@ void ChannelPanel::Render(CommandCollection& d)
 		int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 		int _w = 14;
 
-		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
-		d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+		d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
-		d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
 		if (_levelLeft > 1.0)
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC1>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, _h - _0db + _y});
 		}	
 		if (_levelLeft > std::powf(std::powf(10, 3 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC2>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _3db, _w, _h - _3db + _y});
 		}
 		if (_levelLeft > std::powf(std::powf(10, 6 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC3>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
 		}
 	
 		_x = 10 + 16;
 		_h = (std::min(_levelRight, 1.412536f) / 1.412536)* (_rh);
 
-		d.Command<Graphics::Fill>(Color{ 0, 0, 0, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
-		d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+		d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
-		d.Command<Graphics::Fill>(Color{ 0, 255, 0, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});	
 		if (_levelRight > 1.0)
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC1>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, _h - _0db + _y});
 		}
 		if (_levelRight > std::powf(std::powf(10, 3 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 126, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC2>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _3db, _w, _h - _3db + _y});
 		}
 		if (_levelRight > std::powf(std::powf(10, 6 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Color{ 255, 0, 0, 255 });
+			d.Command<Graphics::Fill>(Theme<C::VMeterFillC3>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
 		}
 
@@ -362,9 +370,9 @@ void ChannelPanel::Render(CommandCollection& d)
 				_d = 24;
 
 			if (_b)
-				d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
+				d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
 			else
-				d.Command<Graphics::Fill>(Color{ 64, 64, 64, 255 });
+				d.Command<Graphics::Fill>(Theme<C::VMeterIndD>::Get());
 		
 			int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 			d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
@@ -374,14 +382,14 @@ void ChannelPanel::Render(CommandCollection& d)
 				{
 					m_Numbers.emplace(i,std::to_string(std::abs(i)));
 				}
-				d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
+				d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
 				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
 			}
 			_b ^= true;
 		}
-		d.Command<Graphics::Fill>(Color{ 128, 128, 128, 255 });
+		d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
-		d.Command<Graphics::Fill>(Color{ 200, 200, 200, 255 });
+		d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
 		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 	}
 	Container::Render(d);

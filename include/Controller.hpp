@@ -4,6 +4,8 @@
 #include "ui/ChannelPanel.hpp"
 #include "ui/ListPanel.hpp"
 #include "ui/Soundboard.hpp"
+#include "ui/Graphics.hpp"
+
 /*
  * TODO:
  *  - Add sound visuals
