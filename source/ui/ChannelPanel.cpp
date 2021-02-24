@@ -16,10 +16,10 @@ ChannelPanel::ChannelPanel(AsioDevice& sar, StereoInputChannel& c)
 	Init();
 	m_Menu.ButtonSize({ 150, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(c.Name()).Disable();
-	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+	m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
-	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+	m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono");
 
@@ -44,10 +44,10 @@ ChannelPanel::ChannelPanel(AsioDevice& sar, StereoOutputChannel& c)
 	Init();
 	m_Menu.ButtonSize({ 150, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(c.Name()).Disable();
-	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+	m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
-	m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+	m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&c.muted, "Mute");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&c.mono, "Mono");
 	m_Listener += [this](Event::MousePressed& e)
@@ -144,6 +144,9 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 		c = Theme<C::Channel>::Get();
 	c.a = m_Transparency ? 245.0f : 255.0f;
 	Background(c);
+
+	m_Div1->Color(Theme<C::Divider>::Get());
+	m_Div2->Color(Theme<C::Divider>::Get());
 
 	if (m_Vertical)
 	{

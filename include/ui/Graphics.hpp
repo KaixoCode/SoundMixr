@@ -11,7 +11,12 @@ class Themes
 public:
 	enum N
 	{
-		DARK = 0, LIGHT = 1
+		DARK, 
+		LIGHT,
+		BLUE,
+		RED,
+
+		ITEMS
 	};
 
 	static inline N Theme = N::DARK;
@@ -67,9 +72,10 @@ enum class C
 	ITEMS
 };
 
-constexpr Color THEMES[2][(int)C::ITEMS] = 
+constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] = 
 {
-	{ // DARK
+	// DARK
+	{ 
 		Color{ 23, 23, 23, 255 },  	 // WindowBorder, 
 		Color{ 40, 40, 40, 255 },	 // MainPanel, 
 									 // 
@@ -115,7 +121,8 @@ constexpr Color THEMES[2][(int)C::ITEMS] =
 		Color{ 128, 128, 128, 255 }, // VMeterIndB,
 		Color{ 64, 64, 64, 255 },	 // VMeterIndD,
 	},
-	{ // LIGHT
+	// LIGHT
+	{ 
 		Color{ 220, 220, 220, 255 }, // WindowBorder, 
 		Color{ 255, 255, 255, 255 }, // MainPanel, 
 									 // 
@@ -155,6 +162,100 @@ constexpr Color THEMES[2][(int)C::ITEMS] =
 									 // 
 		Color{ 255, 255, 255, 255 }, // VMeter,
 		Color{ 0, 255, 0, 255 },	 // VMeterFill,
+		Color{ 255, 255, 0, 255 },	 // VMeterFillC1,
+		Color{ 255, 126, 0, 255 },	 // VMeterFillC2,
+		Color{ 255, 0, 0, 255 },	 // VMeterFillC3,
+		Color{ 180, 180, 180, 255 }, // VMeterIndB,
+		Color{ 128, 128, 128, 255 }, // VMeterIndD,
+	},
+	// BLUE
+	{ 
+		Color{  44,  61,  77, 255 }, // WindowBorder, 
+		Color{  38,  52,  66, 255 }, // MainPanel, 
+									 // 
+		Color{  44,  61,  77, 255 }, // Channel,
+		Color{  50,  69,  86, 255 }, // ChannelSelected,
+									 // 
+		Color{ 126, 157, 181, 255 }, // Text,
+		Color{ 111, 140, 160, 255 }, // TextOff,
+		Color{ 111, 140, 160, 255 }, // TextSmall,
+									 // 
+		Color{  82, 101, 116, 255 }, // Divider,
+									 // 
+		Color{  16,  33,  43, 255 }, // Menu,
+		Color{  50,  69,  86, 255 }, // MenuB,
+									 // 
+		Color{ 0, 0, 0, 0 },     	 // Button,
+		Color{ 0, 0, 0, 0 },    	 // ButtonD,
+		Color{ 255, 255, 255, 13 },	 // ButtonH,
+		Color{ 255, 255, 255, 26 },	 // ButtonS,
+									 // 
+		Color{  38,  52,  66, 255 }, // MButton,
+		Color{  64,  80,  91, 255 }, // MButtonH,
+		Color{  99, 125, 142, 255 }, // MButtonS,
+									 // 
+		Color{  95, 120, 137, 255 }, // RButton,
+		Color{  0,    0,   0,   0 }, // RButtonB,
+		Color{  95, 120, 137, 255 }, // RButtonH,
+		Color{  50,  69,  86, 255 }, // RButtonHB,
+		Color{ 111, 140, 160, 255 }, // RButtonS,
+		Color{  50,  69,  86, 255 }, // RButtonSB,
+									 // 
+		Color{ 111, 140, 160, 255 }, // VSlider,
+									 // 
+		Color{  38,  52,  66, 255 }, // PSlider,
+		Color{  38,  52,  66, 255 }, // PSliderB,
+		Color{  99, 125, 142, 255 }, // PSliderS,
+									 // 
+		Color{  18,  32,  41, 255 }, // VMeter,
+		Color{ 0, 255, 0, 255 },	 // VMeterFill,
+		Color{ 255, 255, 0, 255 },	 // VMeterFillC1,
+		Color{ 255, 126, 0, 255 },	 // VMeterFillC2,
+		Color{ 255, 0, 0, 255 },	 // VMeterFillC3,
+		Color{ 180, 180, 180, 255 }, // VMeterIndB,
+		Color{ 128, 128, 128, 255 }, // VMeterIndD,
+	},
+	// RED
+	{
+		Color{  77,  61,  44, 255 }, // WindowBorder, 
+		Color{  66,  52,  38, 255 }, // MainPanel, 
+										// 
+		Color{  77,  61,  44, 255 }, // Channel,
+		Color{  86,  69,  50, 255 }, // ChannelSelected,
+										// 
+		Color{ 181, 157, 126, 255 }, // Text,
+		Color{ 160, 140, 111, 255 }, // TextOff,
+		Color{ 160, 140, 111, 255 }, // TextSmall,
+										// 
+		Color{ 116, 101,  82, 255 }, // Divider,
+										// 
+		Color{  43,  33,  16, 255 }, // Menu,
+		Color{  86,  69,  50, 255 }, // MenuB,
+										// 
+		Color{   0,   0,   0, 0 },     	 // Button,
+		Color{   0,   0,   0, 0 },    	 // ButtonD,
+		Color{ 255, 255, 255, 13 },	 // ButtonH,
+		Color{ 255, 255, 255, 26 },	 // ButtonS,
+										// 
+		Color{  66,  52,  38, 255 }, // MButton,
+		Color{  91,  80,  64, 255 }, // MButtonH,
+		Color{ 142, 125,  99, 255 }, // MButtonS,
+										// 
+		Color{ 137, 120,  95, 255 }, // RButton,
+		Color{   0,   0,   0,   0 }, // RButtonB,
+		Color{ 137, 120,  95, 255 }, // RButtonH,
+		Color{  86,  69,  50, 255 }, // RButtonHB,
+		Color{ 160, 140, 111, 255 }, // RButtonS,
+		Color{  86,  69,  50, 255 }, // RButtonSB,
+										// 
+		Color{ 160, 140, 111, 255 }, // VSlider,
+										// 
+		Color{   66,  52, 38, 255 }, // PSlider,
+		Color{   66,  52, 38, 255 }, // PSliderB,
+		Color{  142, 125, 99, 255 }, // PSliderS,
+										// 
+		Color{  41,  32,  18, 255 }, // VMeter,
+		Color{   0, 255, 0, 255 },	 // VMeterFill,
 		Color{ 255, 255, 0, 255 },	 // VMeterFillC1,
 		Color{ 255, 126, 0, 255 },	 // VMeterFillC2,
 		Color{ 255, 0, 0, 255 },	 // VMeterFillC3,

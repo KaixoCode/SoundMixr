@@ -11,15 +11,14 @@ soundboard(m_Gui.AddWindow<Soundboard>())
 
 void Controller::Run()
 {
-
-
-
     namespace G = SoundMixrGraphics; namespace BT = ButtonType; namespace MT = MenuType;
     using MenuButton = Button<G::Menu, BT::Normal>;
     using MenuToggleButton = Button<G::Menu, BT::Toggle>;
     using TitleMenuButton = Button<G::TitleMenu, BT::Menu<G::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
     using SubMenuButton = Button<G::SubMenu, BT::Menu<G::Vertical, MT::Normal, BT::Hover, Align::RIGHT>>;
 
+    mainWindow.Color(Theme<C::WindowBorder>::Get());
+    soundboard.Color(Theme<C::WindowBorder>::Get());
     auto& _panel = mainWindow.Panel();
     auto& _menu = mainWindow.Menu();
     mainWindow.Icon(ASSET("textures/logo.png"));
@@ -41,7 +40,7 @@ void Controller::Run()
         });
 
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
-    _panel.Background(Color{ 23, 23, 23, 255 });
+    _panel.Background(Theme<C::WindowBorder>::Get());
 
     auto& _p3 = _panel.Emplace<Panel>();
     _p3.Width(260);
@@ -53,10 +52,10 @@ void Controller::Run()
     auto& _titleButton = _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels");
     _titleButton.Disable();
     auto& _channelPanel = _p3.Emplace<ListPanel>(Layout::Hint::Center, m_AsioDevice);
-    _channelPanel.Background(Color{ 40, 40, 40, 245 });
+    _channelPanel.Background(Theme<C::MainPanel>::Get());
     m_List = &_channelPanel;
     auto& _p33 = _channelPanel.Panel<Panel>();
-    _p33.Background(Color{ 40, 40, 40, 0 });
+    _p33.Background(Theme<C::MainPanel>::Get());
     _p33.Layout<Layout::SidewaysStack>(8);
     _p33.AutoResize(true, false);
 
@@ -137,7 +136,7 @@ void Controller::Run()
 
     // Themes
     auto& _sub2 = _file.Emplace<SubMenuButton>("Theme");
-    _sub2.MenuBase().ButtonSize({ 210, 20 });
+    _sub2.MenuBase().ButtonSize({ 120, 20 });
     _key = BT::List::NewKey();
     _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
@@ -157,6 +156,24 @@ void Controller::Run()
             _p33.Background(Theme<C::MainPanel>::Get());
             _channelPanel.Background(Theme<C::MainPanel>::Get());
         }, "Light", _key);
+    _sub2.Emplace<Button<G::Menu, BT::List>>([&]
+        {
+            Themes::Theme = Themes::BLUE;
+            _panel.Background(Theme<C::WindowBorder>::Get());
+            mainWindow.Color(Theme<C::WindowBorder>::Get());
+            soundboard.Color(Theme<C::WindowBorder>::Get());
+            _p33.Background(Theme<C::MainPanel>::Get());
+            _channelPanel.Background(Theme<C::MainPanel>::Get());
+        }, "Blue", _key);
+    //_sub2.Emplace<Button<G::Menu, BT::List>>([&]
+    //    {
+    //        Themes::Theme = Themes::RED;
+    //        _panel.Background(Theme<C::WindowBorder>::Get());
+    //        mainWindow.Color(Theme<C::WindowBorder>::Get());
+    //        soundboard.Color(Theme<C::WindowBorder>::Get());
+    //        _p33.Background(Theme<C::MainPanel>::Get());
+    //        _channelPanel.Background(Theme<C::MainPanel>::Get());
+    //    }, "Red", _key);
 
     /*_file.Emplace<MenuToggleButton>([&](bool s) 
         {

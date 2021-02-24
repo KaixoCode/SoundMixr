@@ -37,9 +37,11 @@ public:
 
 private:
 	AsioDevice& m_SarAsio;
-	Menu<MenuGraphics::Vertical, MenuType::Normal> m_Menu;
+	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	bool m_Transparency = false;
 	bool m_Vertical = false;
+
+	MenuAccessories::Divider* m_Div1, * m_Div2;
 
 	bool m_IsInput;
 	union
