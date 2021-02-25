@@ -110,6 +110,33 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	};
 }
 
+void ListPanel::SortChannels()
+{
+	std::sort(m_Inputs.Components().begin(), m_Inputs.Components().end(),
+		[](const std::unique_ptr<Component>& a, const std::unique_ptr<Component>& b) -> bool
+		{
+			InputChannelPanel* _ina = dynamic_cast<InputChannelPanel*>(a.get());
+			InputChannelPanel* _inb = dynamic_cast<InputChannelPanel*>(b.get());
+
+			if (_ina != nullptr && _inb != nullptr)
+				return _ina->Channels().ID() < _inb->Channels().ID();
+
+			return -1;
+		});
+
+	std::sort(m_Outputs.Components().begin(), m_Outputs.Components().end(),
+		[](const std::unique_ptr<Component>& a, const std::unique_ptr<Component>& b) -> bool
+		{
+			OutputChannelPanel* _ina = dynamic_cast<OutputChannelPanel*>(a.get());
+			OutputChannelPanel* _inb = dynamic_cast<OutputChannelPanel*>(b.get());
+
+			if (_ina != nullptr && _inb != nullptr)
+				return _ina->Channels().ID() < _inb->Channels().ID();
+
+			return -1;
+		});
+}
+
 void ListPanel::Vertical()
 {
 	EnableScrollbars(false, true);
@@ -199,4 +226,40 @@ void ListPanel::ResetGrouping()
 		_c.pan.SliderValue(0);
 		_c.volume.SliderValue(1);
 	}
+}
+
+void ListPanel::Update(const Vec4<int>& s)
+{
+	for (auto& c = m_InputChannels.begin(); c != m_InputChannels.end(); ++c)
+	{
+		if ((*c)->Delete())
+		{
+			m_Inputs.Erase(std::remove_if(m_Inputs.Components().begin(), m_Inputs.Components().end(),
+				[&](const std::unique_ptr<Component>& const a)
+				{
+					return dynamic_cast<Component*>(*c) == a.get();
+				}
+			));
+			m_InputChannels.erase(c);
+			break;
+		}
+	}
+
+	for (auto& c = m_OutputChannels.begin(); c != m_OutputChannels.end(); ++c)
+		if ((*c)->Delete())
+		{
+			m_Outputs.Erase(std::remove_if(m_Outputs.Components().begin(), m_Outputs.Components().end(),
+				[&](const std::unique_ptr<Component>& const a)
+				{
+					return dynamic_cast<Component*>(*c) == a.get();
+				}
+			));
+			m_OutputChannels.erase(c);
+			break;
+		}
+
+	if (m_Divider)
+		m_Divider->Color(Theme<C::Divider>::Get());
+
+	ScrollPanel::Update(s);
 }

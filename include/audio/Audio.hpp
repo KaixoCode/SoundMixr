@@ -65,6 +65,7 @@ private:
 class InputChannels;
 class OutputChannels;
 
+// Collection of OutputChannel objects
 class OutputChannels
 {
 public:
@@ -73,21 +74,14 @@ public:
 	OutputChannels()
 	{
 		for (int i = 0; i < MAX_CHANNELS; i++)
-		{
 			m_Connected[i] = nullptr;
-		}
 	}
-
-	~OutputChannels()
-	{}
 
 	auto Name() -> std::string& { return Size() ? m_Channels[0]->Name() : m_Name; }
 	int  ID() const { return Size() ? m_Channels[0]->ID() : -1; }
-
-	void AddChannel(OutputChannel* c)
-	{
-		m_Channels.push_back(c);
-	}
+	int  Size() const { return m_Channels.size(); }
+	void AddChannel(OutputChannel* c) { m_Channels.push_back(c); }
+	std::vector<OutputChannel*>& Channels() { return m_Channels; }
 
 	void RemoveChannel(OutputChannel* c)
 	{
@@ -96,26 +90,19 @@ public:
 			m_Channels.erase(a);
 	}
 
-	int Size() const { return m_Channels.size(); }
-	std::vector<OutputChannel*>& Channels() { return m_Channels; }
+	template<typename T>
+	void Connect(T* in) { m_Connected[in->ID()] = in; }
 
 	template<typename T>
-	void Connect(T* in)
-	{
-		m_Connected[in->ID()] = in;
-	}
-
-	template<typename T>
-	void Disconnect(T* in)
-	{
-		m_Connected[in->ID()] = nullptr;
-	}
+	void Disconnect(T* in) { m_Connected[in->ID()] = nullptr; }
 
 	template<typename T>
 	void Clear()
 	{
 		for (int i = 0; i < MAX_CHANNELS; i++)
 		{
+			// Call me lazy but circular dependencies are a pain
+			// so I just do it like this, live with it.
 			if (m_Connected[i] != nullptr)
 				static_cast<T*>(m_Connected[i])->Disconnect(this);
 
@@ -123,23 +110,11 @@ public:
 		}
 	}
 
-	float Volume()
-	{
-		return Size() ? m_Channels[0]->Volume() : 1;
-	}
+	float Volume() { return Size() ? m_Channels[0]->Volume() : 1; }
+	void  Volume(float v) { for (auto& c : m_Channels) c->Volume(v); }
 
-	void Volume(float v)
-	{
-		for (auto& c : m_Channels)
-			c->Volume(v);
-	}
-
-	float Pan()
-	{
-		return m_Pan;
-	}
-
-	void Pan(float p)
+	float Pan() { return m_Pan; }
+	void  Pan(float p)
 	{
 		m_Pan = p;
 		int _index = 0;
@@ -153,27 +128,10 @@ public:
 		}
 	}
 
-	bool Muted()
-	{
-		return Size() ? m_Channels[0]->Muted() : false;
-	}
-
-	void Mute(bool v)
-	{
-		for (auto& c : m_Channels)
-			c->Mute(v);
-	}
-
-	bool Mono()
-	{
-		return Size() ? m_Channels[0]->Muted() : false;
-	}
-
-	void Mono(bool v)
-	{
-		for (auto& c : m_Channels)
-			c->Mono(v);
-	}
+	bool Muted() { return Size() ? m_Channels[0]->Muted() : false; }
+	void Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); }
+	bool Mono() { return Size() ? m_Channels[0]->Muted() : false; }
+	void Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); }
 
 private:
 	float m_Pan = 0;
@@ -236,7 +194,7 @@ private:
 	OutputChannel* m_Connected[MAX_CHANNELS];
 };
 
-
+// Collection of InputChannel objects
 class InputChannels
 {
 public:
@@ -245,13 +203,8 @@ public:
 	InputChannels()
 	{
 		for (int i = 0; i < MAX_CHANNELS; i++)
-		{
 			m_Connected[i] = nullptr;
-		}
 	}
-
-	~InputChannels()
-	{}
 
 	auto Name() -> std::string& { return Size() ? m_Channels[0]->Name() : m_Name; }
 	int  ID() const { return Size() ? m_Channels[0]->ID() : -1; }
@@ -263,22 +216,17 @@ public:
 	void Connect(OutputChannels* out) 
 	{ 
 		for (int i = 0; i < Size(); i++)
-		{
-			int index = i % out->Size();
-			m_Channels[i]->Connect(out->Channels()[index]);
-		}
+			m_Channels[i]->Connect(out->Channels()[i % out->Size()]);
 		
 		m_Connected[out->ID()] = out; 
-		out->Connect(this);
+		m_Connected[out->ID()]->Connect(this);
 	}
 	
 	void Disconnect(OutputChannels* out) 
 	{ 
 		for (int i = 0; i < Size(); i++)
-		{
-			int index = i % out->Size();
-			m_Channels[i]->Disconnect(out->Channels()[index]);
-		}
+			m_Channels[i]->Disconnect(out->Channels()[i % out->Size()]);
+
 		if (m_Connected[out->ID()])
 			m_Connected[out->ID()]->Disconnect(this);
 		
@@ -322,22 +270,10 @@ public:
 			m_Channels.erase(a);
 	}
 
-	float Volume()
-	{
-		return Size() ? m_Channels[0]->Volume() : 1;
-	}
+	float Volume() { return Size() ? m_Channels[0]->Volume() : 1; }
+	void  Volume(float v) { for (auto& c : m_Channels) c->Volume(v); }
 
-	void Volume(float v) 
-	{
-		for (auto& c : m_Channels)
-			c->Volume(v);
-	}
-
-	float Pan()
-	{
-		return m_Pan;
-	}
-
+	float Pan() { return m_Pan; }
 	void Pan(float p) 
 	{
 		m_Pan = p;
@@ -352,32 +288,10 @@ public:
 		}
 	}
 
-	bool Muted()
-	{
-		return Size() ? m_Channels[0]->Muted() : false;
-	}
-
-	void Mute(bool v) 
-	{
-		for (auto& c : m_Channels)
-			c->Mute(v);
-	}
-
-	bool Mono()
-	{
-		return Size() ? m_Channels[0]->Muted() : false;
-	}
-
-	void Mono(bool v)
-	{
-		for (auto& c : m_Channels)
-			c->Mono(v);
-	}
-
-	void Level(int i, float v) 
-	{
-		m_Channels[i]->Level(v);
-	};
+	bool Muted() { return Size() ? m_Channels[0]->Muted() : false; }
+	void Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); }
+	bool Mono() { return Size() ? m_Channels[0]->Muted() : false; }
+	void Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); }
 
 private:
 	float m_Pan = 0;

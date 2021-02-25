@@ -12,39 +12,38 @@ template<typename This, typename Other = std::conditional<std::is_same_v<This, I
 class ChannelPanel : public Panel
 {
 public:
-
-	static constexpr bool m_IsInput = std::is_same_v<This, ::InputChannels>;
+	static constexpr bool Input = std::is_same_v<This, ::InputChannels>;
 
 	template<typename T>
 	ChannelPanel(T* l)
 		: m_Channels(),
 		text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, m_Channels.Name())),
 		volume(Emplace<VolumeSlider>()),
-		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, m_IsInput ? "in" : "")),
+		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, Input ? "in" : "")),
 		muted(Emplace<Button<MuteButton, ButtonType::Toggle>>([&](bool s) { m_Channels.Mute(s); }, "MUTE")),
 		mono(Emplace<Button<MonoButton, ButtonType::Toggle>>([&](bool s) { m_Channels.Mono(s); }, "MONO")),
 		pan(Emplace<PanSlider>())
 	{
 		Init();
+
+		// Init the rightclick menu:
 		m_Menu.ButtonSize({ 150, 20 });
 		m_MenuTitle = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(m_Channels.Name());
 		m_MenuTitle->Disable();
-		m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
-		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&, l] 
-			{ 
+		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&, l]
+			{
 				if constexpr (std::is_same_v<This, InputChannels>) Channels().Clear();
 				if constexpr (std::is_same_v<This, OutputChannels>) Channels().Clear<::InputChannels>();
 				if constexpr (std::is_same_v<This, InputChannels>) m_SelectedSame->Clear();
 				if constexpr (std::is_same_v<This, OutputChannels>) m_SelectedSame->Clear<::InputChannels>();
-				
+
 				for (auto& c : Channels().Channels())
 					m_SelectedSame->AddChannel(c);
-				
+
 				m_Delete = true;
 			}, "Combine");
-
+		m_Connect->Visible(false);
 		m_Split = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&, l]
 			{
 				std::vector<This*> _temp;
@@ -65,8 +64,9 @@ public:
 				l->SortChannels();
 
 			}, "Split");
-
-		m_Connect->Visible(false);
+		m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
 		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s) { m_Channels.Mute(s); }, "Mute");
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s) { m_Channels.Mono(s); }, "Mono");
@@ -74,16 +74,14 @@ public:
 		m_Listener += [this](Event::MousePressed& e)
 		{
 			if (e.button == Event::MouseButton::RIGHT)
-			{
 				RightClickMenu::Get().Open(&m_Menu);
-			}
 		};
 	}
 
 	void Select(Other* s)
 	{
 		m_HasSelect = true;
-		if constexpr (m_IsInput)
+		if constexpr (Input)
 		{
 			m_Routed = m_Channels.Connected(s);
 			routed.Enable();
@@ -101,7 +99,7 @@ public:
 	void Select(This* s)
 	{
 		m_HasSelect = false;
-		if constexpr (m_IsInput)
+		if constexpr (Input)
 		{
 			m_Routed = false;
 			routed.Disable();
@@ -133,7 +131,6 @@ public:
 	void Unselect() { m_HasSelect = false; routed.Disable(); m_Connect->Visible(false); }
 	void Routed(bool v) { m_Routed = v; }
 	bool Routed() { return m_Routed; }
-	bool Input() { return m_IsInput; }
 	auto Channels()  -> This& { return m_Channels; }
 	void Transparency(bool t) { m_Transparency = t; }
 	void Vertical() { m_Vertical = true; }
@@ -141,6 +138,9 @@ public:
 	bool Delete() { return m_Delete; }
 
 private:
+	// This private thing is defined here because it needs to be initialized first
+	// in the constructor, so it is defined above all other things that are
+	// initialized in the constructor. Yes, that is how C++ works, learn your shit!
 	This m_Channels;
 
 public:
@@ -159,7 +159,7 @@ private:
 	bool m_Vertical = false;
 	bool m_Delete = false;
 
-	MenuAccessories::Divider* m_Div1, * m_Div2;
+	MenuAccessories::Divider* m_Div1, * m_Div2, *m_Div3;
 
 	bool m_HasSelect = false;
 	Other* m_SelectedChannels;
@@ -170,7 +170,6 @@ private:
 
 	std::unordered_map<int, std::string> m_Numbers;
 	std::string m_NegInf = "Inf";
-
 
 	void Init()
 	{
@@ -192,7 +191,7 @@ private:
 	void Update(const Vec4<int>& viewport)
 	{
 		if (m_HasSelect)
-			if constexpr (!m_IsInput)
+			if constexpr (!Input)
 				if (m_Routed)
 					if (!m_SelectedChannels->Connected(&m_Channels))
 						m_SelectedChannels->Connect(&m_Channels);
@@ -201,7 +200,7 @@ private:
 					if (m_SelectedChannels->Connected(&m_Channels))
 						m_SelectedChannels->Disconnect(&m_Channels);
 					else;
-			else if constexpr (m_IsInput)
+			else if constexpr (Input)
 				if (m_Routed)
 					if (!m_Channels.Connected(m_SelectedChannels))
 						m_Channels.Connect(m_SelectedChannels);
@@ -221,6 +220,8 @@ private:
 
 		m_Div1->Color(Theme<C::Divider>::Get());
 		m_Div2->Color(Theme<C::Divider>::Get());
+		m_Div3->Color(Theme<C::Divider>::Get());
+		m_Div3->Visible(m_Connect->Visible() || m_Split->Visible());
 
 		m_Split->Visible(Channels().Channels().size() > 1);
 
@@ -265,10 +266,6 @@ private:
 		//d.Command<FrameBuffer>(m_PanelId, m_NeedsRedraw, Vec4<int>{Position(), Size() + Vec2<int>{10, 10}});
 		m_NeedsRedraw = false;
 		Background(d);
-
-
-		//_levelLeft = std::powf(_levelLeft, 0.25);
-		//_levelRight = std::powf(_levelRight, 0.25);
 
 		int _channels = m_Channels.Size();;
 		
@@ -422,6 +419,7 @@ private:
 			d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
 			d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 		}
+
 		Container::Render(d);
 		//d.Command<FrameBufferEnd>();
 		d.Command<PopMatrix>();
