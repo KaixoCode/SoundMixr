@@ -46,7 +46,7 @@ void Controller::Run()
     Menu<G::Vertical, MT::Normal> _closeMenu;
     _closeMenu.ButtonSize({ 150, 20 });
     _closeMenu.Emplace<MenuButton>([] {}, "SoundMixr").Disable();
-    _closeMenu.Emplace<MenuAccessories::Divider>(150, 1, 0, 4);
+    auto& _div = _closeMenu.Emplace<MenuAccessories::Divider>(150, 1, 0, 4);
     _closeMenu.Emplace<MenuButton>([&] { mainWindow.Show(); }, "Open GUI");
     _closeMenu.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit");
 
@@ -197,6 +197,7 @@ void Controller::Run()
         soundboard.Color(Theme<C::WindowBorder>::Get());
         _p33.Background(Theme<C::MainPanel>::Get());
         m_List->Background(Theme<C::MainPanel>::Get());
+        _div.Color(Theme<C::Divider>::Get());
 
         std::ofstream _out;
         _out.open("./settings/theme");
