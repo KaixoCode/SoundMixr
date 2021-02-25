@@ -103,6 +103,21 @@ public:
 		ScrollPanel::Update(s); 
 	}
 
+	::Panel& Panel() const { return *m_Panel; }
+
+	template<typename T, typename ...Args>
+	T& Panel(Args&&... args)
+	{
+		if (m_Panel != nullptr)
+			return dynamic_cast<T&>(*m_Panel);
+
+		auto& _t = Emplace<T>(std::forward<Args>(args)...);
+		m_Panel = &_t;
+		m_ScrollbarX = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Horizontal>>();
+		m_ScrollbarY = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Vertical>>();
+		return _t;
+	}
+
 private:
 	AsioDevice& asio;
 	::Panel& m_Inputs;

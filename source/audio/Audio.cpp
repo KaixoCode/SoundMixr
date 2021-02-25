@@ -165,8 +165,8 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 		for (int k = 0; k < _inChannels; k++)
 		{
 			auto& _inChannel = _inputs[k];
-			//_inChannel.Level(_inBuffer[i * _inChannels + k]);
-			_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
+			_inChannel.Level(_inBuffer[i * _inChannels + k]);
+			//_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
 
 			if (i == 0)
 			{
@@ -203,129 +203,6 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 
 			*_outBuffer++ = constrain(_outChannel.Level(), -1.0f, 1.0f);
 		}
-
-
-
-		/*
-		for (int k = 0; k < _inChannels; k += 2)
-		{
-			int _index = k / 2;
-			auto& _inChannel = _inputs[_index];
-
-			float _left = _inBuffer[i * _inChannels + k];
-			float _right = _inBuffer[i * _inChannels + k + 1];
-
-			if (i == 0)
-			{
-				float _inLeft = _inChannel.peak_left;
-				float _inRight = _inChannel.peak_right;
-
-				if (_inChannel.mono)
-				{
-					_inLeft = 0.5 * (_inChannel.peak_left + _inChannel.peak_right);
-					_inRight = 0.5 * (_inChannel.peak_left + _inChannel.peak_right);
-				}
-
-				float _panLeft = (50 - std::max(-_inChannel.pan, 0.0f)) / 50.0;
-				float _panRight = (50 - std::max(_inChannel.pan, 0.0f)) / 50.0;
-
-				_inChannel.level_left = _inChannel.level_left * _r + (1.0 - _r) * _inLeft * _panLeft * _inChannel.volume;
-				_inChannel.level_right = _inChannel.level_right * _r + (1.0 - _r) * _inRight * _panRight * _inChannel.volume;
-
-				_inChannel.peak_left = 0;
-				_inChannel.peak_right = 0;
-			}
-			
-			if (_inChannel.muted)
-				continue;
-
-			if (_inChannel.peak_left < std::abs(_left)) 
-				_inChannel.peak_left = std::abs(_left);
-			if (_inChannel.peak_right < std::abs(_right))
-				_inChannel.peak_right = std::abs(_right);
-		}
-
-		for (int j = 0; j < _outChannels; j += 2)
-		{
-			int _index = j / 2;
-			auto& _outChannel = _outputs[_index];
-
-			float _left = 0;
-			float _right = 0;
-
-			for (int k = 0; k < _inChannels; k += 2)
-			{
-				int _index2 = k / 2;
-				auto& _inChannel = _inputs[_index2];
-				if (_inChannel.muted)
-					continue;
-
-				if (_inChannel.Connected(&_outChannel))
-				{
-					float _volume = _inChannel.volume;
-
-					float _panLeft = (50 - std::max(-_inChannel.pan, 0.0f)) / 50.0;
-					float _panRight = (50 - std::max(_inChannel.pan, 0.0f)) / 50.0;
-
-					float _inLeft = (_inBuffer[i * _inChannels + k]) * _volume;
-					float _inRight = (_inBuffer[i * _inChannels + k + 1]) * _volume;
-
-					if (_inChannel.mono)
-					{
-						_left += 0.5 * (_inLeft + _inRight) * _panLeft;
-						_right += 0.5 * (_inLeft + _inRight) * _panRight;
-					}
-					else
-					{
-						_left += _inLeft * _panLeft;
-						_right += _inRight * _panRight;
-					}
-				}
-			}
-
-			float _panLeft = (50 - std::max(-_outChannel.pan, 0.0f)) / 50.0;
-			float _panRight = (50 - std::max(_outChannel.pan, 0.0f)) / 50.0;
-
-			if (i == 0)
-			{
-				float _outLeft = _outChannel.peak_left;
-				float _outRight = _outChannel.peak_right;
-
-				if (_outChannel.mono)
-					_outRight = _outLeft = 0.5 * (_outChannel.peak_left + _outChannel.peak_right);
-
-				_outChannel.level_left = _outChannel.level_left * _r + (1.0 - _r) * _outLeft * _panLeft * _outChannel.volume;
-				_outChannel.level_right = _outChannel.level_right * _r + (1.0 - _r) * _outRight * _panRight * _outChannel.volume;
-
-				_outChannel.peak_left = 0;
-				_outChannel.peak_right = 0;
-			}
-
-			if (_outChannel.muted)
-			{
-				*_outBuffer++ = 0;
-				*_outBuffer++ = 0;
-				continue;
-			}
-
-			if (_outChannel.peak_left < std::abs(_left))
-				_outChannel.peak_left = std::abs(_left);
-			if (_outChannel.peak_right < std::abs(_right))
-				_outChannel.peak_right = std::abs(_right);
-
-			if (_outChannel.mono)
-			{
-				float _out = 0.5 * (_left + _right);
-
-				*_outBuffer++ = constrain(_out * _outChannel.volume * _panLeft, -1.0f, 1.0f);
-				*_outBuffer++ = constrain(_out * _outChannel.volume * _panRight, -1.0f, 1.0f);
-			}
-			else
-			{
-				*_outBuffer++ = constrain(_left * _outChannel.volume * _panLeft, -1.0f, 1.0f);
-				*_outBuffer++ = constrain(_right * _outChannel.volume * _panRight, -1.0f, 1.0f);
-			}
-		}*/
 	}
 
 	return 0;

@@ -143,17 +143,60 @@ void ListPanel::ResetGrouping()
 	m_InputChannels.clear();
 	m_OutputChannels.clear();
 
-	for (auto& i : asio.Inputs())
+	int i = 0;
+	for (i = 0; i < asio.Device().info.maxInputChannels - 1; i += 2)
 	{
-		auto& panl = m_InputChannels.emplace_back(&m_Inputs.Emplace<InputChannelPanel>(this));
-		panl->SmartPanel(true);
-		panl->AddChannel(&i);
+		// Add a ChannelPanel with all the inputs
+		auto& _c = EmplaceChannel<InputChannelPanel>();
+		_c.AddChannel(&asio.Inputs()[i]);
+		_c.AddChannel(&asio.Inputs()[i + 1]);
+
+		// Set all parameters of this Channel
+		_c.mono.Active(false);
+		_c.muted.Active(false);
+		_c.pan.SliderValue(0);
+		_c.volume.SliderValue(1);
 	}
 
-	for (auto& i : asio.Outputs())
+	// if there were an uneven amount of channels, add one last mono channel
+	if (i == asio.Device().info.maxInputChannels - 1)
 	{
-		auto& panl = m_OutputChannels.emplace_back(&m_Outputs.Emplace<OutputChannelPanel>(this));
-		panl->SmartPanel(true);
-		panl->AddChannel(&i);
+		// Add a ChannelPanel with all the inputs
+		auto& _c = EmplaceChannel<InputChannelPanel>();
+		_c.AddChannel(&asio.Inputs()[i]);
+
+		// Set all parameters of this Channel
+		_c.mono.Active(false);
+		_c.muted.Active(false);
+		_c.pan.SliderValue(0);
+		_c.volume.SliderValue(1);
+	}
+
+	for (i = 0; i < asio.Device().info.maxOutputChannels - 1; i += 2)
+	{
+		// Add a ChannelPanel with all the inputs
+		auto& _c = EmplaceChannel<OutputChannelPanel>();
+		_c.AddChannel(&asio.Outputs()[i]);
+		_c.AddChannel(&asio.Outputs()[i + 1]);
+
+		// Set all parameters of this Channel
+		_c.mono.Active(false);
+		_c.muted.Active(false);
+		_c.pan.SliderValue(0);
+		_c.volume.SliderValue(1);
+	}
+
+	// if there were an uneven amount of channels, add one last mono channel
+	if (i == asio.Device().info.maxOutputChannels - 1)
+	{
+		// Add a ChannelPanel with all the inputs
+		auto& _c = EmplaceChannel<OutputChannelPanel>();
+		_c.AddChannel(&asio.Outputs()[i]);
+
+		// Set all parameters of this Channel
+		_c.mono.Active(false);
+		_c.muted.Active(false);
+		_c.pan.SliderValue(0);
+		_c.volume.SliderValue(1);
 	}
 }

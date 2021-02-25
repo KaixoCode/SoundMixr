@@ -36,6 +36,9 @@ enum class C
 
 	Divider,
 
+	Scrollbar,
+	ScrollbarH,
+
 	Menu,
 	MenuB,
 
@@ -88,6 +91,9 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 									 // 
 		Color{ 51, 51, 51, 255 },    // Divider,
 									 // 
+		Color{ 55, 55, 55, 255 },    // Scrollbar,
+		Color{ 75, 75, 75, 255 },    // ScrollbarH,
+									 // 
 		Color{ 18, 18, 18, 255 },  	 // Menu,
 		Color{ 64, 64, 64, 255 }, 	 // MenuB,
 									 // 
@@ -135,6 +141,9 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 									 // 
 		Color{ 205, 205, 205, 255 }, // Divider,
 									 // 
+		Color{ 255, 255, 255, 255 }, // Scrollbar,
+		Color{ 240, 240, 240, 255 }, // ScrollbarH,
+									 // 
 		Color{ 255, 255, 255, 255 }, // Menu,
 		Color{ 170, 170, 170, 255 }, // MenuB,
 									 // 
@@ -180,7 +189,10 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 111, 140, 160, 255 }, // TextOff,
 		Color{ 111, 140, 160, 255 }, // TextSmall,
 									 // 
-		Color{  82, 101, 116, 255 }, // Divider,
+		Color{  44,  61,  77, 255 }, // Divider,
+									 // 
+		Color{  50,  69,  86, 255 }, // Scrollbar,
+		Color{  95, 120, 137, 255 }, // ScrollbarH,
 									 // 
 		Color{  16,  33,  43, 255 }, // Menu,
 		Color{  50,  69,  86, 255 }, // MenuB,
@@ -697,6 +709,62 @@ namespace SoundMixrGraphics
 			}
 
 			b.Size({ _mw + _padding * 2, -_y + _iy + _padding * 2 });
+		}
+	};
+
+	/**
+	 * Simple normal scrollbar graphics.
+	 */
+	struct ScrollbarNormal
+	{
+		/**
+		 * Render
+		 * @param b the <code>Scrollbar</code>
+		 * @param d the <code>CommandCollection</code>
+		 */
+		template<typename ScrollbarType>
+		static void Render(Scrollbar<ScrollbarNormal, ScrollbarType>& b, CommandCollection& d)
+		{}
+
+		template<>
+		static void Render(Scrollbar<ScrollbarNormal, ScrollbarType::Horizontal>& b, CommandCollection& d)
+		{
+			int _p = 6;
+			int _w = std::max((b.VisibleRange() - b.Range().start) / (float)(b.Range().end - b.Range().start) * b.Width(), (float)b.MinBarSize());
+			int _x = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start - b.VisibleRange()) * (b.Width() - _w) + b.X();
+
+			if (b.Hovering() && b.Mouse() >= _x && b.Mouse() <= _x + _w)
+			{
+				d.Command<Fill>(Theme<C::Scrollbar>::Get());
+				d.Command<Quad>(b.Position().x, b.Position().y + b.Size().height / 2 - 1, b.Size().width, 2);
+				d.Command<Fill>(Theme<C::ScrollbarH>::Get());
+				_p = 4;
+			}
+			else
+				d.Command<Fill>(Theme<C::Scrollbar>::Get());
+
+			d.Command<Quad>(_x + _p, b.Position().y + _p, _w - _p * 2, b.Size().height - _p * 2);
+		}
+
+		template<>
+		static void Render(Scrollbar<ScrollbarNormal, ScrollbarType::Vertical>& b, CommandCollection& d)
+		{
+			int _p = 6;
+			int _h = std::max((b.VisibleRange() - b.Range().start) / (float)(b.Range().end - b.Range().start) * b.Height(), (float)b.MinBarSize());
+			int _y = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start - b.VisibleRange()) * -(b.Height() - _h) + b.Y() + b.Height() - _h;
+
+			if (b.Hovering() && b.Mouse() >= _y && b.Mouse() <= _y + _h)
+			{
+				d.Command<Fill>(Theme<C::Scrollbar>::Get());
+				d.Command<Quad>(b.Position().x + b.Size().width / 2 - 1, b.Position().y, 2, b.Size().height);
+				d.Command<Fill>(Theme<C::ScrollbarH>::Get());
+				_p = 4;
+			}
+			else
+				d.Command<Fill>(Theme<C::Scrollbar>::Get());
+
+			d.Command<Quad>(b.Position().x + _p, _y + _p, b.Size().width - _p * 2, _h - _p * 2);
+
 		}
 	};
 }

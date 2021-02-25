@@ -114,7 +114,6 @@ public:
 	template<typename T>
 	void Clear()
 	{
-		LOG("CLEAR OUTPUTS");
 		for (int i = 0; i < MAX_CHANNELS; i++)
 		{
 			if (m_Connected[i] != nullptr)
@@ -263,7 +262,6 @@ public:
 	
 	void Connect(OutputChannels* out) 
 	{ 
-		LOG("CONNECT " << ID() << " WITH " << out->ID());
 		for (int i = 0; i < Size(); i++)
 		{
 			int index = i % out->Size();
@@ -276,7 +274,6 @@ public:
 	
 	void Disconnect(OutputChannels* out) 
 	{ 
-		LOG("DISCONNECT " << ID() << " WITH " << out->ID());
 		for (int i = 0; i < Size(); i++)
 		{
 			int index = i % out->Size();
@@ -290,7 +287,6 @@ public:
 	
 	void Clear() 
 	{ 
-		LOG("CLEAR INPUTS");
 		for (int i = 0; i < MAX_CHANNELS; i++) 
 		{
 			if (m_Connected[i] != nullptr)
