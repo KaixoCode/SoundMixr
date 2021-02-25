@@ -27,6 +27,7 @@ public:
     Controller();
     void Run();
     void LoadRouting();
+    void SaveRouting();
 
 private:
     Gui m_Gui;

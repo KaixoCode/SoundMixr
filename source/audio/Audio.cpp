@@ -15,7 +15,7 @@ AsioDevice::AsioDevice()
 		LOG(Pa_GetErrorText(err));
 		return;
 	}
-	
+
 	LOG("Finding ASIO devices");
 	const PaDeviceInfo* info;
 	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
@@ -28,7 +28,7 @@ AsioDevice::AsioDevice()
 
 AsioDevice::~AsioDevice()
 {
-	LOG("Destructing SAR ASIO device ");
+	LOG("Destructing ASIO device ");
 	CloseStream();
 }
 
@@ -64,29 +64,29 @@ bool AsioDevice::OpenStream()
 	} while ((err = Pa_OpenStream(&stream, &ip, &op, m_Samplerate, bufferFrames, paClipOff, SarCallback, (void*)this)) != 0);
 
 	LOG("Opened stream (" << Device().info.name << ")" <<
-		"\n type:       " << "SAR" <<
+		"\n type:       " << "ASIO" <<
 		"\n samplerate: " << m_Samplerate <<
 		"\n buffersize: " << m_BufferSize <<
 		"\n inchannels: " << ip.channelCount <<
 		"\n outchannels:" << op.channelCount
 	);
 
-	for (int i = 0; i < ip.channelCount; i += 2)
+	for (int i = 0; i < ip.channelCount; i++)
 	{
 		const char* name;
 		PaAsio_GetInputChannelName(Device().id, i, &name);
 		std::string n = name;
 		n.resize(n.find_last_of(' '));
-		m_Inputs.emplace_back(i, i + 1, n);
+		auto& a = m_Inputs.emplace_back(i, n);
 	}
 
-	for (int i = 0; i < op.channelCount; i += 2)
+	for (int i = 0; i < op.channelCount; i++)
 	{
 		const char* name;
 		PaAsio_GetOutputChannelName(Device().id, i, &name);
 		std::string n = name;
 		n.resize(n.find_last_of(' '));
-		m_Outputs.emplace_back(i, i + 1, n);
+		auto& a = m_Outputs.emplace_back(i, n);
 	}
 
 	LOG("Input channel names: ");
@@ -109,6 +109,9 @@ void AsioDevice::CloseStream()
 		LOG(Pa_GetErrorText(err));
 	else
 		LOG("Closed SAR stream");
+	
+	m_Inputs.clear();
+	m_Outputs.clear();
 }
 
 bool AsioDevice::StartStream()
@@ -159,6 +162,51 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 
 	for (int i = 0; i < nBufferFrames; i++)
 	{
+		for (int k = 0; k < _inChannels; k++)
+		{
+			auto& _inChannel = _inputs[k];
+			//_inChannel.Level(_inBuffer[i * _inChannels + k]);
+			_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
+
+			if (i == 0)
+			{
+				_inChannel.Peak(_inChannel.Peak() * _r + (1 - _r) * _inChannel.TPeak());
+				_inChannel.TPeak(0);
+			}
+
+			float _absLevel = std::abs(_inChannel.Level());
+			if (_absLevel > _inChannel.TPeak())
+				_inChannel.TPeak(_absLevel);
+		}
+
+		for (int j = 0; j < _outChannels; j++)
+		{
+			auto& _outChannel = _outputs[j];
+			_outChannel.Level(0);
+			
+			if (i == 0)
+			{
+				_outChannel.Peak(_outChannel.Peak() * _r + (1 - _r) * _outChannel.TPeak());
+				_outChannel.TPeak(0);
+			}
+
+			for (int k = 0; k < _inChannels; k++)
+			{
+				auto& _inChannel = _inputs[k];
+				if (_inChannel.Connected(&_outChannel))
+					_outChannel.AddLevel(_inChannel.Level());
+			}
+
+			float _absLevel = std::abs(_outChannel.Level());
+			if (_absLevel > _outChannel.TPeak())
+				_outChannel.TPeak(_absLevel);
+
+			*_outBuffer++ = constrain(_outChannel.Level(), -1.0f, 1.0f);
+		}
+
+
+
+		/*
 		for (int k = 0; k < _inChannels; k += 2)
 		{
 			int _index = k / 2;
@@ -277,44 +325,8 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 				*_outBuffer++ = constrain(_left * _outChannel.volume * _panLeft, -1.0f, 1.0f);
 				*_outBuffer++ = constrain(_right * _outChannel.volume * _panRight, -1.0f, 1.0f);
 			}
-		}
+		}*/
 	}
 
 	return 0;
-}
-
-void AsioDevice::SaveRouting()
-{
-	if (&Device() == nullptr)
-		return;
-
-	LOG("Saving Routing");
-	std::string data;
-	for (auto& _i : Inputs())
-	{
-		data += "in:";
-		data += std::to_string(_i.ID()) + ";";
-		data += std::to_string(_i.muted) + ";";
-		data += std::to_string(_i.mono) + ";";
-		data += std::to_string(_i.pan) + ";";
-		data += std::to_string(_i.volume) + ";";
-		for (int i = 0; i < MAX_CHANNELS; i++)
-			if (_i.Connections()[i] != nullptr)
-				data += std::to_string(i) + ",";
-		data += "\n";
-	}
-	for (auto& _i : Outputs())
-	{
-		data += "out:";
-		data += std::to_string(_i.ID()) + ";";
-		data += std::to_string(_i.muted) + ";";
-		data += std::to_string(_i.mono) + ";";
-		data += std::to_string(_i.pan) + ";";
-		data += std::to_string(_i.volume) + "\n";
-	}
-
-	std::ofstream _out;
-	_out.open("./settings/routing" + std::to_string(Device().id));
-	_out << data;
-	_out.close();
 }

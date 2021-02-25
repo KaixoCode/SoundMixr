@@ -11,6 +11,15 @@ soundboard(m_Gui.AddWindow<Soundboard>())
 
 void Controller::Run()
 {
+    LOG("Selecting default theme");
+    std::ifstream _in;
+    _in.open("./settings/theme");
+    std::string _line;
+    std::getline(_in, _line);
+    int _themeId = std::atoi(_line.c_str());
+    Themes::Theme = (Themes::N) _themeId;
+    _in.close();
+
     namespace G = SoundMixrGraphics; namespace BT = ButtonType; namespace MT = MenuType;
     using MenuButton = Button<G::Menu, BT::Normal>;
     using MenuToggleButton = Button<G::Menu, BT::Toggle>;
@@ -54,9 +63,9 @@ void Controller::Run()
     auto& _channelPanel = _p3.Emplace<ListPanel>(Layout::Hint::Center, m_AsioDevice);
     _channelPanel.Background(Theme<C::MainPanel>::Get());
     m_List = &_channelPanel;
-    auto& _p33 = _channelPanel.Panel<Panel>();
+    auto& _p33 = _channelPanel.Panel();
     _p33.Background(Theme<C::MainPanel>::Get());
-    _p33.Layout<Layout::SidewaysStack>(8);
+    _p33.Layout<Layout::SidewaysStack>(0);
     _p33.AutoResize(true, false);
 
     auto& _file = _menu.Emplace<TitleMenuButton>("Options");
@@ -68,9 +77,7 @@ void Controller::Run()
     int _key = BT::List::NewKey();
 
     LOG("Selecting default device");
-    std::ifstream _in;
     _in.open("./settings/device");
-    std::string _line;
     std::getline(_in, _line);
     int _deviceId = std::atoi(_line.c_str());
     if (!_line.empty())
@@ -80,9 +87,10 @@ void Controller::Run()
         m_AsioDevice.OpenStream();
         m_AsioDevice.StartStream();
         _titleButton.Name(_it->info.name);
-        _channelPanel.LoadChannels();
         LoadRouting();
     }
+    _in.close();
+
 
     for (auto& _d : m_AsioDevice.Devices())
     {
@@ -91,10 +99,9 @@ void Controller::Run()
                 if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
                     return;
 
-                m_AsioDevice.SaveRouting();
+                SaveRouting();
+                _channelPanel.Clear();
                 m_AsioDevice.CloseStream();
-                m_AsioDevice.Inputs().clear();
-                m_AsioDevice.Outputs().clear();
                 m_AsioDevice.Device(_d);
                 _titleButton.Name(_d.info.name);
                 m_AsioDevice.OpenStream();
@@ -103,7 +110,6 @@ void Controller::Run()
                 _out.open("./settings/device");
                 _out << std::to_string(_d.id);
                 _out.close();
-                _channelPanel.LoadChannels(); // Reload the channels to display any new ones
                 LoadRouting();
             }, _d.info.name, _key);
 
@@ -116,14 +122,11 @@ void Controller::Run()
             if (!&m_AsioDevice.Device())
                 return;
 
-            m_AsioDevice.SaveRouting();
+            SaveRouting();
             m_AsioDevice.CloseStream();
             PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
-            m_AsioDevice.Inputs().clear();
-            m_AsioDevice.Outputs().clear();
             m_AsioDevice.OpenStream();
             m_AsioDevice.StartStream();
-            _channelPanel.LoadChannels(); // Reload the channels to display any new ones
             LoadRouting();
         }, "ASIO Control Panel", Key::CTRL_O);
 
@@ -138,7 +141,7 @@ void Controller::Run()
     auto& _sub2 = _file.Emplace<SubMenuButton>("Theme");
     _sub2.MenuBase().ButtonSize({ 120, 20 });
     _key = BT::List::NewKey();
-    _sub2.Emplace<Button<G::Menu, BT::List>>([&]
+    auto& _theme1 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
             Themes::Theme = Themes::DARK;
             _panel.Background(Theme<C::WindowBorder>::Get());
@@ -146,8 +149,14 @@ void Controller::Run()
             soundboard.Color(Theme<C::WindowBorder>::Get());
             _p33.Background(Theme<C::MainPanel>::Get());
             _channelPanel.Background(Theme<C::MainPanel>::Get());
-        }, "Dark", _key).Selected(true);
-    _sub2.Emplace<Button<G::Menu, BT::List>>([&]
+
+            std::ofstream _out;
+            _out.open("./settings/theme");
+            _out << std::to_string(Themes::Theme);
+            _out.close();
+        }, "Dark", _key);
+    if (Themes::Theme == Themes::DARK) _theme1.Selected(true);
+    auto& _theme2 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
             Themes::Theme = Themes::LIGHT;
             _panel.Background(Theme<C::WindowBorder>::Get());
@@ -155,8 +164,14 @@ void Controller::Run()
             soundboard.Color(Theme<C::WindowBorder>::Get());
             _p33.Background(Theme<C::MainPanel>::Get());
             _channelPanel.Background(Theme<C::MainPanel>::Get());
+
+            std::ofstream _out;
+            _out.open("./settings/theme");
+            _out << std::to_string(Themes::Theme);
+            _out.close();
         }, "Light", _key);
-    _sub2.Emplace<Button<G::Menu, BT::List>>([&]
+    if (Themes::Theme == Themes::LIGHT) _theme2.Selected(true);
+    auto& _theme3 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
             Themes::Theme = Themes::BLUE;
             _panel.Background(Theme<C::WindowBorder>::Get());
@@ -164,7 +179,18 @@ void Controller::Run()
             soundboard.Color(Theme<C::WindowBorder>::Get());
             _p33.Background(Theme<C::MainPanel>::Get());
             _channelPanel.Background(Theme<C::MainPanel>::Get());
+
+            std::ofstream _out;
+            _out.open("./settings/theme");
+            _out << std::to_string(Themes::Theme);
+            _out.close();
         }, "Blue", _key);
+    if (Themes::Theme == Themes::BLUE) _theme3.Selected(true);
+
+    _file.Emplace<MenuButton>([&]
+        {
+            _channelPanel.ResetGrouping();
+        }, "Reset Grouping");
     //_sub2.Emplace<Button<G::Menu, BT::List>>([&]
     //    {
     //        Themes::Theme = Themes::RED;
@@ -204,11 +230,54 @@ void Controller::Run()
         if (_saveCounter <= 0)
         {
             _saveCounter = 60 * 60;
-            m_AsioDevice.SaveRouting();
+            SaveRouting();
         }
     }
 
-    m_AsioDevice.SaveRouting();
+    SaveRouting();
+}
+
+void Controller::SaveRouting()
+{
+    if (&m_AsioDevice.Device() == nullptr)
+        return;
+
+    LOG("Saving Routing");
+    std::string data;
+    for (auto& _ch : m_List->OutputChannels())
+    {
+        auto& _i = _ch->Channels();
+        data += "out:";
+        for (auto& _a : _i.Channels())
+            data += std::to_string(_a->ID()) + ",";
+        data += ";";
+        data += std::to_string(_i.Muted()) + ";";
+        data += std::to_string(_i.Mono()) + ";";
+        data += std::to_string(_i.Pan()) + ";";
+        data += std::to_string(_i.Volume()) + "\n";
+    }
+
+    for (auto& _ch : m_List->InputChannels())
+    {
+        auto& _i = _ch->Channels();
+        data += "in:";
+        for (auto& _a : _i.Channels())
+            data += std::to_string(_a->ID()) + ",";
+        data += ";";
+        data += std::to_string(_i.Muted()) + ";";
+        data += std::to_string(_i.Mono()) + ";";
+        data += std::to_string(_i.Pan()) + ";";
+        data += std::to_string(_i.Volume()) + ";";
+        for (int i = 0; i < MAX_CHANNELS; i++)
+            if (_i.Connections()[i] != nullptr)
+                data += std::to_string(i) + ",";
+        data += "\n";
+    }
+
+    std::ofstream _out;
+    _out.open("./settings/routing" + std::to_string(m_AsioDevice.Device().id));
+    _out << data;
+    _out.close();
 }
 
 void Controller::LoadRouting()
@@ -228,9 +297,16 @@ void Controller::LoadRouting()
         std::string _rest = _line.substr(p);
 
         p = _rest.find_first_of(";");
-        std::string _idS = _rest.substr(0, p);
-        int _id = std::atoi(_idS.c_str());
+        std::string _idsS = _rest.substr(0, p);
         _rest = _rest.substr(p + 1);
+        std::vector<int> _ids;
+        while ((p = _idsS.find_first_of(",")) != -1)
+        {
+            std::string _idS = _idsS.substr(0, p);
+            int _id = std::atoi(_idS.c_str());
+            _idsS = _idsS.substr(p + 1);
+            _ids.push_back(_id);
+        }
 
         p = _rest.find_first_of(";");
         std::string _mutedS = _rest.substr(0, p);
@@ -252,43 +328,94 @@ void Controller::LoadRouting()
         float _volume = std::atof(_volumeS.c_str());
         _rest = _rest.substr(p + 1);
 
+        LOG("LOADING FROM FILE: \nids:");
+        for (int i : _ids)
+            LOG(i);
+        LOG("muted: " << _muted);
+        LOG("mono: " << _mono);
+        LOG("pan: " << _pan);
+        LOG("volume: " << _volume);
+
         if (_type == "in")
         {
-            auto& _c = *m_List->Channels()[_id];
-            if (&_c == nullptr)
-                continue;
-
+            auto& _c = m_List->EmplaceChannel<InputChannelPanel>();
+            for (int i : _ids)
+                _c.AddChannel(&m_AsioDevice.Inputs()[i]);
+            
             _c.mono.Active(_mono);
             _c.muted.Active(_muted);
             _c.pan.SliderValue(_pan);
             _c.volume.SliderValue(_volume);
 
-            _c.InputChannel()->Clear();
-            auto& _out = m_AsioDevice.Outputs();
 
+            auto& _out = m_List->OutputChannels();
             while ((p = _rest.find_first_of(",")) != -1)
             {
                 std::string _linkS = _rest.substr(0, p);
                 int _link = std::atoi(_linkS.c_str());
                 _rest = _rest.substr(p + 1);
-                auto _it = std::find_if(_out.begin(), _out.end(), [&_link](const StereoOutputChannel& obj) {return obj.ID() == _link; });
+                auto _it = std::find_if(_out.begin(), _out.end(), [&_link](OutputChannelPanel* obj) { LOG(obj->Channels().ID()); return obj->Channels().ID() == _link; });
                 if (_it != _out.end())
                 {
+                    LOG(_c.Channels().ID() << " : " << _link);
                     auto _index = std::distance(_out.begin(), _it);
-                    _c.InputChannel()->Connect(&_out[_index]);
+                    _c.Channels().Connect(&_out[_index]->Channels());
                 }
             }
+
+            //auto& _it = m_List->InputChannels().find(_id);
+            //if (_it == m_List->InputChannels().end())
+            //    continue;
+
+            //auto& _c = *m_List->InputChannels()[_id];
+            //if (&_c == nullptr)
+            //    continue;
+
+            //_c.mono.Active(_mono);
+            //_c.muted.Active(_muted);
+            //_c.pan.SliderValue(_pan);
+            //_c.volume.SliderValue(_volume);
+
+            //_c.Channels().Clear();
+            //auto& _out = m_List->OutputChannels();
+
+            //while ((p = _rest.find_first_of(",")) != -1)
+            //{
+            //    std::string _linkS = _rest.substr(0, p);
+            //    int _link = std::atoi(_linkS.c_str());
+            //    _rest = _rest.substr(p + 1);
+                //auto _it = std::find_if(_out.begin(), _out.end(), [&_link](const OutputChannels& obj) {return obj.ID() == _link; });
+                //if (_it != _out.end())
+                //{
+                    //auto _index = std::distance(_out.begin(), _it);
+                    //_c.Channels().Connect(_out[_index].get());
+               // }
+            //}
         }
         else
         {
-            auto& _c = *m_List->Channels()[-_id - 2];
-            if (&_c == nullptr)
-                continue;
+            auto& _c = m_List->EmplaceChannel<OutputChannelPanel>();
+            for (int i : _ids)
+                _c.AddChannel(&m_AsioDevice.Outputs()[i]);
 
             _c.mono.Active(_mono);
             _c.muted.Active(_muted);
             _c.pan.SliderValue(_pan);
             _c.volume.SliderValue(_volume);
-        }
+
+            //auto& _it = m_List->OutputChannels().find(-_id - 2);
+            //if (_it == m_List->OutputChannels().end())
+            //    continue;
+            
+            //auto& _c = *m_List->OutputChannels()[-_id - 2];
+            //if (&_c == nullptr)
+            //    continue;
+
+            //_c.mono.Active(_mono);
+            //_c.muted.Active(_muted);
+            //_c.pan.SliderValue(_pan);
+            //_c.volume.SliderValue(_volume);
+        }    
     }
+    _in.close();
 }

@@ -647,6 +647,9 @@ namespace SoundMixrGraphics
 
 			for (auto& _item : _menuItems)
 			{
+				if (!_item->Visible())
+					continue;
+
 				_item->Position({ _x, _y });
 				_x += _item->Width();
 				if (_item->Height() > _mh)
@@ -684,6 +687,9 @@ namespace SoundMixrGraphics
 
 			for (auto& _item : _menuItems)
 			{
+				if (!_item->Visible())
+					continue;
+
 				_y -= _item->Height();
 				_item->Position({ _x + _padding, _y - _padding });
 				if (_item->Width() > _mw)

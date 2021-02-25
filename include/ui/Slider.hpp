@@ -9,11 +9,14 @@ public:
 	{
 		m_Listener += [this](Event::MousePressed& e)
 		{
-			m_PressMouse = Vertical() ? e.y : e.x;
-			m_PressValue = m_Value;
+			if (e.button == Event::MouseButton::LEFT)
+			{
+				m_PressMouse = Vertical() ? e.y : e.x;
+				m_PressValue = m_Value;
 
-			m_Dragging = true;
-			m_NeedsRedraw = true;
+				m_Dragging = true;
+				m_NeedsRedraw = true;
+			}
 		};
 
 		m_Listener += [this](Event::MouseReleased& e)
