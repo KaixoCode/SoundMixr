@@ -27,10 +27,10 @@ public:
 		Init();
 
 		// Init the rightclick menu:
-		m_Menu.ButtonSize({ 150, 20 });
+		m_Menu.ButtonSize({ 180, 20 });
 		m_MenuTitle = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(m_Channels.Name());
 		m_MenuTitle->Disable();
-		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&, l]
 			{
 				if constexpr (std::is_same_v<This, InputChannels>) Channels().Clear();
@@ -61,13 +61,15 @@ public:
 					Channels().RemoveChannel(b);
 				}
 
+				text.Name(m_Channels.Name());
+
 				l->SortChannels();
 
 			}, "Split");
-		m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+		m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
-		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(150, 1, 2, 2);
+		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s) { m_Channels.Mute(s); }, "Mute");
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s) { m_Channels.Mono(s); }, "Mono");
 
@@ -111,10 +113,14 @@ public:
 		}
 
 		if (s != &m_Channels)
+		{
+			m_Connect->Name(std::string("Combine with ") + s->Name());
 			m_Connect->Visible(true);
-		else 
+		}
+		else
+		{
 			m_Connect->Visible(false);
-
+		}
 		m_SelectedSame = s;
 	}
 
