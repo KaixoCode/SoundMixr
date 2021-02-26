@@ -165,8 +165,8 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 		for (int k = 0; k < _inChannels; k++)
 		{
 			auto& _inChannel = _inputs[k];
-			//_inChannel.Level(_inBuffer[i * _inChannels + k]);
-			_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
+			_inChannel.Level(_inBuffer[i * _inChannels + k]);
+			//_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
 
 			if (i == 0)
 			{
