@@ -165,8 +165,8 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 		for (int k = 0; k < _inChannels; k++)
 		{
 			auto& _inChannel = _inputs[k];
-			_inChannel.Level(_inBuffer[i * _inChannels + k]);
-			//_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
+			//_inChannel.Level(_inBuffer[i * _inChannels + k]);
+			_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
 
 			if (i == 0)
 			{
@@ -174,9 +174,11 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 				_inChannel.TPeak(0);
 			}
 
-			float _absLevel = std::abs(_inChannel.Level());
-			if (_absLevel > _inChannel.TPeak())
-				_inChannel.TPeak(_absLevel);
+			float _level = _inChannel.Level();
+			if (_level > _inChannel.TPeak())
+				_inChannel.TPeak(_level);
+			if (-_level > _inChannel.TPeak())
+				_inChannel.TPeak(-_level);
 		}
 
 		for (int j = 0; j < _outChannels; j++)
@@ -191,9 +193,10 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 			}
 
 			float _level = _outChannel.Level();
-			float _absLevel = std::abs(_level);
-			if (_absLevel > _outChannel.TPeak())
-				_outChannel.TPeak(_absLevel);
+			if (_level > _outChannel.TPeak())
+				_outChannel.TPeak(_level);
+			if (-_level > _outChannel.TPeak())
+				_outChannel.TPeak(-_level);
 
 			*_outBuffer++ = constrain(_level, -1.0f, 1.0f);
 		}
