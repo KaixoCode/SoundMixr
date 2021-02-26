@@ -103,7 +103,7 @@ public:
 		auto a = static_cast<OutputChannelGroup*>(m_Group);
 		float monoLevels = 0;
 		int amt = 0;
-		if (m_Group != nullptr)
+		if (_monoLevel && m_Group != nullptr)
 		{
 			for (auto& i : a->Channels())
 			{
