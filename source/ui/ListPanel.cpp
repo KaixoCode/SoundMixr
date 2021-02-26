@@ -38,13 +38,13 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 						for (auto& _p : m_OutputChannels)
 						{
 							OutputChannelPanel& _c = *_p;
-							_c.Select(&_current.Channels());
+							_c.Select(&_current.ChannelGroup());
 							_c.Selected(false);
 						}
 						for (auto& _p : m_InputChannels)
 						{
 							InputChannelPanel& _c = *_p;
-							_c.Select(&_current.Channels());
+							_c.Select(&_current.ChannelGroup());
 							_c.Selected(false);
 						}
 						_current.Selected(true);
@@ -62,13 +62,13 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 						for (auto& _p : m_InputChannels)
 						{
 							ChannelPanel<::InputChannelGroup>& _c = *_p;
-							_c.Select(&_current.Channels());
+							_c.Select(&_current.ChannelGroup());
 							_c.Selected(false);
 						}
 						for (auto& _p : m_OutputChannels)
 						{
 							OutputChannelPanel& _c = *_p;
-							_c.Select(&_current.Channels());
+							_c.Select(&_current.ChannelGroup());
 							_c.Selected(false);
 						}
 						_current.Selected(true);
@@ -119,7 +119,7 @@ void ListPanel::SortChannels()
 			InputChannelPanel* _inb = dynamic_cast<InputChannelPanel*>(b.get());
 
 			if (_ina != nullptr && _inb != nullptr)
-				return _ina->Channels().ID() < _inb->Channels().ID();
+				return _ina->ChannelGroup().ID() < _inb->ChannelGroup().ID();
 
 			return -1;
 		});
@@ -131,7 +131,7 @@ void ListPanel::SortChannels()
 			OutputChannelPanel* _inb = dynamic_cast<OutputChannelPanel*>(b.get());
 
 			if (_ina != nullptr && _inb != nullptr)
-				return _ina->Channels().ID() < _inb->Channels().ID();
+				return _ina->ChannelGroup().ID() < _inb->ChannelGroup().ID();
 
 			return -1;
 		});

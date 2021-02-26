@@ -296,7 +296,7 @@ void Controller::SaveRouting()
     std::string data;
     for (auto& _ch : m_List->OutputChannels())
     {
-        auto& _i = _ch->Channels();
+        auto& _i = _ch->ChannelGroup();
         data += "out:";
         for (auto& _a : _i.Channels())
             data += std::to_string(_a->ID()) + ",";
@@ -309,7 +309,7 @@ void Controller::SaveRouting()
 
     for (auto& _ch : m_List->InputChannels())
     {
-        auto& _i = _ch->Channels();
+        auto& _i = _ch->ChannelGroup();
         data += "in:";
         for (auto& _a : _i.Channels())
             data += std::to_string(_a->ID()) + ",";
@@ -431,14 +431,14 @@ void Controller::LoadRouting()
                 
                 // Find the OutputChannelPanel belonging to that id and connect them
                 auto _it = std::find_if(_out.begin(), _out.end(), [&_link](OutputChannelPanel* obj)
-                    { return obj->Channels().ID() == _link; }
+                    { return obj->ChannelGroup().ID() == _link; }
                 );
 
                 if (_it != _out.end())
                 {
-                    LOG(_c.Channels().ID() << " routed to: " << _link);
+                    LOG(_c.ChannelGroup().ID() << " routed to: " << _link);
                     auto _index = std::distance(_out.begin(), _it);
-                    _c.Channels().Connect(&_out[_index]->Channels());
+                    _c.ChannelGroup().Connect(&_out[_index]->ChannelGroup());
                 }
             }
         }

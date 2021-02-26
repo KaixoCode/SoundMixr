@@ -16,29 +16,29 @@ public:
 
 	template<typename T>
 	ChannelPanel(T* l)
-		: m_Channels(),
-		text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, m_Channels.Name())),
+		: m_ChannelGroup(),
+		text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, m_ChannelGroup.Name())),
 		volume(Emplace<VolumeSlider>()),
 		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, Input ? "in" : "")),
-		muted(Emplace<Button<MuteButton, ButtonType::Toggle>>([&](bool s) { m_Channels.Mute(s); }, "MUTE")),
-		mono(Emplace<Button<MonoButton, ButtonType::Toggle>>([&](bool s) { m_Channels.Mono(s); }, "MONO")),
+		muted(Emplace<Button<MuteButton, ButtonType::Toggle>>([&](bool s) { m_ChannelGroup.Mute(s); }, "MUTE")),
+		mono(Emplace<Button<MonoButton, ButtonType::Toggle>>([&](bool s) { m_ChannelGroup.Mono(s); }, "MONO")),
 		pan(Emplace<PanSlider>())
 	{
 		Init();
 
 		// Init the rightclick menu:
 		m_Menu.ButtonSize({ 180, 20 });
-		m_MenuTitle = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(m_Channels.Name());
+		m_MenuTitle = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(m_ChannelGroup.Name());
 		m_MenuTitle->Disable();
 		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&, l]
 			{
-				if constexpr (std::is_same_v<This, InputChannelGroup>) Channels().Clear();
-				if constexpr (std::is_same_v<This, OutputChannelGroup>) Channels().Clear();
+				if constexpr (std::is_same_v<This, InputChannelGroup>) ChannelGroup().Clear();
+				if constexpr (std::is_same_v<This, OutputChannelGroup>) ChannelGroup().Clear();
 				if constexpr (std::is_same_v<This, InputChannelGroup>) m_SelectedSame->Clear();
 				if constexpr (std::is_same_v<This, OutputChannelGroup>) m_SelectedSame->Clear();
 
-				for (auto& c : Channels().Channels())
+				for (auto& c : ChannelGroup().Channels())
 					m_SelectedSame->AddChannel(c);
 
 				m_Delete = true;
@@ -48,15 +48,15 @@ public:
 			{
 				auto& a = l->EmplaceChannel<ChannelPanel<This>>();
 
-				int size = Channels().Size() / 2;
+				int size = ChannelGroup().Size() / 2;
 				for (int i = 0; i < size; i++)
 				{
-					auto b = Channels().Channels()[0];
+					auto b = ChannelGroup().Channels()[0];
 					a.AddChannel(b);
-					Channels().RemoveChannel(b);
+					ChannelGroup().RemoveChannel(b);
 				}
 
-				text.Name(m_Channels.Name());
+				text.Name(m_ChannelGroup.Name());
 
 				l->SortChannels();
 
@@ -65,8 +65,8 @@ public:
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { volume.SliderValue(1); }, "Reset Volume");
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { pan.SliderValue(0); }, "Reset Pan");
 		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s) { m_Channels.Mute(s); }, "Mute");
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s) { m_Channels.Mono(s); }, "Mono");
+		m_MenuMuted = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s) { m_ChannelGroup.Mute(s); }, "Mute");
+		m_MenuMono = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s) { m_ChannelGroup.Mono(s); }, "Mono");
 
 		m_Listener += [this](Event::MousePressed& e)
 		{
@@ -80,12 +80,12 @@ public:
 		m_HasSelect = true;
 		if constexpr (Input)
 		{
-			m_Routed = m_Channels.Connected(s);
+			m_Routed = m_ChannelGroup.Connected(s);
 			routed.Enable();
 		}
 		else
 		{
-			m_Routed = s->Connected(&m_Channels);
+			m_Routed = s->Connected(&m_ChannelGroup);
 			routed.Enable();
 		}
 
@@ -107,7 +107,7 @@ public:
 			routed.Disable();
 		}
 
-		if (s != &m_Channels)
+		if (s != &m_ChannelGroup)
 		{
 			m_Connect->Name(std::string("Combine with ") + s->Name());
 			m_Connect->Visible(true);
@@ -122,9 +122,9 @@ public:
 	template<typename T>
 	void AddChannel(T* s)
 	{
-		m_Channels.AddChannel(s);
-		text.Name(m_Channels.Name());
-		m_MenuTitle->Name(m_Channels.Name());
+		m_ChannelGroup.AddChannel(s);
+		text.Name(m_ChannelGroup.Name());
+		m_MenuTitle->Name(m_ChannelGroup.Name());
 	}
 
 	void Selected(bool v) { m_Selected = v; }
@@ -132,7 +132,7 @@ public:
 	void Unselect() { m_HasSelect = false; routed.Disable(); m_Connect->Visible(false); }
 	void Routed(bool v) { m_Routed = v; }
 	bool Routed() { return m_Routed; }
-	auto Channels()  -> This& { return m_Channels; }
+	auto ChannelGroup()  -> This& { return m_ChannelGroup; }
 	void Transparency(bool t) { m_Transparency = t; }
 	void Vertical() { m_Vertical = true; }
 	void Horizontal() { m_Vertical = false; };
@@ -142,7 +142,7 @@ private:
 	// This private thing is defined here because it needs to be initialized first
 	// in the constructor, so it is defined above all other things that are
 	// initialized in the constructor. Yes, that is how C++ works, learn your shit!
-	This m_Channels;
+	This m_ChannelGroup;
 
 public:
 	Button<SmallText, ButtonType::Normal>& text;
@@ -153,7 +153,7 @@ public:
 	VolumeSlider& volume;
 
 private:
-	ButtonBase* m_Connect, *m_MenuTitle, *m_Split;
+	ButtonBase* m_Connect, *m_MenuTitle, *m_Split, *m_MenuMono, *m_MenuMuted;
 
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	bool m_Transparency = false;
@@ -194,21 +194,21 @@ private:
 		if (m_HasSelect)
 			if constexpr (!Input)
 				if (m_Routed)
-					if (!m_SelectedChannels->Connected(&m_Channels))
-						m_SelectedChannels->Connect(&m_Channels);
+					if (!m_SelectedChannels->Connected(&m_ChannelGroup))
+						m_SelectedChannels->Connect(&m_ChannelGroup);
 					else;
 				else
-					if (m_SelectedChannels->Connected(&m_Channels))
-						m_SelectedChannels->Disconnect(&m_Channels);
+					if (m_SelectedChannels->Connected(&m_ChannelGroup))
+						m_SelectedChannels->Disconnect(&m_ChannelGroup);
 					else;
 			else if constexpr (Input)
 				if (m_Routed)
-					if (!m_Channels.Connected(m_SelectedChannels))
-						m_Channels.Connect(m_SelectedChannels);
+					if (!m_ChannelGroup.Connected(m_SelectedChannels))
+						m_ChannelGroup.Connect(m_SelectedChannels);
 					else;
 				else
-					if (m_Channels.Connected(m_SelectedChannels))
-						m_Channels.Disconnect(m_SelectedChannels);
+					if (m_ChannelGroup.Connected(m_SelectedChannels))
+						m_ChannelGroup.Disconnect(m_SelectedChannels);
 					else;
 
 		Color c;
@@ -224,7 +224,7 @@ private:
 		m_Div3->Color(Theme<C::Divider>::Get());
 		m_Div3->Visible(m_Connect->Visible() || m_Split->Visible());
 
-		m_Split->Visible(Channels().Channels().size() > 1);
+		m_Split->Visible(ChannelGroup().Channels().size() > 1);
 
 		if (m_Vertical)
 		{
@@ -253,8 +253,13 @@ private:
 			Width(70);
 		}
 
-		m_Channels.Volume(volume.SliderValue());
-		m_Channels.Pan(pan.SliderValue());
+		m_MenuMono->Active(m_ChannelGroup.Mono());
+		m_MenuMuted->Active(m_ChannelGroup.Muted());
+		mono.Active(m_ChannelGroup.Mono());
+		muted.Active(m_ChannelGroup.Muted());
+
+		m_ChannelGroup.Volume(volume.SliderValue());
+		m_ChannelGroup.Pan(pan.SliderValue());
 
 		Panel::Update(viewport);
 	}
@@ -268,7 +273,7 @@ private:
 		m_NeedsRedraw = false;
 		Background(d);
 
-		int _channels = m_Channels.Size();;
+		int _channels = m_ChannelGroup.Size();;
 		
 		if (m_Vertical)
 		{
@@ -283,7 +288,7 @@ private:
 			for (int i = 0; i < _channels; i++)
 			{
 				_y = 10 + i * (_h + (_channels > 4 ? 1 : 2));
-				float _level = m_Channels.Channels()[i]->Peak();
+				float _level = m_ChannelGroup.Channels()[i]->Peak();
 
 				int _w = (std::min(_level, 1.412536f) / 1.412536) * (_rw);
 				d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
@@ -358,7 +363,7 @@ private:
 			for (int i = 0; i < _channels; i++)
 			{
 				_x = 10 + i * (_w + (_channels > 4 ? 1 : 2));
-				float _level = std::powf(m_Channels.Channels()[i]->Peak(), 0.25);
+				float _level = std::powf(m_ChannelGroup.Channels()[i]->Peak(), 0.25);
 
 				int _h = (std::min(_level, 1.412536f) / 1.412536) * (_rh);
 				d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
