@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.hpp"
-#define MAX_CHANNELS 100
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Device ------------------------------------ \\
@@ -103,7 +102,7 @@ public:
 		auto a = static_cast<OutputChannelGroup*>(m_Group);
 		float monoLevels = 0;
 		int amt = 0;
-		if (_monoLevel && m_Group != nullptr)
+		if (m_Group != nullptr)
 		{
 			for (auto& i : a->Channels())
 			{
