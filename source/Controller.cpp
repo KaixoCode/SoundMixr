@@ -66,6 +66,7 @@ void Controller::Run()
     auto& _panel = mainWindow.Panel();
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
     _panel.Background(Theme<C::WindowBorder>::Get());
+    _panel.SmartPanel(false);
 
     auto& _p3 = _panel.Emplace<Panel>();
     _p3.Width(260);

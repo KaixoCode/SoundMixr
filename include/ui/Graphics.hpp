@@ -432,10 +432,10 @@ public:
 			d.Command<Triangle>(Vec4<int>{b.X() - _p + b.Width(), _y + _p, 8, _he}, 180.0f);
 			d.Command<Quad>(Vec4<int>{b.X() + _p, _y + _p - 1, b.Width() - _p * 2, 3});
 
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
-			d.Command<Fill>(Theme<C::TextSmall>::Get());
-			d.Command<TextAlign>(Align::CENTER, Align::TOP);
-			d.Command<Text>(&b.ValueText(), Vec2<int>{b.X() + _p + _w / 2, b.Y()});
+			//d.Command<Font>(Fonts::Gidole14, 14.0f);
+			//d.Command<Fill>(Theme<C::TextSmall>::Get());
+			//d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			//d.Command<Text>(&b.ValueText(), Vec2<int>{b.X() + _p + _w / 2, b.Y()});
 		}
 		else
 		{
@@ -451,10 +451,10 @@ public:
 			d.Command<Triangle>(Vec4<int>{_x + _p, b.Y() - _p + b.Height(), _we, 8}, 270.0f);
 			d.Command<Quad>(Vec4<int>{_x + _p - 1, b.Y() + _p, 3, b.Height() - _p * 2});
 
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
-			d.Command<Fill>(Theme<C::TextSmall>::Get());
-			d.Command<TextAlign>(Align::CENTER, Align::TOP);
-			d.Command<Text>(&b.ValueText(), Vec2<int>{b.X(), b.Y() + _p + _h / 2});
+			//d.Command<Font>(Fonts::Gidole14, 14.0f);
+			//d.Command<Fill>(Theme<C::TextSmall>::Get());
+			//d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			//d.Command<Text>(&b.ValueText(), Vec2<int>{b.X(), b.Y() + _p + _h / 2});
 		}
 	}
 };

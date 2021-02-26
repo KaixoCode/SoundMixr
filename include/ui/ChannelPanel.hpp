@@ -17,7 +17,6 @@ public:
 	template<typename T>
 	ChannelPanel(T* l)
 		: m_ChannelGroup(),
-		text(Emplace<Button<SmallText, ButtonType::Normal>>([]() {}, m_ChannelGroup.Name())),
 		volume(Emplace<VolumeSlider>()),
 		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, Input ? "in" : "")),
 		muted(Emplace<Button<MuteButton, ButtonType::Toggle>>([&](bool s) { m_ChannelGroup.Mute(s); }, "MUTE")),
@@ -55,8 +54,6 @@ public:
 					a.AddChannel(b);
 					ChannelGroup().RemoveChannel(b);
 				}
-
-				text.Name(m_ChannelGroup.Name());
 
 				l->SortChannels();
 
@@ -123,7 +120,6 @@ public:
 	void AddChannel(T* s)
 	{
 		m_ChannelGroup.AddChannel(s);
-		text.Name(m_ChannelGroup.Name());
 		m_MenuTitle->Name(m_ChannelGroup.Name());
 	}
 
@@ -145,7 +141,7 @@ private:
 	This m_ChannelGroup;
 
 public:
-	Button<SmallText, ButtonType::Normal>& text;
+	//Button<SmallText, ButtonType::Normal>& text;
 	Button<RouteButton, ButtonType::Toggle>& routed;
 	Button<MuteButton, ButtonType::Toggle>& muted;
 	Button<MonoButton, ButtonType::Toggle>& mono;
@@ -182,8 +178,6 @@ private:
 		mono.Size({ 27, 25 });
 		routed.Position(Vec2<int>{0, 0});
 		routed.Size({ 70, 25 });
-		text.Disable();
-		text.Size({ 70, 24 });
 		routed.Disable();
 
 		Width(70);
@@ -234,7 +228,6 @@ private:
 			muted.Position(Vec2<int>{38, 29});
 			mono.Position(Vec2<int>{5, 29});
 			routed.Position(Vec2<int>{0, 0});
-			text.Position(Vec2<int>{0, Height() - 24});
 			volume.Size(Vec2<int>{Width() - 135, 50});
 			pan.Size(Vec2<int>{62, 19});
 			Height(70);
@@ -247,7 +240,6 @@ private:
 			muted.Position(Vec2<int>{5, 50});
 			mono.Position(Vec2<int>{38, 50});
 			routed.Position(Vec2<int>{0, 0});
-			text.Position(Vec2<int>{0, Height() - 24});
 			volume.Size(Vec2<int>{50, Height() - 135});
 			pan.Size(Vec2<int>{62, 19});
 			Width(70);
@@ -260,7 +252,6 @@ private:
 
 		m_ChannelGroup.Volume(volume.SliderValue());
 		m_ChannelGroup.Pan(pan.SliderValue());
-
 		Panel::Update(viewport);
 	}
 
@@ -285,6 +276,7 @@ private:
 			int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rw)) + _x;
 			int _h = (32.0 / _channels) - (_channels > 4 ? 1 : 2);
 
+			//d.Command<Graphics::FrameBuffer>(1234, true, Vec4<int>{ -1, -1, -1, -1 });
 			for (int i = 0; i < _channels; i++)
 			{
 				_y = 10 + i * (_h + (_channels > 4 ? 1 : 2));
@@ -313,6 +305,17 @@ private:
 					d.Command<Graphics::Quad>(Vec4<int>{_6db, _y, _w - _6db + _x, _h});
 				}
 			}
+			//d.Command<Graphics::FrameBufferEnd>();
+
+			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Fill>(Theme<C::TextSmall>::Get());
+			d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			d.Command<Text>(&volume.ValueText(), Vec2<int>{volume.X(), volume.Y() + 6 + (volume.Height() - 6 * 2) / 2});
+
+			d.Command<Font>(Fonts::Gidole16, 16.0f);
+			d.Command<Fill>(Theme<C::TextSmall>::Get());
+			d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			d.Command<Text>(&m_ChannelGroup.Name(), Vec2<int>{ Width() / 2, volume.Height() - 10 });
 
 			int _d = 3;
 			bool _b = true;
@@ -360,6 +363,7 @@ private:
 			int _w = (32.0 / _channels) - (_channels > 4 ? 1 : 2);
 			int _x = 10;
 
+			//d.Command<Graphics::FrameBuffer>(1234, true, Vec4<int>{ -1, -1, -1, -1 });
 			for (int i = 0; i < _channels; i++)
 			{
 				_x = 10 + i * (_w + (_channels > 4 ? 1 : 2));
@@ -388,6 +392,17 @@ private:
 					d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
 				}
 			}
+			//d.Command<Graphics::FrameBufferEnd>();
+
+			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Fill>(Theme<C::TextSmall>::Get());
+			d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			d.Command<Text>(&volume.ValueText(), Vec2<int>{volume.X() + 6 + (volume.Width() - 6 * 2) / 2, volume.Y()});
+			
+			d.Command<Font>(Fonts::Gidole16, 16.0f);
+			d.Command<Fill>(Theme<C::TextSmall>::Get());
+			d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			d.Command<Text>(&m_ChannelGroup.Name(), Vec2<int>{ Width() / 2, Height() - 4 });
 
 			int _d = 3;
 			bool _b = true;
@@ -426,7 +441,10 @@ private:
 			d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 		}
 
+		//d.Command<Graphics::FrameBuffer>(1234, true, Vec4<int>{ -1, -1, -1, -1 });
 		Container::Render(d);
+		//d.Command<Graphics::FrameBufferEnd>();
+
 		//d.Command<FrameBufferEnd>();
 		d.Command<PopMatrix>();
 	}

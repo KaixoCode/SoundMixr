@@ -20,7 +20,7 @@ public:
 	InputChannelPanel& EmplaceChannel()
 	{
 		auto& panl = m_InputChannels.emplace_back(&m_Inputs.Emplace<InputChannelPanel>(this));
-		panl->SmartPanel(true);
+		//panl->SmartPanel(true);
 		return *panl;
 	}
 
@@ -28,7 +28,7 @@ public:
 	OutputChannelPanel& EmplaceChannel()
 	{
 		auto& panl = m_OutputChannels.emplace_back(&m_Outputs.Emplace<OutputChannelPanel>(this));
-		panl->SmartPanel(true);
+		//panl->SmartPanel(true);
 		return *panl;
 	}
 
@@ -42,6 +42,12 @@ public:
 
 	void Clear() { m_Inputs.Clear(); m_InputChannels.clear(); m_Outputs.Clear(); m_OutputChannels.clear(); };
 	void Update(const Vec4<int>& s) override;
+	void Render(CommandCollection& d) override
+	{
+		//d.Command<Graphics::FrameBuffer>(1234, true, Vec4<int>{Position(), Size() + Vec2<int>{ 10, 10 }});
+		//d.Command<Graphics::FrameBufferEnd>();
+		ScrollPanel::Render(d);
+	}
 
 	// Overwrite these methods from ScrollPanel for custom ScrollbarGraphics	
 	::Panel& Panel() const { return *m_Panel; }

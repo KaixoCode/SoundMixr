@@ -33,7 +33,7 @@ public:
 		{
 			if (e.button != Event::MouseButton::LEFT || !m_Dragging)
 				return;
-			
+
 			m_NeedsRedraw = true;
 			if (Vertical())
 			{
@@ -70,6 +70,8 @@ public:
 	{
 		if (m_Counter > 0)
 			m_Counter--;
+
+		NeedsRedraw(false);
 
 		Graphics::Render(*this, d);
 	};
