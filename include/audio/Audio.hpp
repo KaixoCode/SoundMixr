@@ -21,6 +21,11 @@ public:
 // -------------------------- Output Channel -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
+class InputChannel;
+class OutputChannel;
+class InputChannelGroup;
+class OutputChannelGroup;
+
 class OutputChannel
 {
 public:
@@ -28,85 +33,182 @@ public:
 		: m_Id(id), m_Name(name)
 	{}
 	
-	int   ID() const { return m_Id; }
-	auto  Name() -> std::string& { return m_Name; }
+	template<typename T>
+	void Connect(T* in) 
+	{ 
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), in);
+		if (it == m_Connected.end() && in != nullptr)
+			m_Connected.push_back(in);
+	}
 
+	template<typename T>
+	void Disconnect(T* in)
+	{
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), in);
+		if (it != m_Connected.end())
+			m_Connected.erase(it);
+	}
+
+	auto Name() -> std::string& { return m_Name; }
+	void Group(void* p) { m_Group = p; }
 	void Volume(float v) { m_Volume = v; }
 	void Pan(float p) { m_Pan = p; }
 	void Level(float l) { m_Level = l; }
-	void AddLevel(float l) { m_Level += l; }
+	void MonoLevel(float l) { m_MonoLevel = l; }
 	void Peak(float l) { m_Peak = l; }
 	void TPeak(float v) { m_TPeak = v; }
 	void Mute(bool v) { m_Muted = v; }
 	void Mono(bool v) { m_Mono = v; }
 
+	int	  ID() const { return m_Id; }
 	float Volume() { return m_Volume; }
 	float Pan() { return m_Pan; }
-	float Level() { return (1 - m_Muted) * m_Level * m_Volume * m_Pan; }
 	float Peak() { return m_Peak; }
 	bool  Muted() { return m_Muted; }
 	bool  Mono() { return m_Mono; }
 	float TPeak() { return m_TPeak; }
+	float RLevel() { return m_Level; }
+	float MonoLevel() { return m_MonoLevel; }
+
+	template<typename T = InputChannel>
+	float Level() 
+	{ 
+		if (m_Muted)
+			return 0;
+
+		float _level = 0, _monoLevel = 0;
+		for (auto& i : m_Connected)
+			if (static_cast<T*>(i)->Mono())
+				_monoLevel += static_cast<T*>(i)->Level();
+			else
+				_level += static_cast<T*>(i)->Level();
+		Level(_level);
+		MonoLevel(_monoLevel);
+
+		float _clevel;
+		if (m_Mono && m_Group != nullptr)
+		{
+			auto a = static_cast<OutputChannelGroup*>(m_Group);
+			float level = 0;
+			for (auto& i : a->Channels())
+				level += i->RLevel();
+
+			_clevel = level / a->Size();
+		}
+		else
+		{
+			_clevel = m_Level;
+		}
+
+		auto a = static_cast<OutputChannelGroup*>(m_Group);
+		float monoLevels = 0;
+		int amt = 0;
+		if (m_Group != nullptr)
+		{
+			for (auto& i : a->Channels())
+			{
+				if (!i->MonoLevel())
+					continue;
+
+				amt++;
+				monoLevels += i->MonoLevel();
+			}
+		}
+
+		if (amt)
+			monoLevels /= amt;
+
+		return (monoLevels + _clevel) * m_Volume * m_Pan;
+	}
 
 private:
 	bool m_Mono = false,
 		m_Muted = false;
 
-	float m_Level = 0,
+	float m_Level = 0, m_MonoLevel = 0,
 		m_Peak = 0, 
 		m_TPeak = 0,
 		m_Pan = 1,
 		m_Volume = 1;
 
+	void* m_Group = nullptr;
+
 	std::string m_Name;
 	int m_Id;
+	std::vector<void*> m_Connected;
 };
 
-class InputChannels;
-class OutputChannels;
-
 // Collection of OutputChannel objects
-class OutputChannels
+class OutputChannelGroup
 {
 public:
 	using Type = OutputChannel;
 
-	OutputChannels()
+	OutputChannelGroup()
+	{}
+
+	~OutputChannelGroup()
 	{
-		for (int i = 0; i < MAX_CHANNELS; i++)
-			m_Connected[i] = nullptr;
+		Clear();
 	}
 
 	auto Name() -> std::string& { return Size() ? m_Channels[0]->Name() : m_Name; }
 	int  ID() const { return Size() ? m_Channels[0]->ID() : -1; }
 	int  Size() const { return m_Channels.size(); }
-	void AddChannel(OutputChannel* c) { m_Channels.push_back(c); }
 	std::vector<OutputChannel*>& Channels() { return m_Channels; }
+	
+	void AddChannel(OutputChannel* c)
+	{
+		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
+		if (a == m_Channels.end() && c != nullptr)
+		{
+			Clear();
+			if (Size() == 0)
+			{
+				c->Mono(false);
+				c->Mute(false);
+			}
+			m_Channels.push_back(c);
+			c->Group(this);
+			c->Mono(Mono());
+			c->Mute(Muted());
+			Pan(Pan());
+		}
+	}
 
 	void RemoveChannel(OutputChannel* c)
 	{
 		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
 		if (a != m_Channels.end())
+		{
+			Clear();
 			m_Channels.erase(a);
+		}
 	}
 
 	template<typename T>
-	void Connect(T* in) { m_Connected[in->ID()] = in; }
+	void Connect(T* in)
+	{
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), in);
+		if (it == m_Connected.end() && in != nullptr)
+			m_Connected.push_back(in);
+	}
 
 	template<typename T>
-	void Disconnect(T* in) { m_Connected[in->ID()] = nullptr; }
+	void Disconnect(T* in)
+	{
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), in);
+		if (it != m_Connected.end())
+			m_Connected.erase(it);
+	}
 
-	template<typename T>
+	template<typename T = InputChannelGroup>
 	void Clear()
 	{
-		for (int i = 0; i < MAX_CHANNELS; i++)
+		for (auto& i : m_Connected)
 		{
-			// Call me lazy but circular dependencies are a pain
-			// so I just do it like this, live with it.
-			if (m_Connected[i] != nullptr)
-				static_cast<T*>(m_Connected[i])->Disconnect(this);
-
-			m_Connected[i] = nullptr;
+			static_cast<T*>(i)->Disconnect(this);
+			Disconnect(i);
 		}
 	}
 
@@ -130,14 +232,14 @@ public:
 
 	bool Muted() { return Size() ? m_Channels[0]->Muted() : false; }
 	void Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); }
-	bool Mono() { return Size() ? m_Channels[0]->Muted() : false; }
+	bool Mono() { return Size() ? m_Channels[0]->Mono() : false; }
 	void Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); }
 
 private:
 	float m_Pan = 0;
 	std::string m_Name = "APPLE";
 	std::vector<OutputChannel*> m_Channels;
-	void* m_Connected[MAX_CHANNELS];
+	std::vector<void*> m_Connected;
 };
 
 // -------------------------------------------------------------------------- \\
@@ -149,19 +251,29 @@ class InputChannel
 public:
 	InputChannel(int id, const std::string& name)
 		: m_Id(id), m_Name(name)
-	{
-		Clear();
-	}
+	{}
 
 	int  ID() const { return m_Id; }
 	auto Name() -> std::string& { return m_Name; }
 
-	bool Connected(OutputChannel* out) const { return m_Connected[out->ID()] != nullptr; }
-	void Connect(OutputChannel* out) { m_Connected[out->ID()] = out;  }
-	void Disconnect(OutputChannel* out) { m_Connected[out->ID()] = nullptr;  }
-	auto Connections() -> OutputChannel** { return m_Connected; }
-	void Clear() { for (int i = 0; i < MAX_CHANNELS; i++) m_Connected[i] = nullptr; }
+	//bool Connected(OutputChannel* out) const { return m_Connected[out->ID()] != nullptr; }
+	//auto Connections() -> OutputChannel** { return m_Connected; }
+	
+	void Connect(OutputChannel* out) 
+	{ 
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
+		if (it == m_Connected.end() && out != nullptr)
+			m_Connected.push_back(out);
+	}
 
+	void Disconnect(OutputChannel* out) 
+	{ 
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
+		if (it != m_Connected.end())
+			m_Connected.erase(it);
+	}
+
+	void Group(void* p) { m_Group = p; }
 	void Volume(float v) { m_Volume = v; }
 	void Pan(float p) { m_Pan = p; }
 	void Level(float l) { m_Level = l; }
@@ -172,7 +284,29 @@ public:
 
 	float Volume() { return m_Volume; }
 	float Pan() { return m_Pan; }
-	float Level() { return (1 - m_Muted) * m_Level * m_Volume * m_Pan; }
+
+	float RLevel() { return m_Level; }
+
+	template<typename T = InputChannelGroup>
+	float Level() 
+	{
+		if (m_Muted)
+			return 0;
+
+		if (m_Mono && m_Group != nullptr)
+		{
+			auto a = static_cast<T*>(m_Group);
+			float level = 0;
+			for (auto& i : a->Channels())
+				level += i->RLevel();
+			
+			level *= m_Pan * m_Volume;
+			return level /= a->Size();
+		}
+
+		return m_Level * m_Volume * m_Pan; 
+	}
+
 	float Peak() { return m_Peak; }
 	float TPeak() { return m_TPeak; }
 	bool  Muted() { return m_Muted; }
@@ -188,86 +322,106 @@ private:
 		m_Pan = 1,
 		m_Volume = 1;
 
+	void* m_Group = nullptr;
+
 	std::string m_Name;
 	int m_Id;
 
-	OutputChannel* m_Connected[MAX_CHANNELS];
+	std::vector<OutputChannel*> m_Connected;
 };
 
 // Collection of InputChannel objects
-class InputChannels
+class InputChannelGroup
 {
 public:
 	using Type = InputChannel;
 
-	InputChannels()
+	InputChannelGroup()
+	{}
+
+	~InputChannelGroup()
 	{
-		for (int i = 0; i < MAX_CHANNELS; i++)
-			m_Connected[i] = nullptr;
+		Clear();
 	}
 
 	auto Name() -> std::string& { return Size() ? m_Channels[0]->Name() : m_Name; }
 	int  ID() const { return Size() ? m_Channels[0]->ID() : -1; }
-	bool Connected(OutputChannels* out) const { return m_Connected[out->ID()] != nullptr; }
-	auto Connections() -> OutputChannels** { return m_Connected; }
+	auto Connections() -> std::vector<OutputChannelGroup*> { return m_Connected; }
 	int  Size() const { return m_Channels.size(); }
 	std::vector<InputChannel*>& Channels() { return m_Channels; }
 	
-	void Connect(OutputChannels* out) 
-	{ 
-		for (int i = 0; i < Size(); i++)
-			m_Channels[i]->Connect(out->Channels()[i % out->Size()]);
-		
-		m_Connected[out->ID()] = out; 
-		m_Connected[out->ID()]->Connect(this);
+	bool Connected(OutputChannelGroup* out) const 
+	{
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
+		return it != m_Connected.end();
 	}
 	
-	void Disconnect(OutputChannels* out) 
+	void Connect(OutputChannelGroup* out) 
 	{ 
-		for (int i = 0; i < Size(); i++)
-			m_Channels[i]->Disconnect(out->Channels()[i % out->Size()]);
+		// Make sure it isn't already connected
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
+		if (it == m_Connected.end() && out != nullptr)
+		{
+			// Add to connected and connect this to out
+			m_Connected.push_back(out);
+			out->Connect(this);
 
-		if (m_Connected[out->ID()])
-			m_Connected[out->ID()]->Disconnect(this);
-		
-		m_Connected[out->ID()] = nullptr;
+			// Then connect all channels
+			for (int i = 0; i < Size(); i++)
+			{
+				m_Channels[i]->Connect(out->Channels()[i % out->Size()]);
+				out->Channels()[i % out->Size()]->Connect(m_Channels[i]);
+			}
+		}
+	}
+	
+	void Disconnect(OutputChannelGroup* out) 
+	{ 
+		// Make sure it isn't already connected
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
+		if (it != m_Connected.end())
+		{
+			// Remove the connection
+			m_Connected.erase(it);
+			out->Disconnect(this);
+
+			// Then disconnect all channels
+			for (int i = 0; i < Size(); i++)
+			{
+				m_Channels[i]->Disconnect(out->Channels()[i % out->Size()]);
+				out->Channels()[i % out->Size()]->Disconnect(m_Channels[i]);
+			}
+		}
 	}
 	
 	void Clear() 
 	{ 
-		for (int i = 0; i < MAX_CHANNELS; i++) 
-		{
-			if (m_Connected[i] != nullptr)
-			{
-				Disconnect(m_Connected[i]);
-			}
-		}
+		for (auto& i : m_Connected)
+			Disconnect(i);
 	}
 
 	void AddChannel(InputChannel* c)
-	{		
-		Clear();
-		m_Channels.push_back(c);
-		for (int i = 0; i < MAX_CHANNELS; i++)
+	{
+		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
+		if (a == m_Channels.end() && c != nullptr)
 		{
-			if (m_Connected[i] != nullptr)
-			{
-				int index = (Size() - 1) % m_Connected[i]->Size();
-				c->Connect(m_Connected[i]->Channels()[index]);
-				m_Connected[i]->Connect(this);
-			}
+			Clear();
+			m_Channels.push_back(c);
+			c->Group(this);
+			c->Mono(Mono());
+			c->Mute(Muted());
+			Pan(Pan());
 		}
-		c->Mono(Mono());
-		c->Mute(Muted());
-		Pan(Pan());
 	}
 
 	void RemoveChannel(InputChannel* c)
 	{
-		Clear();
 		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
 		if (a != m_Channels.end())
+		{
+			Clear();
 			m_Channels.erase(a);
+		}
 	}
 
 	float Volume() { return Size() ? m_Channels[0]->Volume() : 1; }
@@ -290,14 +444,14 @@ public:
 
 	bool Muted() { return Size() ? m_Channels[0]->Muted() : false; }
 	void Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); }
-	bool Mono() { return Size() ? m_Channels[0]->Muted() : false; }
+	bool Mono() { return Size() ? m_Channels[0]->Mono() : false; }
 	void Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); }
 
 private:
 	float m_Pan = 0;
 	std::string m_Name = "WOOF";
 	std::vector<InputChannel*> m_Channels;
-	OutputChannels* m_Connected[MAX_CHANNELS];
+	std::vector<OutputChannelGroup*> m_Connected;
 };
 
 // -------------------------------------------------------------------------- \\

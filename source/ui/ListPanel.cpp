@@ -54,14 +54,14 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 			}
 			for (auto& _panel : m_OutputChannels)
 			{
-				ChannelPanel<::OutputChannels>& _current = *_panel;
+				ChannelPanel<::OutputChannelGroup>& _current = *_panel;
 				if (_current.WithinBounds(translated - m_Outputs.Position()))
 				{
 					if ((!_current.routed.Hovering() || _current.routed.Disabled()) && !_current.muted.Hovering() && !_current.mono.Hovering() && !_current.pan.Hovering())
 					{
 						for (auto& _p : m_InputChannels)
 						{
-							ChannelPanel<::InputChannels>& _c = *_p;
+							ChannelPanel<::InputChannelGroup>& _c = *_p;
 							_c.Select(&_current.Channels());
 							_c.Selected(false);
 						}

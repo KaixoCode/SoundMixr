@@ -190,18 +190,12 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 				_outChannel.TPeak(0);
 			}
 
-			for (int k = 0; k < _inChannels; k++)
-			{
-				auto& _inChannel = _inputs[k];
-				if (_inChannel.Connected(&_outChannel))
-					_outChannel.AddLevel(_inChannel.Level());
-			}
-
-			float _absLevel = std::abs(_outChannel.Level());
+			float _level = _outChannel.Level();
+			float _absLevel = std::abs(_level);
 			if (_absLevel > _outChannel.TPeak())
 				_outChannel.TPeak(_absLevel);
 
-			*_outBuffer++ = constrain(_outChannel.Level(), -1.0f, 1.0f);
+			*_outBuffer++ = constrain(_level, -1.0f, 1.0f);
 		}
 	}
 

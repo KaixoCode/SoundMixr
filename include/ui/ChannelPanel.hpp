@@ -8,11 +8,11 @@
 // -------------------------- Channel Panel --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-template<typename This, typename Other = std::conditional<std::is_same_v<This, InputChannels>, OutputChannels, InputChannels>::type>
+template<typename This, typename Other = std::conditional<std::is_same_v<This, InputChannelGroup>, OutputChannelGroup, InputChannelGroup>::type>
 class ChannelPanel : public Panel
 {
 public:
-	static constexpr bool Input = std::is_same_v<This, ::InputChannels>;
+	static constexpr bool Input = std::is_same_v<This, ::InputChannelGroup>;
 
 	template<typename T>
 	ChannelPanel(T* l)
@@ -33,10 +33,10 @@ public:
 		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&, l]
 			{
-				if constexpr (std::is_same_v<This, InputChannels>) Channels().Clear();
-				if constexpr (std::is_same_v<This, OutputChannels>) Channels().Clear<::InputChannels>();
-				if constexpr (std::is_same_v<This, InputChannels>) m_SelectedSame->Clear();
-				if constexpr (std::is_same_v<This, OutputChannels>) m_SelectedSame->Clear<::InputChannels>();
+				if constexpr (std::is_same_v<This, InputChannelGroup>) Channels().Clear();
+				if constexpr (std::is_same_v<This, OutputChannelGroup>) Channels().Clear();
+				if constexpr (std::is_same_v<This, InputChannelGroup>) m_SelectedSame->Clear();
+				if constexpr (std::is_same_v<This, OutputChannelGroup>) m_SelectedSame->Clear();
 
 				for (auto& c : Channels().Channels())
 					m_SelectedSame->AddChannel(c);
@@ -46,12 +46,7 @@ public:
 		m_Connect->Visible(false);
 		m_Split = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&, l]
 			{
-				std::vector<This*> _temp;
-
 				auto& a = l->EmplaceChannel<ChannelPanel<This>>();
-
-				if constexpr (std::is_same_v<This, InputChannels>) Channels().Clear();
-				if constexpr (std::is_same_v<This, OutputChannels>) Channels().Clear<::InputChannels>();
 
 				int size = Channels().Size() / 2;
 				for (int i = 0; i < size; i++)
@@ -432,5 +427,5 @@ private:
 	}
 };
 
-using InputChannelPanel = ChannelPanel<::InputChannels>;
-using OutputChannelPanel = ChannelPanel<::OutputChannels>;
+using InputChannelPanel = ChannelPanel<::InputChannelGroup>;
+using OutputChannelPanel = ChannelPanel<::OutputChannelGroup>;

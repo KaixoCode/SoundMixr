@@ -318,9 +318,8 @@ void Controller::SaveRouting()
         data += std::to_string(_i.Mono()) + ";";
         data += std::to_string(_i.Pan()) + ";";
         data += std::to_string(_i.Volume()) + ";";
-        for (int i = 0; i < MAX_CHANNELS; i++)
-            if (_i.Connections()[i] != nullptr)
-                data += std::to_string(i) + ",";
+        for (auto& i : _i.Connections())
+            data += std::to_string(i->ID()) + ",";
         data += "\n";
     }
 
