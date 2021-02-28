@@ -158,7 +158,7 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 	auto& _inputs = _this.Inputs();
 	auto& _outputs = _this.Outputs();
 
-	double _r = 0.9;
+	double _r = 0.8;
 
 	for (int i = 0; i < nBufferFrames; i++)
 	{
@@ -192,12 +192,18 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 				_outChannel.TPeak(0);
 			}
 
+			_outChannel.CalcLevel();
+		}
+
+		for (int j = 0; j < _outChannels; j++)
+		{
+			auto& _outChannel = _outputs[j];
 			float _level = _outChannel.Level();
 			if (_level > _outChannel.TPeak())
 				_outChannel.TPeak(_level);
 			if (-_level > _outChannel.TPeak())
 				_outChannel.TPeak(-_level);
-
+		
 			*_outBuffer++ = constrain(_level, -1.0f, 1.0f);
 		}
 	}

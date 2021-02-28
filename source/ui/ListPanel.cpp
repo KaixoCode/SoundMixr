@@ -23,7 +23,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	{
 		Vec2<int> translated = Vec2<int>{ 
 			e.x + (m_ScrollbarX->NotNecessary() ? 0 : m_ScrollbarX->Value()),
-			e.y - (m_ScrollbarX->NotNecessary() ? 0 : m_ScrollbarX->Height()) - (m_ScrollbarY->NotNecessary() ? 0 : Component().Y()) };
+			e.y - (m_ScrollbarX->NotNecessary() ? 0 : m_ScrollbarX->Height()) };
 
 		if (e.button == Event::MouseButton::LEFT)
 		{
@@ -135,32 +135,6 @@ void ListPanel::SortChannels()
 
 			return -1;
 		});
-}
-
-void ListPanel::Vertical()
-{
-	EnableScrollbars(false, true);
-	for (auto& _p : m_InputChannels)
-		_p->Vertical();
-
-	for (auto& _p : m_OutputChannels)
-		_p->Vertical();
-
-	if (m_Divider)
-		m_Divider->Height(1);
-}
-
-void ListPanel::Horizontal()
-{
-	EnableScrollbars(true, false);
-	for (auto& _p : m_InputChannels)
-		_p->Horizontal();
-
-	for (auto& _p : m_OutputChannels)
-		_p->Horizontal();
-
-	if (m_Divider)
-		m_Divider->Width(10);
 }
 
 void ListPanel::ResetGrouping()

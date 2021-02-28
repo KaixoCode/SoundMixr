@@ -240,27 +240,6 @@ void Controller::Run()
         }, "Reset Grouping");
 
     //
-    // Vertical UI button
-    //
-
-    /*_file.Emplace<MenuToggleButton>([&](bool s) 
-        {
-            if (s)
-            {
-                _p33.Layout<Layout::Stack>(8);
-                _p33.AutoResize(false, true);
-                _channelPanel.Vertical();
-            }
-            else
-            {
-                _p33.Layout<Layout::SidewaysStack>(8);
-                _p33.AutoResize(true, false);
-                _channelPanel.Horizontal();
-            }
-            _p33.Background(Color{ 40, 40, 40, (s ? 245.0f : 255.0f) });
-        }, "Vertical UI", Key::CTRL_L);*/
-
-    //
     // Soundboard button
     //
 

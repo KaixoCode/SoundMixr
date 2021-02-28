@@ -34,8 +34,6 @@ public:
 
 	void ResetGrouping();
 	void Transparency(bool d) { for (auto& _c : m_InputChannels) _c->Transparency(d); };
-	void Vertical();
-	void Horizontal();
 
 	std::vector<InputChannelPanel*>&  InputChannels() { return m_InputChannels; };
 	std::vector<OutputChannelPanel*>& OutputChannels() { return m_OutputChannels; };

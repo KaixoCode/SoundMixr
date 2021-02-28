@@ -70,10 +70,10 @@ public:
 	float MonoLevel() { return m_MonoLevel; }
 
 	template<typename T = InputChannel>
-	float Level() 
-	{ 
+	void CalcLevel()
+	{
 		if (m_Muted)
-			return 0;
+			return;
 
 		float _level = 0, _monoLevel = 0;
 		for (auto& i : m_Connected)
@@ -83,6 +83,13 @@ public:
 				_level += static_cast<T*>(i)->Level();
 		Level(_level);
 		MonoLevel(_monoLevel);
+	}
+
+	template<typename T = InputChannel>
+	float Level() 
+	{ 
+		if (m_Muted)
+			return 0;
 
 		float _clevel;
 		if (m_Mono && m_Group != nullptr)
@@ -99,11 +106,11 @@ public:
 			_clevel = m_Level;
 		}
 
-		auto a = static_cast<OutputChannelGroup*>(m_Group);
 		float monoLevels = 0;
 		int amt = 0;
 		if (m_Group != nullptr)
 		{
+			auto a = static_cast<OutputChannelGroup*>(m_Group);
 			for (auto& i : a->Channels())
 			{
 				if (!i->MonoLevel())
@@ -148,7 +155,7 @@ public:
 
 	~OutputChannelGroup()
 	{
-		Clear();
+		//Clear();
 	}
 
 	auto Name() -> std::string& { return Size() ? m_Channels[0]->Name() : m_Name; }
@@ -255,9 +262,6 @@ public:
 	int  ID() const { return m_Id; }
 	auto Name() -> std::string& { return m_Name; }
 
-	//bool Connected(OutputChannel* out) const { return m_Connected[out->ID()] != nullptr; }
-	//auto Connections() -> OutputChannel** { return m_Connected; }
-	
 	void Connect(OutputChannel* out) 
 	{ 
 		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
@@ -340,7 +344,7 @@ public:
 
 	~InputChannelGroup()
 	{
-		Clear();
+		//Clear();
 	}
 
 	auto Name() -> std::string& { return Size() ? m_Channels[0]->Name() : m_Name; }
