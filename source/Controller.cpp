@@ -252,13 +252,15 @@ void Controller::Run()
     // Main loop
     //
 
-    int _saveCounter = 1000;
+    int _saveCounter = 5 * 60 * 60;
     while (m_Gui.Loop())
     {
         _saveCounter--;
         if (_saveCounter <= 0)
         {
-            _saveCounter = 60 * 60;
+            mainWindow.Icon(ASSET("textures/logo.png"));
+
+            _saveCounter = 5 * 60 * 60;
             SaveRouting();
         }
     }
