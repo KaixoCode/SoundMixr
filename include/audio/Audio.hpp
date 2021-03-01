@@ -36,6 +36,7 @@ public:
 	auto  Connections() -> std::vector<::ChannelGroup<Other, This>*> const { return m_Connected; }
 	auto  Channels() -> std::vector<This*>& const { return m_Channels; }
 	int   ChannelAmount()                   const { return m_ChannelAmount; }
+	auto  EffectsGroup() -> EffectsGroup&   const { return m_EffectsGroup; }
 	auto  Name() -> std::string& const { return m_Name; }
 	int   ID()                   const { return m_Id; }
 	float Volume()               const { return m_Volume; }
@@ -160,6 +161,7 @@ private:
 	float m_Volume = 1;
 	bool m_Mono = false, m_Muted = false;
 
+	::EffectsGroup m_EffectsGroup;
 	std::string m_Name = "APPLE";
 	std::vector<This*> m_Channels;
 	std::vector<::ChannelGroup<Other, This>*> m_Connected;
@@ -199,7 +201,6 @@ public:
 	float TPeak()            const { return m_TPeak; }
 	float UnprocessedLevel() const { return m_Level; }
 	float MonoLevel()        const { return m_MonoLevel; }
-	auto  EffectsGroup() -> EffectsGroup& const { return m_EffectsGroup; }
 	
 protected:
 	int m_Id,
@@ -219,7 +220,6 @@ protected:
 	GroupType* m_Group = nullptr;
 
 	std::string m_Name;
-	::EffectsGroup m_EffectsGroup;
 };
 
 class InputChannel : public Channel<InputChannelGroup>
@@ -250,21 +250,8 @@ class OutputChannel : public Channel<OutputChannelGroup>
 public:
 	using Channel::Channel;
 	
-	void CalcLevel() override
-	{
-		if (m_Muted)
-			m_Level = m_OutLevel = 0;
-
-		else if (m_Group)
-			m_Level = m_OutLevel = m_Group->GetLevel(m_GroupIndex);
-	}
-
-	float Level() const override
-	{
-		return (m_Mono && m_Group ? m_Group->GetMonoLevel() : m_OutLevel) * m_Volume * m_Pan;
-	}
-
-	void Level(float l) override { m_Level = l; };
+	void  CalcLevel()    override { m_OutLevel = m_Muted || !m_Group ? 0 : m_Group->GetLevel(m_GroupIndex); }
+	float Level()  const override { return (m_Mono && m_Group ? m_Group->GetMonoLevel() : m_OutLevel) * m_Volume * m_Pan; }
 };
 
 // -------------------------------------------------------------------------- \\

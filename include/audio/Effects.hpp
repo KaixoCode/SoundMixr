@@ -1,4 +1,5 @@
 #pragma once
+#include "ui/Graphics.hpp"
 
 static inline float db2lin(float db) { // dB to linear
 	return powf(10.0f, 0.05f * db);
@@ -12,15 +13,24 @@ class Effect : public Panel
 {
 
 
-	void Render(CommandCollection& d)
-	{
-
-	}
 };
 
 class Dynamics : public Effect
 {
 public:
+
+
+	Dynamics()
+	{
+		Background(Theme<C::Channel>::Get());
+	}
+
+	void Update(const Vec4<int>& v)
+	{
+		Background(Theme<C::Channel>::Get());
+		Effect::Update(v);
+	}
+
 	static inline const double DC_OFFSET = 1.0E-25;
 
 	double expanderThreshhold = -50;
@@ -97,19 +107,23 @@ public:
 
 		return s;
 	}
+
 };
 
 
-class EffectsGroup
+class EffectsGroup : public Panel
 {
 public:
 	
+	EffectsGroup()
+	{
+		Layout<Layout::Stack>(8);
+		AutoResize(false, true);
+	}
+
 	template<typename T>
 	T& Emplace()
 	{
-		return m_Effects.emplace_back(std::make_unique<T>());
+		return Container::Emplace<T>();
 	}
-
-private:
-	std::vector<std::unique_ptr<Effect>> m_Effects;
 };

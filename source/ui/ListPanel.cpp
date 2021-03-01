@@ -7,13 +7,15 @@
 ListPanel::ListPanel(AsioDevice& sarasio)
 	: asio(sarasio), 
 	m_Channels(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
-	m_Effect(Panel().Emplace<::EffectPanel>(Layout::Hint::East)),
+	m_Effect(Panel().Emplace<::EffectScrollPanel>(Layout::Hint::East)),
 	m_Inputs(m_Channels.Panel<::Panel>().Emplace<::Panel>()),
 	m_Divider(&m_Channels.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
 	m_Outputs(m_Channels.Panel().Emplace<::Panel>())
 {
-	m_Effect.Width(100);
-	m_Effect.MinWidth(100);
+	m_Effect.Width(300);
+	m_Effect.MinWidth(300);
+	m_Effect.MaxWidth(500);
+	m_Effect.Hide();
 	m_Channels.Panel<::Panel>();
 	m_Channels.Panel().Layout<Layout::SidewaysStack>(0);
 	m_Channels.Panel().AutoResize(true, false);
@@ -69,6 +71,8 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 							_c.Selected(false);
 						}
 						_current.Selected(true);
+						if (m_Effect.Visible())
+							ShowEffectsPanel(_current.ChannelGroup().EffectsGroup());
 					}
 					s = true;
 				}
@@ -93,6 +97,8 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 							_c.Selected(false);
 						}
 						_current.Selected(true);
+						if (m_Effect.Visible())
+							ShowEffectsPanel(_current.ChannelGroup().EffectsGroup());
 					}
 					s = true;
 				}
