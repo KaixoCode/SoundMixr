@@ -78,11 +78,6 @@ void Controller::Run()
     auto& _titleButton = _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels");
     _titleButton.Disable();
     m_List = &_p3.Emplace<ListPanel>(Layout::Hint::Center, m_AsioDevice);
-    m_List->Background(Theme<C::MainPanel>::Get());
-    auto& _p33 = m_List->Panel();
-    _p33.Background(Theme<C::MainPanel>::Get());
-    _p33.Layout<Layout::SidewaysStack>(0);
-    _p33.AutoResize(true, false);
 
     //
     // Frame menu
@@ -131,14 +126,14 @@ void Controller::Run()
                 // First save the routing
                 SaveRouting();
 
-                // Clear the channels from the ListPanel
-                m_List->Clear();
-
                 // Close stream, set new device and open/start stream
                 m_AsioDevice.CloseStream();
                 m_AsioDevice.Device(_d);
                 m_AsioDevice.OpenStream();
                 m_AsioDevice.StartStream();
+
+                // Clear the channels from the ListPanel
+                m_List->Clear();
 
                 // Set title to ASIO device name
                 _titleButton.Name(_d.info.name);
@@ -196,7 +191,7 @@ void Controller::Run()
         _panel.Background(Theme<C::WindowBorder>::Get());
         mainWindow.Color(Theme<C::WindowBorder>::Get());
         soundboard.Color(Theme<C::WindowBorder>::Get());
-        _p33.Background(Theme<C::MainPanel>::Get());
+        m_List->Panel().Background(Theme<C::MainPanel>::Get());
         m_List->Background(Theme<C::MainPanel>::Get());
         _div.Color(Theme<C::Divider>::Get());
 

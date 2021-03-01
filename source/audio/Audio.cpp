@@ -49,6 +49,24 @@ bool AsioDevice::OpenStream()
 	op.hostApiSpecificStreamInfo = NULL;
 	unsigned int bufferFrames = m_BufferSize;
 
+	for (int i = 0; i < ip.channelCount; i++)
+	{
+		const char* name;
+		PaAsio_GetInputChannelName(Device().id, i, &name);
+		std::string n = name;
+		n.resize(n.find_last_of(' '));
+		auto& a = m_Inputs.emplace_back(i, n);
+	}
+
+	for (int i = 0; i < op.channelCount; i++)
+	{
+		const char* name;
+		PaAsio_GetOutputChannelName(Device().id, i, &name);
+		std::string n = name;
+		n.resize(n.find_last_of(' '));
+		auto& a = m_Outputs.emplace_back(i, n);
+	}
+
 	int tries = 0;
 	double _srates[]{ 48000.0, 44100.0 };
 	do
@@ -70,24 +88,6 @@ bool AsioDevice::OpenStream()
 		"\n inchannels: " << ip.channelCount <<
 		"\n outchannels:" << op.channelCount
 	);
-
-	for (int i = 0; i < ip.channelCount; i++)
-	{
-		const char* name;
-		PaAsio_GetInputChannelName(Device().id, i, &name);
-		std::string n = name;
-		n.resize(n.find_last_of(' '));
-		auto& a = m_Inputs.emplace_back(i, n);
-	}
-
-	for (int i = 0; i < op.channelCount; i++)
-	{
-		const char* name;
-		PaAsio_GetOutputChannelName(Device().id, i, &name);
-		std::string n = name;
-		n.resize(n.find_last_of(' '));
-		auto& a = m_Outputs.emplace_back(i, n);
-	}
 
 	LOG("Input channel names: ");
 	for (auto& i : m_Inputs)

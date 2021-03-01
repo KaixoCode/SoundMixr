@@ -6,10 +6,26 @@
 
 ListPanel::ListPanel(AsioDevice& sarasio)
 	: asio(sarasio), 
-	m_Inputs(Panel<::Panel>().Emplace<::Panel>()),
-	m_Divider(&Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
-	m_Outputs(Panel().Emplace<::Panel>())
+	m_Channels(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
+	m_Effect(Panel().Emplace<::EffectPanel>(Layout::Hint::East)),
+	m_Inputs(m_Channels.Panel<::Panel>().Emplace<::Panel>()),
+	m_Divider(&m_Channels.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	m_Outputs(m_Channels.Panel().Emplace<::Panel>())
 {
+	m_Effect.Width(100);
+	m_Effect.MinWidth(100);
+	m_Channels.Panel<::Panel>();
+	m_Channels.Panel().Layout<Layout::SidewaysStack>(0);
+	m_Channels.Panel().AutoResize(true, false);
+	m_Channels.MinWidth(100);
+	m_Channels.EnableScrollbars(true, false);
+	Background(Theme<C::MainPanel>::Get());
+	//Width(5000);
+
+	Panel().Background(Theme<C::MainPanel>::Get());
+	Panel().Layout<Layout::Border>(0, 8, true, true, true, true);
+	Panel().AutoResize(false, false);
+
 	m_Inputs.AutoResize(true, false);
 	m_Inputs.Layout<Layout::SidewaysStack>(8);
 	
@@ -17,13 +33,19 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_Outputs.Layout<Layout::SidewaysStack>(8);
 
 	Background(Color{ 38, 38, 38, 355 });
-	EnableScrollbars(true, false);
+	EnableScrollbars(false, false);
+
+	m_Channels.Scrolled().x;
 
 	m_Listener += [this](Event::MousePressed& e)
 	{
-		Vec2<int> translated = Vec2<int>{ 
-			e.x + (m_ScrollbarX->NotNecessary() ? 0 : m_ScrollbarX->Value()),
-			e.y - (m_ScrollbarX->NotNecessary() ? 0 : m_ScrollbarX->Height()) };
+		if (!m_Channels.WithinBounds({ e.x, e.y }))
+			return;
+
+		Vec2<int> translated = { 
+			e.x - X() - m_Channels.X() - m_Channels.Panel().X() - Panel().X(),
+			e.y - Y() - m_Channels.Y() - m_Channels.Panel().Y() - Panel().Y()
+		};
 
 		if (e.button == Event::MouseButton::LEFT)
 		{

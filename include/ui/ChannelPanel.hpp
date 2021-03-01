@@ -4,6 +4,37 @@
 #include "ui/VolumeSlider.hpp"
 #include "ui/Graphics.hpp"
 
+class EffectPanel : public Panel
+{
+public:
+	EffectPanel()
+	{
+		m_Menu.ButtonSize({ 160, 20 });
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Effect Panel").Disable();
+		m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 4);
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Visible(false); }, "Hide Effects Panel");
+		m_Listener += [this](Event::MousePressed& e)
+		{
+			if (e.button == Event::MouseButton::RIGHT)
+				RightClickMenu::Get().Open(&m_Menu);
+		};
+	}
+
+	void Render(CommandCollection& d) override
+	{
+		if (m_Div)
+			m_Div->Color(Theme<C::Divider>::Get());
+		d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
+		d.Command<Graphics::Quad>(Vec4<int>{X() - 8, Y(), 8, Height()});
+		Container::Render(d);
+	}
+
+private:
+	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
+	MenuAccessories::Divider* m_Div;
+};
+
+
 // -------------------------------------------------------------------------- \\
 // -------------------------- Channel Panel --------------------------------- \\
 // -------------------------------------------------------------------------- \\
@@ -51,6 +82,12 @@ public:
 		m_Menu.ButtonSize({ 180, 20 });
 		m_MenuTitle = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(m_ChannelGroup.Name());
 		m_MenuTitle->Disable();
+		
+		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+			[&, l] {
+				l->ShowEffectsPanel();
+			}, "Show Effects");
+		
 		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {

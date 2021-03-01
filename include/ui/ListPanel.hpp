@@ -2,11 +2,36 @@
 #include "pch.hpp"
 #include "ui/ChannelPanel.hpp"
 
+class SMXRScrollPanel : public ScrollPanel
+{
+public:
+
+	Vec2<bool> ScrollbarNotNecessary()
+	{
+		return { m_ScrollbarX->NotNecessary(), m_ScrollbarY->NotNecessary() };
+	}
+
+	// Overwrite these methods from ScrollPanel for custom ScrollbarGraphics	
+	::Panel& Panel() const { return *m_Panel; }
+	template<typename T, typename ...Args>
+	T& Panel(Args&&... args)
+	{
+		if (m_Panel != nullptr)
+			return dynamic_cast<T&>(*m_Panel);
+
+		auto& _t = Emplace<T>(std::forward<Args>(args)...);
+		m_Panel = &_t;
+		m_ScrollbarX = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Horizontal>>();
+		m_ScrollbarY = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Vertical>>();
+		return _t;
+	}
+};
+
 // -------------------------------------------------------------------------- \\
 // ---------------------------- List Panel ---------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class ListPanel : public ScrollPanel
+class ListPanel : public SMXRScrollPanel
 {
 public:
 	ListPanel(AsioDevice& sarasio);
@@ -47,23 +72,15 @@ public:
 		ScrollPanel::Render(d);
 	}
 
-	// Overwrite these methods from ScrollPanel for custom ScrollbarGraphics	
-	::Panel& Panel() const { return *m_Panel; }
-	template<typename T, typename ...Args>
-	T& Panel(Args&&... args)
+	void ShowEffectsPanel()
 	{
-		if (m_Panel != nullptr)
-			return dynamic_cast<T&>(*m_Panel);
-
-		auto& _t = Emplace<T>(std::forward<Args>(args)...);
-		m_Panel = &_t;
-		m_ScrollbarX = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Horizontal>>();
-		m_ScrollbarY = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Vertical>>();
-		return _t;
+		m_Effect.Visible(true);
 	}
 
 private:
 	AsioDevice& asio;
+	::SMXRScrollPanel& m_Channels;
+	::Panel& m_Effect;
 	::Panel& m_Inputs;
 	MenuAccessories::VerticalDivider* m_Divider = nullptr;
 	::Panel& m_Outputs;
