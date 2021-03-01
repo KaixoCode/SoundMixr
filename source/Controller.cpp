@@ -128,12 +128,12 @@ void Controller::Run()
 
                 // Close stream, set new device and open/start stream
                 m_AsioDevice.CloseStream();
-                m_AsioDevice.Device(_d);
-                m_AsioDevice.OpenStream();
-                m_AsioDevice.StartStream();
 
                 // Clear the channels from the ListPanel
                 m_List->Clear();
+                m_AsioDevice.Device(_d);
+                m_AsioDevice.OpenStream();
+                m_AsioDevice.StartStream();
 
                 // Set title to ASIO device name
                 _titleButton.Name(_d.info.name);
@@ -253,8 +253,6 @@ void Controller::Run()
         _saveCounter--;
         if (_saveCounter <= 0)
         {
-            mainWindow.Icon(ASSET("textures/logo.png"));
-
             _saveCounter = 5 * 60 * 60;
             SaveRouting();
         }

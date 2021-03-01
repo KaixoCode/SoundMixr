@@ -102,6 +102,12 @@ bool AsioDevice::OpenStream()
 
 void AsioDevice::CloseStream()
 {
+	for (auto& i : m_Inputs)
+		i.Group(nullptr, -1);
+
+	for (auto& i : m_Outputs)
+		i.Group(nullptr, -1);
+
 	LOG("Closing SAR stream...");
 	PaError err;
 	err = Pa_CloseStream(stream);
@@ -165,15 +171,21 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 		for (int k = 0; k < _inChannels; k++)
 		{
 			auto& _inChannel = _inputs[k];
-			_inChannel.Level(_inBuffer[i * _inChannels + k]);
-			//_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
+			//_inChannel.Level(_inBuffer[i * _inChannels + k]);
+			_inChannel.Level((k + 1.0) / (_inChannels + 1.0));
 
 			if (i == 0)
 			{
 				_inChannel.Peak(_inChannel.Peak() * _r + (1 - _r) * _inChannel.TPeak());
 				_inChannel.TPeak(0);
 			}
+		}
 
+		for (int k = 0; k < _inChannels; k++)
+		{
+			auto& _inChannel = _inputs[k];
+
+			_inChannel.CalcLevel();
 			float _level = _inChannel.Level();
 			if (_level > _inChannel.TPeak())
 				_inChannel.TPeak(_level);

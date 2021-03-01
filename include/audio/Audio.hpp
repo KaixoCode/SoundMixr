@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#include "audio/Effects.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Device ------------------------------------ \\
@@ -22,439 +23,248 @@ public:
 
 class InputChannel;
 class OutputChannel;
-class InputChannelGroup;
-class OutputChannelGroup;
 
-class OutputChannel
+template<typename This, typename Other = std::conditional<std::is_same_v<This, InputChannel>, OutputChannel, InputChannel>::type>
+class ChannelGroup;
+
+template<typename This, typename Other>
+class ChannelGroup
 {
 public:
-	OutputChannel(int id, const std::string& name)
-		: m_Id(id), m_Name(name)
-	{}
-	
-	template<typename T>
-	void Connect(T* in) 
-	{ 
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), in);
-		if (it == m_Connected.end() && in != nullptr)
-			m_Connected.push_back(in);
+	~ChannelGroup() { ClearChannels(); }
+
+	auto  Connections() -> std::vector<::ChannelGroup<Other, This>*> const { return m_Connected; }
+	auto  Channels() -> std::vector<This*>& const { return m_Channels; }
+	int   ChannelAmount()                   const { return m_ChannelAmount; }
+	auto  Name() -> std::string& const { return m_Name; }
+	int   ID()                   const { return m_Id; }
+	float Volume()               const { return m_Volume; }
+	bool  Muted()                const { return m_Muted; }
+	bool  Mono()		         const { return m_Mono; }
+	float Pan()					 const { return m_Pan; }
+
+	void  Volume(float v) { for (auto& c : m_Channels) c->Volume(v); m_Volume = v; }
+	void  Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); m_Muted = v; }
+	void  Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); m_Mono = v; }
+	void  Pan(float p)
+	{
+		m_Pan = p;
+		int _index = 0;
+		double _p = -p / 50.0;
+		double _a = 1.0 - std::abs((ChannelAmount() - 1) / 2.0 * _p);
+		for (auto& c : m_Channels)
+		{
+			float _pan = constrain(_p * (_index - (ChannelAmount() - 1) / 2.0) + _a, 0.0, 1.0);
+			c->Pan(_pan);
+			_index++;
+		}
 	}
 
-	template<typename T>
-	void Disconnect(T* in)
+	void ClearConnections() { for (auto& i : m_Connected) Disconnect(i); }
+	void ClearChannels() { for (auto& i : m_Channels) i->Group(nullptr, -1); }
+	bool Connected(::ChannelGroup<Other, This>* other) const { return std::find(m_Connected.begin(), m_Connected.end(), other) != m_Connected.end() && other != nullptr; }
+	void Connect(::ChannelGroup<Other, This>* other) { if (other != nullptr) other->ConnectDirect(this), ConnectDirect(other); }
+	void ConnectDirect(::ChannelGroup<Other, This>* other) { if (!Connected(other) && other != nullptr) m_Connected.push_back(other); }
+	void Disconnect(::ChannelGroup<Other, This>* other) { if (other != nullptr) other->DisconnectDirect(this), DisconnectDirect(other); }
+	void DisconnectDirect(::ChannelGroup<Other, This>* other)
 	{
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), in);
-		if (it != m_Connected.end())
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), other);
+		if (it != m_Connected.end() && other != nullptr)
 			m_Connected.erase(it);
 	}
 
+	void AddChannel(This* c)
+	{
+		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
+		if (a == m_Channels.end() && c != nullptr)
+		{
+			ClearConnections();
+			if (ChannelAmount() == 0)
+			{
+				m_Mono = false;
+				m_Muted = false;
+				m_Name = c->Name();
+				m_Id = c->ID();
+				c->Mono(false);
+				c->Mute(false);
+			}
+			m_Channels.push_back(c);
+			c->Group(this, ChannelAmount());
+			c->Mono(Mono()); 
+			c->Mute(Muted());
+			Pan(Pan());
+			m_ChannelAmount++;
+		}
+	}
+
+	void RemoveChannel(This* c)
+	{
+		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
+		if (a != m_Channels.end())
+		{
+			m_ChannelAmount--;
+			ClearConnections();
+			m_Channels.erase(a);
+			for (int i = 0; i < ChannelAmount(); i++)
+				m_Channels[i]->Group(this, i);
+			Pan(Pan());
+		}
+
+		if (ChannelAmount())
+		{
+			m_Name = m_Channels[0]->Name();
+			m_Id = m_Channels[0]->ID();
+		}
+	}
+
+	float GetLevel(int id)
+	{
+		m_StartRound = true;
+		float level = 0;
+
+		int amt = ChannelAmount();
+		for (auto& i : m_Connected)
+		{
+			int iamt = i->ChannelAmount();
+			if (i->Mono())
+				level += i->Channels()[id % iamt]->Level();
+			
+			else
+				for (int j = id; j < iamt; j += amt)
+					level += i->Channels()[j]->Level();
+		}
+		return level;
+	}
+
+	float GetMonoLevel()
+	{
+		if (m_StartRound)
+		{
+			m_MonoLevel = 0;
+			for (auto& i : m_Channels)
+				m_MonoLevel += i->UnprocessedLevel();
+
+			m_MonoLevel /= ChannelAmount();
+			m_StartRound = false;
+		}
+
+		return m_MonoLevel;
+	}
+
+private:
+	bool m_StartRound = false;
+	float m_Pan = 0;
+	float m_MonoLevel = 0;
+
+	int m_Id = -1, m_ChannelAmount = 0;
+	float m_Volume = 1;
+	bool m_Mono = false, m_Muted = false;
+
+	std::string m_Name = "APPLE";
+	std::vector<This*> m_Channels;
+	std::vector<::ChannelGroup<Other, This>*> m_Connected;
+};
+
+using InputChannelGroup = ChannelGroup<InputChannel>;
+using OutputChannelGroup = ChannelGroup<OutputChannel>;
+
+template<typename GroupType>
+class Channel
+{
+public:
+	Channel(int id, const std::string& name)
+		: m_Id(id), m_Name(name)
+	{}
+
 	auto Name() -> std::string& { return m_Name; }
-	void Group(void* p) { m_Group = p; }
+	void Group(GroupType* p, int index) { m_Group = p; m_GroupIndex = index; }
 	void Volume(float v) { m_Volume = v; }
 	void Pan(float p) { m_Pan = p; }
-	void Level(float l) { m_Level = l; }
 	void MonoLevel(float l) { m_MonoLevel = l; }
 	void Peak(float l) { m_Peak = l; }
 	void TPeak(float v) { m_TPeak = v; }
 	void Mute(bool v) { m_Muted = v; }
 	void Mono(bool v) { m_Mono = v; }
 
-	int	  ID() const { return m_Id; }
-	float Volume() { return m_Volume; }
-	float Pan() { return m_Pan; }
-	float Peak() { return m_Peak; }
-	bool  Muted() { return m_Muted; }
-	bool  Mono() { return m_Mono; }
-	float TPeak() { return m_TPeak; }
-	float RLevel() { return m_Level; }
-	float MonoLevel() { return m_MonoLevel; }
+	virtual void Level(float l) { m_Level = l; };
+	virtual void CalcLevel() = 0;
+	virtual float Level() const { return m_OutLevel; }
 
-	template<typename T = InputChannel>
-	void CalcLevel()
+	int	  ID()               const { return m_Id; }
+	float Volume()           const { return m_Volume; }
+	float Pan()              const { return m_Pan; }
+	float Peak()             const { return m_Peak; }
+	bool  Muted()            const { return m_Muted; }
+	bool  Mono()             const { return m_Mono; }
+	float TPeak()            const { return m_TPeak; }
+	float UnprocessedLevel() const { return m_Level; }
+	float MonoLevel()        const { return m_MonoLevel; }
+	auto  EffectsGroup() -> EffectsGroup& const { return m_EffectsGroup; }
+	
+protected:
+	int m_Id,
+		m_GroupIndex;
+
+	bool m_Mono = false,
+		m_Muted = false;
+
+	float m_Level = 0, 
+		m_MonoLevel = 0, 
+		m_OutLevel = 0,
+		m_Peak = 0,
+		m_TPeak = 0,
+		m_Pan = 1,
+		m_Volume = 1;
+
+	GroupType* m_Group = nullptr;
+
+	std::string m_Name;
+	::EffectsGroup m_EffectsGroup;
+};
+
+class InputChannel : public Channel<InputChannelGroup>
+{
+public:
+	using Channel::Channel;
+
+	void CalcLevel() override
 	{
 		if (m_Muted)
-			return;
+			m_OutLevel = 0;
 
-		float _level = 0, _monoLevel = 0;
-		for (auto& i : m_Connected)
-			if (static_cast<T*>(i)->Mono())
-				_monoLevel += static_cast<T*>(i)->Level();
-			else
-				_level += static_cast<T*>(i)->Level();
-		Level(_level);
-		MonoLevel(_monoLevel);
-	}
-
-	template<typename T = InputChannel>
-	float Level() 
-	{ 
-		if (m_Muted)
-			return 0;
-
-		float _clevel;
-		if (m_Mono && m_Group != nullptr)
+		else if (m_Mono && m_Group != nullptr)
 		{
-			auto a = static_cast<OutputChannelGroup*>(m_Group);
 			float level = 0;
-			for (auto& i : a->Channels())
-				level += i->RLevel();
+			for (auto& i : m_Group->Channels())
+				level += i->UnprocessedLevel();
 
-			_clevel = level / a->Size();
+			m_OutLevel = (level / m_Group->ChannelAmount()) * m_Pan * m_Volume;
 		}
 		else
-		{
-			_clevel = m_Level;
-		}
-
-		float monoLevels = 0;
-		int amt = 0;
-		if (m_Group != nullptr)
-		{
-			auto a = static_cast<OutputChannelGroup*>(m_Group);
-			for (auto& i : a->Channels())
-			{
-				if (!i->MonoLevel())
-					continue;
-
-				amt++;
-				monoLevels += i->MonoLevel();
-			}
-		}
-
-		if (amt)
-			monoLevels /= amt;
-
-		return (monoLevels + _clevel) * m_Volume * m_Pan;
+			m_OutLevel = m_Level * m_Volume * m_Pan;
 	}
-
-private:
-	bool m_Mono = false,
-		m_Muted = false;
-
-	float m_Level = 0, m_MonoLevel = 0,
-		m_Peak = 0, 
-		m_TPeak = 0,
-		m_Pan = 1,
-		m_Volume = 1;
-
-	void* m_Group = nullptr;
-
-	std::string m_Name;
-	int m_Id;
-	std::vector<void*> m_Connected;
 };
 
-// Collection of OutputChannel objects
-class OutputChannelGroup
+class OutputChannel : public Channel<OutputChannelGroup>
 {
 public:
-	using Type = OutputChannel;
-
-	OutputChannelGroup()
-	{}
-
-	~OutputChannelGroup()
-	{
-		//Clear();
-	}
-
-	auto Name() -> std::string& { return Size() ? m_Channels[0]->Name() : m_Name; }
-	int  ID() const { return Size() ? m_Channels[0]->ID() : -1; }
-	int  Size() const { return m_Channels.size(); }
-	std::vector<OutputChannel*>& Channels() { return m_Channels; }
+	using Channel::Channel;
 	
-	void AddChannel(OutputChannel* c)
-	{
-		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
-		if (a == m_Channels.end() && c != nullptr)
-		{
-			Clear();
-			if (Size() == 0)
-			{
-				c->Mono(false);
-				c->Mute(false);
-			}
-			m_Channels.push_back(c);
-			c->Group(this);
-			c->Mono(Mono());
-			c->Mute(Muted());
-			Pan(Pan());
-		}
-	}
-
-	void RemoveChannel(OutputChannel* c)
-	{
-		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
-		if (a != m_Channels.end())
-		{
-			Clear();
-			m_Channels.erase(a);
-		}
-	}
-
-	template<typename T>
-	void Connect(T* in)
-	{
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), in);
-		if (it == m_Connected.end() && in != nullptr)
-			m_Connected.push_back(in);
-	}
-
-	template<typename T>
-	void Disconnect(T* in)
-	{
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), in);
-		if (it != m_Connected.end())
-			m_Connected.erase(it);
-	}
-
-	template<typename T = InputChannelGroup>
-	void Clear()
-	{
-		for (auto& i : m_Connected)
-		{
-			static_cast<T*>(i)->Disconnect(this);
-			Disconnect(i);
-		}
-	}
-
-	float Volume() { return Size() ? m_Channels[0]->Volume() : 1; }
-	void  Volume(float v) { for (auto& c : m_Channels) c->Volume(v); }
-
-	float Pan() { return m_Pan; }
-	void  Pan(float p)
-	{
-		m_Pan = p;
-		int _index = 0;
-		double _p = -p / 50.0;
-		double _a = 1.0 - std::abs((Size() - 1) / 2.0 * _p);
-		for (auto& c : m_Channels)
-		{
-			float _pan = constrain(_p * (_index - (Size() - 1) / 2.0) + _a, 0.0, 1.0);
-			c->Pan(_pan);
-			_index++;
-		}
-	}
-
-	bool Muted() { return Size() ? m_Channels[0]->Muted() : false; }
-	void Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); }
-	bool Mono() { return Size() ? m_Channels[0]->Mono() : false; }
-	void Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); }
-
-private:
-	float m_Pan = 0;
-	std::string m_Name = "APPLE";
-	std::vector<OutputChannel*> m_Channels;
-	std::vector<void*> m_Connected;
-};
-
-// -------------------------------------------------------------------------- \\
-// --------------------------- Input Channel -------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
-class InputChannel
-{
-public:
-	InputChannel(int id, const std::string& name)
-		: m_Id(id), m_Name(name)
-	{}
-
-	int  ID() const { return m_Id; }
-	auto Name() -> std::string& { return m_Name; }
-
-	void Connect(OutputChannel* out) 
-	{ 
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
-		if (it == m_Connected.end() && out != nullptr)
-			m_Connected.push_back(out);
-	}
-
-	void Disconnect(OutputChannel* out) 
-	{ 
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
-		if (it != m_Connected.end())
-			m_Connected.erase(it);
-	}
-
-	void Group(void* p) { m_Group = p; }
-	void Volume(float v) { m_Volume = v; }
-	void Pan(float p) { m_Pan = p; }
-	void Level(float l) { m_Level = l; }
-	void Peak(float l) { m_Peak = l; }
-	void TPeak(float l) { m_TPeak = l; }
-	void Mute(bool v) { m_Muted = v; }
-	void Mono(bool v) { m_Mono = v; }
-
-	float Volume() { return m_Volume; }
-	float Pan() { return m_Pan; }
-
-	float RLevel() { return m_Level; }
-
-	template<typename T = InputChannelGroup>
-	float Level() 
+	void CalcLevel() override
 	{
 		if (m_Muted)
-			return 0;
+			m_Level = m_OutLevel = 0;
 
-		if (m_Mono && m_Group != nullptr)
-		{
-			auto a = static_cast<T*>(m_Group);
-			float level = 0;
-			for (auto& i : a->Channels())
-				level += i->RLevel();
-			
-			level *= m_Pan * m_Volume;
-			return level /= a->Size();
-		}
-
-		return m_Level * m_Volume * m_Pan; 
+		else if (m_Group)
+			m_Level = m_OutLevel = m_Group->GetLevel(m_GroupIndex);
 	}
 
-	float Peak() { return m_Peak; }
-	float TPeak() { return m_TPeak; }
-	bool  Muted() { return m_Muted; }
-	bool  Mono() { return m_Mono; }
-
-private:
-	bool m_Mono = false,
-		m_Muted = false;
-
-	float m_Level = 0,
-		m_Peak = 0, 
-		m_TPeak = 0,
-		m_Pan = 1,
-		m_Volume = 1;
-
-	void* m_Group = nullptr;
-
-	std::string m_Name;
-	int m_Id;
-
-	std::vector<OutputChannel*> m_Connected;
-};
-
-// Collection of InputChannel objects
-class InputChannelGroup
-{
-public:
-	using Type = InputChannel;
-
-	InputChannelGroup()
-	{}
-
-	~InputChannelGroup()
+	float Level() const override
 	{
-		//Clear();
+		return (m_Mono && m_Group ? m_Group->GetMonoLevel() : m_OutLevel) * m_Volume * m_Pan;
 	}
 
-	auto Name() -> std::string& { return Size() ? m_Channels[0]->Name() : m_Name; }
-	int  ID() const { return Size() ? m_Channels[0]->ID() : -1; }
-	auto Connections() -> std::vector<OutputChannelGroup*> { return m_Connected; }
-	int  Size() const { return m_Channels.size(); }
-	std::vector<InputChannel*>& Channels() { return m_Channels; }
-	
-	bool Connected(OutputChannelGroup* out) const 
-	{
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
-		return it != m_Connected.end();
-	}
-	
-	void Connect(OutputChannelGroup* out) 
-	{ 
-		// Make sure it isn't already connected
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
-		if (it == m_Connected.end() && out != nullptr)
-		{
-			// Add to connected and connect this to out
-			m_Connected.push_back(out);
-			out->Connect(this);
-
-			// Then connect all channels
-			for (int i = 0; i < Size(); i++)
-			{
-				m_Channels[i]->Connect(out->Channels()[i % out->Size()]);
-				out->Channels()[i % out->Size()]->Connect(m_Channels[i]);
-			}
-		}
-	}
-	
-	void Disconnect(OutputChannelGroup* out) 
-	{ 
-		// Make sure it isn't already connected
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), out);
-		if (it != m_Connected.end())
-		{
-			// Remove the connection
-			m_Connected.erase(it);
-			out->Disconnect(this);
-
-			// Then disconnect all channels
-			for (int i = 0; i < Size(); i++)
-			{
-				m_Channels[i]->Disconnect(out->Channels()[i % out->Size()]);
-				out->Channels()[i % out->Size()]->Disconnect(m_Channels[i]);
-			}
-		}
-	}
-	
-	void Clear() 
-	{ 
-		for (auto& i : m_Connected)
-			Disconnect(i);
-	}
-
-	void AddChannel(InputChannel* c)
-	{
-		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
-		if (a == m_Channels.end() && c != nullptr)
-		{
-			Clear();
-			m_Channels.push_back(c);
-			c->Group(this);
-			c->Mono(Mono());
-			c->Mute(Muted());
-			Pan(Pan());
-		}
-	}
-
-	void RemoveChannel(InputChannel* c)
-	{
-		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
-		if (a != m_Channels.end())
-		{
-			Clear();
-			m_Channels.erase(a);
-		}
-	}
-
-	float Volume() { return Size() ? m_Channels[0]->Volume() : 1; }
-	void  Volume(float v) { for (auto& c : m_Channels) c->Volume(v); }
-
-	float Pan() { return m_Pan; }
-	void Pan(float p) 
-	{
-		m_Pan = p;
-		int _index = 0;
-		double _p = - p / 50.0;
-		double _a = 1.0 - std::abs((Size() - 1) / 2.0 * _p);
-		for (auto& c : m_Channels)
-		{
-			float _pan = constrain(_p * (_index - (Size() - 1) / 2.0) + _a, 0.0, 1.0);
-			c->Pan(_pan);
-			_index++;
-		}
-	}
-
-	bool Muted() { return Size() ? m_Channels[0]->Muted() : false; }
-	void Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); }
-	bool Mono() { return Size() ? m_Channels[0]->Mono() : false; }
-	void Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); }
-
-private:
-	float m_Pan = 0;
-	std::string m_Name = "WOOF";
-	std::vector<InputChannel*> m_Channels;
-	std::vector<OutputChannelGroup*> m_Connected;
+	void Level(float l) override { m_Level = l; };
 };
 
 // -------------------------------------------------------------------------- \\

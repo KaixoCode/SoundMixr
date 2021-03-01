@@ -72,15 +72,16 @@ public:
 		ScrollPanel::Render(d);
 	}
 
-	void ShowEffectsPanel()
+	void ShowEffectsPanel(EffectsGroup& effects)
 	{
+		m_Effect.EffectsGroup(effects);
 		m_Effect.Visible(true);
 	}
 
 private:
 	AsioDevice& asio;
 	::SMXRScrollPanel& m_Channels;
-	::Panel& m_Effect;
+	::EffectPanel& m_Effect;
 	::Panel& m_Inputs;
 	MenuAccessories::VerticalDivider* m_Divider = nullptr;
 	::Panel& m_Outputs;

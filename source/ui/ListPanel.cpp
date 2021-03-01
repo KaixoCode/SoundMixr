@@ -20,7 +20,6 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_Channels.MinWidth(100);
 	m_Channels.EnableScrollbars(true, false);
 	Background(Theme<C::MainPanel>::Get());
-	//Width(5000);
 
 	Panel().Background(Theme<C::MainPanel>::Get());
 	Panel().Layout<Layout::Border>(0, 8, true, true, true, true);

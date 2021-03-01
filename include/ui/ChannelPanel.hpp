@@ -24,14 +24,25 @@ public:
 	{
 		if (m_Div)
 			m_Div->Color(Theme<C::Divider>::Get());
+
 		d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
 		d.Command<Graphics::Quad>(Vec4<int>{X() - 8, Y(), 8, Height()});
+		d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
+		d.Command<Graphics::Quad>(Vec4<int>{X() - 6, Y() + Height() / 2 - 8, 1, 16});
+		d.Command<Graphics::Quad>(Vec4<int>{X() - 4, Y() + Height() / 2 - 8, 1, 16});
+		d.Command<Graphics::Quad>(Vec4<int>{X() - 2, Y() + Height() / 2 - 8, 1, 16});
 		Container::Render(d);
+	}
+
+	void EffectsGroup(EffectsGroup& e)
+	{
+		m_EffectsGroup = &e;
 	}
 
 private:
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
-	MenuAccessories::Divider* m_Div;
+	MenuAccessories::Divider* m_Div = nullptr;
+	::EffectsGroup* m_EffectsGroup = nullptr;
 };
 
 
@@ -85,19 +96,21 @@ public:
 		
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {
-				l->ShowEffectsPanel();
+				l->ShowEffectsPanel(ChannelGroup().EffectsGroup());
 			}, "Show Effects");
 		
 		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {
-				if constexpr (std::is_same_v<This, InputChannelGroup>) ChannelGroup().Clear();
-				if constexpr (std::is_same_v<This, OutputChannelGroup>) ChannelGroup().Clear();
-				if constexpr (std::is_same_v<This, InputChannelGroup>) m_SelectedSame->Clear();
-				if constexpr (std::is_same_v<This, OutputChannelGroup>) m_SelectedSame->Clear();
+				ChannelGroup().ClearConnections();
+				m_SelectedSame->ClearConnections();
 
 				for (auto& c : ChannelGroup().Channels())
+				{
 					m_SelectedSame->AddChannel(c);
+					ChannelGroup().RemoveChannel(c);
+				}
+
 
 				m_Delete = true;
 			}, "Combine");
@@ -107,7 +120,7 @@ public:
 			[&, l] {
 				auto& a = l->EmplaceChannel<ChannelPanel<This>>();
 
-				int size = ChannelGroup().Size() / 2;
+				int size = ChannelGroup().ChannelAmount() / 2;
 				for (int i = 0; i < size; i++)
 				{
 					auto b = ChannelGroup().Channels()[0];
@@ -289,7 +302,7 @@ private:
 		d.Command<Translate>(Position());
 		Background(d);
 
-		int _channels = m_ChannelGroup.Size();;
+		int _channels = m_ChannelGroup.ChannelAmount();
 		int _y = 100;
 		int _rh = Height() - 35 - _y;
 		int _0db = ((1.0 / 1.412536) * (_rh)) + _y;
@@ -340,6 +353,7 @@ private:
 		d.Command<TextAlign>(Align::CENTER, Align::TOP);
 		d.Command<Text>(&m_ChannelGroup.Name(), Vec2<int>{ Width() / 2, Height() - 4 });
 
+
 		// db numbers besides volume meter
 		int _d = 3;
 		bool _b = true;
@@ -376,7 +390,7 @@ private:
 		d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
 		d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
 		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
-		
+
 		Container::Render(d);
 		d.Command<PopMatrix>();
 	}

@@ -490,8 +490,8 @@ namespace SoundMixrGraphics
 	using namespace Graphics;
 	struct Menu
 	{
-		template<typename Type = ButtonBase>
-		static void Render(Type& b, CommandCollection& d)
+		template<typename This = ButtonBase>
+		static void Render(This& b, CommandCollection& d)
 		{
 			int _padding = 20;
 			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Active() ? Theme<C::ButtonS>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
@@ -599,8 +599,8 @@ namespace SoundMixrGraphics
 		 * @param b the <code>Button</code>
 		 * @param d the <code>CommandCollection</code>
 		 */
-		template<typename Type = ButtonBase>
-		static void Render(Type& b, CommandCollection& d)
+		template<typename This = ButtonBase>
+		static void Render(This& b, CommandCollection& d)
 		{
 			Menu::Render(b, d);
 			int _w = 8;
