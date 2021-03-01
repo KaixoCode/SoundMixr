@@ -38,7 +38,7 @@ public:
 	std::vector<InputChannelPanel*>&  InputChannels() { return m_InputChannels; };
 	std::vector<OutputChannelPanel*>& OutputChannels() { return m_OutputChannels; };
 
-	void Clear() { m_Inputs.Clear(); m_InputChannels.clear(); m_Outputs.Clear(); m_OutputChannels.clear(); };
+	void Clear() { m_Effect.EffectsGroup(nullptr); m_Effect.Visible(false); m_Inputs.Clear(); m_InputChannels.clear(); m_Outputs.Clear(); m_OutputChannels.clear(); };
 	void Update(const Vec4<int>& s) override;
 	void Render(CommandCollection& d) override
 	{
@@ -49,7 +49,7 @@ public:
 
 	void ShowEffectsPanel(EffectsGroup& effects)
 	{
-		m_Effect.EffectsGroup(effects);
+		m_Effect.EffectsGroup(&effects);
 		m_Effect.Visible(true);
 	}
 

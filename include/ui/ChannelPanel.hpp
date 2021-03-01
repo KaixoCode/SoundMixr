@@ -34,9 +34,9 @@ public:
 		d.Command<Graphics::PopMatrix>();
 	}
 
-	void EffectsGroup(EffectsGroup& e)
+	void EffectsGroup(EffectsGroup* e)
 	{
-		m_EffectsGroup = &e;
+		m_EffectsGroup = e;
 	}
 
 	template<typename T>
@@ -85,7 +85,7 @@ public:
 		SMXRScrollPanel::Render(d);
 	}
 
-	void EffectsGroup(EffectsGroup& e)
+	void EffectsGroup(EffectsGroup* e)
 	{
 		m_EffectPanel.EffectsGroup(e);
 	}
