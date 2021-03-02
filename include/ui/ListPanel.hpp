@@ -13,30 +13,19 @@ public:
 
 	void SortChannels();
 
-	template<typename T>
-	T& EmplaceChannel();
-
-	template<>
-	InputChannelPanel& EmplaceChannel()
+	ChannelPanel& EmplaceChannel(bool IsInput)
 	{
-		auto& panl = m_InputChannels.emplace_back(&m_Inputs.Emplace<InputChannelPanel>(this));
-		//panl->SmartPanel(true);
-		return *panl;
-	}
-
-	template<>
-	OutputChannelPanel& EmplaceChannel()
-	{
-		auto& panl = m_OutputChannels.emplace_back(&m_Outputs.Emplace<OutputChannelPanel>(this));
-		//panl->SmartPanel(true);
-		return *panl;
+		if (IsInput)
+			return *m_InputChannels.emplace_back(&m_Inputs.Emplace<ChannelPanel>(this));
+		else
+			return *m_OutputChannels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this));
 	}
 
 	void ResetGrouping();
 	void Transparency(bool d) { for (auto& _c : m_InputChannels) _c->Transparency(d); };
 
-	std::vector<InputChannelPanel*>&  InputChannels() { return m_InputChannels; };
-	std::vector<OutputChannelPanel*>& OutputChannels() { return m_OutputChannels; };
+	std::vector<ChannelPanel*>&  InputChannels() { return m_InputChannels; };
+	std::vector<ChannelPanel*>& OutputChannels() { return m_OutputChannels; };
 
 	void Clear() { m_Effect.EffectsGroup(nullptr); m_Effect.Visible(false); m_Inputs.Clear(); m_InputChannels.clear(); m_Outputs.Clear(); m_OutputChannels.clear(); };
 	void Update(const Vec4<int>& s) override;
@@ -60,6 +49,6 @@ private:
 	::Panel& m_Inputs;
 	MenuAccessories::VerticalDivider* m_Divider = nullptr;
 	::Panel& m_Outputs;
-	std::vector<InputChannelPanel*> m_InputChannels;
-	std::vector<OutputChannelPanel*> m_OutputChannels;
+	std::vector<ChannelPanel*> m_InputChannels;
+	std::vector<ChannelPanel*> m_OutputChannels;
 };

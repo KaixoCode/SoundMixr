@@ -53,20 +53,20 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 			bool s = false;
 			for (auto& _panel : m_InputChannels)
 			{
-				InputChannelPanel& _current = *_panel;
+				ChannelPanel& _current = *_panel;
 				if (_current.WithinBounds(translated - m_Inputs.Position()))
 				{
 					if ((!_current.routed.Hovering() || _current.routed.Disabled()) && !_current.muted.Hovering() && !_current.mono.Hovering() && !_current.pan.Hovering())
 					{
 						for (auto& _p : m_OutputChannels)
 						{
-							OutputChannelPanel& _c = *_p;
+							ChannelPanel& _c = *_p;
 							_c.Select(&_current.ChannelGroup());
 							_c.Selected(false);
 						}
 						for (auto& _p : m_InputChannels)
 						{
-							InputChannelPanel& _c = *_p;
+							ChannelPanel& _c = *_p;
 							_c.Select(&_current.ChannelGroup());
 							_c.Selected(false);
 						}
@@ -79,20 +79,20 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 			}
 			for (auto& _panel : m_OutputChannels)
 			{
-				ChannelPanel<::OutputChannelGroup>& _current = *_panel;
+				ChannelPanel& _current = *_panel;
 				if (_current.WithinBounds(translated - m_Outputs.Position()))
 				{
 					if ((!_current.routed.Hovering() || _current.routed.Disabled()) && !_current.muted.Hovering() && !_current.mono.Hovering() && !_current.pan.Hovering())
 					{
 						for (auto& _p : m_InputChannels)
 						{
-							ChannelPanel<::InputChannelGroup>& _c = *_p;
+							ChannelPanel& _c = *_p;
 							_c.Select(&_current.ChannelGroup());
 							_c.Selected(false);
 						}
 						for (auto& _p : m_OutputChannels)
 						{
-							OutputChannelPanel& _c = *_p;
+							ChannelPanel& _c = *_p;
 							_c.Select(&_current.ChannelGroup());
 							_c.Selected(false);
 						}
@@ -142,8 +142,8 @@ void ListPanel::SortChannels()
 	std::sort(m_Inputs.Components().begin(), m_Inputs.Components().end(),
 		[](const std::unique_ptr<Component>& a, const std::unique_ptr<Component>& b) -> bool
 		{
-			InputChannelPanel* _ina = dynamic_cast<InputChannelPanel*>(a.get());
-			InputChannelPanel* _inb = dynamic_cast<InputChannelPanel*>(b.get());
+			ChannelPanel* _ina = dynamic_cast<ChannelPanel*>(a.get());
+			ChannelPanel* _inb = dynamic_cast<ChannelPanel*>(b.get());
 
 			if (_ina != nullptr && _inb != nullptr)
 				return _ina->ChannelGroup().ID() < _inb->ChannelGroup().ID();
@@ -154,8 +154,8 @@ void ListPanel::SortChannels()
 	std::sort(m_Outputs.Components().begin(), m_Outputs.Components().end(),
 		[](const std::unique_ptr<Component>& a, const std::unique_ptr<Component>& b) -> bool
 		{
-			OutputChannelPanel* _ina = dynamic_cast<OutputChannelPanel*>(a.get());
-			OutputChannelPanel* _inb = dynamic_cast<OutputChannelPanel*>(b.get());
+			ChannelPanel* _ina = dynamic_cast<ChannelPanel*>(a.get());
+			ChannelPanel* _inb = dynamic_cast<ChannelPanel*>(b.get());
 
 			if (_ina != nullptr && _inb != nullptr)
 				return _ina->ChannelGroup().ID() < _inb->ChannelGroup().ID();
@@ -175,7 +175,7 @@ void ListPanel::ResetGrouping()
 	for (i = 0; i < asio.Device().info.maxInputChannels - 1; i += 2)
 	{
 		// Add a ChannelPanel with all the inputs
-		auto& _c = EmplaceChannel<InputChannelPanel>();
+		auto& _c = EmplaceChannel(true);
 		_c.AddChannel(&asio.Inputs()[i]);
 		_c.AddChannel(&asio.Inputs()[i + 1]);
 
@@ -190,7 +190,7 @@ void ListPanel::ResetGrouping()
 	if (i == asio.Device().info.maxInputChannels - 1)
 	{
 		// Add a ChannelPanel with all the inputs
-		auto& _c = EmplaceChannel<InputChannelPanel>();
+		auto& _c = EmplaceChannel(true);
 		_c.AddChannel(&asio.Inputs()[i]);
 
 		// Set all parameters of this Channel
@@ -202,8 +202,8 @@ void ListPanel::ResetGrouping()
 
 	for (i = 0; i < asio.Device().info.maxOutputChannels - 1; i += 2)
 	{
-		// Add a ChannelPanel with all the inputs
-		auto& _c = EmplaceChannel<OutputChannelPanel>();
+		// Add a ChannelPanel with all the outputs
+		auto& _c = EmplaceChannel(false);
 		_c.AddChannel(&asio.Outputs()[i]);
 		_c.AddChannel(&asio.Outputs()[i + 1]);
 
@@ -217,8 +217,8 @@ void ListPanel::ResetGrouping()
 	// if there were an uneven amount of channels, add one last mono channel
 	if (i == asio.Device().info.maxOutputChannels - 1)
 	{
-		// Add a ChannelPanel with all the inputs
-		auto& _c = EmplaceChannel<OutputChannelPanel>();
+		// Add a ChannelPanel with all the outputs
+		auto& _c = EmplaceChannel(false);
 		_c.AddChannel(&asio.Outputs()[i]);
 
 		// Set all parameters of this Channel

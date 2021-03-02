@@ -21,8 +21,8 @@ AsioDevice::AsioDevice()
 	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
 	{
 		info = Pa_GetDeviceInfo(i);
-		if (info->hostApi == 0)
-			m_Devices.emplace_back(i, *info);
+		//if (info->hostApi == 0)
+		m_Devices.emplace_back(i, *info);
 	}
 }
 
@@ -55,7 +55,7 @@ bool AsioDevice::OpenStream()
 		PaAsio_GetInputChannelName(Device().id, i, &name);
 		std::string n = name;
 		n.resize(n.find_last_of(' '));
-		auto& a = m_Inputs.emplace_back(i, n);
+		auto& a = m_Inputs.emplace_back(i, n, true);
 	}
 
 	for (int i = 0; i < op.channelCount; i++)
@@ -64,7 +64,7 @@ bool AsioDevice::OpenStream()
 		PaAsio_GetOutputChannelName(Device().id, i, &name);
 		std::string n = name;
 		n.resize(n.find_last_of(' '));
-		auto& a = m_Outputs.emplace_back(i, n);
+		auto& a = m_Outputs.emplace_back(i, n, false);
 	}
 
 	int tries = 0;

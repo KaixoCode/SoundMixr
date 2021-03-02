@@ -14,8 +14,8 @@ public:
 	void PlayFile()
 	{
 		if (m_File.getNumSamplesPerChannel() > 0) {
-			// A file is already loaded
-			LOG("alreadyloaded");
+			// A file is already loaded, play it
+			m_SampleNum = 0;
 		}
 		else {
 			// Load a file
@@ -48,6 +48,7 @@ public:
 private:
 	std::string m_Filepath;
 	AudioFile<double> m_File;
+	int m_SampleNum = -1;
 };
 
 class Soundboard : public Frame

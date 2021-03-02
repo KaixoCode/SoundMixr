@@ -116,17 +116,14 @@ private:
 // -------------------------- Channel Panel --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-template<typename This, typename Other = std::conditional<std::is_same_v<This, InputChannelGroup>, OutputChannelGroup, InputChannelGroup>::type>
 class ChannelPanel : public Panel
 {
 public:
-	static constexpr bool Input = std::is_same_v<This, ::InputChannelGroup>;
-
 	template<typename T>
 	ChannelPanel(T* l)
 		: m_ChannelGroup(),
 		volume(Emplace<VolumeSlider>()),
-		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, Input ? "in" : "")),
+		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, m_IsInput ? "in" : "")),
 
 		muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(
 			[&](bool s) { 
@@ -183,7 +180,7 @@ public:
 
 		m_Split = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {
-				auto& a = l->EmplaceChannel<ChannelPanel<This>>();
+				auto& a = l->EmplaceChannel(m_IsInput);
 
 				int size = ChannelGroup().ChannelAmount() / 2;
 				for (int i = 0; i < size; i++)
@@ -226,56 +223,48 @@ public:
 		};
 	}
 
-	void Select(Other* s)
+	void Select(ChannelGroup* s)
 	{
 		m_SelectedChannels = s;
 		m_HasSelect = true;
 
-		if constexpr (Input)
-		{
-			m_Routed = m_ChannelGroup.Connected(s);
-			routed.Enable();
-		}
-		else
-		{
-			m_Routed = s->Connected(&m_ChannelGroup);
-			routed.Enable();
-		}
-
-		m_Connect->Visible(false);
-	}
-
-	void Select(This* s)
-	{
-		m_HasSelect = false;
-		if constexpr (Input)
+		if (s->IsInput())
 		{
 			m_Routed = false;
 			routed.Disable();
 		}
 		else
 		{
-			m_Routed = false;
-			routed.Disable();
+			if (m_IsInput)
+				m_Routed = m_ChannelGroup.Connected(s);
+
+			else
+				m_Routed = s->Connected(&m_ChannelGroup);
+
+			routed.Enable();
 		}
 
-		if (s != &m_ChannelGroup)
+		if (s->IsInput() == m_IsInput)
 		{
-			m_Connect->Name(std::string("Combine with ") + s->Name());
-			m_Connect->Visible(true);
+			if (s != &m_ChannelGroup)
+			{
+				m_Connect->Name(std::string("Combine with ") + s->Name());
+				m_Connect->Visible(true);
+			}
+			else
+				m_Connect->Visible(false);
+
+			m_SelectedSame = s;
 		}
 		else
-		{
 			m_Connect->Visible(false);
-		}
-		m_SelectedSame = s;
 	}
 
-	template<typename T>
-	void AddChannel(T* s)
+	void AddChannel(ChannelBase* s)
 	{
 		m_ChannelGroup.AddChannel(s);
 		m_MenuTitle->Name(m_ChannelGroup.Name());
+		m_IsInput = s->IsInput();
 	}
 
 	void Selected(bool v) { m_Selected = v; }
@@ -283,7 +272,7 @@ public:
 	void Unselect() { m_HasSelect = false; routed.Disable(); m_Connect->Visible(false); }
 	void Routed(bool v) { m_Routed = v; }
 	bool Routed() { return m_Routed; }
-	auto ChannelGroup()  -> This& { return m_ChannelGroup; }
+	auto ChannelGroup()  -> ChannelGroup& { return m_ChannelGroup; }
 	void Transparency(bool t) { m_Transparency = t; }
 	bool Delete() { return m_Delete; }
 
@@ -291,7 +280,7 @@ private:
 	// This private thing is defined here because it needs to be initialized first
 	// in the constructor, so it is defined above all other things that are
 	// initialized in the constructor. Yes, that is how C++ works, learn your shit!
-	This m_ChannelGroup;
+	::ChannelGroup m_ChannelGroup;
 
 public:
 	//Button<SmallText, ButtonType::Normal>& text;
@@ -312,10 +301,11 @@ private:
 	MenuAccessories::Divider* m_Div1, * m_Div2, *m_Div3;
 
 	bool m_HasSelect = false;
-	Other* m_SelectedChannels;
-	This* m_SelectedSame;
+	::ChannelGroup* m_SelectedChannels;
+	::ChannelGroup* m_SelectedSame;
 
-	bool m_Selected = false;
+	bool m_Selected = false,
+		m_IsInput = false;
 
 	static inline std::unordered_map<int, std::string> m_Numbers;
 	std::string m_NegInf = "Inf";
@@ -323,12 +313,12 @@ private:
 	void Update(const Vec4<int>& viewport)
 	{
 		if (m_HasSelect)
-			if constexpr (!Input)
+			if (!m_IsInput)
 				if (m_Routed)
 					m_SelectedChannels->Connect(&m_ChannelGroup);
 				else
 					m_SelectedChannels->Disconnect(&m_ChannelGroup);
-			else if constexpr (Input)
+			else if (m_IsInput)
 				if (m_Routed)
 					m_ChannelGroup.Connect(m_SelectedChannels);
 				else
@@ -460,7 +450,3 @@ private:
 		d.Command<PopMatrix>();
 	}
 };
-
-using InputChannelPanel = ChannelPanel<::InputChannelGroup>;
-using OutputChannelPanel = ChannelPanel<::OutputChannelGroup>;
-using SoundboardChannelPanel = ChannelPanel<::SoundboardChannelGroup>;

@@ -382,7 +382,7 @@ void Controller::LoadRouting()
         if (_type == "in")
         {
             // Add a ChannelPanel with all the inputs
-            auto& _c = m_List->EmplaceChannel<InputChannelPanel>();
+            auto& _c = m_List->EmplaceChannel(true);
             for (int i : _ids)
             {
                 _inputIdsLoaded[i] = true;
@@ -405,7 +405,7 @@ void Controller::LoadRouting()
                 _rest = _rest.substr(p + 1);
                 
                 // Find the OutputChannelPanel belonging to that id and connect them
-                auto _it = std::find_if(_out.begin(), _out.end(), [&_link](OutputChannelPanel* obj)
+                auto _it = std::find_if(_out.begin(), _out.end(), [&_link](ChannelPanel* obj)
                     { return obj->ChannelGroup().ID() == _link; }
                 );
 
@@ -420,7 +420,7 @@ void Controller::LoadRouting()
         else
         {
             // Add ChannelPanel with all the outputs
-            auto& _c = m_List->EmplaceChannel<OutputChannelPanel>();
+            auto& _c = m_List->EmplaceChannel(false);
             for (int i : _ids)
             {
                 _outputIdsLoaded[i] = true;
@@ -447,7 +447,7 @@ void Controller::LoadRouting()
         for (i = 0; i < m_AsioDevice.Device().info.maxInputChannels - 1; i += 2)
         {
             // Add a ChannelPanel with all the inputs
-            auto& _c = m_List->EmplaceChannel<InputChannelPanel>();
+            auto& _c = m_List->EmplaceChannel(true);
             _c.AddChannel(&m_AsioDevice.Inputs()[i]);
             _c.AddChannel(&m_AsioDevice.Inputs()[i+1]);
 
@@ -462,7 +462,7 @@ void Controller::LoadRouting()
         if (i == m_AsioDevice.Device().info.maxInputChannels - 1)
         {
             // Add a ChannelPanel with all the inputs
-            auto& _c = m_List->EmplaceChannel<InputChannelPanel>();
+            auto& _c = m_List->EmplaceChannel(true);
             _c.AddChannel(&m_AsioDevice.Inputs()[i]);
 
             // Set all parameters of this Channel
@@ -474,8 +474,8 @@ void Controller::LoadRouting()
 
         for (i = 0; i < m_AsioDevice.Device().info.maxOutputChannels - 1; i += 2)
         {
-            // Add a ChannelPanel with all the inputs
-            auto& _c = m_List->EmplaceChannel<OutputChannelPanel>();
+            // Add a ChannelPanel with all the outputs
+            auto& _c = m_List->EmplaceChannel(false);
             _c.AddChannel(&m_AsioDevice.Outputs()[i]);
             _c.AddChannel(&m_AsioDevice.Outputs()[i+1]);
 
@@ -489,8 +489,8 @@ void Controller::LoadRouting()
         // if there were an uneven amount of channels, add one last mono channel
         if (i == m_AsioDevice.Device().info.maxOutputChannels - 1)
         {
-            // Add a ChannelPanel with all the inputs
-            auto& _c = m_List->EmplaceChannel<OutputChannelPanel>();
+            // Add a ChannelPanel with all the outputs
+            auto& _c = m_List->EmplaceChannel(false);
             _c.AddChannel(&m_AsioDevice.Outputs()[i]);
 
             // Set all parameters of this Channel
@@ -510,7 +510,7 @@ void Controller::LoadRouting()
             if (!i.second)
             {
                 // Add a ChannelPanel with the input
-                auto& _c = m_List->EmplaceChannel<InputChannelPanel>();
+                auto& _c = m_List->EmplaceChannel(true);
                 _c.AddChannel(&m_AsioDevice.Inputs()[i.first]);
             }
         }
@@ -519,8 +519,8 @@ void Controller::LoadRouting()
         {
             if (!i.second)
             {
-                // Add a ChannelPanel with the input
-                auto& _c = m_List->EmplaceChannel<OutputChannelPanel>();
+                // Add a ChannelPanel with the output
+                auto& _c = m_List->EmplaceChannel(false);
                 _c.AddChannel(&m_AsioDevice.Outputs()[i.first]);
             }
         }
