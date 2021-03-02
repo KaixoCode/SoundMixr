@@ -6,7 +6,8 @@
 
 Controller::Controller()
 : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500, true)),
-soundboard(m_Gui.AddWindow<Soundboard>())
+soundboard(m_Gui.AddWindow<Soundboard>()),
+m_AsioDevice(soundboard)
 {}
 
 void Controller::Run()
@@ -78,6 +79,8 @@ void Controller::Run()
     auto& _titleButton = _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels");
     _titleButton.Disable();
     m_List = &_p3.Emplace<ListPanel>(Layout::Hint::Center, m_AsioDevice);
+    auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+    _soundboardChannel.AddChannel(&m_AsioDevice.SoundboardChannel());
 
     //
     // Frame menu

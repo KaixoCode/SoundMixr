@@ -5,12 +5,14 @@
 // -------------------------------------------------------------------------- \\
 
 ListPanel::ListPanel(AsioDevice& sarasio)
-	: asio(sarasio), 
+	: asio(sarasio),
 	m_Channels(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
 	m_Effect(Panel().Emplace<::EffectScrollPanel>(Layout::Hint::East)),
 	m_Inputs(m_Channels.Panel<::Panel>().Emplace<::Panel>()),
 	m_Divider(&m_Channels.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
-	m_Outputs(m_Channels.Panel().Emplace<::Panel>())
+	m_Outputs(m_Channels.Panel().Emplace<::Panel>()),
+	m_Divider2(&m_Channels.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	m_Specials(m_Channels.Panel<::Panel>().Emplace<::Panel>())
 {
 	m_Effect.Width(300);
 	m_Effect.MinWidth(300);
@@ -261,6 +263,9 @@ void ListPanel::Update(const Vec4<int>& s)
 
 	if (m_Divider)
 		m_Divider->Color(Theme<C::Divider>::Get());
+
+	if (m_Divider2)
+		m_Divider2->Color(Theme<C::Divider>::Get());
 
 	ScrollPanel::Update(s);
 }

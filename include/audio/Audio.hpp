@@ -286,7 +286,7 @@ private:
 class AsioDevice
 {
 public:
-	AsioDevice();
+	AsioDevice(Soundboard& soundboard);
 
 	~AsioDevice();
 
@@ -301,6 +301,7 @@ public:
 
 	std::vector<InputChannel>& Inputs() { return m_Inputs; }
 	std::vector<OutputChannel>& Outputs() { return m_Outputs; }
+	SoundboardChannel& SoundboardChannel() { return m_SoundboardChannel; }
 
 private:
 	double m_Samplerate;
@@ -311,6 +312,7 @@ private:
 
 	std::vector<InputChannel> m_Inputs;
 	std::vector<OutputChannel> m_Outputs;
+	::SoundboardChannel m_SoundboardChannel;
 	std::vector<::Device> m_Devices;
 
 	static int SarCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,

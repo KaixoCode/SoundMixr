@@ -4,8 +4,8 @@
 // -------------------------- SAR ASIO Device ------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-AsioDevice::AsioDevice()
-	: m_BufferSize(256), m_Samplerate(48000)
+AsioDevice::AsioDevice(Soundboard& soundboard)
+	: m_BufferSize(256), m_Samplerate(48000), m_SoundboardChannel(soundboard)
 {
 	LOG("Initializing Portaudio library");
 	PaError err;
@@ -21,8 +21,8 @@ AsioDevice::AsioDevice()
 	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
 	{
 		info = Pa_GetDeviceInfo(i);
-		//if (info->hostApi == 0)
-		m_Devices.emplace_back(i, *info);
+		if (info->hostApi == 0)
+			m_Devices.emplace_back(i, *info);
 	}
 }
 

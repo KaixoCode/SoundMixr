@@ -21,13 +21,23 @@ public:
 			return *m_OutputChannels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this, false));
 	}
 
+	ChannelPanel& EmplaceSpecialChannel()
+	{
+		return *m_SpecialChannels.emplace_back(&m_Specials.Emplace<ChannelPanel>(this, true));
+	}
+
 	void ResetGrouping();
 	void Transparency(bool d) { for (auto& _c : m_InputChannels) _c->Transparency(d); };
 
-	std::vector<ChannelPanel*>&  InputChannels() { return m_InputChannels; };
+	std::vector<ChannelPanel*>& InputChannels() { return m_InputChannels; };
 	std::vector<ChannelPanel*>& OutputChannels() { return m_OutputChannels; };
+	std::vector<ChannelPanel*>& SpecialChannels() { return m_SpecialChannels; };
 
-	void Clear() { m_Effect.EffectsGroup(nullptr); m_Effect.Visible(false); m_Inputs.Clear(); m_InputChannels.clear(); m_Outputs.Clear(); m_OutputChannels.clear(); };
+	void Clear() {  m_Effect.EffectsGroup(nullptr); m_Effect.Visible(false); 
+					m_Inputs.Clear(); m_InputChannels.clear(); 
+					m_Outputs.Clear(); m_OutputChannels.clear(); 
+					m_Specials.Clear(); m_SpecialChannels.clear(); };
+
 	void Update(const Vec4<int>& s) override;
 	void Render(CommandCollection& d) override
 	{
@@ -49,6 +59,9 @@ private:
 	::Panel& m_Inputs;
 	MenuAccessories::VerticalDivider* m_Divider = nullptr;
 	::Panel& m_Outputs;
+	MenuAccessories::VerticalDivider* m_Divider2 = nullptr;
+	::Panel& m_Specials;
 	std::vector<ChannelPanel*> m_InputChannels;
 	std::vector<ChannelPanel*> m_OutputChannels;
+	std::vector<ChannelPanel*> m_SpecialChannels;
 };
