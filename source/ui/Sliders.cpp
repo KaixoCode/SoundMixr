@@ -4,29 +4,6 @@
 // --------------------------- Volume Slider -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-VolumeSlider::VolumeSlider()
-{
-	m_ValueText.reserve(10);
-	Range(Vec2<int>{0, 1000000});
-	VisibleRange(10);
-	SliderValue(1);
-	Vertical(true);
-	ResetValue(1);
-}
-
-void VolumeSlider::Update(const Vec4<int>& v)
-{
-	char s[10];
-	if (Decibels() < -100)
-		m_ValueText = "-inf";
-	else {
-		std::sprintf(s, "%.1f", Decibels());
-		m_ValueText = s;
-	}
-	m_ValueText += "dB";
-
-	Parent::Update(v);
-}
 
 // -------------------------------------------------------------------------- \\
 // ----------------------------- Pan Slider --------------------------------- \\
@@ -62,6 +39,30 @@ void PanSlider::Update(const Vec4<int>& v)
 		m_ValueText = s;
 		m_ValueText += "R";
 	}
+
+	Parent::Update(v);
+}
+
+// -------------------------------------------------------------------------- \\
+// ---------------------------- Knob Slider --------------------------------- \\
+// -------------------------------------------------------------------------- \\
+
+KnobSlider::KnobSlider()
+{
+	m_ValueText.reserve(10);
+	Range(Vec2<int>{0, 1000000});
+	VisibleRange(10);
+	SliderValue(1);
+	Vertical(true);
+	ResetValue(1);
+}
+
+void KnobSlider::Update(const Vec4<int>& v)
+{
+	char s[10];
+	std::sprintf(s, "%.1f", SliderValue() * (m_Range.y - m_Range.x) + m_Range.x);
+	m_ValueText = s;
+	m_ValueText += m_Unit;
 
 	Parent::Update(v);
 }

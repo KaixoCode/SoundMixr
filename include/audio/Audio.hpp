@@ -118,6 +118,13 @@ public:
 		}
 	}
 
+	float DoEffects()
+	{
+		if (ChannelAmount())
+			return m_EffectsGroup.NextSample(m_Channels[0]->Level());
+		return 0;
+	}
+
 	float GetLevel(int id)
 	{
 		m_StartRound = true;
@@ -238,10 +245,13 @@ public:
 			for (auto& i : m_Group->Channels())
 				level += i->UnprocessedLevel();
 
-			m_OutLevel = (level / m_Group->ChannelAmount()) * m_Pan * m_Volume;
+			m_OutLevel = (level / m_Group->ChannelAmount());
 		}
 		else
-			m_OutLevel = m_Level * m_Volume * m_Pan;
+			m_OutLevel = m_Level;
+
+		if (m_Group != nullptr)
+			m_OutLevel = m_Group->DoEffects() * m_Volume * m_Pan;
 	}
 };
 

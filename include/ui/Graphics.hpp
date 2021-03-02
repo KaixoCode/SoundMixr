@@ -72,6 +72,14 @@ enum class C
 	VMeterIndB,
 	VMeterIndD,
 
+	KnobSlider,
+	KnobSliderB,
+	KnobSliderV,
+
+	Dynamics,
+	DynamicsB,
+	DynamicsL,
+
 	ITEMS
 };
 
@@ -126,6 +134,15 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 255, 0, 0, 255 },	 // VMeterFillC3,
 		Color{ 128, 128, 128, 255 }, // VMeterIndB,
 		Color{ 64, 64, 64, 255 },	 // VMeterIndD,
+									 // 
+		Color{ 33, 33, 33, 255 },	 // KnobSlider,
+		Color{ 45, 45, 45, 255 },	 // KnobSliderB,
+		Color{ 90, 90, 90, 255 },	 // KnobSliderV,
+									 // 
+		Color{ 0, 0, 0, 255 },	     // KnobSlider,
+		Color{ 255, 255, 255, 20 },	 // KnobSliderB,
+		Color{ 255, 255, 255, 20 },	 // KnobSliderV,
+									 // 
 	},
 	// LIGHT
 	{ 
@@ -176,6 +193,15 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 255, 0, 0, 255 },	 // VMeterFillC3,
 		Color{ 180, 180, 180, 255 }, // VMeterIndB,
 		Color{ 128, 128, 128, 255 }, // VMeterIndD,
+									 // 
+		Color{ 245, 245, 245, 255 }, // KnobSlider,
+		Color{ 225, 225, 225, 255 }, // KnobSliderB,
+		Color{ 180, 180, 180, 255 }, // KnobSliderV,
+									 // 
+		Color{ 255, 255, 255, 255 }, // KnobSlider,
+		Color{ 0, 0, 0, 20 },		 // KnobSliderB,
+		Color{ 0, 0, 0, 20 },		 // KnobSliderV,
+									 // 
 	},
 	// BLUE
 	{ 
@@ -226,6 +252,15 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 255, 0, 0, 255 },	 // VMeterFillC3,
 		Color{ 180, 180, 180, 255 }, // VMeterIndB,
 		Color{ 128, 128, 128, 255 }, // VMeterIndD,
+									 // 
+		Color{  44,  61,  77, 255 }, // KnobSlider,
+		Color{  50,  69,  86, 255 }, // KnobSliderB,
+		Color{  99, 125, 142, 255 }, // KnobSliderV,
+									 // 
+		Color{  40,  57,  71, 255 }, // KnobSlider,
+		Color{  200, 230, 255, 20 }, // KnobSliderB,
+		Color{  200, 230, 255, 20 }, // KnobSliderV,
+									 // 
 	},
 	// RED
 	{
@@ -485,6 +520,65 @@ public:
 	}
 };
 
+class KnobSliderGraphics
+{
+public:
+
+	static void Render(SliderBase<KnobSliderGraphics>& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+		
+		if (true)
+		{
+			double _v = b.Value() / 1000000.0;
+			double _a = _v * M_PI * 1.5 + M_PI * 0.25 - M_PI / 2.0;
+
+			int _w = -(b.Value() / 1000000.0) * (b.Width() * 0.5 - 1);
+
+			int _h = b.Height() - _p * 2;
+			int _we = _w - _p * 2;
+			d.Command<Fill>(Theme<C::KnobSliderB>::Get());
+			d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()});
+			d.Command<Fill>(Theme<C::KnobSlider>::Get());
+			d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 4});
+			d.Command<Fill>(Theme<C::KnobSliderV>::Get());
+			int _x = std::cos(_a) * b.Width() / 2;
+			int _y = std::sin(_a) * b.Height() / 2;
+			d.Command<Graphics::Ellipse>(Vec4<int>{b.X() + b.Width() / 2 + _x, b.Y() + b.Height() / 2 + _y, b.Width() / 8, b.Height() / 8}, _v * 360);
+		}
+		else {
+			if (b.Vertical())
+			{
+				int _p = 6;
+				int _h = (1.0 - (b.Value() / 1000000.0)) * (b.Height());
+
+				d.Command<Fill>(Theme<C::KnobSliderB>::Get());
+				d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+				d.Command<Fill>(Theme<C::KnobSlider>::Get());
+				d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+				d.Command<Fill>(Theme<C::KnobSliderV>::Get());
+				d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y(), b.Width() - 2, _h});
+			}
+			else
+			{
+				int _p = 6;
+				int _w = (1.0 - (b.Value() / 1000000.0)) * (b.Width());
+
+				d.Command<Fill>(Theme<C::KnobSliderB>::Get());
+				d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+				d.Command<Fill>(Theme<C::KnobSlider>::Get());
+				d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+				d.Command<Fill>(Theme<C::KnobSliderV>::Get());
+				d.Command<Quad>(Vec4<int>{b.X(), b.Y() + 1, _w, b.Height() - 2});
+			}
+		}
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Fill>(Theme<C::TextSmall>::Get());
+		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
+	}
+};
 namespace SoundMixrGraphics
 {
 	using namespace Graphics;

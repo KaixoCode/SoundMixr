@@ -7,9 +7,24 @@
 class EffectPanel : public Panel
 {
 public:
+
+	EffectPanel()
+	{
+		m_Listener += [this](Event& e)
+		{
+			if (m_EffectsGroup)
+			{
+				if (e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
+					e.x -= X(), e.y -= Y();
+				m_EffectsGroup->AddEvent(e);
+			}
+		};
+	}
+
 	void Update(const Vec4<int>& viewport) override
 	{
-		m_Cursor = m_Pressed && m_LayoutManager.Cursor() == -1 ? GLFW_CURSOR_NORMAL : m_LayoutManager.Cursor();
+		m_Cursor = m_EffectsGroup ? m_EffectsGroup->Cursor() : m_Pressed && m_LayoutManager.Cursor() == -1 ?
+			 GLFW_CURSOR_NORMAL : m_LayoutManager.Cursor();
 
 		auto& newv = viewport.Overlap({ X(), Y(), Width(), Height() }).Translate({ X(), Y() });
 
@@ -302,7 +317,7 @@ private:
 
 	bool m_Selected = false;
 
-	std::unordered_map<int, std::string> m_Numbers;
+	static inline std::unordered_map<int, std::string> m_Numbers;
 	std::string m_NegInf = "Inf";
 
 	void Update(const Vec4<int>& viewport)

@@ -38,13 +38,13 @@ public:
 			if (Vertical())
 			{
 				m_Mouse = constrain(e.y, Y(), Height());
-				m_Value = m_PressValue - ((e.y - m_PressMouse) / (float)(Height())) * (m_Range.end - m_Range.start) + m_Range.start;
+				m_Value = m_PressValue - m_Mult * ((e.y - m_PressMouse) / (float)(Height())) * (m_Range.end - m_Range.start) + m_Range.start;
 				m_Value = constrain(m_Value, m_Range.start, m_Range.end - m_VisibleRange);	
 			}
 			else
 			{
 				m_Mouse = constrain(e.x, X(), Width());
-				m_Value = m_PressValue - ((e.x - m_PressMouse) / (float)(Width())) * (m_Range.end - m_Range.start) + m_Range.start;
+				m_Value = m_PressValue - m_Mult * ((e.x - m_PressMouse) / (float)(Width())) * (m_Range.end - m_Range.start) + m_Range.start;
 				m_Value = constrain(m_Value, m_Range.start, m_Range.end - m_VisibleRange);
 			}
 		};
@@ -65,6 +65,7 @@ public:
 	bool   Vertical() { return m_Vertical; }
 	void   Vertical(bool v) { m_Vertical = v; }
 	void   ResetValue(double v) { m_ResetValue = v; }
+	void   SliderMult(double v) { m_Mult = v; }
 
 	void Render(CommandCollection& d) override
 	{
@@ -80,6 +81,6 @@ private:
 	bool m_Vertical = true;
 	bool m_Dragging = false;
 	int m_Counter = 0;
-	double m_ResetValue = 0;
+	double m_ResetValue = 0, m_Mult = 1;
 };
 
