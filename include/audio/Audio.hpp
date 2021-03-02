@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.hpp"
 #include "audio/Effects.hpp"
+#include "ui/Soundboard.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Device ------------------------------------ \\
@@ -23,6 +24,7 @@ public:
 
 class InputChannel;
 class OutputChannel;
+class SoundboardChannel;
 
 template<typename This, typename Other = std::conditional<std::is_same_v<This, InputChannel>, OutputChannel, InputChannel>::type>
 class ChannelGroup;
@@ -176,6 +178,7 @@ private:
 
 using InputChannelGroup = ChannelGroup<InputChannel>;
 using OutputChannelGroup = ChannelGroup<OutputChannel>;
+using SoundboardChannelGroup = ChannelGroup<SoundboardChannel>;
 
 template<typename GroupType>
 class Channel
@@ -262,6 +265,19 @@ public:
 	
 	void  CalcLevel()    override { m_OutLevel = m_Muted || !m_Group ? 0 : m_Group->GetLevel(m_GroupIndex); }
 	float Level()  const override { return (m_Mono && m_Group ? m_Group->GetMonoLevel() : m_OutLevel) * m_Volume * m_Pan; }
+};
+
+class SoundboardChannel : public Channel<SoundboardChannelGroup>
+{
+public:
+	SoundboardChannel(Soundboard& soundBoard)
+		: Channel<SoundboardChannelGroup>(0, "Soundboard"), m_Soundboard(soundBoard)
+	{ }
+
+	void  CalcLevel()    override { m_OutLevel = m_Soundboard.GetLevel(); }
+	
+private:
+	Soundboard& m_Soundboard;
 };
 
 // -------------------------------------------------------------------------- \\

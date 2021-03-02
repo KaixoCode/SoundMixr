@@ -10,10 +10,12 @@ Soundboard::Soundboard()
 
     _panel.Layout<Layout::Grid>(4, 4, 8, 8);
 
-    AudioFile<double> file;
-    file.load("./audio/audio.wav");
-
     for (int i = 0; i < 16; i++) {
-        _panel.Emplace<Button<G::Menu, BT::Normal>>([=] { LOG(i); }, std::to_string(i));
+        _panel.Emplace<SoundboardButton>();
     }
+}
+
+float Soundboard::GetLevel()
+{
+    return 0;
 }

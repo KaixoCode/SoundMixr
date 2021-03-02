@@ -463,3 +463,4 @@ private:
 
 using InputChannelPanel = ChannelPanel<::InputChannelGroup>;
 using OutputChannelPanel = ChannelPanel<::OutputChannelGroup>;
+using SoundboardChannelPanel = ChannelPanel<::SoundboardChannelGroup>;
