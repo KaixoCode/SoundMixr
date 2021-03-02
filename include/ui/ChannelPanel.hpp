@@ -458,7 +458,7 @@ private:
 				{
 					m_Numbers.emplace(i, std::to_string(std::abs(i)));
 				}
-				d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
+				d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
 				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
 			}
 			_b ^= true;

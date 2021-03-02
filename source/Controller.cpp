@@ -57,7 +57,7 @@ void Controller::Run()
                 mainWindow.Show();
 
             if (e.button == Event::MouseButton::RIGHT)
-                RightClickMenu::Get().Open(&_closeMenu);
+                RightClickMenu::Get().Open(&_closeMenu, true);
         });
 
     //
@@ -135,6 +135,11 @@ void Controller::Run()
 
                 // Clear the channels from the ListPanel
                 m_List->Clear();
+                
+                auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+                for (auto& a : m_AsioDevice.SoundboardChannels())
+                    _soundboardChannel.AddChannel(&a);
+
                 m_AsioDevice.Device(_d);
                 m_AsioDevice.OpenStream();
                 m_AsioDevice.StartStream();

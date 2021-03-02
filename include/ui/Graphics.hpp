@@ -91,11 +91,11 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 40, 40, 40, 255 },	 // MainPanel, 
 									 // 
 		Color{ 33, 33, 33, 255 },	 // Channel,
-		Color{ 26, 26, 26, 255 },	 // ChannelSelected,
+		Color{ 29, 29, 29, 255 },	 // ChannelSelected,
 									 // 
 		Color{ 255, 255, 255, 255 }, // Text,
-		Color{ 200, 200, 200, 255 }, // TextOff,
-		Color{ 128, 128, 128, 255 }, // TextSmall,
+		Color{ 128, 128, 128, 255 }, // TextOff,
+		Color{ 200, 200, 200, 255 }, // TextSmall,
 									 // 
 		Color{ 51, 51, 51, 255 },    // Divider,
 									 // 
@@ -127,7 +127,7 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 45, 45, 45, 255 },	 // PSliderB,
 		Color{ 90, 90, 90, 255 },	 // PSliderS,
 									 // 
-		Color{ 0, 0, 0, 255 },		 // VMeter,
+		Color{ 15, 15, 15, 255 },    // VMeter,
 		Color{ 0, 255, 0, 255 },	 // VMeterFill,
 		Color{ 255, 255, 0, 255 },	 // VMeterFillC1,
 		Color{ 255, 126, 0, 255 },	 // VMeterFillC2,
@@ -137,9 +137,9 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 									 // 
 		Color{ 33, 33, 33, 255 },	 // KnobSlider,
 		Color{ 45, 45, 45, 255 },	 // KnobSliderB,
-		Color{ 90, 90, 90, 255 },	 // KnobSliderV,
+		Color{ 100, 100, 100, 255 }, // KnobSliderV,
 									 // 
-		Color{ 0, 0, 0, 255 },	     // Dynamics,
+		Color{ 15, 15, 15, 255 },	 // Dynamics,
 		Color{ 100, 100, 100, 50 },	 // DynamicsB,
 		Color{ 100, 100, 100, 100 }, // DynamicsL,
 									 // 
@@ -542,10 +542,17 @@ public:
 			d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()});
 			d.Command<Fill>(Theme<C::KnobSlider>::Get());
 			d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 4});
+			d.Command<Fill>(Theme<C::KnobSlider>::Get());
+
+			int _x1 = std::cos(M_PI * 0.25 - M_PI / 2.0) * b.Width() / 2;
+			int _x2 = std::cos(M_PI * 1.75 - M_PI / 2.0) * b.Width() / 2;
+
+			d.Command<Graphics::Quad>(Vec4<int>{ b.X() + b.Width() / 2 + _x2, b.Y(), _x1 - _x2, b.Height() / 4});
 			d.Command<Fill>(Theme<C::KnobSliderV>::Get());
-			int _x = std::cos(_a) * b.Width() / 2;
-			int _y = std::sin(_a) * b.Height() / 2;
-			d.Command<Graphics::Ellipse>(Vec4<int>{b.X() + b.Width() / 2 + _x, b.Y() + b.Height() / 2 + _y, b.Width() / 8, b.Height() / 8}, _v * 360);
+			double _x = std::cos(_a) * b.Width() / 2.0;
+			double _y = std::sin(_a) * b.Height() / 2.0;
+			//d.Command<Graphics::Ellipse>(Vec4<int>{ (int)(b.X() + b.Width() / 2.0 + _x), (int)(b.Y() + b.Height() / 2.0 + _y + 1), b.Width() / 4, b.Height() / 4 }, _v * 360);
+			d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 4.0 + (_x+1) / 2.0), (int)(b.Y() + b.Height() / 2.0 + (_y) / 2.0), b.Width() / 2, 2 }, 360 * _a / (2 * M_PI));
 		}
 		else {
 			if (b.Vertical())
@@ -575,8 +582,8 @@ public:
 		}
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		d.Command<Fill>(Theme<C::TextSmall>::Get());
-		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-		d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
+		d.Command<TextAlign>(Align::CENTER, Align::TOP);
+		d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y()});
 	}
 };
 namespace SoundMixrGraphics
@@ -590,7 +597,7 @@ namespace SoundMixrGraphics
 			int _padding = 20;
 			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Active() ? Theme<C::ButtonS>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
 			Color _c2 = Theme<C::Text>::Get() *(Graphics::WindowFocused() ? 1.0f : 0.8f);
-			Color _c3 = Theme<C::TextSmall>::Get() *(Graphics::WindowFocused() ? 1.0f : 0.8f);
+			Color _c3 = Theme<C::TextOff>::Get() *(Graphics::WindowFocused() ? 1.0f : 0.8f);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());

@@ -14,14 +14,13 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_Divider2(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
 	m_Specials(m_ChannelsPanel.Panel().Emplace<::Panel>())
 {
-	m_Effect.Width(300);
-	m_Effect.MinWidth(300);
-	m_Effect.MaxWidth(500);
+	m_Effect.Width(330);
+	m_Effect.MinWidth(330);
 	m_Effect.Hide();
 	m_ChannelsPanel.Panel<::Panel>();
 	m_ChannelsPanel.Panel().Layout<Layout::SidewaysStack>(0);
 	m_ChannelsPanel.Panel().AutoResize(true, false);
-	m_ChannelsPanel.MinWidth(100);
+	m_ChannelsPanel.MinWidth(200);
 	m_ChannelsPanel.EnableScrollbars(true, false);
 	Background(Theme<C::MainPanel>::Get());
 
@@ -194,6 +193,10 @@ void ListPanel::ResetGrouping()
 		_c.pan.SliderValue(0);
 		_c.volume.SliderValue(1);
 	}
+
+	auto& _soundboardChannel = EmplaceSpecialChannel();
+	for (auto& a : asio.SoundboardChannels())
+		_soundboardChannel.AddChannel(&a);
 }
 
 void ListPanel::Update(const Vec4<int>& s)

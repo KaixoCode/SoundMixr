@@ -141,13 +141,13 @@ public:
 				c->Mono(false);
 				c->Mute(false);
 			}
+			m_EffectsGroup.Channels(m_ChannelAmount + 1);
 			m_Channels.push_back(c);
 			c->Group(this, ChannelAmount());
 			c->Mono(Mono()); 
 			c->Mute(Muted());
 			Pan(Pan());
 			m_ChannelAmount++;
-			m_EffectsGroup.Channels(m_ChannelAmount);
 		}
 	}
 

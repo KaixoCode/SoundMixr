@@ -118,10 +118,10 @@ public:
 
 		m_Listener += [this](Event::MousePressed& e)
 		{
-			if (e.button != Event::MouseButton::LEFT || e.y < Y() || e.y > Y() + Height())
+			if (e.button != Event::MouseButton::LEFT || e.x < X() || e.x > X() + Width())
 				return;
 
-			m_PVal = constrain(e.y - Y(), 0, Height());
+			m_PVal = constrain(e.x - X(), 0, Width());
 			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
 				m_Dragging = RT2, m_PressVal = ratio2;
 			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
@@ -139,7 +139,7 @@ public:
 			if (!p)
 				return; 
 
-			m_PVal = constrain(e.y - Y(), 0, Height());
+			m_PVal = constrain(e.x - X(), 0, Width());
 			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
 				ratio2 = 0;
 			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
@@ -153,11 +153,11 @@ public:
 		};
 		m_Listener += [this](Event::MouseMoved& e)
 		{
-			m_PVal = constrain(e.y - Y(), 0, Height());
+			m_PVal = constrain(e.x - X(), 0, Width());
 			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
-				m_Cursor = GLFW_RESIZE_NS_CURSOR;
+				m_Cursor = GLFW_RESIZE_EW_CURSOR;
 			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
-				m_Cursor = GLFW_RESIZE_NS_CURSOR;
+				m_Cursor = GLFW_RESIZE_EW_CURSOR;
 			else if (m_PVal < DbToPixel(threshhold2) + m_DragRange)
 				m_Cursor = GLFW_HAND_CURSOR;
 			else if (m_PVal > DbToPixel(threshhold1) - m_DragRange)
@@ -167,11 +167,11 @@ public:
 		};
 		m_Listener += [this](Event::MouseDragged& e)
 		{
-			int cval = e.y - Y();
+			int cval = e.x - X();
 			
 			if (m_Dragging == TH2)
 			{
-				double db1 = PixelToDb(constrain(cval - m_PVal + m_PressVal, 0, Height()));
+				double db1 = PixelToDb(constrain(cval - m_PVal + m_PressVal, 0, Width()));
 				m_Cursor = GLFW_HAND_CURSOR;
 				threshhold2 = db1;
 
@@ -182,7 +182,7 @@ public:
 			}
 			else if (m_Dragging == TH1)
 			{
-				double db1 = PixelToDb(constrain(cval - m_PVal + m_PressVal, 0, Height()));
+				double db1 = PixelToDb(constrain(cval - m_PVal + m_PressVal, 0, Width()));
 				m_Cursor = GLFW_HAND_CURSOR;
 				threshhold1 = db1;
 
@@ -195,16 +195,16 @@ public:
 			{
 				double db1 = (cval - m_PVal) * (m_Shift ? 0.1 : 0.2);
 				m_PVal = cval;
-				m_Cursor = GLFW_RESIZE_NS_CURSOR;
-				ratio1 = constrain(db1 + ratio1, -31, 31);
+				m_Cursor = GLFW_RESIZE_EW_CURSOR;
+				ratio1 = constrain(db1 + ratio1, -31, 32);
 				UpdateStrings();
 			}
 			else if (m_Dragging == RT2)
 			{
 				double db1 = (cval - m_PVal) * (m_Shift ? 0.1 : 0.2);
 				m_PVal = cval;
-				m_Cursor = GLFW_RESIZE_NS_CURSOR;
-				ratio2 = constrain(ratio2 - db1, -31, 31);
+				m_Cursor = GLFW_RESIZE_EW_CURSOR;
+				ratio2 = constrain(ratio2 - db1, -31, 32);
 				UpdateStrings();
 			}
 		};
@@ -240,15 +240,15 @@ public:
 		Container::Render(d);
 		using namespace Graphics;
 		d.Command<Fill>(Theme<C::Dynamics>::Get());
-		d.Command<Quad>(Vec4<int>{ X(), Y() - 7, Width(), Height() + 14 });
+		d.Command<Quad>(Vec4<int>{ X() - 7, Y() - 20, Width() + 14, Height() + 20 });
 
 		d.Command<PushMatrix>();
 		d.Command<Translate>(Position());
-		int _x = Width() - 25;
+		int _y = Height() - 22;
 		int _d = 3;
 		bool _b = true;
 		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
-		d.Command<Graphics::TextAlign>(Align::LEFT, Align::CENTER);
+		d.Command<Graphics::TextAlign>(Align::CENTER, Align::BOTTOM);
 		for (int i = 0; i > -120; i -= _d)
 		{
 			if (i < -11)
@@ -263,8 +263,8 @@ public:
 			else
 				d.Command<Graphics::Fill>(Theme<C::VMeterIndD>::Get());
 
-			int _mdb = DbToPixel(i);
-			d.Command<Quad>(Vec4<int>{ _x, _mdb, 5, 1});
+			int _mdb = DbToPixel(i) - 1;
+			d.Command<Quad>(Vec4<int>{ _mdb, _y, 1, 5});
 			if (_b)
 			{
 				if (m_Numbers.find(i) == m_Numbers.end())
@@ -272,43 +272,48 @@ public:
 					m_Numbers.emplace(i, std::to_string(std::abs(i)));
 				}
 				d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
-				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + 7, _mdb});
+				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_mdb, _y + 7});
 			}
 			_b ^= true;
 		}
 		d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
-		d.Command<Graphics::Quad>(Vec4<int>{_x, 0, 5, 1});
+		d.Command<Graphics::Quad>(Vec4<int>{0, _y, 1, 5});
 		d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
-		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + 7, 0});
+		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{5, _y + 7});
 
-		int _x2 = 5;
-		d.Command<Graphics::Fill>(Theme<C::DynamicsB>::Get());
+		int _y2 = 5;
+		d.Command<Graphics::Fill>(Theme<C::DynamicsL>::Get());
+		d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, Width(), 1 });
+		d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, 1, _y });
+		d.Command<Graphics::Quad>(Vec4<int>{ 0, _y, Width(), 1 });
+		d.Command<Graphics::Quad>(Vec4<int>{ Width() - 1, 0, 1, _y });
 		int p1 = DbToPixel(threshhold1);
-		d.Command<Graphics::Quad>(Vec4<int>{ _x2, p1, _x - _x2 - 5, Height() - p1 });
-		double _yp = p1;
+		d.Command<Graphics::Fill>(Theme<C::DynamicsB>::Get());
+		d.Command<Graphics::Quad>(Vec4<int>{ p1, _y2, Width() - p1, _y - _y2 - 5 });
+		double _xp = p1;
 		for (int i = 0; i < 8; i++)
 		{
 			auto c = Theme<C::DynamicsL>::Get();
 			c.a *= (8 - i) / 8.0f;
 			d.Command<Graphics::Fill>(c);
-			d.Command<Graphics::Quad>(Vec4<int>{ _x2, (int)_yp, _x - _x2 - 5, 1 });
-			_yp += ratio1*0.5 + 17;
-			if (_yp > Height())
+			d.Command<Graphics::Quad>(Vec4<int>{ (int)_xp, _y2, 1, _y - _y2 - 5 });
+			_xp += ratio1 * 0.5 + 17;
+			if (_xp > Width())
 				break;
 		}
 
 		int p2 = DbToPixel(threshhold2);
 		d.Command<Graphics::Fill>(Theme<C::DynamicsB>::Get());
-		d.Command<Graphics::Quad>(Vec4<int>{ _x2, 0, _x - _x2 - 5, p2 });
-		_yp = p2;
+		d.Command<Graphics::Quad>(Vec4<int>{ 0, _y2, p2, _y - _y2 - 5 });
+		_xp = p2;
 		for (int i = 0; i < 8; i++)
 		{
 			auto c = Theme<C::DynamicsL>::Get();
 			c.a *= (8 - i) / 8.0f;
 			d.Command<Graphics::Fill>(c);
-			d.Command<Graphics::Quad>(Vec4<int>{ _x2, (int)_yp, _x - _x2 - 5, 1 });
-			_yp -= ratio2 * 0.5 + 17;
-			if (_yp < 0)
+			d.Command<Graphics::Quad>(Vec4<int>{ (int)_xp, _y2, 1, _y - _y2 - 5 });
+			_xp -= ratio2 * 0.5 + 17;
+			if (_xp < 0)
 				break;
 
 		}
@@ -317,13 +322,13 @@ public:
 
 	double PixelToDb(int p)
 	{
-		double v = ((double)p) / (double)(Height());
+		double v = ((double)p) / (double)(Width());
 		return 20 * std::log10(std::powf(v, 4));
 	}
 
 	int DbToPixel(double p)
 	{
-		return std::pow(std::pow(10, p / 20.0), 0.25) * (Height());
+		return std::pow(std::pow(10, p / 20.0), 0.25) * (Width());
 	}
 
 	double threshhold1 = -10;
@@ -362,31 +367,31 @@ private:
 		double rt1 = ratio1;
 		if (rt1 >= 0)
 		{
-			rt1 = 1.0 / ((rt1 + 1) / 16.0 );
+			rt1 = 1.0 / ((rt1 / 32.0) + 1);
 			std::sprintf(s, "%.2f", rt1);
-			m_RT1Str = "1:";
+			m_RT1Str = "1 : ";
 			m_RT1Str += s;
 		}
 		else
 		{
 			rt1 = std::abs(rt1 - 1);
 			std::sprintf(s, "%.2f", rt1);
-			m_RT1Str = "1:";
+			m_RT1Str = "1 : ";
 			m_RT1Str += s;
 		}
 		double rt2 = ratio2;
 		if (rt2 >= 0)
 		{
-			rt2 = 1.0 / ((rt2 + 1) / 8.0);
+			rt2 = 1.0 / ((rt2 / 8.0) + 1);
 			std::sprintf(s, "%.2f", rt2);
-			m_RT2Str = "1:";
+			m_RT2Str = "1 : ";
 			m_RT2Str += s;
 		}
 		else
 		{
 			rt2 = std::abs(rt2 - 1);
 			std::sprintf(s, "%.2f", rt2);
-			m_RT2Str = "1:";
+			m_RT2Str = "1 : ";
 			m_RT2Str += s;
 		}
 	}

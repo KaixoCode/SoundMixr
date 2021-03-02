@@ -4,11 +4,17 @@
 #include "ui/Graphics.hpp"
 
 static inline float db2lin(float db) { // dB to linear
-	return powf(10.0f, 0.05f * db);
+	return std::powf(10.0f, 0.05f * db);
 }
 
 static inline float lin2db(float lin) { // linear to dB
-	return 20.0f * log10f(lin);
+	return 20.0f * std::log10f(lin);
+}
+
+static inline void myabs(float& f)
+{
+	if (f < 0)
+		f = -f;
 }
 
 class Effect : public Panel
@@ -63,12 +69,12 @@ public:
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Dynamics").Disable();
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Remove");
 
-		Height(180);
+		Height(200);
 		m_Knob.SliderRange({ 24, -24 });
 		m_Knob.ResetValue(0);
 		m_Knob.ResetValue();
 		m_Knob.Unit("dB");
-		m_Knob.Size({ 50, 50 });
+		m_Knob.Size({ 30, 30 });
 		m_Knob.SliderMult(0.4);
 		
 		m_Knob2.SliderRange({ 30, .1f });
@@ -76,27 +82,27 @@ public:
 		m_Knob2.ResetValue(3);
 		m_Knob2.ResetValue();
 		m_Knob2.Unit(" ms");
-		m_Knob2.Size({ 50, 50 });
+		m_Knob2.Size({ 30, 30 });
 
 		m_Knob3.SliderRange({ 300, 1 });
 		m_Knob3.ResetValue(30);
 		m_Knob3.ResetValue();
 		m_Knob3.SliderMult(0.4);
 		m_Knob3.Unit(" ms");
-		m_Knob3.Size({ 50, 50 });
+		m_Knob3.Size({ 30, 30 });
 
 		m_Knob4.SliderRange({ 24, -24 });
 		m_Knob4.Unit("dB");
 		m_Knob4.ResetValue(0);
 		m_Knob4.ResetValue();
-		m_Knob4.Size({ 50, 50 });
+		m_Knob4.Size({ 30, 30 });
 		m_Knob4.SliderMult(0.4);
 
 		m_Knob5.SliderRange({ 100, 0 });
 		m_Knob5.SliderMult(0.4);
 		m_Knob5.ResetValue();
 		m_Knob5.Unit(" %");
-		m_Knob5.Size({ 50, 50 });
+		m_Knob5.Size({ 30, 30 });
 
 
 		Background(Theme<C::Channel>::Get());
@@ -110,18 +116,18 @@ public:
 
 	void Update(const Vec4<int>& v) override
 	{
-		m_Knob.Position({ 65, Height() - 100 });
-		m_Knob2.Position({ 5, Height() - 100 });
-		m_Knob3.Position({ 5, Height() - 170 });
-		m_Knob4.Position({ Width() - 55, Height() - 100 });
-		m_Knob5.Position({ Width() - 55, Height() - 170 });
-		m_Slider.Position({ 120, 10 });
-		m_Slider.Size({ (Width() - 60) - 120, Height() - 45 });
+		m_Knob.Position({ Width() - 280, 20 });
+		m_Knob4.Position({ Width() - 225, 20 });
+		m_Knob2.Position({ Width() - 155, 20 });
+		m_Knob3.Position({ Width() - 105, 20 });
+		m_Knob5.Position({ Width() - 45, 20 });
+		m_Slider.Position({ 12, 93 });
+		m_Slider.Size({ (Width() - 24), Height() - 123 });
 		Background(Theme<C::Channel>::Get());
 		Effect::Update(v);
 
-		compressRatio = m_Slider.ratio1 > 0 ? m_Slider.ratio1 + 1 : -1.0 / (m_Slider.ratio1 / 16.0 - 1.0);
-		expanderRatio = m_Slider.ratio2 > 0 ? m_Slider.ratio2 + 1 : -1.0 / (m_Slider.ratio2 / 8.0 - 1.0);
+		compressRatio = m_Slider.ratio1 >= 0 ? m_Slider.ratio1 / 32.0 + 1 : (-1.0 / (m_Slider.ratio1 - 1.0));
+		expanderRatio = m_Slider.ratio2 >= 0 ? m_Slider.ratio2 + 1 : (-1.0 / (m_Slider.ratio2 / 8.0 - 1.0));
 		compressThreshhold = m_Slider.threshhold1;
 		expanderThreshhold = m_Slider.threshhold2;
 		double newval = 30 - m_Knob2.SliderValue() * 29.9;
@@ -152,32 +158,37 @@ public:
 		d.Command<Fill>(Theme<C::TextSmall>::Get());
 		d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
 		d.Command<Text>(&m_Knob1Name, m_Knob.Position() + Vec2<int>{ m_Knob.Width() / 2, m_Knob.Height() + 5 });
+		d.Command<Text>(&m_Knob4Name, m_Knob4.Position() + Vec2<int>{ m_Knob4.Width() / 2, m_Knob4.Height() + 5 });
+		d.Command<Fill>(Theme<C::Divider>::Get());
+		d.Command<Quad>(Vec4<int>{(m_Knob4.X() + m_Knob4.Width() + m_Knob2.X()) / 2, 10, 1, 50});
+		d.Command<Fill>(Theme<C::TextSmall>::Get());
 		d.Command<Text>(&m_Knob2Name, m_Knob2.Position() + Vec2<int>{ m_Knob2.Width() / 2, m_Knob2.Height() + 5 });
 		d.Command<Text>(&m_Knob3Name, m_Knob3.Position() + Vec2<int>{ m_Knob3.Width() / 2, m_Knob3.Height() + 5 });
-		d.Command<Text>(&m_Knob4Name, m_Knob4.Position() + Vec2<int>{ m_Knob4.Width() / 2, m_Knob4.Height() + 5 });
+		d.Command<Fill>(Theme<C::Divider>::Get());
+		d.Command<Quad>(Vec4<int>{(m_Knob3.X() + m_Knob3.Width() + m_Knob5.X()) / 2, 10, 1, 50});
+		d.Command<Fill>(Theme<C::TextSmall>::Get());
 		d.Command<Text>(&m_Knob5Name, m_Knob5.Position() + Vec2<int>{ m_Knob5.Width() / 2, m_Knob5.Height() + 5 });
-		d.Command<TextAlign>(Align::RIGHT, Align::BOTTOM);
-		d.Command<Text>(&m_Slider.m_TH2Str, Vec2<int>{115, 10});
-		d.Command<Text>(&m_Slider.m_TH1Str, Vec2<int>{115, 25});
 		d.Command<TextAlign>(Align::LEFT, Align::BOTTOM);
-		d.Command<Text>(&m_Slider.m_RT2Str, Vec2<int>{70, 40});
-		d.Command<Text>(&m_Slider.m_RT1Str, Vec2<int>{70, 55});
+		d.Command<Text>(&m_Slider.m_TH2Str, Vec2<int>{10, 77});
+		d.Command<Text>(&m_Slider.m_RT2Str, Vec2<int>{70, 77});
+		d.Command<Text>(&m_Slider.m_RT1Str, Vec2<int>{Width() - 110, 77});
+		d.Command<TextAlign>(Align::RIGHT, Align::BOTTOM);
+		d.Command<Text>(&m_Slider.m_TH1Str, Vec2<int>{Width() - 10, 77});
 
 		int _channels = m_Channels;
-		int _y = 10;
-		int _rh = Height() - 45;
-		int _0db = ((1.0 / 1.412536) * (_rh)) + _y;
-		int _p = 20;
-		int _w = ((Width() - 210 - _p * 2) / _channels) - (_channels > 4 ? 1 : 2);
-		int _x = 125 + _p;
+		int _x = 12;
+		int _rw = Width() - 24;
+		int _p = 10;
+		int _h = ((Height() - 123 - 22 - _p * 2) / _channels) - (_channels > 4 ? 1 : 2);
+		int _y = 94 + _p;
 
 		// Draw all audio meters
 		for (int i = 0; i < _channels; i++)
 		{
-			_x = 125 + _p + i * (_w + (_channels > 4 ? 1 : 2));
+			_y = 94 + _p + i * (_h + (_channels > 4 ? 1 : 2));
 			float _level = std::powf(m_Levels[i], 0.25);
 
-			int _h = (std::min(_level, 1.0f) / 1.0f) * (_rh);
+			int _w = (std::min(_level, 1.0f) / 1.0f) * (_rw);
 			d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
 		}
@@ -242,10 +253,11 @@ public:
 	double r = 0.9;
 	float NextSample(float sin, int c) override
 	{
-		float abs = std::abs(sin);
 		float out = 0;
 		if (c != 0)
 		{
+			float abs = sin;
+			myabs(abs);
 			if (biggest < abs)
 				biggest = abs;
 			out = sin * pregain * compressMult * expanderMult * postgain;
@@ -260,7 +272,8 @@ public:
 			double s = biggest;
 			biggest = 0;
 			s *= pregain;
-			float _absSample = std::fabs(s);
+			float _absSample = s;
+			myabs(_absSample);
 
 			// convert key to dB
 			_absSample += DC_OFFSET;	// add DC offset to avoid log( 0 )
@@ -288,7 +301,8 @@ public:
 			s *= expanderMult;
 
 			// Absolute of new sample
-			_absSample = std::fabs(s);
+			_absSample = s;
+			myabs(_absSample);
 
 			// convert key to dB
 			_absSample += DC_OFFSET;	// add DC offset to avoid log( 0 )
@@ -316,7 +330,8 @@ public:
 			out = sin * pregain * compressMult * expanderMult * postgain;
 		}
 
-		abs = std::abs(out);
+		float abs = out;
+		myabs(abs);
 		auto& l = m_Peaks[c];
 		if (abs > l)
 			l = abs;
