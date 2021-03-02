@@ -22,15 +22,12 @@ public:
 // -------------------------- Output Channel -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class InputChannel;
-class OutputChannel;
-class SoundboardChannel;
 class ChannelGroup;
 
-class ChannelBase
+class Channel
 {
 public:
-	ChannelBase(int id, const std::string& name, const bool IsInput)
+	Channel(int id, const std::string& name, const bool IsInput)
 		: m_Id(id), m_Name(name), m_IsInput(IsInput)
 	{}
 
@@ -61,7 +58,7 @@ public:
 
 protected:
 	int m_Id,
-		m_GroupIndex;
+		m_GroupIndex = -1;
 
 	bool m_Mono = false,
 		m_Muted = false;
@@ -80,14 +77,13 @@ protected:
 	ChannelGroup* m_Group = nullptr;
 };
 
-
 class ChannelGroup
 {
 public:
 	~ChannelGroup() { ClearChannels(); }
 
 	auto  Connections() -> std::vector<::ChannelGroup*> const { return m_Connected; }
-	auto  Channels() -> std::vector<ChannelBase*>& const { return m_Channels; }
+	auto  Channels() -> std::vector<Channel*>& const { return m_Channels; }
 	int   ChannelAmount()                   const { return m_ChannelAmount; }
 	auto  EffectsGroup() -> EffectsGroup&   const { return m_EffectsGroup; }
 	auto  Name() -> std::string& const { return m_Name; }
@@ -98,6 +94,7 @@ public:
 	bool  IsInput()				 const { return m_IsInput; }
 	float Pan()					 const { return m_Pan; }
 
+	void  NextIter() { m_StartRound = true; }
 	void  Volume(float v) { for (auto& c : m_Channels) c->Volume(v); m_Volume = v; }
 	void  Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); m_Muted = v; }
 	void  Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); m_Mono = v; }
@@ -128,7 +125,7 @@ public:
 			m_Connected.erase(it);
 	}
 
-	void AddChannel(ChannelBase* c)
+	void AddChannel(Channel* c)
 	{
 		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
 		if (a == m_Channels.end() && c != nullptr)
@@ -150,15 +147,17 @@ public:
 			c->Mute(Muted());
 			Pan(Pan());
 			m_ChannelAmount++;
+			m_EffectsGroup.Channels(m_ChannelAmount);
 		}
 	}
 
-	void RemoveChannel(ChannelBase* c)
+	void RemoveChannel(Channel* c)
 	{
 		auto& a = std::find(m_Channels.begin(), m_Channels.end(), c);
 		if (a != m_Channels.end())
 		{
 			m_ChannelAmount--;
+			m_EffectsGroup.Channels(m_ChannelAmount);
 			ClearConnections();
 			m_Channels.erase(a);
 			for (int i = 0; i < ChannelAmount(); i++)
@@ -173,16 +172,14 @@ public:
 		}
 	}
 
-	float DoEffects()
+	float DoEffects(float lvl, int indx)
 	{
-		if (ChannelAmount())
-			return m_EffectsGroup.NextSample(m_Channels[0]->Level());
-		return 0;
+		return m_EffectsGroup.NextSample(lvl, indx);
 	}
 
 	float GetLevel(int id)
 	{
-		m_StartRound = true;
+		m_FirstMono = true;
 		float level = 0;
 
 		int amt = ChannelAmount();
@@ -201,21 +198,22 @@ public:
 
 	float GetMonoLevel()
 	{
-		if (m_StartRound)
+		if (m_FirstMono)
 		{
 			m_MonoLevel = 0;
 			for (auto& i : m_Channels)
 				m_MonoLevel += i->UnprocessedLevel();
 
 			m_MonoLevel /= ChannelAmount();
-			m_StartRound = false;
+			m_FirstMono = false;
 		}
 
 		return m_MonoLevel;
 	}
 
 private:
-	bool m_StartRound = false;
+	bool m_StartRound = false, 
+		m_FirstMono = false;
 	float m_Pan = 0;
 	float m_MonoLevel = 0;
 
@@ -227,14 +225,17 @@ private:
 
 	::EffectsGroup m_EffectsGroup;
 	std::string m_Name = "APPLE";
-	std::vector<ChannelBase*> m_Channels;
+	std::vector<Channel*> m_Channels;
 	std::vector<::ChannelGroup*> m_Connected;
 };
 
-class InputChannel : public ChannelBase
+class InputChannel : public Channel
 {
 public:
-	using ChannelBase::ChannelBase;
+	using Channel::Channel;
+
+	void Level(float l) override { Channel::Level(l); if (m_Group) m_Group->NextIter(); }
+	float Level() const override { return m_OutLevel; }
 
 	void CalcLevel() override
 	{
@@ -253,29 +254,41 @@ public:
 			m_OutLevel = m_Level;
 
 		if (m_Group != nullptr)
-			m_OutLevel = m_Group->DoEffects() * m_Volume * m_Pan;
+			m_OutLevel = m_Group->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
 	}
 };
 
-class OutputChannel : public ChannelBase
+class OutputChannel : public Channel
 {
 public:
-	using ChannelBase::ChannelBase;
+	using Channel::Channel;
 	
 	void  CalcLevel()    override { m_OutLevel = m_Muted || !m_Group ? 0 : m_Group->GetLevel(m_GroupIndex); }
-	float Level()  const override { return (m_Mono && m_Group ? m_Group->GetMonoLevel() : m_OutLevel) * m_Volume * m_Pan; }
+	float Level()  const override 
+	{ 
+		float level = (m_Mono && m_Group ? m_Group->GetMonoLevel() : m_OutLevel); 
+	
+		if (m_Group)
+			level = m_Group->DoEffects(level, m_GroupIndex);
+
+		return level * m_Volume * m_Pan;
+	}
 };
 
-class SoundboardChannel : public ChannelBase
+class SoundboardChannel : public Channel
 {
 public:
 	SoundboardChannel(Soundboard& soundBoard)
-		: ChannelBase(0, "Soundboard", true), m_Soundboard(soundBoard)
+		: Channel(m_Counter++, "Soundboard", true), m_Soundboard(soundBoard)
 	{ }
 
-	void  CalcLevel()    override { m_OutLevel = m_Soundboard.GetLevel(); }
+	void  CalcLevel() override 
+	{
+		m_OutLevel = m_Pan * m_Volume * m_Soundboard.GetLevel(ID()); 
+	}
 	
 private:
+	static inline int m_Counter = 0;
 	Soundboard& m_Soundboard;
 };
 
@@ -301,7 +314,7 @@ public:
 
 	std::vector<InputChannel>& Inputs() { return m_Inputs; }
 	std::vector<OutputChannel>& Outputs() { return m_Outputs; }
-	SoundboardChannel& SoundboardChannel() { return m_SoundboardChannel; }
+	std::vector<SoundboardChannel>& SoundboardChannels() { return m_SoundboardChannels; }
 
 private:
 	double m_Samplerate;
@@ -312,7 +325,7 @@ private:
 
 	std::vector<InputChannel> m_Inputs;
 	std::vector<OutputChannel> m_Outputs;
-	::SoundboardChannel m_SoundboardChannel;
+	std::vector<::SoundboardChannel> m_SoundboardChannels;
 	std::vector<::Device> m_Devices;
 
 	static int SarCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,

@@ -139,9 +139,9 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 45, 45, 45, 255 },	 // KnobSliderB,
 		Color{ 90, 90, 90, 255 },	 // KnobSliderV,
 									 // 
-		Color{ 0, 0, 0, 255 },	     // KnobSlider,
-		Color{ 255, 255, 255, 20 },	 // KnobSliderB,
-		Color{ 255, 255, 255, 20 },	 // KnobSliderV,
+		Color{ 0, 0, 0, 255 },	     // Dynamics,
+		Color{ 100, 100, 100, 50 },	 // DynamicsB,
+		Color{ 100, 100, 100, 100 }, // DynamicsL,
 									 // 
 	},
 	// LIGHT
@@ -198,9 +198,9 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 225, 225, 225, 255 }, // KnobSliderB,
 		Color{ 180, 180, 180, 255 }, // KnobSliderV,
 									 // 
-		Color{ 255, 255, 255, 255 }, // KnobSlider,
-		Color{ 0, 0, 0, 20 },		 // KnobSliderB,
-		Color{ 0, 0, 0, 20 },		 // KnobSliderV,
+		Color{ 255, 255, 255, 255 }, // Dynamics,
+		Color{ 0, 0, 0, 20 },		 // DynamicsB,
+		Color{ 0, 0, 0, 20 },		 // DynamicsL,
 									 // 
 	},
 	// BLUE
@@ -257,9 +257,9 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{  50,  69,  86, 255 }, // KnobSliderB,
 		Color{  99, 125, 142, 255 }, // KnobSliderV,
 									 // 
-		Color{  40,  57,  71, 255 }, // KnobSlider,
-		Color{  200, 230, 255, 20 }, // KnobSliderB,
-		Color{  200, 230, 255, 20 }, // KnobSliderV,
+		Color{  40,  57,  71, 255 }, // Dynamics,
+		Color{  200, 230, 255, 20 }, // DynamicsB,
+		Color{  200, 230, 255, 20 }, // DynamicsL,
 									 // 
 	},
 	// RED

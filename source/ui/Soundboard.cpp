@@ -15,7 +15,7 @@ Soundboard::Soundboard()
     }
 }
 
-float Soundboard::GetLevel()
+float Soundboard::GetLevel(int channel)
 {
     return 0;
 }

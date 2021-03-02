@@ -56,7 +56,7 @@ class Soundboard : public Frame
 public:
 	Soundboard();
 
-	float GetLevel();
+	float GetLevel(int);
 	
 private:
 	std::map<int, AudioFile<double>> m_files;

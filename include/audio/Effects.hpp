@@ -33,7 +33,15 @@ public:
 		d.Command<PopMatrix>();
 	}
 
-	virtual float NextSample(float) = 0;
+	virtual float NextSample(float, int) = 0;
+
+	virtual void Channels(int c)
+	{
+		m_Channels = c;
+	}
+
+protected:
+	int m_Channels;
 
 	const std::string m_Name = "Dynamics";
 };
@@ -42,12 +50,11 @@ class Dynamics : public Effect
 {
 public:
 
-
 	Dynamics()
-		: m_Knob(Emplace<VolumeSliderG<KnobSliderGraphics>>()),
+		: m_Knob(Emplace<KnobSlider>()),
 		m_Knob2(Emplace<KnobSlider>()),
 		m_Knob3(Emplace<KnobSlider>()),
-		m_Knob4(Emplace<VolumeSliderG<KnobSliderGraphics>>()),
+		m_Knob4(Emplace<KnobSlider>()),
 		m_Knob5(Emplace<KnobSlider>()),
 		m_Slider(Emplace<DynamicsSlider>()),
 		Effect("Dynamics")
@@ -57,24 +64,37 @@ public:
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Remove");
 
 		Height(180);
+		m_Knob.SliderRange({ 24, -24 });
+		m_Knob.ResetValue(0);
+		m_Knob.ResetValue();
+		m_Knob.Unit("dB");
 		m_Knob.Size({ 50, 50 });
 		m_Knob.SliderMult(0.4);
 		
-		m_Knob2.SliderRange({ 100, 0 });
+		m_Knob2.SliderRange({ 30, .1f });
 		m_Knob2.SliderMult(0.4);
+		m_Knob2.ResetValue(3);
+		m_Knob2.ResetValue();
 		m_Knob2.Unit(" ms");
 		m_Knob2.Size({ 50, 50 });
 
-		m_Knob3.SliderRange({ 100, 0 });
+		m_Knob3.SliderRange({ 300, 1 });
+		m_Knob3.ResetValue(30);
+		m_Knob3.ResetValue();
 		m_Knob3.SliderMult(0.4);
 		m_Knob3.Unit(" ms");
 		m_Knob3.Size({ 50, 50 });
 
+		m_Knob4.SliderRange({ 24, -24 });
+		m_Knob4.Unit("dB");
+		m_Knob4.ResetValue(0);
+		m_Knob4.ResetValue();
 		m_Knob4.Size({ 50, 50 });
 		m_Knob4.SliderMult(0.4);
 
 		m_Knob5.SliderRange({ 100, 0 });
 		m_Knob5.SliderMult(0.4);
+		m_Knob5.ResetValue();
 		m_Knob5.Unit(" %");
 		m_Knob5.Size({ 50, 50 });
 
@@ -100,25 +120,25 @@ public:
 		Background(Theme<C::Channel>::Get());
 		Effect::Update(v);
 
-		compressRatio = m_Slider.ratio1 > 0 ? m_Slider.ratio1 + 1 : -1.0 / (m_Slider.ratio1 - 1.0);
-		expanderRatio = m_Slider.ratio2 > 0 ? m_Slider.ratio2 + 1 : -1.0 / (m_Slider.ratio2 - 1.0);
+		compressRatio = m_Slider.ratio1 > 0 ? m_Slider.ratio1 + 1 : -1.0 / (m_Slider.ratio1 / 16.0 - 1.0);
+		expanderRatio = m_Slider.ratio2 > 0 ? m_Slider.ratio2 + 1 : -1.0 / (m_Slider.ratio2 / 8.0 - 1.0);
 		compressThreshhold = m_Slider.threshhold1;
 		expanderThreshhold = m_Slider.threshhold2;
-		double newval = 10 - m_Knob2.SliderValue() * 10;
+		double newval = 30 - m_Knob2.SliderValue() * 29.9;
 		if (newval != attms)
 		{
 			attms = newval;
-			attcoef = exp(-1000.0 / (attms * sampleRate));
+			attcoef = std::exp(-1.0 / ((attms / 1000.0) * sampleRate));
 		}		
-		newval = 100 - m_Knob3.SliderValue() * 100;
+		newval = 300 - m_Knob3.SliderValue() * 299;
 		if (newval != relms)
 		{
 			relms = newval;
-			relcoef = exp(-1000.0 / (relms * sampleRate));
+			relcoef = std::exp(-1.0 / ((relms / 1000.0)* sampleRate));
 		}
 
-		pregain = m_Knob.Decibels();
-		postgain = m_Knob4.Decibels();
+		pregain = db2lin(- m_Knob.SliderValue() * 48 + 24);
+		postgain = db2lin(- m_Knob4.SliderValue() * 48 + 24);
 		mix = 1.0 - m_Knob5.SliderValue();
 	}
 
@@ -139,15 +159,47 @@ public:
 		d.Command<TextAlign>(Align::RIGHT, Align::BOTTOM);
 		d.Command<Text>(&m_Slider.m_TH2Str, Vec2<int>{115, 10});
 		d.Command<Text>(&m_Slider.m_TH1Str, Vec2<int>{115, 25});
-		d.Command<Text>(&m_Slider.m_RT2Str, Vec2<int>{115, 40});
-		d.Command<Text>(&m_Slider.m_RT1Str, Vec2<int>{115, 55});
+		d.Command<TextAlign>(Align::LEFT, Align::BOTTOM);
+		d.Command<Text>(&m_Slider.m_RT2Str, Vec2<int>{70, 40});
+		d.Command<Text>(&m_Slider.m_RT1Str, Vec2<int>{70, 55});
+
+		int _channels = m_Channels;
+		int _y = 10;
+		int _rh = Height() - 45;
+		int _0db = ((1.0 / 1.412536) * (_rh)) + _y;
+		int _p = 20;
+		int _w = ((Width() - 210 - _p * 2) / _channels) - (_channels > 4 ? 1 : 2);
+		int _x = 125 + _p;
+
+		// Draw all audio meters
+		for (int i = 0; i < _channels; i++)
+		{
+			_x = 125 + _p + i * (_w + (_channels > 4 ? 1 : 2));
+			float _level = std::powf(m_Levels[i], 0.25);
+
+			int _h = (std::min(_level, 1.0f) / 1.0f) * (_rh);
+			d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
+		}
+
 		d.Command<PopMatrix>();
 	}
 
-	VolumeSliderG<KnobSliderGraphics>& m_Knob;
+	void Channels(int c) override
+	{
+		m_Channels = c;
+		while (m_Levels.size() < m_Channels)
+			m_Levels.push_back(0);
+
+		while (m_Peaks.size() < m_Channels)
+			m_Peaks.push_back(0);
+	}
+
+private:
+	KnobSlider& m_Knob;
 	KnobSlider& m_Knob2;
 	KnobSlider& m_Knob3;
-	VolumeSliderG<KnobSliderGraphics>& m_Knob4;
+	KnobSlider& m_Knob4;
 	KnobSlider& m_Knob5;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	DynamicsSlider& m_Slider;
@@ -158,7 +210,10 @@ public:
 		m_Knob4Name = "PostGain",
 		m_Knob5Name = "Mix";
 
+	std::vector<float> m_Levels;
+	std::vector<float> m_Peaks;
 
+public:
 	static inline const double DC_OFFSET = 1.0E-25;
 
 	double expanderThreshhold = -50;
@@ -179,82 +234,100 @@ public:
 	double postgain = 0;
 	double mix = 0;
 
-	/*
-	
-	PreGain
+	double expanderMult = 1;
+	double compressMult = 1;
 
-	Attack Time
-	Release Time
-
-	Expander Threshhold
-	Expander Ratio
-
-	Compressor Threshhold
-	Compressor Ratio
-
-	PostGain
-
-	Mix
-	
-	*/
-
-	float NextSample(float s) override
+	int counter = 0;
+	double biggest;
+	double r = 0.9;
+	float NextSample(float sin, int c) override
 	{
-		float _absSample = std::fabs(s);
-
-		// convert key to dB
-		_absSample += DC_OFFSET;	// add DC offset to avoid log( 0 )
-		double _absSampledB = pregain + lin2db(_absSample); // convert linear -> dB
-
-		// threshold
-		double _overdB = _absSampledB - expanderThreshhold;
-		if (_overdB > 0.0)
-			_overdB = 0.0;
-
-		// attack/release
-		_overdB += DC_OFFSET; // add DC offset to avoid denormal	
-		if (_overdB > expanderEnv)
-			expanderEnv = _overdB + attcoef * (expanderEnv - _overdB);
+		float abs = std::abs(sin);
+		float out = 0;
+		if (c != 0)
+		{
+			if (biggest < abs)
+				biggest = abs;
+			out = sin * pregain * compressMult * expanderMult * postgain;
+		}
 		else
-			expanderEnv = _overdB + relcoef * (expanderEnv - _overdB);
+		{
+			if (counter > 512)
+				counter = 0;
 
-		_overdB = expanderEnv - DC_OFFSET; // subtract DC offset
+			counter++;
 
-		 // transfer function
-		double _gr = _overdB * (expanderRatio - 1.0) * mix;
-		_gr = db2lin(_gr); // convert dB -> linear
+			double s = biggest;
+			biggest = 0;
+			s *= pregain;
+			float _absSample = std::fabs(s);
 
-		// output gain expander
-		s = s * _gr;
+			// convert key to dB
+			_absSample += DC_OFFSET;	// add DC offset to avoid log( 0 )
+			double _absSampledB = lin2db(_absSample); // convert linear -> dB
 
-		// Absolute of new sample
-		_absSample = std::fabs(s);
+			// threshold
+			double _overdB = _absSampledB - expanderThreshhold;
+			if (_overdB > 0.0)
+				_overdB = 0.0;
 
-		// convert key to dB
-		_absSample += DC_OFFSET;	// add DC offset to avoid log( 0 )
-		_absSampledB = lin2db(_absSample); // convert linear -> dB
+			// attack/release
+			_overdB += DC_OFFSET; // add DC offset to avoid denormal	
+			if (_overdB > expanderEnv)
+				expanderEnv = _overdB + attcoef * (expanderEnv - _overdB);
+			else
+				expanderEnv = _overdB + relcoef * (expanderEnv - _overdB);
 
-		// threshold
-		_overdB = _absSampledB - compressThreshhold;
-		if (_overdB < 0.0)
-			_overdB = 0.0;
+			_overdB = expanderEnv - DC_OFFSET; // subtract DC offset
 
-		// attack/release
-		_overdB += DC_OFFSET; // add DC offset to avoid denormal	
-		if (_overdB > compressEnv)
-			compressEnv = _overdB + attcoef * (compressEnv - _overdB);
-		else
-			compressEnv = _overdB + relcoef * (compressEnv - _overdB);
-		_overdB = compressEnv - DC_OFFSET;// subtract DC offset
+			 // transfer function
+			double _gr = _overdB * (expanderRatio - 1.0) * mix;
+			expanderMult = db2lin(_gr); // convert dB -> linear
 
-		// transfer function
-		_gr = _overdB * (compressRatio - 1.0) * mix;
-		_gr = db2lin(_gr + postgain); // convert dB -> linear
+			// output gain expander
+			s *= expanderMult;
 
-		// output gain
-		s = s * _gr;
+			// Absolute of new sample
+			_absSample = std::fabs(s);
 
-		return s;
+			// convert key to dB
+			_absSample += DC_OFFSET;	// add DC offset to avoid log( 0 )
+			_absSampledB = lin2db(_absSample); // convert linear -> dB
+
+			// threshold
+			_overdB = _absSampledB - compressThreshhold;
+			if (_overdB < 0.0)
+				_overdB = 0.0;
+
+			// attack/release
+			_overdB += DC_OFFSET; // add DC offset to avoid denormal	
+			if (_overdB > compressEnv)
+				compressEnv = _overdB + attcoef * (compressEnv - _overdB);
+			else
+				compressEnv = _overdB + relcoef * (compressEnv - _overdB);
+			_overdB = compressEnv - DC_OFFSET;// subtract DC offset
+
+			// transfer function
+			_gr = _overdB * (compressRatio - 1.0) * mix;
+			compressMult = db2lin(_gr); // convert dB -> linear
+
+			// output gain
+			s;
+			out = sin * pregain * compressMult * expanderMult * postgain;
+		}
+
+		abs = std::abs(out);
+		auto& l = m_Peaks[c];
+		if (abs > l)
+			l = abs;
+		if (counter > 512)
+			m_Levels[c] = m_Levels[c] * r + m_Peaks[c] * (1.0 - r),
+			m_Peaks[c] = 0;
+		
+
+
+
+		return out;
 	}
 
 };
@@ -270,23 +343,37 @@ public:
 		AutoResize(false, true);
 	}
 
-	float NextSample(float a)
+	float NextSample(float a, int ch)
 	{
 		float out = a;
 		for (auto& c : Components())
 		{
 			auto a = dynamic_cast<Effect*>(c.get());
 			if (a)
-			{
-				out = a->NextSample(out);
-			}
+				out = a->NextSample(out, ch);
 		}
 		return out;
+	}
+
+	void Channels(int channels)
+	{
+		for (auto& c : Components())
+		{
+			auto a = dynamic_cast<Effect*>(c.get());
+			if (a)
+				a->Channels(channels);
+		}
+		m_Channels = channels;
 	}
 
 	template<typename T>
 	T& Emplace()
 	{
-		return Container::Emplace<T>();
+		auto& t = Container::Emplace<T>();
+		t.Channels(m_Channels);
+		return t;
 	}
+
+private:
+	int m_Channels = 0;
 };

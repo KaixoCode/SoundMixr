@@ -64,7 +64,7 @@ public:
 	virtual std::string& ValueText() = 0;
 	bool   Vertical() { return m_Vertical; }
 	void   Vertical(bool v) { m_Vertical = v; }
-	void   ResetValue(double v) { m_ResetValue = v; }
+	virtual void   ResetValue(double v) { m_ResetValue = v; }
 	void   SliderMult(double v) { m_Mult = v; }
 
 	void Render(CommandCollection& d) override
@@ -77,7 +77,7 @@ public:
 		Graphics::Render(*this, d);
 	};
 
-private:
+protected:
 	bool m_Vertical = true;
 	bool m_Dragging = false;
 	int m_Counter = 0;

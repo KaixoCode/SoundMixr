@@ -23,6 +23,7 @@ public:
 
 	void Update(const Vec4<int>& viewport) override
 	{
+		if (m_EffectsGroup)
 		m_Cursor = m_EffectsGroup ? m_EffectsGroup->Cursor() : m_Pressed && m_LayoutManager.Cursor() == -1 ?
 			 GLFW_CURSOR_NORMAL : m_LayoutManager.Cursor();
 
@@ -120,8 +121,8 @@ class ChannelPanel : public Panel
 {
 public:
 	template<typename T>
-	ChannelPanel(T* l, bool isinput)
-		: m_ChannelGroup(), m_IsInput(isinput),
+	ChannelPanel(T* l, bool isinput, bool special = false)
+		: m_ChannelGroup(), m_IsInput(isinput), m_IsSpecial(special),
 		volume(Emplace<VolumeSlider>()),
 		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, isinput ? "in" : "")),
 
@@ -180,7 +181,7 @@ public:
 
 		m_Split = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {
-				auto& a = l->EmplaceChannel(m_IsInput);
+				auto& a = m_IsSpecial ? l->EmplaceSpecialChannel(m_IsInput) : l->EmplaceChannel(m_IsInput);
 
 				int size = ChannelGroup().ChannelAmount() / 2;
 				for (int i = 0; i < size; i++)
@@ -221,9 +222,19 @@ public:
 			if (e.button == Event::MouseButton::RIGHT)
 				RightClickMenu::Get().Open(&m_Menu);
 		};
+
+		m_Listener += [this](Event::MouseEntered& e)
+		{
+			m_Hovering = true;
+		};
+
+		m_Listener += [this](Event::MouseExited& e)
+		{
+			m_Hovering = false;
+		};
 	}
 
-	void Select(ChannelGroup* s)
+	void Select(ChannelPanel* s)
 	{
 		if (s->IsInput() == m_IsInput)
 		{
@@ -231,33 +242,33 @@ public:
 			m_Routed = false;
 			routed.Disable();
 
-			if (s != &m_ChannelGroup)
+			if (&s->ChannelGroup() != &m_ChannelGroup && !m_IsSpecial && !s->IsSpecial())
 			{
-				m_Connect->Name(std::string("Combine with ") + s->Name());
+				m_Connect->Name(std::string("Combine with ") + s->ChannelGroup().Name());
 				m_Connect->Visible(true);
 			}
 			else
 				m_Connect->Visible(false);
 
-			m_SelectedSame = s;
+			m_SelectedSame = &s->ChannelGroup();
 		}
 		else
 		{
-			m_SelectedChannels = s;
+			m_SelectedChannels = &s->ChannelGroup();
 			m_HasSelect = true;
 
 			if (m_IsInput)
-				m_Routed = m_ChannelGroup.Connected(s);
+				m_Routed = m_ChannelGroup.Connected(&s->ChannelGroup());
 
 			else
-				m_Routed = s->Connected(&m_ChannelGroup);
+				m_Routed = s->ChannelGroup().Connected(&m_ChannelGroup);
 
 			routed.Enable();
 			m_Connect->Visible(false);
 		}
 	}
 
-	void AddChannel(ChannelBase* s)
+	void AddChannel(Channel* s)
 	{
 		m_ChannelGroup.AddChannel(s);
 		m_MenuTitle->Name(m_ChannelGroup.Name());
@@ -269,9 +280,12 @@ public:
 	void Unselect() { m_HasSelect = false; routed.Disable(); m_Connect->Visible(false); }
 	void Routed(bool v) { m_Routed = v; }
 	bool Routed() { return m_Routed; }
-	auto ChannelGroup()  -> ChannelGroup& { return m_ChannelGroup; }
+	auto ChannelGroup() -> ChannelGroup& { return m_ChannelGroup; }
+	bool IsInput() { return m_IsInput; }
 	void Transparency(bool t) { m_Transparency = t; }
 	bool Delete() { return m_Delete; }
+	bool Hovering() { return m_Hovering; }
+	bool IsSpecial() { return m_IsSpecial; }
 
 private:
 	// This private thing is defined here because it needs to be initialized first
@@ -280,7 +294,6 @@ private:
 	::ChannelGroup m_ChannelGroup;
 
 public:
-	//Button<SmallText, ButtonType::Normal>& text;
 	Button<RouteButton, ButtonType::Toggle>& routed;
 	Button<MuteButton, ButtonType::Toggle>& muted;
 	Button<MonoButton, ButtonType::Toggle>& mono;
@@ -288,24 +301,36 @@ public:
 	VolumeSlider& volume;
 
 private:
-	ButtonBase* m_Connect, *m_MenuTitle, *m_Split, *m_MenuMono, *m_MenuMuted;
-
-	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
-	bool m_Transparency = false;
-	bool m_Routed = false;
-	bool m_Delete = false;
-
-	MenuAccessories::Divider* m_Div1, * m_Div2, *m_Div3;
-
-	bool m_HasSelect = false;
-	::ChannelGroup* m_SelectedChannels;
-	::ChannelGroup* m_SelectedSame;
-
-	bool m_Selected = false,
-		m_IsInput = false;
-
 	static inline std::unordered_map<int, std::string> m_Numbers;
-	std::string m_NegInf = "Inf";
+	static inline std::string m_NegInf = "Inf";
+
+	ButtonBase
+		*m_Connect, 
+		*m_MenuTitle, 
+		*m_Split, 
+		*m_MenuMono, 
+		*m_MenuMuted;
+
+	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> 
+		m_Menu;
+	
+	bool m_Transparency = false,
+		m_Routed = false,
+		m_Delete = false,
+		m_Hovering = false,
+		m_Selected = false,
+		m_IsInput = false,
+		m_IsSpecial = false,
+		m_HasSelect = false;
+
+	MenuAccessories::Divider
+		*m_Div1, 
+		*m_Div2, 
+		*m_Div3;
+
+	::ChannelGroup
+		*m_SelectedChannels,
+		*m_SelectedSame;
 
 	void Update(const Vec4<int>& viewport)
 	{
@@ -333,7 +358,7 @@ private:
 		m_Div2->Color(Theme<C::Divider>::Get());
 		m_Div3->Color(Theme<C::Divider>::Get());
 		m_Div3->Visible(m_Connect->Visible() || m_Split->Visible());
-		m_Split->Visible(ChannelGroup().Channels().size() > 1);
+		m_Split->Visible(ChannelGroup().Channels().size() > 1 && !m_IsSpecial);
 
 		volume.Size(Vec2<int>{50, Height() - 135});
 
@@ -400,7 +425,7 @@ private:
 		d.Command<Text>(&volume.ValueText(), Vec2<int>{volume.X() + 6 + (volume.Width() - 6 * 2) / 2, volume.Y()});
 			
 		// Channel name
-		d.Command<Font>(Fonts::Gidole16, 16.0f);
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		d.Command<Fill>(Theme<C::TextSmall>::Get());
 		d.Command<TextAlign>(Align::CENTER, Align::TOP);
 		d.Command<Text>(&m_ChannelGroup.Name(), Vec2<int>{ Width() / 2, Height() - 4 });

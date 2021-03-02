@@ -5,8 +5,11 @@
 // -------------------------------------------------------------------------- \\
 
 AsioDevice::AsioDevice(Soundboard& soundboard)
-	: m_BufferSize(256), m_Samplerate(48000), m_SoundboardChannel(soundboard)
+	: m_BufferSize(256), m_Samplerate(48000)
 {
+	m_SoundboardChannels.emplace_back(soundboard);
+	m_SoundboardChannels.emplace_back(soundboard);
+
 	LOG("Initializing Portaudio library");
 	PaError err;
 	err = Pa_Initialize();

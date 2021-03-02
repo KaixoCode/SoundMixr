@@ -16,27 +16,30 @@ public:
 	ChannelPanel& EmplaceChannel(bool IsInput)
 	{
 		if (IsInput)
-			return *m_InputChannels.emplace_back(&m_Inputs.Emplace<ChannelPanel>(this, true));
+			return *m_Channels.emplace_back(&m_Inputs.Emplace<ChannelPanel>(this, true));
 		else
-			return *m_OutputChannels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this, false));
+			return *m_Channels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this, false));
 	}
 
-	ChannelPanel& EmplaceSpecialChannel()
+	ChannelPanel& EmplaceSpecialChannel(bool IsInput = true)
 	{
-		return *m_SpecialChannels.emplace_back(&m_Specials.Emplace<ChannelPanel>(this, true));
+		return *m_Channels.emplace_back(&m_Specials.Emplace<ChannelPanel>(this, IsInput, true));
 	}
 
 	void ResetGrouping();
-	void Transparency(bool d) { for (auto& _c : m_InputChannels) _c->Transparency(d); };
+	void Transparency(bool d) { for (auto& _c : m_Channels) _c->Transparency(d); };
 
-	std::vector<ChannelPanel*>& InputChannels() { return m_InputChannels; };
-	std::vector<ChannelPanel*>& OutputChannels() { return m_OutputChannels; };
-	std::vector<ChannelPanel*>& SpecialChannels() { return m_SpecialChannels; };
+	std::vector<ChannelPanel*>& Channels() { return m_Channels; }
 
-	void Clear() {  m_Effect.EffectsGroup(nullptr); m_Effect.Visible(false); 
-					m_Inputs.Clear(); m_InputChannels.clear(); 
-					m_Outputs.Clear(); m_OutputChannels.clear(); 
-					m_Specials.Clear(); m_SpecialChannels.clear(); };
+	void Clear() 
+	{  
+		m_Effect.EffectsGroup(nullptr); 
+		m_Effect.Visible(false); 
+		m_Channels.clear();
+		m_Inputs.Clear(); 
+		m_Outputs.Clear();
+		m_Specials.Clear(); 
+	};
 
 	void Update(const Vec4<int>& s) override;
 	void Render(CommandCollection& d) override
@@ -54,14 +57,12 @@ public:
 
 private:
 	AsioDevice& asio;
-	::SMXRScrollPanel& m_Channels;
+	::SMXRScrollPanel& m_ChannelsPanel;
 	::EffectScrollPanel& m_Effect;
 	::Panel& m_Inputs;
 	MenuAccessories::VerticalDivider* m_Divider = nullptr;
 	::Panel& m_Outputs;
 	MenuAccessories::VerticalDivider* m_Divider2 = nullptr;
 	::Panel& m_Specials;
-	std::vector<ChannelPanel*> m_InputChannels;
-	std::vector<ChannelPanel*> m_OutputChannels;
-	std::vector<ChannelPanel*> m_SpecialChannels;
+	std::vector<ChannelPanel*> m_Channels;
 };

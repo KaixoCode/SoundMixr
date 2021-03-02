@@ -6,23 +6,23 @@
 
 ListPanel::ListPanel(AsioDevice& sarasio)
 	: asio(sarasio),
-	m_Channels(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
+	m_ChannelsPanel(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
 	m_Effect(Panel().Emplace<::EffectScrollPanel>(Layout::Hint::East)),
-	m_Inputs(m_Channels.Panel<::Panel>().Emplace<::Panel>()),
-	m_Divider(&m_Channels.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
-	m_Outputs(m_Channels.Panel().Emplace<::Panel>()),
-	m_Divider2(&m_Channels.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
-	m_Specials(m_Channels.Panel<::Panel>().Emplace<::Panel>())
+	m_Inputs(m_ChannelsPanel.Panel<::Panel>().Emplace<::Panel>()),
+	m_Divider(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	m_Outputs(m_ChannelsPanel.Panel().Emplace<::Panel>()),
+	m_Divider2(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	m_Specials(m_ChannelsPanel.Panel().Emplace<::Panel>())
 {
 	m_Effect.Width(300);
 	m_Effect.MinWidth(300);
 	m_Effect.MaxWidth(500);
 	m_Effect.Hide();
-	m_Channels.Panel<::Panel>();
-	m_Channels.Panel().Layout<Layout::SidewaysStack>(0);
-	m_Channels.Panel().AutoResize(true, false);
-	m_Channels.MinWidth(100);
-	m_Channels.EnableScrollbars(true, false);
+	m_ChannelsPanel.Panel<::Panel>();
+	m_ChannelsPanel.Panel().Layout<Layout::SidewaysStack>(0);
+	m_ChannelsPanel.Panel().AutoResize(true, false);
+	m_ChannelsPanel.MinWidth(100);
+	m_ChannelsPanel.EnableScrollbars(true, false);
 	Background(Theme<C::MainPanel>::Get());
 
 	Panel().Background(Theme<C::MainPanel>::Get());
@@ -35,69 +35,44 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_Outputs.AutoResize(true, false);
 	m_Outputs.Layout<Layout::SidewaysStack>(8);
 
+	m_Specials.AutoResize(true, false);
+	m_Specials.Layout<Layout::SidewaysStack>(8);
+
 	Background(Color{ 38, 38, 38, 355 });
 	EnableScrollbars(false, false);
 
-	m_Channels.Scrolled().x;
+	m_ChannelsPanel.Scrolled().x;
 
 	m_Listener += [this](Event::MousePressed& e)
 	{
-		if (!m_Channels.WithinBounds({ e.x, e.y }))
+		if (!m_ChannelsPanel.WithinBounds({ e.x, e.y }))
 			return;
 
 		Vec2<int> translated = { 
-			e.x - X() - m_Channels.X() - m_Channels.Panel().X() - Panel().X(),
-			e.y - Y() - m_Channels.Y() - m_Channels.Panel().Y() - Panel().Y()
+			e.x - X() - m_ChannelsPanel.X() - m_ChannelsPanel.Panel().X() - Panel().X(),
+			e.y - Y() - m_ChannelsPanel.Y() - m_ChannelsPanel.Panel().Y() - Panel().Y()
 		};
 
 		if (e.button == Event::MouseButton::LEFT)
 		{
 			bool s = false;
-			for (auto& _panel : m_InputChannels)
+			for (auto& _panel : m_Channels)
 			{
 				ChannelPanel& _current = *_panel;
-				if (_current.WithinBounds(translated - m_Inputs.Position()))
+
+				auto& t = translated;
+
+				if (_current.Hovering())
 				{
 					if ((!_current.routed.Hovering() || _current.routed.Disabled()) && !_current.muted.Hovering() && !_current.mono.Hovering() && !_current.pan.Hovering())
 					{
-						for (auto& _p : m_OutputChannels)
+						for (auto& _p : m_Channels)
 						{
 							ChannelPanel& _c = *_p;
-							_c.Select(&_current.ChannelGroup());
+							_c.Select(&_current);
 							_c.Selected(false);
 						}
-						for (auto& _p : m_InputChannels)
-						{
-							ChannelPanel& _c = *_p;
-							_c.Select(&_current.ChannelGroup());
-							_c.Selected(false);
-						}
-						_current.Selected(true);
-						if (m_Effect.Visible())
-							ShowEffectsPanel(_current.ChannelGroup().EffectsGroup());
-					}
-					s = true;
-				}
-			}
-			for (auto& _panel : m_OutputChannels)
-			{
-				ChannelPanel& _current = *_panel;
-				if (_current.WithinBounds(translated - m_Outputs.Position()))
-				{
-					if ((!_current.routed.Hovering() || _current.routed.Disabled()) && !_current.muted.Hovering() && !_current.mono.Hovering() && !_current.pan.Hovering())
-					{
-						for (auto& _p : m_InputChannels)
-						{
-							ChannelPanel& _c = *_p;
-							_c.Select(&_current.ChannelGroup());
-							_c.Selected(false);
-						}
-						for (auto& _p : m_OutputChannels)
-						{
-							ChannelPanel& _c = *_p;
-							_c.Select(&_current.ChannelGroup());
-							_c.Selected(false);
-						}
+
 						_current.Selected(true);
 						if (m_Effect.Visible())
 							ShowEffectsPanel(_current.ChannelGroup().EffectsGroup());
@@ -107,12 +82,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 			}
 			if (!s && !m_ScrollbarX->Hovering() && !m_ScrollbarY->Hovering())
 			{
-				for (auto& _p : m_InputChannels)
-				{
-					_p->Selected(false);
-					_p->Unselect();
-				}
-				for (auto& _p : m_OutputChannels)
+				for (auto& _p : m_Channels)
 				{
 					_p->Selected(false);
 					_p->Unselect();
@@ -125,12 +95,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	{
 		if (!m_ScrollbarX->Hovering() && !m_ScrollbarY->Hovering())
 		{
-			for (auto& _p : m_InputChannels)
-			{
-				_p->Selected(false);
-				_p->Unselect();
-			}
-			for (auto& _p : m_OutputChannels)
+			for (auto& _p : m_Channels)
 			{
 				_p->Selected(false);
 				_p->Unselect();
@@ -170,8 +135,8 @@ void ListPanel::ResetGrouping()
 {
 	m_Inputs.Clear();
 	m_Outputs.Clear();
-	m_InputChannels.clear();
-	m_OutputChannels.clear();
+	m_Specials.Clear();
+	m_Channels.clear();
 
 	int i = 0;
 	for (i = 0; i < asio.Device().info.maxInputChannels - 1; i += 2)
@@ -233,33 +198,29 @@ void ListPanel::ResetGrouping()
 
 void ListPanel::Update(const Vec4<int>& s)
 {
-	for (auto& c = m_InputChannels.begin(); c != m_InputChannels.end(); ++c)
+	for (auto& c = m_Channels.begin(); c != m_Channels.end(); ++c)
 	{
 		if ((*c)->Delete())
 		{
-			m_Inputs.Erase(std::remove_if(m_Inputs.Components().begin(), m_Inputs.Components().end(),
-				[&](const std::unique_ptr<Component>& const a)
-				{
-					return dynamic_cast<Component*>(*c) == a.get();
-				}
+			if ((*c)->IsInput())
+				m_Inputs.Erase(std::remove_if(m_Inputs.Components().begin(), m_Inputs.Components().end(),
+					[&](const std::unique_ptr<Component>& const a)
+					{
+						return dynamic_cast<Component*>(*c) == a.get();
+					}
 			));
-			m_InputChannels.erase(c);
+			else
+				m_Outputs.Erase(std::remove_if(m_Outputs.Components().begin(), m_Outputs.Components().end(),
+					[&](const std::unique_ptr<Component>& const a)
+					{
+						return dynamic_cast<Component*>(*c) == a.get();
+					}
+			));
+
+			m_Channels.erase(c);
 			break;
 		}
 	}
-
-	for (auto& c = m_OutputChannels.begin(); c != m_OutputChannels.end(); ++c)
-		if ((*c)->Delete())
-		{
-			m_Outputs.Erase(std::remove_if(m_Outputs.Components().begin(), m_Outputs.Components().end(),
-				[&](const std::unique_ptr<Component>& const a)
-				{
-					return dynamic_cast<Component*>(*c) == a.get();
-				}
-			));
-			m_OutputChannels.erase(c);
-			break;
-		}
 
 	if (m_Divider)
 		m_Divider->Color(Theme<C::Divider>::Get());

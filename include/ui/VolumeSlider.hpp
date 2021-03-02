@@ -93,7 +93,9 @@ public:
 	int    MinBarSize() const    override { return 25; }
 	double SliderValue()         override { return Value() / RATIO; }
 	void   SliderValue(double v) override { Value(v * RATIO); }
-	void   SliderRange(const Vec2<int>& r) { m_Range = r; }
+	void   SliderRange(const Vec2<float>& r) { m_Range = r; }
+	void   ResetValue(double r) override { m_ResetValue = ((r - m_Range.x) / (m_Range.y - m_Range.x)); }
+	void   ResetValue() { SliderValue(m_ResetValue); }
 	void   Unit(const std::string& u) { m_Unit = u; }
 	std::string& ValueText() override { return m_ValueText; }
 
@@ -102,11 +104,10 @@ public:
 private:
 	const double RATIO = 1000000.0;
 
-	Vec2<int> m_Range;
+	Vec2<float> m_Range;
 	std::string m_ValueText = "", m_Unit = "";
 
 };
-
 
 class DynamicsSlider : public Container
 {
@@ -121,9 +122,9 @@ public:
 				return;
 
 			m_PVal = constrain(e.y - Y(), 0, Height());
-			if (m_PVal < DbToPixel(threshhold2))
+			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
 				m_Dragging = RT2, m_PressVal = ratio2;
-			else if (m_PVal > DbToPixel(threshhold1))
+			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
 				m_Dragging = RT1, m_PressVal = ratio1;
 			else if (m_PVal < DbToPixel(threshhold2) + m_DragRange)
 				m_Dragging = TH2, m_PressVal = DbToPixel(threshhold2);
@@ -139,9 +140,9 @@ public:
 				return; 
 
 			m_PVal = constrain(e.y - Y(), 0, Height());
-			if (m_PVal < DbToPixel(threshhold2))
+			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
 				ratio2 = 0;
-			else if (m_PVal > DbToPixel(threshhold1))
+			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
 				ratio1 = 0;
 			else if (m_PVal < DbToPixel(threshhold2) + m_DragRange)
 				threshhold2 = -50;
@@ -153,9 +154,9 @@ public:
 		m_Listener += [this](Event::MouseMoved& e)
 		{
 			m_PVal = constrain(e.y - Y(), 0, Height());
-			if (m_PVal < DbToPixel(threshhold2))
+			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
 				m_Cursor = GLFW_RESIZE_NS_CURSOR;
-			else if (m_PVal > DbToPixel(threshhold1))
+			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
 				m_Cursor = GLFW_RESIZE_NS_CURSOR;
 			else if (m_PVal < DbToPixel(threshhold2) + m_DragRange)
 				m_Cursor = GLFW_HAND_CURSOR;
@@ -167,7 +168,7 @@ public:
 		m_Listener += [this](Event::MouseDragged& e)
 		{
 			int cval = e.y - Y();
-
+			
 			if (m_Dragging == TH2)
 			{
 				double db1 = PixelToDb(constrain(cval - m_PVal + m_PressVal, 0, Height()));
@@ -192,18 +193,32 @@ public:
 			}
 			else if (m_Dragging == RT1)
 			{
-				double db1 = (cval - m_PVal) * 0.2;
+				double db1 = (cval - m_PVal) * (m_Shift ? 0.1 : 0.2);
+				m_PVal = cval;
 				m_Cursor = GLFW_RESIZE_NS_CURSOR;
-				ratio1 = constrain(db1 + m_PressVal, -31, 31);
+				ratio1 = constrain(db1 + ratio1, -31, 31);
 				UpdateStrings();
 			}
 			else if (m_Dragging == RT2)
 			{
-				double db1 = (cval - m_PVal) * 0.2;
+				double db1 = (cval - m_PVal) * (m_Shift ? 0.1 : 0.2);
+				m_PVal = cval;
 				m_Cursor = GLFW_RESIZE_NS_CURSOR;
-				ratio2 = constrain(m_PressVal - db1, -31, 31);
+				ratio2 = constrain(ratio2 - db1, -31, 31);
 				UpdateStrings();
 			}
+		};
+
+		m_Listener += [this](Event::KeyPressed& e)
+		{
+			if (e.key == VK_SHIFT)
+				m_Shift = true;
+		};
+
+		m_Listener += [this](Event::KeyReleased& e)
+		{
+			if (e.key == VK_SHIFT)
+				m_Shift = false;
 		};
 
 		m_Listener += [this](Event::MouseReleased& e)
@@ -328,8 +343,9 @@ private:
 	const int TH2 = 2;
 	const int RT1 = 3;
 	const int RT2 = 4;
-	int m_DragRange = 10;
+	int m_DragRange = 5;
 	double m_PressVal = 0;
+	bool m_Shift = false;
 
 	std::string m_NegInf = "Inf";
 	static inline std::unordered_map<int, std::string> m_Numbers;
@@ -346,32 +362,32 @@ private:
 		double rt1 = ratio1;
 		if (rt1 >= 0)
 		{
-			rt1 = rt1 + 1;
-			std::sprintf(s, "%.1f", rt1);
+			rt1 = 1.0 / ((rt1 + 1) / 16.0 );
+			std::sprintf(s, "%.2f", rt1);
 			m_RT1Str = "1:";
 			m_RT1Str += s;
 		}
 		else
 		{
 			rt1 = std::abs(rt1 - 1);
-			std::sprintf(s, "%.1f", rt1);
-			m_RT1Str = s;
-			m_RT1Str += ":1";
+			std::sprintf(s, "%.2f", rt1);
+			m_RT1Str = "1:";
+			m_RT1Str += s;
 		}
 		double rt2 = ratio2;
 		if (rt2 >= 0)
 		{
-			rt2 = rt2 + 1;
-			std::sprintf(s, "%.1f", rt2);
+			rt2 = 1.0 / ((rt2 + 1) / 8.0);
+			std::sprintf(s, "%.2f", rt2);
 			m_RT2Str = "1:";
 			m_RT2Str += s;
 		}
 		else
 		{
 			rt2 = std::abs(rt2 - 1);
-			std::sprintf(s, "%.1f", rt2);
-			m_RT2Str = s;
-			m_RT2Str += ":1";
+			std::sprintf(s, "%.2f", rt2);
+			m_RT2Str = "1:";
+			m_RT2Str += s;
 		}
 	}
 };

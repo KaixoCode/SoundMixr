@@ -80,7 +80,8 @@ void Controller::Run()
     _titleButton.Disable();
     m_List = &_p3.Emplace<ListPanel>(Layout::Hint::Center, m_AsioDevice);
     auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
-    _soundboardChannel.AddChannel(&m_AsioDevice.SoundboardChannel());
+    for (auto& a : m_AsioDevice.SoundboardChannels())
+        _soundboardChannel.AddChannel(&a);
 
     //
     // Frame menu
@@ -272,8 +273,13 @@ void Controller::SaveRouting()
 
     LOG("Saving Routing");
     std::string data;
-    for (auto& _ch : m_List->OutputChannels())
+
+    // Inputs
+    for (auto& _ch : m_List->Channels())
     {
+        if (!_ch->IsInput() || _ch->IsSpecial())
+            continue;
+
         auto& _i = _ch->ChannelGroup();
         data += "out:";
         for (auto& _a : _i.Channels())
@@ -285,8 +291,12 @@ void Controller::SaveRouting()
         data += std::to_string(_i.Volume()) + "\n";
     }
 
-    for (auto& _ch : m_List->InputChannels())
+    // Outputs
+    for (auto& _ch : m_List->Channels())
     {
+        if (_ch->IsInput() || _ch->IsSpecial())
+            continue;
+
         auto& _i = _ch->ChannelGroup();
         data += "in:";
         for (auto& _a : _i.Channels())
@@ -399,7 +409,7 @@ void Controller::LoadRouting()
             _c.volume.SliderValue(_volume);
 
             // Load the routing for this panel
-            auto& _out = m_List->OutputChannels();
+            auto& _out = m_List->Channels();
             while ((p = _rest.find_first_of(",")) != -1)
             {
                 // Find the next id in the file
@@ -409,7 +419,7 @@ void Controller::LoadRouting()
                 
                 // Find the OutputChannelPanel belonging to that id and connect them
                 auto _it = std::find_if(_out.begin(), _out.end(), [&_link](ChannelPanel* obj)
-                    { return obj->ChannelGroup().ID() == _link; }
+                    { return !obj->IsInput() && obj->ChannelGroup().ID() == _link; }
                 );
 
                 if (_it != _out.end())
