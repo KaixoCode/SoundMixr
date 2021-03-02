@@ -16,9 +16,9 @@ public:
 	ChannelPanel& EmplaceChannel(bool IsInput)
 	{
 		if (IsInput)
-			return *m_InputChannels.emplace_back(&m_Inputs.Emplace<ChannelPanel>(this));
+			return *m_InputChannels.emplace_back(&m_Inputs.Emplace<ChannelPanel>(this, true));
 		else
-			return *m_OutputChannels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this));
+			return *m_OutputChannels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this, false));
 	}
 
 	void ResetGrouping();

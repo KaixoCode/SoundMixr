@@ -120,10 +120,10 @@ class ChannelPanel : public Panel
 {
 public:
 	template<typename T>
-	ChannelPanel(T* l)
-		: m_ChannelGroup(),
+	ChannelPanel(T* l, bool isinput)
+		: m_ChannelGroup(), m_IsInput(isinput),
 		volume(Emplace<VolumeSlider>()),
-		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, m_IsInput ? "in" : "")),
+		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, isinput ? "in" : "")),
 
 		muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(
 			[&](bool s) { 
@@ -225,27 +225,12 @@ public:
 
 	void Select(ChannelGroup* s)
 	{
-		m_SelectedChannels = s;
-		m_HasSelect = true;
-
-		if (s->IsInput())
-		{
-			m_Routed = false;
-			routed.Disable();
-		}
-		else
-		{
-			if (m_IsInput)
-				m_Routed = m_ChannelGroup.Connected(s);
-
-			else
-				m_Routed = s->Connected(&m_ChannelGroup);
-
-			routed.Enable();
-		}
-
 		if (s->IsInput() == m_IsInput)
 		{
+			m_HasSelect = false;
+			m_Routed = false;
+			routed.Disable();
+
 			if (s != &m_ChannelGroup)
 			{
 				m_Connect->Name(std::string("Combine with ") + s->Name());
@@ -257,7 +242,19 @@ public:
 			m_SelectedSame = s;
 		}
 		else
+		{
+			m_SelectedChannels = s;
+			m_HasSelect = true;
+
+			if (m_IsInput)
+				m_Routed = m_ChannelGroup.Connected(s);
+
+			else
+				m_Routed = s->Connected(&m_ChannelGroup);
+
+			routed.Enable();
 			m_Connect->Visible(false);
+		}
 	}
 
 	void AddChannel(ChannelBase* s)
