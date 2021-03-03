@@ -39,7 +39,7 @@ public:
 	void TPeak(float v) { m_TPeak = v; }
 	void Mute(bool v) { m_Muted = v; }
 	void Mono(bool v) { m_Mono = v; }
-	void Group(const std::shared_ptr<::ChannelGroup>& p, int index) { m_Group = p; m_GroupIndex = index; }
+	virtual void Group(::ChannelGroup* p, int index) = 0;
 
 	virtual void Level(float l) { m_Level = l; };
 	virtual void CalcLevel() = 0;
@@ -74,15 +74,20 @@ protected:
 		m_Volume = 1;
 
 	std::string m_Name;
-	std::weak_ptr<ChannelGroup> m_Group;
+	ChannelGroup* m_Group = nullptr;
 };
 
-class ChannelGroup : public std::enable_shared_from_this<ChannelGroup>
+class ChannelGroup
 {
-public:
-	~ChannelGroup() { }
+	std::mutex m_Mutex;
+	bool m_Dead = false;
 
-	auto  Connections() -> std::vector<std::weak_ptr<::ChannelGroup>>& const { return m_Connected; }
+public:
+	~ChannelGroup() {
+		m_Dead = true; m_Mutex.lock(); m_Mutex.unlock();
+	}
+
+	auto  Connections() -> std::vector<::ChannelGroup*>& const { return m_Connected; }
 	auto  Channels() -> std::vector<Channel*>& const { return m_Channels; }
 	int   ChannelAmount()                   const { return m_ChannelAmount; }
 	auto  EffectsGroup() -> EffectsGroup&   const { return m_EffectsGroup; }
@@ -94,7 +99,8 @@ public:
 	bool  IsInput()				 const { return m_IsInput; }
 	float Pan()					 const { return m_Pan; }
 
-	void  NextIter() { m_StartRound = true; }
+	bool  Lock() { if (!m_Dead) m_Mutex.lock(); return !m_Dead; }
+	void  Unlock() { m_Mutex.unlock(); }
 	void  Volume(float v) { for (auto& c : m_Channels) c->Volume(v); m_Volume = v; }
 	void  Mute(bool v) { for (auto& c : m_Channels) c->Mute(v); m_Muted = v; }
 	void  Mono(bool v) { for (auto& c : m_Channels) c->Mono(v); m_Mono = v; }
@@ -122,53 +128,33 @@ public:
 			i->Group(nullptr, -1);
 	}
 
-	bool Connected(const std::weak_ptr<::ChannelGroup>& other) const
+	bool Connected(ChannelGroup* other) const
 	{
-		auto& it = std::find_if(m_Connected.begin(), m_Connected.end(),
-			[&](const std::weak_ptr<::ChannelGroup>& a)
-			{
-				if (auto c1 = a.lock())
-					if (auto c2 = other.lock())
-						return c1.get() == c2.get();
-				return false;
-			}
-		);
-		return it != m_Connected.end();
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), other);
+		return it != m_Connected.end() && other != nullptr;
 	}
 
-	void Connect(const std::weak_ptr<::ChannelGroup>& other)
+	void Connect(::ChannelGroup* other)
 	{ 
-		std::weak_ptr<::ChannelGroup> t = shared_from_this();
-		if (auto c = other.lock())
-			c->ConnectDirect(t), ConnectDirect(other);
+		if (!Connected(other))
+			other->ConnectDirect(this), ConnectDirect(other);
 	}
 
-	void ConnectDirect(const std::weak_ptr<::ChannelGroup>& other)
+	void ConnectDirect(ChannelGroup* other)
 	{
-		if (auto c = other.lock())
-			if (!Connected(other))
-				m_Connected.push_back(other);
+		if (!Connected(other))
+			m_Connected.push_back(other);
 	}
 
-	void Disconnect(const std::weak_ptr<::ChannelGroup>& other)
+	void Disconnect(::ChannelGroup* other)
 	{
-		std::weak_ptr<::ChannelGroup> t = shared_from_this();
-		if (auto c = other.lock()) 
-			c->DisconnectDirect(t), DisconnectDirect(other);
+		if (Connected(other))
+			other->DisconnectDirect(this), DisconnectDirect(other);
 	}
 
-	void DisconnectDirect(const std::weak_ptr<::ChannelGroup>& other)
+	void DisconnectDirect(::ChannelGroup* other)
 	{
-		auto& it = std::find_if(m_Connected.begin(), m_Connected.end(), 
-			[&] (const std::weak_ptr<::ChannelGroup>& a)
-			{
-				if (auto c1 = a.lock())
-					if (auto c2 = other.lock())
-						return c1.get() == c2.get();
-				return false;
-			}
-		);
-
+		auto& it = std::find(m_Connected.begin(), m_Connected.end(), other);
 		if (it != m_Connected.end())
 			m_Connected.erase(it);
 	}
@@ -191,7 +177,7 @@ public:
 			}
 			m_EffectsGroup.Channels(m_ChannelAmount + 1);
 			m_Channels.push_back(c);
-			c->Group(shared_from_this(), ChannelAmount());
+			c->Group(this, ChannelAmount());
 			c->Mono(Mono()); 
 			c->Mute(Muted());
 			Pan(Pan());
@@ -209,7 +195,7 @@ public:
 			ClearConnections();
 			m_Channels.erase(a);
 			for (int i = 0; i < ChannelAmount(); i++)
-				m_Channels[i]->Group(shared_from_this(), i);
+				m_Channels[i]->Group(this, i);
 			Pan(Pan());
 		}
 
@@ -234,15 +220,16 @@ public:
 
 		for (auto& i : m_Connected)
 		{
-			if (auto _group = i.lock())
+			if (i->Lock())
 			{
-				int iamt = _group->ChannelAmount();
-				if (_group->Mono())
-					level += _group->Channels()[id % iamt]->Level();
+				int iamt = i->ChannelAmount();
+				if (i->Mono())
+					level += i->Channels()[id % iamt]->Level();
 			
 				else
 					for (int j = id; j < iamt; j += amt)
-						level += _group->Channels()[j]->Level();
+						level += i->Channels()[j]->Level();
+				i->Unlock();
 			}
 		}
 		
@@ -265,8 +252,7 @@ public:
 	}
 
 private:
-	bool m_StartRound = false, 
-		m_FirstMono = false;
+	bool m_FirstMono = false;
 	float m_Pan = 0;
 	float m_MonoLevel = 0;
 
@@ -279,7 +265,7 @@ private:
 	::EffectsGroup m_EffectsGroup;
 	std::string m_Name = "APPLE";
 	std::vector<Channel*> m_Channels;
-	std::vector<std::weak_ptr<::ChannelGroup>> m_Connected;
+	std::vector<::ChannelGroup*> m_Connected;
 };
 
 class InputChannel : public Channel
@@ -287,17 +273,29 @@ class InputChannel : public Channel
 public:
 	using Channel::Channel;
 
-	void Level(float l) override 
+	void Group(::ChannelGroup* p, int index) override
 	{
-		Channel::Level(l); 
-		if (auto _group = m_Group.lock())
-			_group->NextIter();
+		if (!m_Group)
+		{
+			m_Group = p;
+			m_GroupIndex = index;
+		}
+		else if (m_Group->Lock())
+		{
+			m_Group->Unlock();
+			m_Group = p;
+			m_GroupIndex = index;
+		}
+		else
+		{
+			m_Group = nullptr;
+			m_GroupIndex = -1;
+		}
 	}
-	float Level() const override { return m_OutLevel; }
 
 	void CalcLevel() override
 	{
-		if (auto _group = m_Group.lock())
+		if (m_Group != nullptr && m_Group->Lock())
 		{
 			if (m_Muted)
 				m_OutLevel = 0;
@@ -305,17 +303,17 @@ public:
 			else if (m_Mono)
 			{
 				float _level = 0;
-				for (auto& i : _group->Channels())
+				for (auto& i : m_Group->Channels())
 					_level += i->UnprocessedLevel();
 
-				m_OutLevel = (_level / _group->ChannelAmount());
+				m_OutLevel = (_level / m_Group->ChannelAmount());
 			}
 			else
 				m_OutLevel = m_Level;
 
-			if (_group != nullptr)
-				m_OutLevel = _group->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
+			m_OutLevel = m_Group->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
 		
+			m_Group->Unlock();
 			return;
 		}
 
@@ -328,26 +326,51 @@ class OutputChannel : public Channel
 public:
 	using Channel::Channel;
 	
+	void Group(::ChannelGroup* p, int index) override
+	{
+		if (!m_Group)
+		{
+			m_Group = p;
+			m_GroupIndex = index;
+		}
+		else if (m_Group->Lock())
+		{
+			m_Group->Unlock();
+			m_Group = p;
+			m_GroupIndex = index;
+		}
+		else
+		{
+			m_Group = nullptr;
+			m_GroupIndex = -1;
+		}
+	}
+
 	void  CalcLevel()    override 
 	{ 
-		if (auto _group = m_Group.lock())
+		if (m_Group != nullptr && m_Group->Lock())
 		{
-			m_OutLevel = m_Muted ? 0 : _group->GetLevel(m_GroupIndex);
+			m_OutLevel = m_Muted ? 0 : m_Group->GetLevel(m_GroupIndex);
+			m_Group->Unlock();
 			return;
 		}
+
 		m_OutLevel = 0;
 		return;
 	}
+
 	float Level()  const override 
 	{
-		if (auto _group = m_Group.lock())
+		if (m_Group != nullptr && m_Group->Lock())
 		{
-			float level = (m_Mono ? _group->GetMonoLevel() : m_OutLevel);
+			float level = (m_Mono ? m_Group->GetMonoLevel() : m_OutLevel);
 
-			level = _group->DoEffects(level, m_GroupIndex);
+			level = m_Group->DoEffects(level, m_GroupIndex);
 
+			m_Group->Unlock();
 			return level * m_Volume * m_Pan;
 		}
+
 		return 0;
 	}
 };
@@ -358,6 +381,27 @@ public:
 	SoundboardChannel(Soundboard& soundBoard)
 		: Channel(m_Counter++, "Soundboard", true), m_Soundboard(soundBoard)
 	{ }
+
+	void Group(::ChannelGroup* p, int index) override
+	{
+		if (!m_Group)
+		{
+			m_Group = p;
+			m_GroupIndex = index;
+		}
+		else if (m_Group->Lock())
+		{
+			m_Group->Unlock();
+			m_Group = p;
+			m_GroupIndex = index;
+		}
+		else
+		{
+			m_Group = nullptr;
+			m_GroupIndex = -1;
+		}
+	}
+
 
 	void  CalcLevel() override 
 	{

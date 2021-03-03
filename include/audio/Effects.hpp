@@ -95,7 +95,7 @@ public:
 	bool Hovering() { return m_Hovering; }
 
 protected:
-	int m_Channels;
+	int m_Channels = -1;
 	bool m_Hovering = false;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	MenuAccessories::Divider* m_Div;
@@ -255,6 +255,7 @@ public:
 
 		while (m_Peaks.size() < c)
 			m_Peaks.push_back(0);
+
 		m_Channels = c;
 	}
 
@@ -476,8 +477,7 @@ public:
 	float NextSample(float a, int ch)
 	{
 		float out = a;
-		int c = m_EffectCount;
-		for (int i = 0; i < c; i++)
+		for (int i = 0; i < m_EffectCount; i++)
 			out = m_Effects[i]->NextSample(out, ch);
 		
 		return out;

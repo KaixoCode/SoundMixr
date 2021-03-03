@@ -287,13 +287,13 @@ void Controller::SaveRouting()
 
         auto& _i = _ch->ChannelGroup();
         data += "out:";
-        for (auto& _a : _i->Channels())
+        for (auto& _a : _i.Channels())
             data += std::to_string(_a->ID()) + ",";
         data += ";";
-        data += std::to_string(_i->Muted()) + ";";
-        data += std::to_string(_i->Mono()) + ";";
-        data += std::to_string(_i->Pan()) + ";";
-        data += std::to_string(_i->Volume()) + "\n";
+        data += std::to_string(_i.Muted()) + ";";
+        data += std::to_string(_i.Mono()) + ";";
+        data += std::to_string(_i.Pan()) + ";";
+        data += std::to_string(_i.Volume()) + "\n";
     }
 
     // Outputs
@@ -304,16 +304,15 @@ void Controller::SaveRouting()
 
         auto& _i = _ch->ChannelGroup();
         data += "in:";
-        for (auto& _a : _i->Channels())
+        for (auto& _a : _i.Channels())
             data += std::to_string(_a->ID()) + ",";
         data += ";";
-        data += std::to_string(_i->Muted()) + ";";
-        data += std::to_string(_i->Mono()) + ";";
-        data += std::to_string(_i->Pan()) + ";";
-        data += std::to_string(_i->Volume()) + ";";
-        for (auto& i : _i->Connections())
-            if (auto c = i.lock())
-            data += std::to_string(c->ID()) + ",";
+        data += std::to_string(_i.Muted()) + ";";
+        data += std::to_string(_i.Mono()) + ";";
+        data += std::to_string(_i.Pan()) + ";";
+        data += std::to_string(_i.Volume()) + ";";
+        for (auto& i : _i.Connections())
+            data += std::to_string(i->ID()) + ",";
         data += "\n";
     }
 
@@ -425,14 +424,14 @@ void Controller::LoadRouting()
                 
                 // Find the OutputChannelPanel belonging to that id and connect them
                 auto _it = std::find_if(_out.begin(), _out.end(), [&_link](ChannelPanel* obj)
-                    { return !obj->IsInput() && obj->ChannelGroup()->ID() == _link; }
+                    { return !obj->IsInput() && obj->ChannelGroup().ID() == _link; }
                 );
 
                 if (_it != _out.end())
                 {
-                    LOG(_c.ChannelGroup()->ID() << " routed to: " << _link);
+                    LOG(_c.ChannelGroup().ID() << " routed to: " << _link);
                     auto _index = std::distance(_out.begin(), _it);
-                    _c.ChannelGroup()->Connect(_out[_index]->ChannelGroup());
+                    _c.ChannelGroup().Connect(&_out[_index]->ChannelGroup());
                 }
             }
         }
