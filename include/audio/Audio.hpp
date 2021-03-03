@@ -364,9 +364,7 @@ public:
 		if (m_Group != nullptr && m_Group->Lock())
 		{
 			float level = (m_Mono ? m_Group->GetMonoLevel() : m_OutLevel);
-
 			level = m_Group->DoEffects(level, m_GroupIndex);
-
 			m_Group->Unlock();
 			return level * m_Volume * m_Pan;
 		}
