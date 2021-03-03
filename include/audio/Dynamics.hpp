@@ -8,7 +8,7 @@
 class Dynamics : public Effect
 {
 public:
-	Dynamics(int channels);
+	Dynamics();
 
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;

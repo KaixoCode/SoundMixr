@@ -10,7 +10,9 @@
 class Effect : public Panel
 {
 public:
-	Effect(int channels, const std::string& name);
+	static inline double sampleRate = 48000;
+
+	Effect(const std::string& name);
 
 	void Render(CommandCollection& d) override;
 
@@ -23,7 +25,6 @@ public:
 	virtual void operator=(const json& json) = 0;
 
 protected:
-	static inline double sampleRate = 480000;
 	int m_Channels = -1;
 	bool m_Hovering = false;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
@@ -49,7 +50,7 @@ public:
 	{
 		int p = m_EffectCount;
 		m_EffectCount = 0;
-		auto& _t = m_Effects.emplace_back(std::make_unique<T>(m_Channels));
+		auto& _t = m_Effects.emplace_back(std::make_unique<T>());
 		_t->Channels(m_Channels);
 		m_EffectCount = p + 1;
 		return *dynamic_cast<T*>(_t.get());;

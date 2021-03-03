@@ -168,6 +168,7 @@ void Controller::Run()
             PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
             m_AsioDevice.OpenStream();
             m_AsioDevice.StartStream();
+            m_List->Clear();
             LoadRouting();
         }, "ASIO Control Panel", Key::CTRL_O);
 

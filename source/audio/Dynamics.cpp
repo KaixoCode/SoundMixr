@@ -4,14 +4,14 @@
 // ------------------------- Dynamics Effect -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-Dynamics::Dynamics(int channels)
+Dynamics::Dynamics()
 	: m_Knob(Emplace<KnobSlider>()),
 	m_Knob2(Emplace<KnobSlider>()),
 	m_Knob3(Emplace<KnobSlider>()),
 	m_Knob4(Emplace<KnobSlider>()),
 	m_Knob5(Emplace<KnobSlider>()),
 	m_Slider(Emplace<DynamicsSlider>()),
-	Effect(channels, "Dynamics")
+	Effect("Dynamics")
 {
 	Height(200);
 	m_Knob.SliderRange({ 24, -24 });

@@ -1,11 +1,12 @@
 #include "audio/Effects.hpp"
 #include "audio/Dynamics.hpp"
+#include "audio/Equalizer.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
 // -------------------------------------------------------------------------- \\
 
-Effect::Effect(int channels, const std::string& name)
+Effect::Effect(const std::string& name)
 	: m_Name(name), m_Channels(0)
 {
 	m_Menu.ButtonSize({ 160, 20 });
@@ -132,6 +133,11 @@ void EffectsGroup::operator=(const json& json)
 		if (type == "Dynamics")
 		{
 			auto& _d = Emplace<Dynamics>();
+			_d = effect;
+		}
+		else if (type == "Equalizer")
+		{
+			auto& _d = Emplace<Equalizer>();
 			_d = effect;
 		}
 	}

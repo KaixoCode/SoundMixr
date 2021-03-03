@@ -2,6 +2,7 @@
 #include "pch.hpp"
 #include "audio/Audio.hpp"
 #include "audio/Dynamics.hpp"
+#include "audio/Equalizer.hpp"
 
 // -------------------------------------------------------------------------- \\
 // --------------------------- Effect Panel --------------------------------- \\

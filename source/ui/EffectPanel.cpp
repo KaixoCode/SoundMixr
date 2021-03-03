@@ -62,7 +62,11 @@ EffectScrollPanel::EffectScrollPanel()
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
 		{
 			m_EffectPanel.AddEffect<Dynamics>();
-		}, " + Dynamics");
+		}, "+ Dynamics");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
+		{
+			m_EffectPanel.AddEffect<Equalizer>();
+		}, "+ Equalizer");
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		if (e.button == Event::MouseButton::RIGHT && !(m_EffectPanel.EffectsGroup() && m_EffectPanel.EffectsGroup()->Hovering()))
