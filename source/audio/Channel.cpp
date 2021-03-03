@@ -221,7 +221,7 @@ void OutputChannel::CalcLevel()
 {
 	if (m_Group != nullptr && m_Group->Lock())
 	{
-		m_OutLevel = m_Muted ? 0 : m_Group->GetLevel(m_GroupIndex);
+		m_OutLevel = m_Level = m_Muted ? 0 : m_Group->GetLevel(m_GroupIndex);
 		m_Group->Unlock();
 		return;
 	}
@@ -232,7 +232,7 @@ void OutputChannel::CalcLevel()
 
 float OutputChannel::Level() const
 {
-	if (m_Group != nullptr && m_Group->Lock())
+	if (!m_Muted && m_Group != nullptr && m_Group->Lock())
 	{
 		float level = (m_Mono ? m_Group->GetMonoLevel() : m_OutLevel);
 		level = m_Group->DoEffects(level, m_GroupIndex);

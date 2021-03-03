@@ -79,9 +79,6 @@ void Controller::Run()
     auto& _titleButton = _p31.Emplace<Button<TitleText, BT::Normal>>([]() {}, "Channels");
     _titleButton.Disable();
     m_List = &_p3.Emplace<ListPanel>(Layout::Hint::Center, m_AsioDevice);
-    auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
-    for (auto& a : m_AsioDevice.SoundboardChannels())
-        _soundboardChannel.AddChannel(&a);
 
     //
     // Frame menu
@@ -135,11 +132,6 @@ void Controller::Run()
 
                 // Clear the channels from the ListPanel
                 m_List->Clear();
-                
-                auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
-                for (auto& a : m_AsioDevice.SoundboardChannels())
-                    _soundboardChannel.AddChannel(&a);
-
                 m_AsioDevice.Device(_d);
                 m_AsioDevice.OpenStream();
                 m_AsioDevice.StartStream();
@@ -337,6 +329,10 @@ void Controller::LoadRouting()
         json _json;
         _in >> _json;
 
+        auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+        for (auto& a : m_AsioDevice.SoundboardChannels())
+            _soundboardChannel.AddChannel(&a);
+
         // First load all the output channels
         auto _outputs = _json["output_channels"];
         for (auto& i : _outputs)
@@ -393,6 +389,10 @@ void Controller::LoadRouting()
     catch (json::parse_error err)
     {
         m_List->Clear();
+
+        auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+        for (auto& a : m_AsioDevice.SoundboardChannels())
+            _soundboardChannel.AddChannel(&a);
 
         int i = 0;
         for (i = 0; i < m_AsioDevice.Device().info.maxInputChannels - 1; i += 2)

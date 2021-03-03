@@ -617,7 +617,7 @@ namespace SoundMixrGraphics
 			int _padding = 20;
 			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Active() ? Theme<C::ButtonS>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
 			Color _c2 = Theme<C::Text>::Get() *(Graphics::WindowFocused() ? 1.0f : 0.8f);
-			Color _c3 = Theme<C::TextSmall>::Get() *(Graphics::WindowFocused() ? 1.0f : 0.8f);
+			Color _c3 = Theme<C::TextOff>::Get() *(Graphics::WindowFocused() ? 1.0f : 0.8f);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
@@ -644,7 +644,7 @@ namespace SoundMixrGraphics
 			int _padding = 20;
 			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
 			Color _c2 = Theme<C::Text>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
-			Color _c3 = Theme<C::TextSmall>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
+			Color _c3 = Theme<C::TextOff>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
@@ -671,7 +671,7 @@ namespace SoundMixrGraphics
 			int _padding = 20;
 			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
 			Color _c2 = Theme<C::Text>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
-			Color _c3 = Theme<C::TextSmall>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
+			Color _c3 = Theme<C::TextOff>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
