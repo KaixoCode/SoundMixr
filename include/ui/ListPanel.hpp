@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.hpp"
 #include "ui/ChannelPanel.hpp"
+#include "ui/EffectPanel.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- List Panel ---------------------------------- \\
@@ -42,12 +43,6 @@ public:
 	};
 
 	void Update(const Vec4<int>& s) override;
-	void Render(CommandCollection& d) override
-	{
-		//d.Command<Graphics::FrameBuffer>(1234, true, Vec4<int>{Position(), Size() + Vec2<int>{ 10, 10 }});
-		//d.Command<Graphics::FrameBufferEnd>();
-		ScrollPanel::Render(d);
-	}
 
 	void ShowEffectsPanel(EffectsGroup& effects)
 	{

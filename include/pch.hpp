@@ -18,3 +18,7 @@
 #include "pa_asio.h"
 
 #include <AudioFile.h>
+
+#define db2lin(db) std::powf(10.0f, 0.05 * (db))
+#define lin2db(lin) (20.0f * std::log10f(lin))
+#define myabs(f) if (f < 0) f = -f;

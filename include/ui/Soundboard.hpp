@@ -13,11 +13,13 @@ public:
 	void LoadFile(const std::string& path) { m_Filepath = path; }
 	void PlayFile()
 	{
-		if (m_File.getNumSamplesPerChannel() > 0) {
+		if (m_File.getNumSamplesPerChannel() > 0) 
+		{
 			// A file is already loaded, play it
 			m_SampleNum = 0;
 		}
-		else {
+		else 
+		{
 			// Load a file
 			OPENFILENAME ofn;
 			char fileName[MAX_PATH] = "";

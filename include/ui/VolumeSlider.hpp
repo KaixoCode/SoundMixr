@@ -48,7 +48,6 @@ private:
 	const double HIGHEST = 1.412536;
 
 	std::string m_ValueText = "";
-
 };
 
 using VolumeSlider = VolumeSliderG<VolumeSliderGraphics>;
