@@ -1,18 +1,20 @@
 #pragma once
 #include "audio/Effects.hpp"
 
+enum class FilterType
+{
+	LowPass, HighPass, BandPass, Notch, AllPass, PeakingEQ, LowShelf, HighShelf
+};
+
 class BiquadParameters
 {
 public:
-	enum class Type
-	{
-		LowPass, HighPass, BandPass, Notch, AllPass, PeakingEQ, LowShelf, HighShelf
-	};
+
 
 	// Parameters
 	union { double Q, BW, S = 1; };
 	double f0 = 400, dbgain = 0;
-	Type type = Type::LowPass;
+	FilterType type = FilterType::LowPass;
 
 	void RecalculateParameters()
 	{
@@ -20,46 +22,46 @@ public:
 		cosw0 = std::cos(w0), sinw0 = std::sin(w0);
 
 		switch (type) {
-		case Type::LowPass:
+		case FilterType::LowPass:
 		{
 			alpha = sinw0 / (2.0 * Q);
 			//alpha = sinw0 * std::sinh((log2 / 2.0) * BW * (w0 / sinw0));
 			b0 = (1.0 - cosw0) / 2.0, b1 = 1.0 - cosw0, b2 = b0;
 			a0 = 1.0 + alpha, a1 = -2.0 * alpha, a2 = 1.0 - alpha;
 		} break;
-		case Type::HighPass:
+		case FilterType::HighPass:
 		{
 			alpha = sinw0 / (2.0 * Q);
 			alpha = sinw0 * std::sinh((log2 / 2.0) * BW * (w0 / sinw0));
 			b0 = (1.0 + cosw0) / 2.0, b1 = -(1.0 + cosw0), b2 = b0;
 			a0 = 1.0 + alpha, a1 = -2.0 * cosw0, a2 = 1.0 - alpha;
 		} break;
-		case Type::BandPass:
+		case FilterType::BandPass:
 		{
 			alpha = sinw0 * std::sinh((log2 / 2.0) * BW * (w0 / sinw0));
 			b0 = sinw0 / 2.0, b1 = 0.0, b2 = -b0;
 			a0 = 1.0 + alpha, a1 = -2.0 * cosw0, a2 = 1.0 - alpha;
 		} break;
-		case Type::Notch:
+		case FilterType::Notch:
 		{
 			alpha = sinw0 * std::sinh((log2 / 2.0) * BW * (w0 / sinw0));
 			b0 = 1, b1 = -2.0 * cosw0, b2 = 1.0;
 			a0 = 1.0 + alpha, a1 = -2.0 * cosw0, a2 = 1.0 - alpha;
 		} break;
-		case Type::AllPass:
+		case FilterType::AllPass:
 		{
 			alpha = sinw0 / (2.0 * Q);
 			b0 = 1.0 - alpha, b1 = -2.0 * cosw0, b2 = 1.0 + alpha;
 			a0 = 1.0 + alpha, a1 = -2.0 * cosw0, a2 = 1.0 - alpha;
 		} break;
-		case Type::PeakingEQ:
+		case FilterType::PeakingEQ:
 		{
 			A = std::pow(10, dbgain / 40.0);
 			alpha = sinw0 * std::sinh((log2 / 2.0) * BW * (w0 / sinw0));
 			b0 = 1.0 + alpha * A, b1 = -2.0 * cosw0, b2 = 1.0 - alpha * A;
 			a0 = 1.0 + alpha / A, a1 = -2.0 * cosw0, a2 = 1.0 - alpha / A;
 		} break;
-		case Type::LowShelf:
+		case FilterType::LowShelf:
 		{
 			A = std::pow(10, dbgain / 40.0);
 			double t = std::max((A + 1.0 / A) * (1.0 / S - 1.0) + 2, 0.0);
@@ -72,7 +74,7 @@ public:
 			a1 = -2.0 * ((A - 1.0) + (A + 1.0) * cosw0);
 			a2 = (A + 1.0) + (A - 1.0) * cosw0 - 2.0 * sqrtAa;
 		} break;
-		case Type::HighShelf:
+		case FilterType::HighShelf:
 		{
 			A = std::pow(10, dbgain / 40.0);
 			alpha = (sinw0 / 2.0) * std::sqrt((A + 1.0 / A) * (1.0 / S - 1.0) + 2);
@@ -99,18 +101,20 @@ public:
 	double w0 = 0, cosw0 = 0, sinw0 = 0, A = 0, alpha = 0;
 };
 
-class Filter
+class BiquadFilter
 {
 public:
+	using Param = BiquadParameters;
+
 	float Apply(float s, BiquadParameters& p)
 	{
 		x[0] = s;
 		y[0] = constrain(p.b0a0 * x[0] + p.b1a0 * x[1] + p.b2a0 * x[2] - p.a1a0 * y[1] - p.a2a0 * y[2], -2, 2);
 
-		for (int i = 0; i < sizeof(y) / sizeof(double) - 1; i++)
+		for (int i = sizeof(y) / sizeof(double) - 2; i >= 0; i--)
 			y[i + 1] = y[i];
 
-		for (int i = 0; i < sizeof(x) / sizeof(double) - 1; i++)
+		for (int i = sizeof(x) / sizeof(double) - 2; i >= 0; i--)
 			x[i + 1] = x[i];
 
 		return y[0];
@@ -120,26 +124,107 @@ private:
 	double y[3]{ 1, 1, 1 }, x[3]{ 0, 0, 0 };
 };
 
-template<size_t T>
+template<size_t M>
+class KaiserBesselParameters
+{
+public:
+	void RecalculateParameters()
+	{
+		// Calculate the impulse response
+		A[0] = 2 * (Fb - Fa) / Effect::sampleRate;
+		int _np = (M - 1) / 2;
+		for (int j = 1; j <= _np; j++)
+			A[j] = (std::sin(2.0 * j * M_PI * Fb / Effect::sampleRate) - std::sin(2.0 * j * M_PI * Fa / Effect::sampleRate)) / (j * M_PI);
+
+		// Calculate alpha
+		double _alpha;
+		if (attenuation < 21)
+			_alpha = 0;
+
+		else if (attenuation > 50)
+			_alpha = 0.1102 * (attenuation - 8.7);
+
+		else
+			_alpha = 0.5842 * std::pow((attenuation - 21), 0.4) + 0.07886 * (attenuation - 21);
+
+		// Window the ideal response with the Kaiser-Bessel window
+		double _i0alpha = I0(_alpha);
+		for (int j = 0; j <= _np; j++)
+			H[_np + j] = A[j] * I0(_alpha * std::sqrt(1.0 - ((double)j * (double)j / (_np * _np)))) / _i0alpha;
+
+		// It is mirrored so other half is same
+		for (int j = 0; j < _np; j++)
+			H[j] = H[M - 1 - j];
+	}
+
+	// This function calculates the zeroth order Bessel function
+	double I0(double x)
+	{
+		double d = 0, ds = 1, s = 1;
+		do
+		{
+			d += 2;
+			ds *= x * x / (d * d);
+			s += ds;
+		} while (ds > s * 1e-6);
+		return s;
+	}
+
+	double Fa = 0, Fb = 7200;	// Frequencies a and b
+	double attenuation = 48;	// Attenuation
+	double H[M];				// Kaiser-Bessel window
+	double A[M];				// Ideal impulse response
+};
+
+template<size_t M>
+class KaiserBesselFilter
+{
+public:
+	using Param = KaiserBesselParameters<M>;
+
+	KaiserBesselFilter()
+	{
+		std::fill(std::begin(x), std::end(x), 0);
+	}
+
+	float Apply(float s, Param& p)
+	{
+		x[0] = s;
+		
+		double y = 0;
+		for (int i = 0; i < M; i++)
+			y += p.H[i] * x[i];
+
+		for (int i = sizeof(x) / sizeof(double) - 2; i >= 0; i--)
+			x[i + 1] = x[i];
+
+		return y;
+	}
+
+private:
+	double x[M];
+};
+
+template<size_t COUNT, typename Filter, typename Params = Filter::Param>
 class ChannelEqualizer
 {
 public:
-	ChannelEqualizer(BiquadParameters(&a)[T])
+	ChannelEqualizer(Params(&a)[COUNT])
 		: m_Params(a), m_Filters()
 	{}
 
 	float Apply(float s)
 	{
-		//return m_Filters[0].Apply(s, m_Params[0]);
+		return m_Filters[0].Apply(s, m_Params[0]);
 		
-		for (int i = 0; i < T; i++)
+		for (int i = 0; i < COUNT; i++)
 			s = m_Filters[i].Apply(s, m_Params[i]);
 
 		return s;
 	}
 
-	BiquadParameters (&m_Params)[T];
-	Filter m_Filters[T];
+	Params(&m_Params)[COUNT];
+	Filter m_Filters[COUNT];
 };
 
 // -------------------------------------------------------------------------- \\
@@ -279,15 +364,21 @@ public:
 
 	void UpdateParams()
 	{
-		m_Parameters[0].Q = (1.0 - m_Knob13.SliderValue()) * 5.9 + 0.10;
-		m_Parameters[1].Q = (1.0 - m_Knob23.SliderValue()) * 5.9 + 0.10;
-		m_Parameters[2].Q = (1.0 - m_Knob33.SliderValue()) * 5.9 + 0.10;
-		m_Parameters[0].dbgain = (1.0 - m_Knob12.SliderValue()) * 48 - 24;
-		m_Parameters[1].dbgain = (1.0 - m_Knob22.SliderValue()) * 48 - 24;
-		m_Parameters[2].dbgain = (1.0 - m_Knob32.SliderValue()) * 48 - 24;
-		m_Parameters[0].f0 = (1.0 - m_Knob11.SliderValue()) * 19990 + 10;
-		m_Parameters[1].f0 = (1.0 - m_Knob21.SliderValue()) * 19990 + 10;
-		m_Parameters[2].f0 = (1.0 - m_Knob31.SliderValue()) * 19990 + 10;
+		//m_Parameters[0].Q = (1.0 - m_Knob13.SliderValue()) * 5.9 + 0.10;
+		//m_Parameters[1].Q = (1.0 - m_Knob23.SliderValue()) * 5.9 + 0.10;
+		//m_Parameters[2].Q = (1.0 - m_Knob33.SliderValue()) * 5.9 + 0.10;
+		//m_Parameters[0].dbgain = (1.0 - m_Knob12.SliderValue()) * 48 - 24;
+		//m_Parameters[1].dbgain = (1.0 - m_Knob22.SliderValue()) * 48 - 24;
+		//m_Parameters[2].dbgain = (1.0 - m_Knob32.SliderValue()) * 48 - 24;
+		//m_Parameters[0].f0 = (1.0 - m_Knob11.SliderValue()) * 19990 + 10;
+		//m_Parameters[1].f0 = (1.0 - m_Knob21.SliderValue()) * 19990 + 10;
+		//m_Parameters[2].f0 = (1.0 - m_Knob31.SliderValue()) * 19990 + 10;
+		m_Parameters[0].attenuation = (1.0 - m_Knob12.SliderValue()) * 48 + 21;
+		m_Parameters[1].attenuation = (1.0 - m_Knob22.SliderValue()) * 48 + 21;
+		m_Parameters[2].attenuation = (1.0 - m_Knob32.SliderValue()) * 48 + 21;
+		m_Parameters[0].Fb = (1.0 - m_Knob11.SliderValue()) * 19990 + 10;
+		m_Parameters[1].Fb = (1.0 - m_Knob21.SliderValue()) * 19990 + 10;
+		m_Parameters[2].Fb = (1.0 - m_Knob31.SliderValue()) * 19990 + 10;
 		m_Parameters[0].RecalculateParameters();
 		m_Parameters[1].RecalculateParameters();
 		m_Parameters[2].RecalculateParameters();
@@ -318,6 +409,6 @@ private:
 		& m_Knob21, & m_Knob22, & m_Knob23,
 		& m_Knob31, & m_Knob32, & m_Knob33;
 
-	BiquadParameters m_Parameters[3];
-	std::vector<ChannelEqualizer<3>> m_Equalizers;
+	KaiserBesselParameters<107> m_Parameters[3];
+	std::vector<ChannelEqualizer<3, KaiserBesselFilter<107>>> m_Equalizers;
 };
