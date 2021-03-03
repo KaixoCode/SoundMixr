@@ -211,9 +211,9 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{  44,  61,  77, 255 }, // Channel,
 		Color{  50,  69,  86, 255 }, // ChannelSelected,
 									 // 
-		Color{ 126, 157, 181, 255 }, // Text,
-		Color{ 111, 140, 160, 255 }, // TextOff,
-		Color{ 111, 140, 160, 255 }, // TextSmall,
+		Color{ 190, 206, 218, 255 }, // Text,
+		Color{ 126, 157, 181, 255 }, // TextOff,
+		Color{ 158, 181, 199, 255 }, // TextSmall,
 									 // 
 		Color{  44,  61,  77, 255 }, // Divider,
 									 // 
@@ -257,9 +257,9 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{  50,  69,  86, 255 }, // KnobSliderB,
 		Color{  99, 125, 142, 255 }, // KnobSliderV,
 									 // 
-		Color{  40,  57,  71, 255 }, // Dynamics,
-		Color{  200, 230, 255, 20 }, // DynamicsB,
-		Color{  200, 230, 255, 20 }, // DynamicsL,
+		Color{   18,  32,  41, 255 }, // Dynamics,
+		Color{  200, 230, 255, 50 }, // DynamicsB,
+		Color{  200, 230, 255, 100 }, // DynamicsL,
 									 // 
 	},
 	// RED

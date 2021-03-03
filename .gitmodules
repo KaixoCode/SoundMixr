@@ -7,3 +7,6 @@
 [submodule "libs/AudioFile"]
 	path = libs/AudioFile
 	url = https://github.com/adamstark/AudioFile.git
+[submodule "libs/json"]
+	path = libs/json
+	url = https://github.com/nlohmann/json.git

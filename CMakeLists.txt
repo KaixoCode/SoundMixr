@@ -17,6 +17,7 @@ include_directories(
   libs/GuiCode/libs
   libs/portaudio/include
   libs/AudioFile
+  libs/json/include
   include/
 )
 
@@ -33,6 +34,7 @@ target_precompile_headers(SoundMixr PUBLIC
 target_link_libraries(SoundMixr
   GuiCode
   portaudio
+  json
 )
 
 add_definitions(-DABSOLUTE_ASSETS_PATH=\"${SRCGUI}assets/\")

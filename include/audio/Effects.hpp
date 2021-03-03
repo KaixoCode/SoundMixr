@@ -20,6 +20,7 @@ public:
 	bool Hovering() { return m_Hovering; }
 
 protected:
+	static inline double sampleRate = 480000;
 	int m_Channels = -1;
 	bool m_Hovering = false;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;

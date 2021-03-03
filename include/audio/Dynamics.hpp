@@ -13,9 +13,15 @@ public:
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;
 
+	float Coeficient(float ms) { return std::exp(-1.0 / ((ms / 1000.0) * sampleRate)); }
+
 	void Channels(int c) override;
 
+	float NextSample(float sin, int c) override;
+
 private:
+	static inline const double DC_OFFSET = 1.0E-25;
+
 	static inline std::string
 		m_Knob1Name = "PreGain",
 		m_Knob2Name = "Attack",
@@ -35,9 +41,6 @@ private:
 	std::vector<float> m_Levels;
 	std::vector<float> m_Peaks;
 
-public:
-	static inline const double DC_OFFSET = 1.0E-25;
-
 	double expanderThreshhold = -50;
 	double compressThreshhold = -40;
 	double expanderRatio = 8.0 / 1.0;
@@ -45,8 +48,6 @@ public:
 
 	double expanderEnv = DC_OFFSET;
 	double compressEnv = DC_OFFSET;
-
-	double sampleRate = 480000;
 	double attms = 1;
 	double relms = 100;
 	double attcoef = std::exp(-1.0 / ((attms / 1000.0) * sampleRate));
@@ -62,6 +63,4 @@ public:
 	int counter = 0;
 	double biggest = 0.0;
 	double r = 0.9;
-
-	float NextSample(float sin, int c) override;
 };
