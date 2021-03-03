@@ -34,7 +34,6 @@ target_precompile_headers(SoundMixr PUBLIC
 target_link_libraries(SoundMixr
   GuiCode
   portaudio
-  json
 )
 
 add_definitions(-DABSOLUTE_ASSETS_PATH=\"${SRCGUI}assets/\")

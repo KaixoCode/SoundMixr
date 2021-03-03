@@ -35,7 +35,7 @@ ChannelGroup::~ChannelGroup()
 	m_Mutex.unlock();
 }
 
-void  ChannelGroup::Pan(float p)
+void ChannelGroup::Pan(float p)
 {
 	m_Pan = p;
 	int _index = 0;

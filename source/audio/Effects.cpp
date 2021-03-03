@@ -1,4 +1,5 @@
 #include "audio/Effects.hpp"
+#include "audio/Dynamics.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
@@ -113,6 +114,27 @@ EffectsGroup::EffectsGroup()
 		if (e.type == Event::Type::MouseReleased)
 			this->Determine(e);
 	};
+}
+
+EffectsGroup::operator json()
+{
+	json _json = json::array();
+	for (auto& i : m_Effects)
+		_json.push_back(*i);
+	return _json;
+}
+
+void EffectsGroup::operator=(const json& json)
+{
+	for (auto effect : json)
+	{
+		auto& type = effect["type"].get<std::string>();
+		if (type == "Dynamics")
+		{
+			auto& _d = Emplace<Dynamics>();
+			_d = effect;
+		}
+	}
 }
 
 float EffectsGroup::NextSample(float a, int ch)

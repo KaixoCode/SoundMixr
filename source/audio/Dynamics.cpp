@@ -48,17 +48,7 @@ Dynamics::Dynamics(int channels)
 	m_Knob5.Unit(" %");
 	m_Knob5.Size({ 30, 30 });
 
-	compressRatio = m_Slider.ratio1 >= 0 ? m_Slider.ratio1 / 32.0 + 1 : (-1.0 / (m_Slider.ratio1 - 1.0));
-	expanderRatio = m_Slider.ratio2 >= 0 ? m_Slider.ratio2 + 1 : (-1.0 / (m_Slider.ratio2 / 8.0 - 1.0));
-	compressThreshhold = m_Slider.threshhold1;
-	expanderThreshhold = m_Slider.threshhold2;
-	attms = 30 - m_Knob2.SliderValue() * 29.9;;
-	attcoef = std::exp(-1.0 / ((attms / 1000.0) * sampleRate));
-	relms = 300 - m_Knob3.SliderValue() * 299;
-	relcoef = std::exp(-1.0 / ((relms / 1000.0) * sampleRate));
-	pregain = db2lin(-m_Knob.SliderValue() * 48 + 24);
-	postgain = db2lin(-m_Knob4.SliderValue() * 48 + 24);
-	mix = 1.0 - m_Knob5.SliderValue();
+	UpdateParams();
 
 	Background(Theme<C::Channel>::Get());
 }
@@ -74,27 +64,7 @@ void Dynamics::Update(const Vec4<int>& v)
 	m_Slider.Size({ (Width() - 24), Height() - 123 });
 	Background(Theme<C::Channel>::Get());
 	Effect::Update(v);
-
-	compressRatio = m_Slider.ratio1 >= 0 ? m_Slider.ratio1 / 32.0 + 1 : (-1.0 / (m_Slider.ratio1 - 1.0));
-	expanderRatio = m_Slider.ratio2 >= 0 ? m_Slider.ratio2 + 1 : (-1.0 / (m_Slider.ratio2 / 8.0 - 1.0));
-	compressThreshhold = m_Slider.threshhold1;
-	expanderThreshhold = m_Slider.threshhold2;
-	double newval = 30 - m_Knob2.SliderValue() * 29.9;
-	if (newval != attms)
-	{
-		attms = newval;
-		attcoef = std::exp(-1.0 / ((attms / 1000.0) * sampleRate));
-	}
-	newval = 300 - m_Knob3.SliderValue() * 299;
-	if (newval != relms)
-	{
-		relms = newval;
-		relcoef = std::exp(-1.0 / ((relms / 1000.0) * sampleRate));
-	}
-
-	pregain = db2lin(-m_Knob.SliderValue() * 48 + 24);
-	postgain = db2lin(-m_Knob4.SliderValue() * 48 + 24);
-	mix = 1.0 - m_Knob5.SliderValue();
+	UpdateParams();
 }
 
 void Dynamics::Render(CommandCollection& d)

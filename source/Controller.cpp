@@ -189,6 +189,12 @@ void Controller::Run()
             mainWindow.Aero(a);
         }, "Windows Aero Effect", Key::CTRL_T);
 
+
+    _file.Emplace<MenuButton>([&]
+        {
+            SaveRouting();
+        }, "Save Routing", Key::CTRL_S);
+
     //
     // Themes
     //
@@ -277,7 +283,9 @@ void Controller::SaveRouting()
         return;
 
     LOG("Saving Routing");
-    std::string data;
+
+    json _json;
+    _json["input_channels"] = json::array();
 
     // Inputs
     for (auto& _ch : m_List->Channels())
@@ -285,16 +293,10 @@ void Controller::SaveRouting()
         if (!_ch->IsInput() || _ch->IsSpecial())
             continue;
 
-        auto& _i = _ch->ChannelGroup();
-        data += "out:";
-        for (auto& _a : _i.Channels())
-            data += std::to_string(_a->ID()) + ",";
-        data += ";";
-        data += std::to_string(_i.Muted()) + ";";
-        data += std::to_string(_i.Mono()) + ";";
-        data += std::to_string(_i.Pan()) + ";";
-        data += std::to_string(_i.Volume()) + "\n";
+        _json["input_channels"].push_back(*_ch);
     }
+
+    _json["output_channels"] = json::array();
 
     // Outputs
     for (auto& _ch : m_List->Channels())
@@ -302,23 +304,12 @@ void Controller::SaveRouting()
         if (_ch->IsInput() || _ch->IsSpecial())
             continue;
 
-        auto& _i = _ch->ChannelGroup();
-        data += "in:";
-        for (auto& _a : _i.Channels())
-            data += std::to_string(_a->ID()) + ",";
-        data += ";";
-        data += std::to_string(_i.Muted()) + ";";
-        data += std::to_string(_i.Mono()) + ";";
-        data += std::to_string(_i.Pan()) + ";";
-        data += std::to_string(_i.Volume()) + ";";
-        for (auto& i : _i.Connections())
-            data += std::to_string(i->ID()) + ",";
-        data += "\n";
+        _json["output_channels"].push_back(*_ch);
     }
 
     std::ofstream _out;
-    _out.open("./settings/routing" + std::to_string(m_AsioDevice.Device().id));
-    _out << data;
+    _out.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
+    _out << std::setw(4) << _json;
     _out.close();
 }
 
@@ -339,135 +330,77 @@ void Controller::LoadRouting()
     // Open the routing file for the current device.
     LOG("Loading Routing");
     std::ifstream _in;
-    _in.open("./settings/routing" + std::to_string(m_AsioDevice.Device().id));
-    std::string _line;
+    _in.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
 
-    // Get all lines in the file
-    int _linesLoaded = 0;
-    while (std::getline(_in, _line))
+    try 
     {
-        _linesLoaded++;
-        size_t p = _line.find_first_of(":") + 1;
-        std::string _type = _line.substr(0, p - 1);
-        std::string _rest = _line.substr(p);
+        json _json;
+        _in >> _json;
 
-        // First in line are all ids
-        p = _rest.find_first_of(";");
-        std::string _idsS = _rest.substr(0, p);
-        _rest = _rest.substr(p + 1);
-        std::vector<int> _ids;
-        while ((p = _idsS.find_first_of(",")) != -1)
+        // First load all the output channels
+        auto _outputs = _json["output_channels"];
+        for (auto& i : _outputs)
         {
-            std::string _idS = _idsS.substr(0, p);
-            int _id = std::atoi(_idS.c_str());
-            _idsS = _idsS.substr(p + 1);
-            _ids.push_back(_id);
-        }
-
-        // Muted
-        p = _rest.find_first_of(";");
-        std::string _mutedS = _rest.substr(0, p);
-        bool _muted = std::atoi(_mutedS.c_str());
-        _rest = _rest.substr(p + 1);
-
-        // Mono
-        p = _rest.find_first_of(";");
-        std::string _monoS = _rest.substr(0, p);
-        bool _mono = std::atoi(_monoS.c_str());
-        _rest = _rest.substr(p + 1);
-
-        // Pan
-        p = _rest.find_first_of(";");
-        std::string _panS = _rest.substr(0, p);
-        float _pan = std::atof(_panS.c_str());
-        _rest = _rest.substr(p + 1);
-
-        // Volume
-        p = _rest.find_first_of(";");
-        std::string _volumeS = _rest.substr(0, p);
-        float _volume = std::atof(_volumeS.c_str());
-        _rest = _rest.substr(p + 1);
-
-        // Debug
-        LOG("LOADING FROM FILE: \nids:");
-        for (int i : _ids)
-            LOG(i);
-        LOG("muted: " << _muted);
-        LOG("mono: " << _mono);
-        LOG("pan: " << _pan);
-        LOG("volume: " << _volume);
-
-        if (_type == "in")
-        {
-            // Add a ChannelPanel with all the inputs
-            auto& _c = m_List->EmplaceChannel(true);
-            for (int i : _ids)
-            {
-                _inputIdsLoaded[i] = true;
-                _c.AddChannel(&m_AsioDevice.Inputs()[i]);
-            }
-
-            // Set all parameters of this Channel
-            _c.mono.Active(_mono);
-            _c.muted.Active(_muted);
-            _c.pan.SliderValue(_pan);
-            _c.volume.SliderValue(_volume);
-
-            // Load the routing for this panel
-            auto& _out = m_List->Channels();
-            while ((p = _rest.find_first_of(",")) != -1)
-            {
-                // Find the next id in the file
-                std::string _linkS = _rest.substr(0, p);
-                int _link = std::atoi(_linkS.c_str());
-                _rest = _rest.substr(p + 1);
-                
-                // Find the OutputChannelPanel belonging to that id and connect them
-                auto _it = std::find_if(_out.begin(), _out.end(), [&_link](ChannelPanel* obj)
-                    { return !obj->IsInput() && obj->ChannelGroup().ID() == _link; }
-                );
-
-                if (_it != _out.end())
-                {
-                    LOG(_c.ChannelGroup().ID() << " routed to: " << _link);
-                    auto _index = std::distance(_out.begin(), _it);
-                    _c.ChannelGroup().Connect(&_out[_index]->ChannelGroup());
-                }
-            }
-        }
-        else
-        {
-            // Add ChannelPanel with all the outputs
+            // Emplace a channelgroup to the list
             auto& _c = m_List->EmplaceChannel(false);
-            for (int i : _ids)
+           
+            // Add all channels that are in this channelgroup
+            json _channels = i["channels"];
+            for (int i : _channels)
             {
                 _outputIdsLoaded[i] = true;
                 _c.AddChannel(&m_AsioDevice.Outputs()[i]);
             }
 
-            // Set the parameters
-            _c.mono.Active(_mono);
-            _c.muted.Active(_muted);
-            _c.pan.SliderValue(_pan);
-            _c.volume.SliderValue(_volume);
-        }    
+            // Set the rest of the parameters
+            _c = i;
+        }
+
+        // Load all the input channels
+        auto _inputs = _json["input_channels"];
+        for (auto& i : _inputs)
+        {
+            // Emplace a channelgroup to the list
+            auto& _c = m_List->EmplaceChannel(true);
+
+            // Add all channels that are in this channelgroup
+            json _channels = i["channels"];
+            for (int i : _channels)
+            {
+                _inputIdsLoaded[i] = true;
+                _c.AddChannel(&m_AsioDevice.Inputs()[i]);
+            }
+
+            // Then add all the connections of this channelgroup
+            json _connections = i["connections"];
+            for (int i : _connections)
+            {
+                // Find the output channelgroup by id.
+                auto& _it = std::find_if(m_List->Channels().begin(), m_List->Channels().end(),
+                    [=](ChannelPanel* c) { return !c->IsInput() && c->ChannelGroup().ID() == i; }
+                );
+                
+                // If it exists, connect with it.
+                if (_it != m_List->Channels().end())
+                    _c.ChannelGroup().Connect(&(*_it)->ChannelGroup());
+            }
+
+            _c = i;
+        }
     }
-
-    // Close the file!! important!!
-    _in.close();
-
-    // If no lines were read from the file (either file didn't exist 
-    // or was empty) load all the channels as stereo channels.
-    LOG(_linesLoaded);
-    if (_linesLoaded == 0)
+    // If error occured (either file didn't exist or was parced incorrectly
+    // load all the channels as stereo channels.
+    catch (json::parse_error err)
     {
+        m_List->Clear();
+
         int i = 0;
         for (i = 0; i < m_AsioDevice.Device().info.maxInputChannels - 1; i += 2)
         {
             // Add a ChannelPanel with all the inputs
             auto& _c = m_List->EmplaceChannel(true);
             _c.AddChannel(&m_AsioDevice.Inputs()[i]);
-            _c.AddChannel(&m_AsioDevice.Inputs()[i+1]);
+            _c.AddChannel(&m_AsioDevice.Inputs()[i + 1]);
 
             // Set all parameters of this Channel
             _c.mono.Active(false);
@@ -495,7 +428,7 @@ void Controller::LoadRouting()
             // Add a ChannelPanel with all the outputs
             auto& _c = m_List->EmplaceChannel(false);
             _c.AddChannel(&m_AsioDevice.Outputs()[i]);
-            _c.AddChannel(&m_AsioDevice.Outputs()[i+1]);
+            _c.AddChannel(&m_AsioDevice.Outputs()[i + 1]);
 
             // Set all parameters of this Channel
             _c.mono.Active(false);
@@ -517,30 +450,34 @@ void Controller::LoadRouting()
             _c.pan.SliderValue(0);
             _c.volume.SliderValue(1);
         }
-    }
-    else
-    {
-        // If a couple channels were loaded then just load all the 
-        // channels from the ASIO that weren't loaded from the file
-        // as mono channels.
-        for (auto& i : _inputIdsLoaded)
-        {
-            if (!i.second)
-            {
-                // Add a ChannelPanel with the input
-                auto& _c = m_List->EmplaceChannel(true);
-                _c.AddChannel(&m_AsioDevice.Inputs()[i.first]);
-            }
-        }
 
-        for (auto& i : _outputIdsLoaded)
+        _in.close();// Close the file!! important!!
+        return;
+    }
+
+    _in.close();// Close the file!! important!!
+
+    // If a couple channels were loaded then just load all the 
+    // channels from the ASIO that weren't loaded from the file
+    // as mono channels.
+    for (auto& i : _inputIdsLoaded)
+    {
+        if (!i.second)
         {
-            if (!i.second)
-            {
-                // Add a ChannelPanel with the output
-                auto& _c = m_List->EmplaceChannel(false);
-                _c.AddChannel(&m_AsioDevice.Outputs()[i.first]);
-            }
+            // Add a ChannelPanel with the input
+            auto& _c = m_List->EmplaceChannel(true);
+            _c.AddChannel(&m_AsioDevice.Inputs()[i.first]);
         }
+    }
+
+    for (auto& i : _outputIdsLoaded)
+    {
+        if (!i.second)
+        {
+            // Add a ChannelPanel with the output
+            auto& _c = m_List->EmplaceChannel(false);
+            _c.AddChannel(&m_AsioDevice.Outputs()[i.first]);
+        }
+        
     }
 }

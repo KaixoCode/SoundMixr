@@ -19,6 +19,9 @@ public:
 
 	bool Hovering() { return m_Hovering; }
 
+	virtual operator json() = 0;
+	virtual void operator=(const json& json) = 0;
+
 protected:
 	static inline double sampleRate = 480000;
 	int m_Channels = -1;
@@ -54,6 +57,9 @@ public:
 
 	void Update(const Vec4<int>& viewport) override;
 	void Render(CommandCollection& d) override;
+
+	operator json();
+	void operator=(const json& json);
 
 private:
 	std::vector<std::unique_ptr<Effect>> m_Effects;

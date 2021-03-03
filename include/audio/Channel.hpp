@@ -107,6 +107,44 @@ public:
 	float GetLevel(int id);
 	float GetMonoLevel();
 
+	operator json()
+	{
+		json _json = json::object();
+		_json["id"] = ID();
+		_json["volume"] = Volume();
+		_json["muted"] = Muted();
+		_json["mono"] = Mono();
+		_json["pan"] = Pan();
+		
+		if (IsInput())
+		{
+			std::vector<int> _connections{};
+			for (auto& i : m_Connected)
+				_connections.push_back(i->ID());
+
+			_json["connections"] = _connections;
+		}
+
+		std::vector<int> _channels{};
+		for (auto& i : m_Channels)
+			_channels.push_back(i->ID());
+
+		_json["channels"] = _channels;
+		
+		_json["effects"] = m_EffectsGroup;
+		return _json;
+	}
+
+	void operator=(const json& json)
+	{
+		LOG(ChannelAmount());
+		Mono(json["mono"].get<bool>());
+		Mute(json["muted"].get<bool>());
+		Pan(json["pan"].get<double>());
+		Volume(json["volume"].get<double>());
+		m_EffectsGroup = json["effects"];
+	}
+
 private:
 	float m_Pan = 0,
 		m_MonoLevel = 0,

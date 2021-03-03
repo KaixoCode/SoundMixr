@@ -142,6 +142,19 @@ public:
 	bool Hovering() { return m_Hovering; }
 	bool IsSpecial() { return m_IsSpecial; }
 
+	operator json()
+	{
+		json _json = m_ChannelGroup;
+		return _json;
+	}
+
+	void operator=(const json& json)
+	{
+		volume.SliderValue(json["volume"].get<double>());
+		pan.SliderValue(json["pan"].get<double>());
+		m_ChannelGroup = json;
+	}
+
 private:
 	// This private thing is defined here because it needs to be initialized first
 	// in the constructor, so it is defined above all other things that are

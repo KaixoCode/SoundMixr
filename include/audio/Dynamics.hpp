@@ -16,8 +16,70 @@ public:
 	float Coeficient(float ms) { return std::exp(-1.0 / ((ms / 1000.0) * sampleRate)); }
 
 	void Channels(int c) override;
-
 	float NextSample(float sin, int c) override;
+
+	void UpdateParams()
+	{
+		compressRatio = m_Slider.ratio1 >= 0 ? m_Slider.ratio1 / 32.0 + 1 : (-1.0 / (m_Slider.ratio1 - 1.0));
+		expanderRatio = m_Slider.ratio2 >= 0 ? m_Slider.ratio2 + 1 : (-1.0 / (m_Slider.ratio2 / 8.0 - 1.0));
+		compressThreshhold = m_Slider.threshhold1;
+		expanderThreshhold = m_Slider.threshhold2;
+		double newval = 30 - m_Knob2.SliderValue() * 29.9;
+		if (newval != attms)
+		{
+			attms = newval;
+			attcoef = std::exp(-1.0 / ((attms / 1000.0) * sampleRate));
+		}
+		newval = 300 - m_Knob3.SliderValue() * 299;
+		if (newval != relms)
+		{
+			relms = newval;
+			relcoef = std::exp(-1.0 / ((relms / 1000.0) * sampleRate));
+		}
+
+		pregain = db2lin(-m_Knob.SliderValue() * 48 + 24);
+		postgain = db2lin(-m_Knob4.SliderValue() * 48 + 24);
+		mix = 1.0 - m_Knob5.SliderValue();
+	}
+
+	operator json()
+	{
+		json _json = json::object();
+		_json["type"] = "Dynamics";
+		_json["expt"] = m_Slider.threshhold2;
+		_json["comt"] = m_Slider.threshhold1;
+		_json["expr"] = m_Slider.ratio2;
+		_json["comr"] = m_Slider.ratio1;
+		_json["att"] = m_Knob2.SliderValue();
+		_json["ret"] = m_Knob3.SliderValue();
+		_json["prg"] = m_Knob.SliderValue();
+		_json["pog"] = m_Knob4.SliderValue();
+		_json["mix"] = m_Knob5.SliderValue();
+		return _json;
+	}
+
+	void operator=(const json& json)
+	{
+		double p1 = json["expt"].get<double>();
+		double p2 = json["comt"].get<double>();
+		double p3 = json["expr"].get<double>();
+		double p4 = json["comr"].get<double>();
+		double p5 = json["att"].get<double>();
+		double p6 = json["ret"].get<double>();
+		double p7 = json["prg"].get<double>();
+		double p8 = json["pog"].get<double>();
+		double p9 = json["mix"].get<double>();
+		m_Slider.threshhold2 = p1;
+		m_Slider.threshhold1 = p2;
+		m_Slider.ratio2 = p3;
+		m_Slider.ratio1 = p4;
+		m_Knob2.SliderValue(p5);
+		m_Knob3.SliderValue(p6);
+		m_Knob.SliderValue(p7);
+		m_Knob4.SliderValue(p8);
+		m_Knob5.SliderValue(p9);
+		UpdateParams();
+	}
 
 private:
 	static inline const double DC_OFFSET = 1.0E-25;
