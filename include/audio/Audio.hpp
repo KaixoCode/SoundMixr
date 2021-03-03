@@ -39,7 +39,7 @@ public:
 	void TPeak(float v) { m_TPeak = v; }
 	void Mute(bool v) { m_Muted = v; }
 	void Mono(bool v) { m_Mono = v; }
-	void Group(ChannelGroup* p, int index) { m_Group = p; m_GroupIndex = index; }
+	void Group(const std::shared_ptr<::ChannelGroup>& p, int index) { m_Group = p; m_GroupIndex = index; }
 
 	virtual void Level(float l) { m_Level = l; };
 	virtual void CalcLevel() = 0;
@@ -74,15 +74,15 @@ protected:
 		m_Volume = 1;
 
 	std::string m_Name;
-	ChannelGroup* m_Group = nullptr;
+	std::weak_ptr<ChannelGroup> m_Group;
 };
 
-class ChannelGroup
+class ChannelGroup : public std::enable_shared_from_this<ChannelGroup>
 {
 public:
-	~ChannelGroup() { ClearChannels(); }
+	~ChannelGroup() { }
 
-	auto  Connections() -> std::vector<::ChannelGroup*> const { return m_Connected; }
+	auto  Connections() -> std::vector<std::weak_ptr<::ChannelGroup>>& const { return m_Connected; }
 	auto  Channels() -> std::vector<Channel*>& const { return m_Channels; }
 	int   ChannelAmount()                   const { return m_ChannelAmount; }
 	auto  EffectsGroup() -> EffectsGroup&   const { return m_EffectsGroup; }
@@ -112,16 +112,64 @@ public:
 		}
 	}
 
-	void ClearConnections() { for (auto& i : m_Connected) Disconnect(i); }
-	void ClearChannels() { for (auto& i : m_Channels) i->Group(nullptr, -1); }
-	bool Connected(::ChannelGroup* other) const { return std::find(m_Connected.begin(), m_Connected.end(), other) != m_Connected.end() && other != nullptr; }
-	void Connect(::ChannelGroup* other) { if (other != nullptr) other->ConnectDirect(this), ConnectDirect(other); }
-	void ConnectDirect(::ChannelGroup* other) { if (!Connected(other) && other != nullptr) m_Connected.push_back(other); }
-	void Disconnect(::ChannelGroup* other) { if (other != nullptr) other->DisconnectDirect(this), DisconnectDirect(other); }
-	void DisconnectDirect(::ChannelGroup* other)
+	void ClearConnections() { 
+		for (auto& i : m_Connected) 
+			Disconnect(i); 
+	}
+
+	void ClearChannels() { 
+		for (auto& i : m_Channels)
+			i->Group(nullptr, -1);
+	}
+
+	bool Connected(const std::weak_ptr<::ChannelGroup>& other) const
 	{
-		auto& it = std::find(m_Connected.begin(), m_Connected.end(), other);
-		if (it != m_Connected.end() && other != nullptr)
+		auto& it = std::find_if(m_Connected.begin(), m_Connected.end(),
+			[&](const std::weak_ptr<::ChannelGroup>& a)
+			{
+				if (auto c1 = a.lock())
+					if (auto c2 = other.lock())
+						return c1.get() == c2.get();
+				return false;
+			}
+		);
+		return it != m_Connected.end();
+	}
+
+	void Connect(const std::weak_ptr<::ChannelGroup>& other)
+	{ 
+		std::weak_ptr<::ChannelGroup> t = shared_from_this();
+		if (auto c = other.lock())
+			c->ConnectDirect(t), ConnectDirect(other);
+	}
+
+	void ConnectDirect(const std::weak_ptr<::ChannelGroup>& other)
+	{
+		if (auto c = other.lock())
+			if (!Connected(other))
+				m_Connected.push_back(other);
+	}
+
+	void Disconnect(const std::weak_ptr<::ChannelGroup>& other)
+	{
+		std::weak_ptr<::ChannelGroup> t = shared_from_this();
+		if (auto c = other.lock()) 
+			c->DisconnectDirect(t), DisconnectDirect(other);
+	}
+
+	void DisconnectDirect(const std::weak_ptr<::ChannelGroup>& other)
+	{
+		auto& it = std::find_if(m_Connected.begin(), m_Connected.end(), 
+			[&] (const std::weak_ptr<::ChannelGroup>& a)
+			{
+				if (auto c1 = a.lock())
+					if (auto c2 = other.lock())
+						return c1.get() == c2.get();
+				return false;
+			}
+		);
+
+		if (it != m_Connected.end())
 			m_Connected.erase(it);
 	}
 
@@ -143,7 +191,7 @@ public:
 			}
 			m_EffectsGroup.Channels(m_ChannelAmount + 1);
 			m_Channels.push_back(c);
-			c->Group(this, ChannelAmount());
+			c->Group(shared_from_this(), ChannelAmount());
 			c->Mono(Mono()); 
 			c->Mute(Muted());
 			Pan(Pan());
@@ -161,7 +209,7 @@ public:
 			ClearConnections();
 			m_Channels.erase(a);
 			for (int i = 0; i < ChannelAmount(); i++)
-				m_Channels[i]->Group(this, i);
+				m_Channels[i]->Group(shared_from_this(), i);
 			Pan(Pan());
 		}
 
@@ -183,16 +231,21 @@ public:
 		float level = 0;
 
 		int amt = ChannelAmount();
+
 		for (auto& i : m_Connected)
 		{
-			int iamt = i->ChannelAmount();
-			if (i->Mono())
-				level += i->Channels()[id % iamt]->Level();
+			if (auto _group = i.lock())
+			{
+				int iamt = _group->ChannelAmount();
+				if (_group->Mono())
+					level += _group->Channels()[id % iamt]->Level();
 			
-			else
-				for (int j = id; j < iamt; j += amt)
-					level += i->Channels()[j]->Level();
+				else
+					for (int j = id; j < iamt; j += amt)
+						level += _group->Channels()[j]->Level();
+			}
 		}
+		
 		return level;
 	}
 
@@ -226,7 +279,7 @@ private:
 	::EffectsGroup m_EffectsGroup;
 	std::string m_Name = "APPLE";
 	std::vector<Channel*> m_Channels;
-	std::vector<::ChannelGroup*> m_Connected;
+	std::vector<std::weak_ptr<::ChannelGroup>> m_Connected;
 };
 
 class InputChannel : public Channel
@@ -234,27 +287,39 @@ class InputChannel : public Channel
 public:
 	using Channel::Channel;
 
-	void Level(float l) override { Channel::Level(l); if (m_Group) m_Group->NextIter(); }
+	void Level(float l) override 
+	{
+		Channel::Level(l); 
+		if (auto _group = m_Group.lock())
+			_group->NextIter();
+	}
 	float Level() const override { return m_OutLevel; }
 
 	void CalcLevel() override
 	{
-		if (m_Muted)
-			m_OutLevel = 0;
-
-		else if (m_Mono && m_Group != nullptr)
+		if (auto _group = m_Group.lock())
 		{
-			float level = 0;
-			for (auto& i : m_Group->Channels())
-				level += i->UnprocessedLevel();
+			if (m_Muted)
+				m_OutLevel = 0;
 
-			m_OutLevel = (level / m_Group->ChannelAmount());
+			else if (m_Mono)
+			{
+				float _level = 0;
+				for (auto& i : _group->Channels())
+					_level += i->UnprocessedLevel();
+
+				m_OutLevel = (_level / _group->ChannelAmount());
+			}
+			else
+				m_OutLevel = m_Level;
+
+			if (_group != nullptr)
+				m_OutLevel = _group->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
+		
+			return;
 		}
-		else
-			m_OutLevel = m_Level;
 
-		if (m_Group != nullptr)
-			m_OutLevel = m_Group->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
+		m_OutLevel = 0;
 	}
 };
 
@@ -263,15 +328,27 @@ class OutputChannel : public Channel
 public:
 	using Channel::Channel;
 	
-	void  CalcLevel()    override { m_OutLevel = m_Muted || !m_Group ? 0 : m_Group->GetLevel(m_GroupIndex); }
-	float Level()  const override 
+	void  CalcLevel()    override 
 	{ 
-		float level = (m_Mono && m_Group ? m_Group->GetMonoLevel() : m_OutLevel); 
-	
-		if (m_Group)
-			level = m_Group->DoEffects(level, m_GroupIndex);
+		if (auto _group = m_Group.lock())
+		{
+			m_OutLevel = m_Muted ? 0 : _group->GetLevel(m_GroupIndex);
+			return;
+		}
+		m_OutLevel = 0;
+		return;
+	}
+	float Level()  const override 
+	{
+		if (auto _group = m_Group.lock())
+		{
+			float level = (m_Mono ? _group->GetMonoLevel() : m_OutLevel);
 
-		return level * m_Volume * m_Pan;
+			level = _group->DoEffects(level, m_GroupIndex);
+
+			return level * m_Volume * m_Pan;
+		}
+		return 0;
 	}
 };
 

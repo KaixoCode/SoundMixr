@@ -74,7 +74,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 
 						_current.Selected(true);
 						if (m_Effect.Visible())
-							ShowEffectsPanel(_current.ChannelGroup().EffectsGroup());
+							ShowEffectsPanel(_current.ChannelGroup()->EffectsGroup());
 					}
 					s = true;
 				}
@@ -112,7 +112,7 @@ void ListPanel::SortChannels()
 			ChannelPanel* _inb = dynamic_cast<ChannelPanel*>(b.get());
 
 			if (_ina != nullptr && _inb != nullptr)
-				return _ina->ChannelGroup().ID() < _inb->ChannelGroup().ID();
+				return _ina->ChannelGroup()->ID() < _inb->ChannelGroup()->ID();
 
 			return -1;
 		});
@@ -124,7 +124,7 @@ void ListPanel::SortChannels()
 			ChannelPanel* _inb = dynamic_cast<ChannelPanel*>(b.get());
 
 			if (_ina != nullptr && _inb != nullptr)
-				return _ina->ChannelGroup().ID() < _inb->ChannelGroup().ID();
+				return _ina->ChannelGroup()->ID() < _inb->ChannelGroup()->ID();
 
 			return -1;
 		});
@@ -132,10 +132,15 @@ void ListPanel::SortChannels()
 
 void ListPanel::ResetGrouping()
 {
-	m_Inputs.Clear();
-	m_Outputs.Clear();
-	m_Specials.Clear();
-	m_Channels.clear();
+	Clear();
+	for (auto& i : asio.Inputs())
+		i.Group(nullptr, -1);
+
+	for (auto& i : asio.Outputs())
+		i.Group(nullptr, -1);
+
+	for (auto& i : asio.SoundboardChannels())
+		i.Group(nullptr, -1);
 
 	int i = 0;
 	for (i = 0; i < asio.Device().info.maxInputChannels - 1; i += 2)
