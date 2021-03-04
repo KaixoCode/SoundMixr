@@ -125,4 +125,6 @@ private:
 	int counter = 0;
 	double biggest = 0.0;
 	double r = 0.9;
+
+	int zerocounter = 0;
 };

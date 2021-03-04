@@ -12,11 +12,40 @@ Effect::Effect(const std::string& name)
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, name).Disable();
 	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 4);
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Remove");
+	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s)
+		{
+			if (s)
+			{
+				m_RealHeight = Height();
+				Height(25);
+				m_Small = true;
+			}
+			else
+			{
+				Height(m_RealHeight);
+				m_Small = false;
+			}
+		}, "Minimize");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_Delete = true; }, "Remove");
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		if (e.button == Event::MouseButton::RIGHT)
 			RightClickMenu::Get().Open(&m_Menu);
+
+		if (e.button == Event::MouseButton::LEFT)
+		{
+			if (e.y > Height() - 25 && e.x > Width() - 25)
+			{
+				if (!m_Small)
+				{
+					m_Minim->Active(true);
+				}
+				else
+				{
+					m_Minim->Active(false);
+				}
+			}
+		}
 	};
 
 	m_Listener += [this](Event::MouseEntered& e)
@@ -33,7 +62,9 @@ Effect::Effect(const std::string& name)
 void Effect::Render(CommandCollection& d)
 {
 	using namespace Graphics;
-	Panel::Render(d);
+	if (!m_Small)
+		Panel::Render(d);
+
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
 	d.Command<Fill>(Theme<C::ChannelSelected>::Get());
@@ -42,6 +73,13 @@ void Effect::Render(CommandCollection& d)
 	d.Command<Fill>(Theme<C::TextSmall>::Get());
 	d.Command<TextAlign>(Align::LEFT, Align::TOP);
 	d.Command<Text>(&m_Name, Vec2<int>{ 5, Height() - 2});
+	
+	d.Command<Fill>(Theme<C::TextOff>::Get());
+	if (!m_Small)
+		d.Command<Quad>(Vec4<int>{Width() - 17, Height() - 13, 10, 2});
+	else
+		d.Command<Triangle>(Vec4<int>{Width() - 12, Height() - 12, 10, 10}, 270.0f);
+
 	d.Command<PopMatrix>();
 
 	m_Div->Color(Theme<C::Divider>::Get());
@@ -137,7 +175,7 @@ void EffectsGroup::operator=(const json& json)
 		}
 		else if (type == "Equalizer")
 		{
-			auto& _d = Emplace<Equalizer>();
+			auto& _d = Emplace<Equalizer<>>();
 			_d = effect;
 		}
 	}
@@ -170,6 +208,18 @@ bool EffectsGroup::Hovering()
 
 void EffectsGroup::Update(const Vec4<int>& viewport)
 {
+	for (int i = m_EffectCount - 1; i >= 0; i--)
+	{
+		if (m_Effects[i]->Delete())
+		{
+			m_Effects.erase(m_Effects.begin() + i);
+			m_EffectCount--;
+			m_Hovering = nullptr;
+			m_Focussed = nullptr;
+		}
+	}
+
+
 	m_LayoutManager.Update({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor
 	m_Cursor = m_Pressed && m_LayoutManager.Cursor() == -1 ? GLFW_CURSOR_NORMAL : m_LayoutManager.Cursor();
 

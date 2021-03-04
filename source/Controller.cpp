@@ -325,6 +325,7 @@ void Controller::LoadRouting()
     std::ifstream _in;
     _in.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
 
+    bool _error = false;
     try 
     {
         json _json;
@@ -388,6 +389,23 @@ void Controller::LoadRouting()
     // If error occured (either file didn't exist or was parced incorrectly
     // load all the channels as stereo channels.
     catch (json::parse_error err)
+    {
+        _error = true;
+    }
+    catch (json::other_error err)
+    {
+        _error = true;
+    }
+    catch (json::type_error err)
+    {
+        _error = true;
+    }
+    catch (std::exception& e)
+    {
+        _error = true;
+    }
+
+    if (_error)
     {
         m_List->Clear();
 

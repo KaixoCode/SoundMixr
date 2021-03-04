@@ -1,9 +1,18 @@
 #pragma once
 #include "audio/Effects.hpp"
+#include "ui/Dropdown.hpp"
 
 enum class FilterType
 {
-	LowPass, HighPass, BandPass, Notch, AllPass, PeakingEQ, LowShelf, HighShelf
+	Off, LowPass, HighPass, BandPass, Notch, AllPass, PeakingEQ, LowShelf, HighShelf, ITEMS
+};
+
+template<typename T>
+class Filter
+{
+public:
+	using Params = T;
+	virtual float Apply(float s, Params& p) = 0;
 };
 
 class BiquadParameters
@@ -13,7 +22,7 @@ public:
 	// Parameters
 	union { double Q, BW, S = 1; };
 	double f0 = 400, dbgain = 0;
-	FilterType type = FilterType::LowPass;
+	FilterType type = FilterType::HighShelf;
 
 	void RecalculateParameters()
 	{
@@ -21,6 +30,10 @@ public:
 		cosw0 = std::cos(w0), sinw0 = std::sin(w0);
 
 		switch (type) {
+		case FilterType::Off:
+		{
+			b0 = 1, a0 = 1, b1 = 0, b2 = 0, a1 = 0, a2 = 0;
+		} break;
 		case FilterType::LowPass:
 		{
 			alpha = sinw0 / (2.0 * Q);
@@ -76,7 +89,8 @@ public:
 		case FilterType::HighShelf:
 		{
 			A = std::pow(10, dbgain / 40.0);
-			alpha = (sinw0 / 2.0) * std::sqrt((A + 1.0 / A) * (1.0 / S - 1.0) + 2);
+			double t = std::max((A + 1.0 / A) * (1.0 / S - 1.0) + 2, 0.0);
+			alpha = (sinw0 / 2.0) * std::sqrt(t);
 			double sqrtAa = std::sqrt(A) * alpha;
 			b0 = A * ((A + 1.0) + (A - 1.0) * cosw0 + 2.0 * sqrtAa);
 			b1 = -2.0 * A * ((A - 1.0) + (A + 1.0) * cosw0);
@@ -100,12 +114,11 @@ public:
 	double w0 = 0, cosw0 = 0, sinw0 = 0, A = 0, alpha = 0;
 };
 
-class BiquadFilter
+template<typename P = BiquadParameters>
+class BiquadFilter : public Filter<P>
 {
 public:
-	using Params = BiquadParameters;
-
-	float Apply(float s, Params& p)
+	float Apply(float s, P& p) override
 	{
 		x[0] = s;
 		y[0] = constrain(p.b0a0 * x[0] + p.b1a0 * x[1] + p.b2a0 * x[2] - p.a1a0 * y[1] - p.a2a0 * y[2], -2, 2);
@@ -175,15 +188,13 @@ public:
 	double A[M];				// Ideal impulse response
 };
 
-template<size_t M>
-class KaiserBesselFilter
+template<size_t M, typename P = KaiserBesselParameters<M>>
+class KaiserBesselFilter : public Filter<P>
 {
 public:
-	using Params = KaiserBesselParameters<M>;
-
 	KaiserBesselFilter() { std::fill(std::begin(x), std::end(x), 0); }
 
-	float Apply(float s, Params& p)
+	float Apply(float s, P& p) override
 	{
 		x[0] = s;
 		
@@ -211,10 +222,9 @@ public:
 
 	float Apply(float s)
 	{
-		return m_Filters[0].Apply(s, m_Params[0]);
-		
 		for (int i = 0; i < N; i++)
-			s = m_Filters[i].Apply(s, m_Params[i]);
+			if (m_Params[i].type != FilterType::Off)
+				s = m_Filters[i].Apply(s, m_Params[i]);
 
 		return s;
 	}
@@ -227,9 +237,15 @@ public:
 // ------------------------- Equalizer Effect ------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
+
+template<size_t N = 5, typename Type = BiquadFilter<>, typename P = Type::Params>
 class Equalizer : public Effect
 {
 public:
+
+	using Params = P;
+	using Filter = Type;
+
 	Equalizer()
 		: Effect("Equalizer"), m_Parameters{ }
 	{
@@ -263,17 +279,30 @@ public:
 			m_Knob3[i]->Size({ 30, 30 });
 			m_Knob3[i]->Multiplier(0.4);
 			m_Knob3[i]->Decimals(2);
+
+			m_Dropdown[i] = &Emplace<Dropdown<FilterType, SoundMixrGraphics::Normal<>>>();
+			m_Dropdown[i]->AddOption("Off", FilterType::Off);
+			m_Dropdown[i]->AddOption("Lowpass", FilterType::LowPass);
+			m_Dropdown[i]->AddOption("HighPass", FilterType::HighPass);
+			m_Dropdown[i]->AddOption("BandPass", FilterType::BandPass);
+			m_Dropdown[i]->AddOption("AllPass", FilterType::AllPass);
+			m_Dropdown[i]->AddOption("PeakingEQ", FilterType::PeakingEQ);
+			m_Dropdown[i]->AddOption("LowShelf", FilterType::LowShelf);
+			m_Dropdown[i]->AddOption("HighShelf", FilterType::HighShelf);
+			m_Dropdown[i]->Size({59, 20});
+			m_Dropdown[i]->Select(FilterType::AllPass);
 		}
 
 		UpdateParams();
-		Height(245);
+		Height(265);
 	};
 
 	void Update(const Vec4<int>& v) override 
 	{
 		for (int i = 0; i < N; i++)
 		{
-			int x = Width() - 45 - i * 50;
+			int x = Width() - 45 - i * 59;
+			m_Dropdown[i]->Position({ x - 14, 210 });
 			m_Knob1[i]->Position({ x, 160 });
 			m_Knob2[i]->Position({ x, 90 });
 			m_Knob3[i]->Position({ x, 20 });
@@ -286,6 +315,9 @@ public:
 	void Render(CommandCollection& d) override 
 	{
 		Effect::Render(d);
+		if (m_Small)
+			return;
+
 		using namespace Graphics;
 		d.Command<PushMatrix>();
 		d.Command<Translate>(Position());
@@ -310,47 +342,65 @@ public:
 
 	void UpdateParams()
 	{
-		//m_Parameters[0].Q = (1.0 - m_Knob13.SliderValue()) * 5.9 + 0.10;
-		//m_Parameters[1].Q = (1.0 - m_Knob23.SliderValue()) * 5.9 + 0.10;
-		//m_Parameters[2].Q = (1.0 - m_Knob33.SliderValue()) * 5.9 + 0.10;
-		//m_Parameters[0].dbgain = (1.0 - m_Knob12.SliderValue()) * 48 - 24;
-		//m_Parameters[1].dbgain = (1.0 - m_Knob22.SliderValue()) * 48 - 24;
-		//m_Parameters[2].dbgain = (1.0 - m_Knob32.SliderValue()) * 48 - 24;
-		//m_Parameters[0].f0 = (1.0 - m_Knob11.SliderValue()) * 19990 + 10;
-		//m_Parameters[1].f0 = (1.0 - m_Knob21.SliderValue()) * 19990 + 10;
-		//m_Parameters[2].f0 = (1.0 - m_Knob31.SliderValue()) * 19990 + 10;
-		for (int i = 0; i < N; i++)
-		{
-			m_Parameters[i].Fb = m_Knob1[i]->Value();
-			m_Parameters[i].attenuation = m_Knob2[i]->Value();
-			//m_Parameters[i].attenuation = m_Knob3[i]->Value();
-
-			m_Parameters[i].RecalculateParameters();
-		}
+		if constexpr (std::is_same_v<Filter, BiquadFilter<>>)
+			for (int i = 0; i < N; i++)
+			{
+				m_Parameters[i].type = m_Dropdown[i]->Value();
+				m_Parameters[i].f0 = m_Knob1[i]->Value();
+				m_Parameters[i].dbgain = m_Knob2[i]->Value();
+				m_Parameters[i].Q = m_Knob3[i]->Value();
+				m_Parameters[i].RecalculateParameters();
+			}
+		
+		else if constexpr (std::is_same_v<Filter, KaiserBesselFilter>)
+			for (int i = 0; i < N; i++)
+			{
+				m_Parameters[i].Fb = m_Knob1[i]->Value();
+				m_Parameters[i].attenuation = m_Knob2[i]->Value();
+				m_Parameters[i].RecalculateParameters();
+			}
 	}
 
 	operator json() override
 	{
 		json _json = json::object();
 		_json["type"] = "Equalizer";
+		_json["filters"] = json::array();
+		for (int i = 0; i < N; i++)
+		{
+			json _filter = json::object();
+			_filter["filter"] = i;
+			_filter["type"] = m_Dropdown[i]->Value();
+			_filter["freq"] = m_Knob1[i]->Value();
+			_filter["gain"] = m_Knob2[i]->Value();
+			_filter["q"] = m_Knob3[i]->Value();
+			_json["filters"].push_back(_filter);
+		}
 		return _json;
 	}
 
 	void operator=(const json& json)
 	{
-		
+		for (auto& i : json["filters"])
+		{
+			int index = i["filter"].get<int>();
+			m_Dropdown[index]->Select(i["type"].get<FilterType>());
+			m_Knob1[index]->Value(i["freq"].get<double>());
+			m_Knob2[index]->Value(i["gain"].get<double>());
+			m_Knob3[index]->Value(i["q"].get<double>());
+		}
 		UpdateParams();
 	}
 
 private:
-	static inline constexpr int N = 6;
 	static inline std::string
 		m_Knob1Name = "Freq",
 		m_Knob2Name = "Gain",
 		m_Knob3Name = "Q";
 
 	KnobSlider * m_Knob1[N], * m_Knob2[N], * m_Knob3[N];
+	Dropdown<FilterType, SoundMixrGraphics::Normal<>>* m_Dropdown[N];
 
-	KaiserBesselParameters<107> m_Parameters[N];
-	std::vector<ChannelEqualizer<N, KaiserBesselFilter<107>>> m_Equalizers;
+	Params m_Parameters[N];
+	std::vector<ChannelEqualizer<N, Filter, Params>> m_Equalizers;
 };

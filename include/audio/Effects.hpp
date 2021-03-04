@@ -24,11 +24,14 @@ public:
 	virtual operator json() = 0;
 	virtual void operator=(const json& json) = 0;
 
+	bool Delete() { return m_Delete; }
+
 protected:
-	int m_Channels = -1;
-	bool m_Hovering = false;
+	int m_Channels = -1, m_RealHeight = 0, m_Delete = false;
+	bool m_Hovering = false, m_Small = false;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	MenuAccessories::Divider* m_Div;
+	ButtonBase* m_Minim;
 	const std::string m_Name = "";
 };
 

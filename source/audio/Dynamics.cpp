@@ -76,6 +76,9 @@ void Dynamics::Update(const Vec4<int>& v)
 void Dynamics::Render(CommandCollection& d)
 {
 	Effect::Render(d);
+	if (m_Small)
+		return;
+
 	using namespace Graphics;
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
@@ -126,6 +129,14 @@ void Dynamics::Channels(int c)
 float Dynamics::NextSample(float sin, int c) 
 {
 	if (m_Channels <= c)
+		return 0;
+
+	if (sin == 0 && zerocounter <= 100)
+		zerocounter++;
+	else if (sin != 0)
+		zerocounter = 0;
+
+	if (zerocounter > 100)
 		return 0;
 
 	float out = 0;

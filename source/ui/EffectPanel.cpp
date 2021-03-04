@@ -65,7 +65,7 @@ EffectScrollPanel::EffectScrollPanel()
 		}, "+ Dynamics");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
 		{
-			m_EffectPanel.AddEffect<Equalizer>();
+			m_EffectPanel.AddEffect<Equalizer<>>();
 		}, "+ Equalizer");
 	m_Listener += [this](Event::MousePressed& e)
 	{

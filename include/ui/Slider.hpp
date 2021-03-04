@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.hpp"
-
 class Parameter : public Component
 {
 public:
@@ -155,6 +154,8 @@ protected:
 	double Convert(double v) const { return std::powf(v, m_Power) * (m_Range.end - m_Range.start) + m_Range.start; }
 	double Normalize(double v) const { return std::powf((v - m_Range.start) / (m_Range.end - m_Range.start), 1.0 / m_Power); }
 };
+
+
 
 template<typename Graphics>
 class SliderBase : public Parameter
