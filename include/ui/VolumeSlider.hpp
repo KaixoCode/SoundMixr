@@ -15,22 +15,19 @@ public:
 
 	VolumeSliderG()
 	{
-		m_ValueText.reserve(10);
-		Range(Vec2<int>{0, 1000000});
-		VisibleRange(10);
-		SliderValue(1);
-		Vertical(true);
+		Range(Vec2<double>{0, 3.98107});
+		Power(4);
+		Value(1);
 		ResetValue(1);
+		Vertical(true);
 	}
 
-	int    MinBarSize() const    override { return 25; }
-	double SliderValue()         override { return std::pow((1.0 - (Value() / RATIO)) * HIGHEST, 4); }
-	void   SliderValue(double v) override { Value(static_cast<int>((1.0 - (std::powf(v, 0.25) / HIGHEST)) * RATIO)); }
-	double Decibels() { return 20 * std::log10(SliderValue() + 0.00000000000001); };
-	std::string& ValueText() override { return m_ValueText; }
+	double Decibels() { return 20 * std::log10(Value()); };
 
 	void Update(const Vec4<int>& v)
 	{
+		Component::Update(v);
+
 		char s[10];
 		if (Decibels() < -100)
 			m_ValueText = "-inf";
@@ -39,15 +36,7 @@ public:
 			m_ValueText = s;
 		}
 		m_ValueText += "dB";
-
-		Parent::Update(v);
 	}
-
-private:
-	const double RATIO = 1000000.0;
-	const double HIGHEST = 1.412536;
-
-	std::string m_ValueText = "";
 };
 
 using VolumeSlider = VolumeSliderG<VolumeSliderGraphics>;
@@ -63,19 +52,7 @@ public:
 
 	PanSlider();
 
-	int    MinBarSize() const override { return 1; }
-	double SliderValue() override { return (Value() - RATIO/2) / 10.0; }
-	void   SliderValue(double v) override { Value(10 * (v) + RATIO / 2); }
-	std::string& ValueText() override { return m_ValueText; }
-	bool   Hovering() const override { return m_Hovering; }
-
 	void Update(const Vec4<int>& v) override;
-
-private:
-	const double RATIO = 1000.0;
-	bool m_Hovering = false;
-
-	std::string m_ValueText = "";
 };
 
 // -------------------------------------------------------------------------- \\
@@ -84,28 +61,7 @@ private:
 
 class KnobSlider : public SliderBase<KnobSliderGraphics>
 {
-public:
-	using Parent = SliderBase<KnobSliderGraphics>;
-
-	KnobSlider();
-
-	int    MinBarSize() const    override { return 25; }
-	double SliderValue()         override { return Value() / RATIO; }
-	void   SliderValue(double v) override { Value(v * RATIO); }
-	void   SliderRange(const Vec2<float>& r) { m_Range = r; }
-	void   ResetValue(double r) override { m_ResetValue = ((r - m_Range.x) / (m_Range.y - m_Range.x)); }
-	void   ResetValue() { SliderValue(m_ResetValue); }
-	void   Unit(const std::string& u) { m_Unit = u; }
-	std::string& ValueText() override { return m_ValueText; }
-
-	void Update(const Vec4<int>& v) override;
-
-private:
-	const double RATIO = 1000000.0;
-
-	Vec2<float> m_Range;
-	std::string m_ValueText = "", m_Unit = "";
-
+	using SliderBase::SliderBase;
 };
 
 class DynamicsSlider : public Container

@@ -7,9 +7,8 @@
 PanSlider::PanSlider()
 {
 	m_ValueText.reserve(10);
-	Range(Vec2<int>{0, (int)RATIO + 1});
-	VisibleRange(1);
-	SliderValue(0);
+	Range(Vec2<double>{ -50, 50 });
+	Value(0);
 	Vertical(false);
 	ResetValue(0);
 
@@ -21,43 +20,20 @@ PanSlider::PanSlider()
 
 void PanSlider::Update(const Vec4<int>& v)
 {
+	Component::Update(v);
+
 	char s[10];
-	if (SliderValue() == 0)
+	if (Value() == 0)
 		m_ValueText = "C";
-	else if (SliderValue() < 0) {
-		std::sprintf(s, "%.0f", std::abs(SliderValue()));
+	else if (Value() < 0) {
+		std::sprintf(s, "%.0f", std::abs(Value()));
 		m_ValueText = s;
 		m_ValueText += "L";
 	}
 	else  {
-		std::sprintf(s, "%.0f", SliderValue());
+		std::sprintf(s, "%.0f", Value());
 		m_ValueText = s;
 		m_ValueText += "R";
 	}
 
-	Parent::Update(v);
-}
-
-// -------------------------------------------------------------------------- \\
-// ---------------------------- Knob Slider --------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
-KnobSlider::KnobSlider()
-{
-	m_ValueText.reserve(10);
-	Range(Vec2<int>{0, 1000000});
-	VisibleRange(10);
-	SliderValue(1);
-	Vertical(true);
-	ResetValue(1);
-}
-
-void KnobSlider::Update(const Vec4<int>& v)
-{
-	char s[10];
-	std::sprintf(s, "%.1f", SliderValue() * (m_Range.y - m_Range.x) + m_Range.x);
-	m_ValueText = s;
-	m_ValueText += m_Unit;
-
-	Parent::Update(v);
 }

@@ -457,7 +457,7 @@ public:
 		{
 			int _p = 6;
 			int _h = 25;
-			int _y = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start) * -(b.Height()) + b.Y() + b.Height();
+			int _y = b.NormalizedValue() * b.Height() + b.Y();
 
 			d.Command<Fill>(Theme<C::VSlider>::Get());
 
@@ -476,7 +476,7 @@ public:
 		{
 			int _p = 6;
 			int _w = 25;
-			int _x = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start) * -(b.Width()) + b.X() + b.Width();
+			int _x = b.NormalizedValue() * (b.Width()) + b.X();
 
 			d.Command<Fill>(Theme<C::VSlider>::Get());
 
@@ -502,7 +502,7 @@ public:
 	{
 		using namespace Graphics;
 		int _p = 6;
-		int _w = -(b.SliderValue() / 50.0) * (b.Width() * 0.5 - 1);
+		int _w = (b.NormalizedValue() - 0.5) * (b.Width() - 1.0);
 
 		int _h = b.Height() - _p * 2;
 		int _we = _w - _p * 2;
@@ -531,10 +531,10 @@ public:
 		
 		if (true)
 		{
-			double _v = b.Value() / 1000000.0;
+			double _v = 1.0 - b.NormalizedValue();
 			double _a = _v * M_PI * 1.5 + M_PI * 0.25 - M_PI / 2.0;
 
-			int _w = -(b.Value() / 1000000.0) * (b.Width() * 0.5 - 1);
+			int _w = b.NormalizedValue() * (b.Width() * 0.5 - 1);
 
 			int _h = b.Height() - _p * 2;
 			int _we = _w - _p * 2;
@@ -558,7 +558,7 @@ public:
 			if (b.Vertical())
 			{
 				int _p = 6;
-				int _h = (1.0 - (b.Value() / 1000000.0)) * (b.Height());
+				int _h = b.NormalizedValue() * b.Height();
 
 				d.Command<Fill>(Theme<C::KnobSliderB>::Get());
 				d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
@@ -570,7 +570,7 @@ public:
 			else
 			{
 				int _p = 6;
-				int _w = (1.0 - (b.Value() / 1000000.0)) * (b.Width());
+				int _w = b.NormalizedValue() * b.Width();
 
 				d.Command<Fill>(Theme<C::KnobSliderB>::Get());
 				d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
@@ -584,6 +584,8 @@ public:
 		d.Command<Fill>(Theme<C::TextSmall>::Get());
 		d.Command<TextAlign>(Align::CENTER, Align::TOP);
 		d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y()});
+		d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
+		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
 	}
 };
 namespace SoundMixrGraphics

@@ -406,8 +406,8 @@ void Controller::LoadRouting()
             // Set all parameters of this Channel
             _c.mono.Active(false);
             _c.muted.Active(false);
-            _c.pan.SliderValue(0);
-            _c.volume.SliderValue(1);
+            _c.pan.Value(0);
+            _c.volume.Value(1);
         }
 
         // if there were an uneven amount of channels, add one last mono channel
@@ -420,8 +420,8 @@ void Controller::LoadRouting()
             // Set all parameters of this Channel
             _c.mono.Active(false);
             _c.muted.Active(false);
-            _c.pan.SliderValue(0);
-            _c.volume.SliderValue(1);
+            _c.pan.Value(0);
+            _c.volume.Value(1);
         }
 
         for (i = 0; i < m_AsioDevice.Device().info.maxOutputChannels - 1; i += 2)
@@ -434,8 +434,8 @@ void Controller::LoadRouting()
             // Set all parameters of this Channel
             _c.mono.Active(false);
             _c.muted.Active(false);
-            _c.pan.SliderValue(0);
-            _c.volume.SliderValue(1);
+            _c.pan.Value(0);
+            _c.volume.Value(1);
         }
 
         // if there were an uneven amount of channels, add one last mono channel
@@ -448,8 +448,8 @@ void Controller::LoadRouting()
             // Set all parameters of this Channel
             _c.mono.Active(false);
             _c.muted.Active(false);
-            _c.pan.SliderValue(0);
-            _c.volume.SliderValue(1);
+            _c.pan.Value(0);
+            _c.volume.Value(1);
         }
 
         _in.close();// Close the file!! important!!

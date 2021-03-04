@@ -204,7 +204,8 @@ void InputChannel::CalcLevel()
 		else
 			m_OutLevel = m_Level;
 
-		m_OutLevel = m_Group->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
+		if (!m_Muted)
+			m_OutLevel = m_Group->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
 
 		m_Group->Unlock();
 		return;

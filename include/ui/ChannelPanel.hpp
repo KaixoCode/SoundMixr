@@ -92,12 +92,12 @@ public:
 		m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&] { 
-				volume.SliderValue(1); 
+				volume.Value(1); 
 			}, "Reset Volume");
 
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&] { 
-				pan.SliderValue(0); 
+				pan.Value(0); 
 			}, "Reset Pan");
 
 		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
@@ -150,8 +150,8 @@ public:
 
 	void operator=(const json& json)
 	{
-		volume.SliderValue(json["volume"].get<double>());
-		pan.SliderValue(json["pan"].get<double>());
+		volume.Value(json["volume"].get<double>());
+		pan.Value(json["pan"].get<double>());
 		m_ChannelGroup = json;
 	}
 

@@ -153,8 +153,8 @@ void ListPanel::ResetGrouping()
 		// Set all parameters of this Channel
 		_c.mono.Active(false);
 		_c.muted.Active(false);
-		_c.pan.SliderValue(0);
-		_c.volume.SliderValue(1);
+		_c.pan.Value(0);
+		_c.volume.Value(1);
 	}
 
 	// if there were an uneven amount of channels, add one last mono channel
@@ -167,8 +167,8 @@ void ListPanel::ResetGrouping()
 		// Set all parameters of this Channel
 		_c.mono.Active(false);
 		_c.muted.Active(false);
-		_c.pan.SliderValue(0);
-		_c.volume.SliderValue(1);
+		_c.pan.Value(0);
+		_c.volume.Value(1);
 	}
 
 	for (i = 0; i < asio.Device().info.maxOutputChannels - 1; i += 2)
@@ -181,8 +181,8 @@ void ListPanel::ResetGrouping()
 		// Set all parameters of this Channel
 		_c.mono.Active(false);
 		_c.muted.Active(false);
-		_c.pan.SliderValue(0);
-		_c.volume.SliderValue(1);
+		_c.pan.Value(0);
+		_c.volume.Value(1);
 	}
 
 	// if there were an uneven amount of channels, add one last mono channel
@@ -195,8 +195,8 @@ void ListPanel::ResetGrouping()
 		// Set all parameters of this Channel
 		_c.mono.Active(false);
 		_c.muted.Active(false);
-		_c.pan.SliderValue(0);
-		_c.volume.SliderValue(1);
+		_c.pan.Value(0);
+		_c.volume.Value(1);
 	}
 
 	auto& _soundboardChannel = EmplaceSpecialChannel();

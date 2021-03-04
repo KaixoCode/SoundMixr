@@ -5,48 +5,54 @@
 // -------------------------------------------------------------------------- \\
 
 Dynamics::Dynamics()
-	: m_Knob(Emplace<KnobSlider>()),
-	m_Knob2(Emplace<KnobSlider>()),
-	m_Knob3(Emplace<KnobSlider>()),
-	m_Knob4(Emplace<KnobSlider>()),
-	m_Knob5(Emplace<KnobSlider>()),
+	: m_Knob(Emplace<KnobSlider>("PreGain")),
+	m_Knob2(Emplace<KnobSlider>("Attack")),
+	m_Knob3(Emplace<KnobSlider>("Release")),
+	m_Knob4(Emplace<KnobSlider>("PostGain")),
+	m_Knob5(Emplace<KnobSlider>("Mix")),
 	m_Slider(Emplace<DynamicsSlider>()),
 	Effect("Dynamics")
 {
 	Height(200);
-	m_Knob.SliderRange({ 24, -24 });
+	m_Knob.Range({ -24, 24 });
 	m_Knob.ResetValue(0);
 	m_Knob.ResetValue();
 	m_Knob.Unit("dB");
 	m_Knob.Size({ 30, 30 });
-	m_Knob.SliderMult(0.4);
+	m_Knob.Multiplier(0.5);
+	m_Knob.Decimals(2);
 
-	m_Knob2.SliderRange({ 30, .1f });
-	m_Knob2.SliderMult(0.4);
+	m_Knob2.Range({ .1f, 30 });
+	m_Knob2.Power(2);
+	m_Knob2.Multiplier(0.5);
 	m_Knob2.ResetValue(3);
 	m_Knob2.ResetValue();
 	m_Knob2.Unit(" ms");
 	m_Knob2.Size({ 30, 30 });
 
-	m_Knob3.SliderRange({ 300, 1 });
+	m_Knob3.Range({ 1, 300 });
+	m_Knob3.Power(2);
 	m_Knob3.ResetValue(30);
 	m_Knob3.ResetValue();
-	m_Knob3.SliderMult(0.4);
+	m_Knob3.Multiplier(0.5);
 	m_Knob3.Unit(" ms");
 	m_Knob3.Size({ 30, 30 });
 
-	m_Knob4.SliderRange({ 24, -24 });
+	m_Knob4.Range({ -24, 24 });
 	m_Knob4.Unit("dB");
 	m_Knob4.ResetValue(0);
 	m_Knob4.ResetValue();
 	m_Knob4.Size({ 30, 30 });
-	m_Knob4.SliderMult(0.4);
+	m_Knob4.Multiplier(0.5);
+	m_Knob4.Decimals(2);
 
-	m_Knob5.SliderRange({ 100, 0 });
-	m_Knob5.SliderMult(0.4);
+	m_Knob5.Range({ 0, 100 });
+	m_Knob5.Multiplier(0.5);
+	m_Knob5.ResetValue(100);
 	m_Knob5.ResetValue();
 	m_Knob5.Unit(" %");
 	m_Knob5.Size({ 30, 30 });
+	m_Knob5.Decimals(0);
 
 	UpdateParams();
 
@@ -73,20 +79,11 @@ void Dynamics::Render(CommandCollection& d)
 	using namespace Graphics;
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
-	d.Command<Font>(Fonts::Gidole14, 14.0f);
-	d.Command<Fill>(Theme<C::TextSmall>::Get());
-	d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
-	d.Command<Text>(&m_Knob1Name, m_Knob.Position() + Vec2<int>{ m_Knob.Width() / 2, m_Knob.Height() + 5 });
-	d.Command<Text>(&m_Knob4Name, m_Knob4.Position() + Vec2<int>{ m_Knob4.Width() / 2, m_Knob4.Height() + 5 });
 	d.Command<Fill>(Theme<C::Divider>::Get());
 	d.Command<Quad>(Vec4<int>{(m_Knob4.X() + m_Knob4.Width() + m_Knob2.X()) / 2, 10, 1, 50});
-	d.Command<Fill>(Theme<C::TextSmall>::Get());
-	d.Command<Text>(&m_Knob2Name, m_Knob2.Position() + Vec2<int>{ m_Knob2.Width() / 2, m_Knob2.Height() + 5 });
-	d.Command<Text>(&m_Knob3Name, m_Knob3.Position() + Vec2<int>{ m_Knob3.Width() / 2, m_Knob3.Height() + 5 });
-	d.Command<Fill>(Theme<C::Divider>::Get());
 	d.Command<Quad>(Vec4<int>{(m_Knob3.X() + m_Knob3.Width() + m_Knob5.X()) / 2, 10, 1, 50});
 	d.Command<Fill>(Theme<C::TextSmall>::Get());
-	d.Command<Text>(&m_Knob5Name, m_Knob5.Position() + Vec2<int>{ m_Knob5.Width() / 2, m_Knob5.Height() + 5 });
+	d.Command<Font>(Fonts::Gidole14, 14.0f);
 	d.Command<TextAlign>(Align::LEFT, Align::BOTTOM);
 	d.Command<Text>(&m_Slider.m_TH2Str, Vec2<int>{10, 77});
 	d.Command<Text>(&m_Slider.m_RT2Str, Vec2<int>{70, 77});

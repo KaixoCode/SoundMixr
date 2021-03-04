@@ -17,7 +17,7 @@ public:
 	void Render(CommandCollection& d) override;
 
 	virtual float NextSample(float, int) = 0;
-	virtual void Channels(int c) { m_Channels = c; LOG("WOOF"); }
+	virtual void Channels(int c) { m_Channels = c; }
 
 	bool Hovering() { return m_Hovering; }
 

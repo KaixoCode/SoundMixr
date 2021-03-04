@@ -24,22 +24,22 @@ public:
 		expanderRatio = m_Slider.ratio2 >= 0 ? m_Slider.ratio2 + 1 : (-1.0 / (m_Slider.ratio2 / 8.0 - 1.0));
 		compressThreshhold = m_Slider.threshhold1;
 		expanderThreshhold = m_Slider.threshhold2;
-		double newval = 30 - m_Knob2.SliderValue() * 29.9;
+		double newval = m_Knob2.Value();
 		if (newval != attms)
 		{
 			attms = newval;
 			attcoef = std::exp(-1.0 / ((attms / 1000.0) * sampleRate));
 		}
-		newval = 300 - m_Knob3.SliderValue() * 299;
+		newval = m_Knob3.Value();
 		if (newval != relms)
 		{
 			relms = newval;
 			relcoef = std::exp(-1.0 / ((relms / 1000.0) * sampleRate));
 		}
 
-		pregain = db2lin(-m_Knob.SliderValue() * 48 + 24);
-		postgain = db2lin(-m_Knob4.SliderValue() * 48 + 24);
-		mix = 1.0 - m_Knob5.SliderValue();
+		pregain = db2lin(m_Knob.Value());
+		postgain = db2lin(m_Knob4.Value());
+		mix = m_Knob5.Value() * 0.01;
 	}
 
 	operator json()
@@ -50,11 +50,11 @@ public:
 		_json["comt"] = m_Slider.threshhold1;
 		_json["expr"] = m_Slider.ratio2;
 		_json["comr"] = m_Slider.ratio1;
-		_json["att"] = m_Knob2.SliderValue();
-		_json["ret"] = m_Knob3.SliderValue();
-		_json["prg"] = m_Knob.SliderValue();
-		_json["pog"] = m_Knob4.SliderValue();
-		_json["mix"] = m_Knob5.SliderValue();
+		_json["att"] = m_Knob2.Value();
+		_json["ret"] = m_Knob3.Value();
+		_json["prg"] = m_Knob.Value();
+		_json["pog"] = m_Knob4.Value();
+		_json["mix"] = m_Knob5.Value();
 		return _json;
 	}
 
@@ -73,11 +73,11 @@ public:
 		m_Slider.threshhold1 = p2;
 		m_Slider.ratio2 = p3;
 		m_Slider.ratio1 = p4;
-		m_Knob2.SliderValue(p5);
-		m_Knob3.SliderValue(p6);
-		m_Knob.SliderValue(p7);
-		m_Knob4.SliderValue(p8);
-		m_Knob5.SliderValue(p9);
+		m_Knob2.Value(p5);
+		m_Knob3.Value(p6);
+		m_Knob.Value(p7);
+		m_Knob4.Value(p8);
+		m_Knob5.Value(p9);
 		UpdateParams();
 	}
 
