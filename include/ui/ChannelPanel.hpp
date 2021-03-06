@@ -31,8 +31,8 @@ public:
 	{
 		Width(70);
 
-		pan.Position(Vec2<int>{4, 25});
-		pan.Size(Vec2<int>{62, 19});
+		pan.Position(Vec2<int>{4, 27});
+		pan.Size(Vec2<int>{62, 18});
 		volume.Vertical(true);
 		volume.Position(Vec2<int>{0, 95});
 		volume.Size(Vec2<int>{50, Height() - 135});
@@ -112,10 +112,19 @@ public:
 				m_ChannelGroup.Mono(s);
 			}, "Mono");
 
-		m_Listener += [this](Event::MousePressed& e)
+		m_Listener += [this, l](Event::MousePressed& e)
 		{
 			if (e.button == Event::MouseButton::RIGHT)
 				RightClickMenu::Get().Open(&m_Menu);
+
+			if (e.button == Event::MouseButton::LEFT)
+			{
+				if (m_Counter && !mono.Hovering() && !muted.Hovering() && !volume.Hovering() && !pan.Hovering() && (routed.Disabled() || !routed.Hovering()))
+				{
+					l->ShowEffectsPanel(ChannelGroup().EffectsGroup());
+				}
+				m_Counter = 20;
+			}
 		};
 
 		m_Listener += [this](Event::MouseEntered& e)
@@ -191,6 +200,8 @@ private:
 		m_IsInput = false,
 		m_IsSpecial = false,
 		m_HasSelect = false;
+
+	int m_Counter = 0;
 
 	MenuAccessories::Divider
 		*m_Div1, 

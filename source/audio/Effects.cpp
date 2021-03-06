@@ -1,6 +1,7 @@
 #include "audio/Effects.hpp"
 #include "audio/Dynamics.hpp"
 #include "audio/Equalizer.hpp"
+#include "audio/Utility.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
@@ -33,19 +34,13 @@ Effect::Effect(const std::string& name)
 			RightClickMenu::Get().Open(&m_Menu);
 
 		if (e.button == Event::MouseButton::LEFT)
-		{
 			if (e.y > Height() - 25 && e.x > Width() - 25)
-			{
 				if (!m_Small)
-				{
 					m_Minim->Active(true);
-				}
+				
 				else
-				{
 					m_Minim->Active(false);
-				}
-			}
-		}
+		
 	};
 
 	m_Listener += [this](Event::MouseEntered& e)
@@ -113,7 +108,7 @@ EffectsGroup::EffectsGroup()
 
 		if (e.type == Event::Type::KeyPressed || e.type == Event::Type::KeyReleased)
 		{
-			for (auto& _c : m_Components)
+			for (auto& _c : m_Effects)
 				_c->AddEvent(_copy);
 
 			return;
@@ -179,6 +174,11 @@ void EffectsGroup::operator=(const json& json)
 		else if (type == "Equalizer")
 		{
 			auto& _d = Emplace<Equalizer<>>();
+			_d = effect;
+		}
+		else if (type == "Utility")
+		{
+			auto& _d = Emplace<Utility>();
 			_d = effect;
 		}
 	}

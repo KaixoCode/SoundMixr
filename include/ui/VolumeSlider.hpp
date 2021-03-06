@@ -333,7 +333,7 @@ private:
 	const int TH2 = 2;
 	const int RT1 = 3;
 	const int RT2 = 4;
-	int m_DragRange = 5;
+	int m_DragRange = 8;
 	double m_PressVal = 0;
 	bool m_Shift = false;
 

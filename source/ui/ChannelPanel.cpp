@@ -48,6 +48,9 @@ void ChannelPanel::AddChannel(Channel* s)
 
 void ChannelPanel::Update(const Vec4<int>& viewport)
 {
+	if (m_Counter)
+		m_Counter--;
+
 	if (m_HasSelect)
 		if (!m_IsInput)
 			if (m_Routed)
@@ -139,7 +142,7 @@ void ChannelPanel::Render(CommandCollection& d)
 	Width(_x + 30 + _w);
 	volume.Width(_x + _w + 10);
 	routed.Width(Width());
-	pan.Position(Vec2<int>{Width() / 2 - 31, 25});
+	pan.Position(Vec2<int>{Width() / 2 - 31, 27});
 	muted.Position(Vec2<int>{Width() / 2 - 30, 50});
 	mono.Position(Vec2<int>{Width() / 2 + 3, 50});
 

@@ -369,7 +369,7 @@ public:
 			m_Dropdown[i]->AddOption("Peak", FilterType::PeakingEQ);
 			m_Dropdown[i]->AddOption("LS", FilterType::LowShelf);
 			m_Dropdown[i]->AddOption("HS", FilterType::HighShelf);
-			m_Dropdown[i]->Size({40, 20});
+			m_Dropdown[i]->Size({40, 18});
 			m_Dropdown[i]->Select(FilterType::Off);
 		}
 
@@ -382,10 +382,10 @@ public:
 		for (int i = 0; i < N; i++)
 		{
 			int x = Width() - 45 - i * 59;
-			m_Dropdown[i]->Position({ x - 5, 210 });
-			m_Knob1[i]->Position({ x, 160 });
-			m_Knob2[i]->Position({ x, 90 });
-			m_Knob3[i]->Position({ x, 20 });
+			m_Dropdown[i]->Position({ x - 5, 212 });
+			m_Knob1[i]->Position({ x, Height() - 109 });
+			m_Knob2[i]->Position({ x, Height() - 177 });
+			m_Knob3[i]->Position({ x, Height() - 245 });
 		}
 		UpdateParams();
 		Background(Theme<C::Channel>::Get());

@@ -24,6 +24,7 @@ public:
 		m_Limiter(Emplace<VolumeSlider>()),
 		m_Mono(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "Mono")),
 		m_Mute(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "Mute")),
+		m_PhaseInvert(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "Phase")),
 		m_EnableEq(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "EQ")),
 		Effect("Utility")
 	{
@@ -74,11 +75,12 @@ public:
 		m_Gain.Unit("dB");
 		m_Gain.Multiplier(0.4);
 
-		m_Mute.Size({ 45, 20 });
-		m_Mono.Size({ 45, 20 });
-		m_EnableEq.Size({ 70, 20 });
+		m_Mute.Size({ 45, 18 });
+		m_Mono.Size({ 45, 18 });
+		m_EnableEq.Size({ 70, 18 });
+		m_PhaseInvert.Size({ 45, 18 });
 
-		m_LowFreq.Size({ 58, 20 });
+		m_LowFreq.Size({ 58, 18 });
 		m_LowFreq.Range({ 10, 6000 });
 		m_LowFreq.Power(3);
 		m_LowFreq.ResetValue(600);
@@ -90,7 +92,7 @@ public:
 		m_LowFreq.Vertical(false);
 		m_LowFreq.DisplayName(false);
 		
-		m_HighFreq.Size({ 58, 20 });
+		m_HighFreq.Size({ 58, 18 });
 		m_HighFreq.Range({ 2000, 22000 });
 		m_HighFreq.Power(3);
 		m_HighFreq.ResetValue(7000);
@@ -124,44 +126,21 @@ public:
 			m_HighFreq.Enable();
 		}
 
-		m_EnableEq.Position({ 33, 113 });
-		m_Low.Position({ 10, 55 });
+		m_EnableEq.Position({ 33, 117 });
+		m_Low.Position({ 10, 52 });
 		m_LowFreq.Position({ 5, 10 });
-		m_Mid.Position({ 50, 55 });
-		m_High.Position({ 90, 55 });
+		m_Mid.Position({ 50, 52 });
+		m_High.Position({ 90, 52 });
 		m_HighFreq.Position({ 67, 10 });
 
-		m_Pan.Position({ 255, 85 });
-		m_Mono.Position({ 247, 38 });
-		m_Mute.Position({ 247, 10 });
+		m_Pan.Position({ 255, 89 });
+		m_Mono.Position({ 247, 32 });
+		m_Mute.Position({ 247, Height() - 160 });
+		m_PhaseInvert.Position({ 247, 54 });
 
-		m_Release.Position({ 148, 20 });
-		m_Gain.Position({ 148, 85 });
-		m_Limiter.Position({ 188, 5 });
-
-		m_Compressor.Attack(0.1);
-		m_Compressor.Release(m_Release.Value());
-		m_Compressor.postgain = 1;
-		m_Compressor.pregain = 1;
-		m_Compressor.expanderRatio = 1;
-		m_Compressor.expanderThreshhold = -100;
-		m_Compressor.compressThreshhold = m_Limiter.Decibels();
-		m_Compressor.compressRatio = 0;
-		m_Compressor.mix = 1;
-		m_PreGain = db2lin(m_Gain.Value());
-
-		int _panv = m_Pan.Value();
-		int _index = 0;
-		double _p = _panv / 50.0;
-		double _a = 1.0 - std::abs((m_Channels - 1.0) / 2.0 * _p);
-		for (int i = 0; i < m_Channels; i++)
-		{
-			float _pan = constrain(_p * (_index - (m_Channels - 1.0) / 2.0) + _a, 0.0, 1.0);
-			m_Pans[i] = _pan;
-			_index++;
-		}
-		
-
+		m_Release.Position({ 148, 21 });
+		m_Gain.Position({ 148, 89 });
+		m_Limiter.Position({ 188, 6 });
 		Background(Color{ 0, 0, 0, 0 });
 		UpdateParams();
 		Effect::Update(v);
@@ -271,7 +250,6 @@ public:
 		Effect::Channels(c);
 	}
 
-
 	int m_Freq = 128;
 	double m_Mix = 0.5;
 	float NextSample(float sin, int c) override
@@ -288,7 +266,6 @@ public:
 
 			counter++;
 		}
-
 
 		// Predelay
 		float predelay = m_PreDelay[c][(m_PreDC + 512) % 1024] = filter * m_PreGain;
@@ -326,7 +303,7 @@ public:
 			m_MonoTemp = 0;
 		}
 
-		return (m_Mono.Active() ? m_MonoValue : limit) * m_Pans[c];
+		return (m_PhaseInvert.Active() ? -1 : 1) * (m_Mono.Active() ? m_MonoValue : limit) * m_Pans[c];
 	}
 
 	void UpdateParams()
@@ -348,18 +325,65 @@ public:
 		m_Params[2].dbgain = m_High.Value();
 		m_Params[2].type = FilterType::HighShelf;
 		m_Params[2].RecalculateParameters();
+
+		m_Compressor.Attack(0.1);
+		m_Compressor.Release(m_Release.Value());
+		m_Compressor.postgain = 1;
+		m_Compressor.pregain = 1;
+		m_Compressor.expanderRatio = 1;
+		m_Compressor.expanderThreshhold = -100;
+		m_Compressor.compressThreshhold = m_Limiter.Decibels();
+		m_Compressor.compressRatio = 0;
+		m_Compressor.mix = 1;
+		m_PreGain = db2lin(m_Gain.Value());
+
+		int _panv = m_Pan.Value();
+		int _index = 0;
+		double _p = _panv / 50.0;
+		double _a = 1.0 - std::abs((m_Channels - 1.0) / 2.0 * _p);
+		for (int i = 0; i < m_Channels; i++)
+		{
+			float _pan = constrain(_p * (_index - (m_Channels - 1.0) / 2.0) + _a, 0.0, 1.0);
+			m_Pans[i] = _pan;
+			_index++;
+		}
 	}
 
 	operator json()
 	{
 		json _json = json::object();
-		_json["type"] = "Formant";
+		_json["type"] = "Utility";
+		_json["eqlow"] = m_Low.Value();
+		_json["eqmid"] = m_Mid.Value();
+		_json["eqhigh"] = m_High.Value();
+		_json["eqon"] = m_EnableEq.Active();
+		_json["eqlowf"] = m_LowFreq.Value();
+		_json["eqhighf"] = m_HighFreq.Value();
+		_json["limgain"] = m_Gain.Value();
+		_json["limrel"] = m_Release.Value();
+		_json["limth"] = m_Limiter.Value();
+		_json["pan"] = m_Pan.Value();
+		_json["phase"] = m_PhaseInvert.Active();
+		_json["mono"] = m_Mono.Active();
+		_json["mute"] = m_Mute.Active();
 		return _json;
 	}
 
 	void operator=(const json& json)
 	{
-		double p1 = json["shft"].get<double>();
+		m_Low.Value(json["eqlow"].get<double>());
+		m_Mid.Value(json["eqmid"].get<double>());
+		m_High.Value(json["eqhigh"].get<double>());
+		m_EnableEq.Active(json["eqon"].get<bool>());
+		m_LowFreq.Value(json["eqlowf"].get<double>());
+		m_HighFreq.Value(json["eqhighf"].get<double>());
+		m_Gain.Value(json["limgain"].get<double>());
+		m_Release.Value(json["limrel"].get<double>());
+		m_Limiter.Value(json["limth"].get<double>());
+		m_Pan.Value(json["pan"].get<double>());
+		m_PhaseInvert.Active(json["phase"].get<bool>());
+		m_Mono.Active(json["mono"].get<bool>());
+		m_Mute.Active(json["mute"].get<bool>());
 		UpdateParams();
 	}
 
@@ -374,7 +398,7 @@ private:
 	NormalSlider& m_LowFreq, & m_HighFreq;
 	PanKnob & m_Pan;
 	VolumeSlider& m_Limiter;
-	Button<ToggleButton, ButtonType::Toggle> &m_Mono, &m_Mute, &m_EnableEq;
+	Button<ToggleButton, ButtonType::Toggle>& m_Mono, & m_Mute, & m_EnableEq, & m_PhaseInvert;
 
 	std::vector<float> m_Pans;
 	float m_Level1 = 0;
