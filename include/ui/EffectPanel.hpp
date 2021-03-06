@@ -3,6 +3,8 @@
 #include "audio/Audio.hpp"
 #include "audio/Dynamics.hpp"
 #include "audio/Equalizer.hpp"
+#include "audio/Formant.hpp"
+#include "audio/Utility.hpp"
 
 // -------------------------------------------------------------------------- \\
 // --------------------------- Effect Panel --------------------------------- \\

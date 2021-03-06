@@ -19,12 +19,12 @@ Dynamics::Dynamics()
 	m_Knob.ResetValue();
 	m_Knob.Unit("dB");
 	m_Knob.Size({ 30, 30 });
-	m_Knob.Multiplier(0.5);
+	m_Knob.Multiplier(0.4);
 	m_Knob.Decimals(2);
 
 	m_Knob2.Range({ .1f, 30 });
 	m_Knob2.Power(2);
-	m_Knob2.Multiplier(0.5);
+	m_Knob2.Multiplier(0.4);
 	m_Knob2.ResetValue(3);
 	m_Knob2.ResetValue();
 	m_Knob2.Unit(" ms");
@@ -34,7 +34,7 @@ Dynamics::Dynamics()
 	m_Knob3.Power(2);
 	m_Knob3.ResetValue(30);
 	m_Knob3.ResetValue();
-	m_Knob3.Multiplier(0.5);
+	m_Knob3.Multiplier(0.4);
 	m_Knob3.Unit(" ms");
 	m_Knob3.Size({ 30, 30 });
 
@@ -43,11 +43,11 @@ Dynamics::Dynamics()
 	m_Knob4.ResetValue(0);
 	m_Knob4.ResetValue();
 	m_Knob4.Size({ 30, 30 });
-	m_Knob4.Multiplier(0.5);
+	m_Knob4.Multiplier(0.4);
 	m_Knob4.Decimals(2);
 
 	m_Knob5.Range({ 0, 100 });
-	m_Knob5.Multiplier(0.5);
+	m_Knob5.Multiplier(0.4);
 	m_Knob5.ResetValue(100);
 	m_Knob5.ResetValue();
 	m_Knob5.Unit(" %");

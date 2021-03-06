@@ -85,6 +85,10 @@ public:
 	virtual auto   ValueText() -> std::string& const { return m_ValueText; }
 	virtual void   Unit(const std::string& str, int tenp = 0) { m_Units.emplace(tenp, str); }
 	virtual void   Decimals(int d) { m_Decimals = d; }
+	virtual bool   DisplayValue() { return m_DisplayValue; }
+	virtual void   DisplayValue(bool v) { m_DisplayValue = v; }
+	virtual bool   DisplayName() { return m_DisplayName; }
+	virtual void   DisplayName(bool v) { m_DisplayName = v; }
 
     virtual bool Hovering() const { return m_Hovering; }
 
@@ -145,7 +149,9 @@ protected:
     bool m_Hovering = false,
 		m_Vertical = true,
 		m_Dragging = false,
-		m_Shift = false;
+		m_Shift = false,
+		m_DisplayValue = true,
+		m_DisplayName = true;
 
 	std::string m_ValueText, m_Name;
 	std::unordered_map<int, std::string> m_Units;

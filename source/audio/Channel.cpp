@@ -13,9 +13,10 @@ void Channel::Group(::ChannelGroup* p, int index)
 	}
 	else if (m_Group->Lock())
 	{
-		m_Group->Unlock();
+		auto old = m_Group;
 		m_Group = p;
 		m_GroupIndex = index;
+		old->Unlock();
 	}
 	else
 	{
@@ -188,7 +189,8 @@ float ChannelGroup::GetMonoLevel()
 
 void InputChannel::CalcLevel() 
 {
-	if (m_Group != nullptr && m_Group->Lock())
+	auto cur = m_Group;
+	if (cur != nullptr && cur->Lock())
 	{
 		if (m_Muted)
 			m_OutLevel = 0;
@@ -196,18 +198,18 @@ void InputChannel::CalcLevel()
 		else if (m_Mono)
 		{
 			float _level = 0;
-			for (auto& i : m_Group->Channels())
+			for (auto& i : cur->Channels())
 				_level += i->UnprocessedLevel();
 
-			m_OutLevel = (_level / m_Group->ChannelAmount());
+			m_OutLevel = (_level / cur->ChannelAmount());
 		}
 		else
 			m_OutLevel = m_Level;
 
 		if (!m_Muted)
-			m_OutLevel = m_Group->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
+			m_OutLevel = cur->DoEffects(m_OutLevel, m_GroupIndex) * m_Volume * m_Pan;
 
-		m_Group->Unlock();
+		cur->Unlock();
 		return;
 	}
 
@@ -220,10 +222,11 @@ void InputChannel::CalcLevel()
 
 void OutputChannel::CalcLevel()
 {
-	if (m_Group != nullptr && m_Group->Lock())
+	auto cur = m_Group;
+	if (cur != nullptr && cur->Lock())
 	{
-		m_OutLevel = m_Level = m_Muted ? 0 : m_Group->GetLevel(m_GroupIndex);
-		m_Group->Unlock();
+		m_OutLevel = m_Level = m_Muted ? 0 : cur->GetLevel(m_GroupIndex);
+		cur->Unlock();
 		return;
 	}
 
@@ -233,11 +236,12 @@ void OutputChannel::CalcLevel()
 
 float OutputChannel::Level() const
 {
-	if (!m_Muted && m_Group != nullptr && m_Group->Lock())
+	auto cur = m_Group;
+	if (!m_Muted && cur != nullptr && cur->Lock())
 	{
-		float level = (m_Mono ? m_Group->GetMonoLevel() : m_OutLevel);
-		level = m_Group->DoEffects(level, m_GroupIndex);
-		m_Group->Unlock();
+		float level = (m_Mono ? cur->GetMonoLevel() : m_OutLevel);
+		level = cur->DoEffects(level, m_GroupIndex);
+		cur->Unlock();
 		return level * m_Volume * m_Pan;
 	}
 

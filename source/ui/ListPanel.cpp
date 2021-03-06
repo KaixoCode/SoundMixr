@@ -132,7 +132,6 @@ void ListPanel::SortChannels()
 
 void ListPanel::ResetGrouping()
 {
-	Clear();
 	for (auto& i : asio.Inputs())
 		i.Group(nullptr, -1);
 
@@ -141,6 +140,7 @@ void ListPanel::ResetGrouping()
 
 	for (auto& i : asio.SoundboardChannels())
 		i.Group(nullptr, -1);
+	Clear();
 
 	int i = 0;
 	for (i = 0; i < asio.Device().info.maxInputChannels - 1; i += 2)

@@ -61,11 +61,12 @@ public:
 				{
 					ChannelGroup().ClearConnections();
 					ss->ClearConnections();
-
-					for (auto& c : ChannelGroup().Channels())
+					int size = ChannelGroup().ChannelAmount();
+					for (int i = 0; i < size; i++)
 					{
-						ss->AddChannel(c);
-						ChannelGroup().RemoveChannel(c);
+						auto b = ChannelGroup().Channels()[0];
+						ss->AddChannel(b);
+						ChannelGroup().RemoveChannel(b);
 					}
 
 					m_Delete = true;

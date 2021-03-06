@@ -45,24 +45,54 @@ using VolumeSlider = VolumeSliderG<VolumeSliderGraphics>;
 // ----------------------------- Pan Slider --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class PanSlider : public SliderBase<PanSliderGraphics>
+template<typename Graphics>
+class PanSliderG : public SliderBase<Graphics>
 {
 public:
-	using Parent = SliderBase<PanSliderGraphics>;
+	using Parent = SliderBase<Graphics>;
 
-	PanSlider();
+	PanSliderG(const std::string& name = "")
+		: Parent(name)
+	{
+		m_ValueText.reserve(10);
+		Range(Vec2<double>{ -50, 50 });
+		Value(0);
+		Vertical(false);
+		ResetValue(0);
 
-	void Update(const Vec4<int>& v) override;
+		m_Listener += [this](Event::MouseEntered& e)
+		{ m_Hovering = true; };
+		m_Listener += [this](Event::MouseExited& e)
+		{ m_Hovering = false; };
+	}
+
+	void Update(const Vec4<int>& v) override
+	{
+		Component::Update(v);
+
+		char s[10];
+		if (Value() == 0)
+			m_ValueText = "C";
+		else if (Value() < 0) {
+			std::sprintf(s, "%.0f", std::abs(Value()));
+			m_ValueText = s;
+			m_ValueText += "L";
+		}
+		else {
+			std::sprintf(s, "%.0f", Value());
+			m_ValueText = s;
+			m_ValueText += "R";
+		}
+	}
 };
 
-// -------------------------------------------------------------------------- \\
-// --------------------------- Volume Slider -------------------------------- \\
-// -------------------------------------------------------------------------- \\
+using PanSlider = PanSliderG<PanSliderGraphics>;
+using PanKnob = PanSliderG<KnobSliderGraphics>;
 
-class KnobSlider : public SliderBase<KnobSliderGraphics>
-{
-	using SliderBase::SliderBase;
-};
+using KnobSlider = SliderBase<KnobSliderGraphics>;
+using NormalSlider = SliderBase<SliderGraphics>;
+
+
 
 class DynamicsSlider : public Container
 {

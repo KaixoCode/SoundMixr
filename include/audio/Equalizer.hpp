@@ -15,14 +15,40 @@ public:
 	virtual float Apply(float s, Params& p) = 0;
 };
 
+
+class FilterParameters
+{
+public:
+	virtual void RecalculateParameters() = 0;
+};
+
+template<size_t M>
+class FIRFilterParameters : public FilterParameters
+{
+public:
+
+	// Coefficients
+	double H[M];
+};
+
+template<size_t M>
+class IIRFilterParameters : public FilterParameters
+{
+public:
+
+	// Coefficients
+	double A[M + 1];
+	double B[M + 1];
+};
+
 class BiquadParameters
 {
 public:
 
 	// Parameters
 	union { double Q, BW, S = 1; };
-	double f0 = 400, dbgain = 0;
-	FilterType type = FilterType::HighShelf;
+	double f0 = 22000, dbgain = 0;
+	FilterType type = FilterType::Off;
 
 	void RecalculateParameters()
 	{
@@ -133,11 +159,11 @@ public:
 	}
 
 private:
-	double y[3]{ 1, 1, 1 }, x[3]{ 0, 0, 0 };
+	double y[3]{ 0, 0, 0 }, x[3]{ 0, 0, 0 };
 };
 
 template<size_t M>
-class KaiserBesselParameters
+class KaiserBesselParameters : public FIRFilterParameters<M>
 {
 public:
 	void RecalculateParameters()
@@ -184,15 +210,14 @@ public:
 
 	double Fa = 0, Fb = 7200;	// Frequencies a and b
 	double attenuation = 48;	// Attenuation
-	double H[M];				// Kaiser-Bessel window
 	double A[M];				// Ideal impulse response
 };
 
 template<size_t M, typename P = KaiserBesselParameters<M>>
-class KaiserBesselFilter : public Filter<P>
+class FIRFilter : public Filter<P>
 {
 public:
-	KaiserBesselFilter() { std::fill(std::begin(x), std::end(x), 0); }
+	FIRFilter() { std::fill(std::begin(x), std::end(x), 0); }
 
 	float Apply(float s, P& p) override
 	{
@@ -210,6 +235,61 @@ public:
 
 private:
 	double x[M];
+};
+
+
+class IIR12dBOctParams
+{
+public:
+	void RecalculateParameters()
+	{
+		w = 2.0 * pi * resofreq / Effect::sampleRate; // Pole angle
+		q = 1.0 - w / (2.0 * (amp + 0.5 / (1.0 + w)) + w - 2.0); // Pole magnitude
+		r = q * q;
+		c = r + 1.0 - 2.0 * cos(w) * q;
+	}
+
+	double pi = 3.141592654;
+
+	/* Parameters. Change these! */
+	double resofreq = 5000;
+	double amp = 1.0;
+
+	double w = 2.0 * pi * resofreq / Effect::sampleRate; // Pole angle
+	double q = 1.0 - w / (2.0 * (amp + 0.5 / (1.0 + w)) + w - 2.0); // Pole magnitude
+	double r = q * q;
+	double c = r + 1.0 - 2.0 * cos(w) * q;
+	double vibrapos = 0;
+	double vibraspeed = 0;
+	FilterType type;
+};
+
+template<typename P = IIR12dBOctParams>
+class IIR12dBOctFilter : public Filter<P>
+{
+public:
+	float Apply(float s, P& p) override
+	{
+		/* Accelerate vibra by signal-vibra, multiplied by lowpasscutoff */
+		p.vibraspeed += (s - p.vibrapos) * p.c;
+
+		/* Add velocity to vibra's position */
+		p.vibrapos += p.vibraspeed;
+
+		/* Attenuate/amplify vibra's velocity by resonance */
+		p.vibraspeed *= p.r;
+
+		/* Check clipping */
+		double temp = p.vibrapos;
+		if (temp > 1) {
+			temp = 1;
+		}
+		else if (temp < -1) temp = -1;
+
+		/* Store new value */
+		return temp;
+	}
+
 };
 
 template<size_t N, class F, class P = F::Params>
@@ -253,7 +333,7 @@ public:
 		{
 			m_Knob1[i] = &Emplace<KnobSlider>("Freq");
 			m_Knob1[i]->Range({ 10, 22000 });
-			m_Knob1[i]->Power(2);
+			m_Knob1[i]->Power(3);
 			m_Knob1[i]->ResetValue(22000);
 			m_Knob1[i]->ResetValue();
 			m_Knob1[i]->Unit("Hz");
@@ -290,7 +370,7 @@ public:
 			m_Dropdown[i]->AddOption("LowShelf", FilterType::LowShelf);
 			m_Dropdown[i]->AddOption("HighShelf", FilterType::HighShelf);
 			m_Dropdown[i]->Size({59, 20});
-			m_Dropdown[i]->Select(FilterType::AllPass);
+			m_Dropdown[i]->Select(FilterType::Off);
 		}
 
 		UpdateParams();
@@ -352,13 +432,24 @@ public:
 				m_Parameters[i].RecalculateParameters();
 			}
 		
-		else if constexpr (std::is_same_v<Filter, KaiserBesselFilter>)
+		else if constexpr (std::is_same_v<Filter, FIRFilter<107>>)
 			for (int i = 0; i < N; i++)
 			{
+				m_Parameters[i].type = m_Dropdown[i]->Value();
 				m_Parameters[i].Fb = m_Knob1[i]->Value();
 				m_Parameters[i].attenuation = m_Knob2[i]->Value();
 				m_Parameters[i].RecalculateParameters();
 			}
+
+		else if constexpr (std::is_same_v<Filter, IIR12dBOctFilter<>>)
+			for (int i = 0; i < N; i++)
+			{
+				m_Parameters[i].type = m_Dropdown[i]->Value();
+				m_Parameters[i].resofreq = m_Knob1[i]->Value();
+				m_Parameters[i].amp = m_Knob3[i]->Value();
+				m_Parameters[i].RecalculateParameters();
+			}
+
 	}
 
 	operator json() override

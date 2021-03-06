@@ -6,6 +6,7 @@
 
 void ChannelPanel::Select(ChannelPanel* s)
 {
+	pan.DisplayName(false);
 	if (s->IsInput() == m_IsInput)
 	{
 		m_HasSelect = false;
@@ -82,6 +83,7 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 
 	m_ChannelGroup.Volume(volume.Value());
 	m_ChannelGroup.Pan(pan.Value());
+
 	Panel::Update(viewport);
 }
 
@@ -92,19 +94,23 @@ void ChannelPanel::Render(CommandCollection& d)
 	d.Command<Translate>(Position());
 	Background(d);
 
+
 	int _channels = m_ChannelGroup.ChannelAmount();
+
+	int _width = std::floor((_channels-1) / 4 + 1) * 32.0;
+
 	int _y = 100;
 	int _rh = Height() - 35 - _y;
 	int _0db = ((1.0 / 1.412536) * (_rh)) + _y;
 	int _3db = ((std::powf(std::powf(10, 3 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 	int _6db = ((std::powf(std::powf(10, 6 / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
-	int _w = (32.0 / _channels) - (_channels > 4 ? 1 : 2);
+	int _w = (_width / _channels) - 2;
 	int _x = 10;
 
 	// Draw all audio meters
 	for (int i = 0; i < _channels; i++)
 	{
-		_x = 10 + i * (_w + (_channels > 4 ? 1 : 2));
+		_x = 10 + i * (_w + 2);
 		float _level = std::powf(m_ChannelGroup.Channels()[i]->Peak(), 0.25);
 
 		int _h = (std::min(_level, 1.412536f) / 1.412536) * (_rh);
@@ -130,6 +136,13 @@ void ChannelPanel::Render(CommandCollection& d)
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
 		}
 	}
+
+	Width(_x + 30 + _w);
+	volume.Width(_x + _w + 10);
+	routed.Width(Width());
+	pan.Position(Vec2<int>{Width() / 2 - 31, 25});
+	muted.Position(Vec2<int>{Width() / 2 - 30, 50});
+	mono.Position(Vec2<int>{Width() / 2 + 3, 50});
 
 	// Volume level
 	d.Command<Font>(Fonts::Gidole14, 14.0f);

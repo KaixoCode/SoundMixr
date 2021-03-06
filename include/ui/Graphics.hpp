@@ -75,6 +75,16 @@ enum class C
 	KnobSlider,
 	KnobSliderB,
 	KnobSliderV,
+	KnobSliderS,
+
+	Slider,
+	SliderB,
+	SliderV,
+
+	ToggleButton,
+	ToggleButtonB,
+	ToggleButtonV,
+	ToggleButtonText,
 
 	Dynamics,
 	DynamicsB,
@@ -117,15 +127,15 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 50, 50, 50, 255 },	 // RButton,
 		Color{ 0, 0, 0, 0 },		 // RButtonB,
 		Color{ 70, 70, 70, 255 },	 // RButtonH,
-		Color{ 30 ,30, 30, 255 },	 // RButtonHB,
-		Color{ 80, 80, 80, 255 },	 // RButtonS,
-		Color{ 28 ,28, 28, 255 },	 // RButtonSB,
+		Color{ 0, 0, 0, 0 },	     // RButtonHB,
+		Color{ 100, 100, 100, 255 },	 // RButtonS,
+		Color{ 0, 0, 0, 0 },	     // RButtonSB,
 									 // 
 		Color{ 100, 100, 100, 255 }, // VSlider,
 									 // 
-		Color{ 15, 15, 15, 255 },	 // PSlider,
-		Color{ 45, 45, 45, 255 },	 // PSliderB,
-		Color{ 90, 90, 90, 255 },	 // PSliderS,
+		Color{ 29, 29, 29, 255 },	 // PSlider,
+		Color{ 23, 23, 23, 255 },	 // PSliderB,
+		Color{ 65, 65, 65, 255 },	 // PSliderS,
 									 // 
 		Color{ 15, 15, 15, 255 },    // VMeter,
 		Color{ 0, 255, 0, 255 },	 // VMeterFill,
@@ -137,7 +147,17 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 									 // 
 		Color{ 33, 33, 33, 255 },	 // KnobSlider,
 		Color{ 45, 45, 45, 255 },	 // KnobSliderB,
-		Color{ 100, 100, 100, 255 }, // KnobSliderV,
+		Color{ 120, 120, 120, 255 }, // KnobSliderV,
+		Color{ 85, 85, 85, 255 },    // KnobSliderS,
+									 // 
+		Color{ 29, 29, 29, 255 },	 // Slider,
+		Color{ 23, 23, 23, 255 },    // SliderB,
+		Color{ 65, 65, 65, 255 },   // SliderV,
+									 // 
+		Color{ 29, 29, 29, 255 },	 // ToggleButton,
+		Color{ 23, 23, 23, 255 },    // ToggleButtonB,
+		Color{ 65, 65, 65, 255 },    // ToggleButtonV,
+		Color{ 255, 255, 255, 255 }, // ToggleButtonText,
 									 // 
 		Color{ 15, 15, 15, 255 },	 // Dynamics,
 		Color{ 100, 100, 100, 50 },	 // DynamicsB,
@@ -197,6 +217,16 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 245, 245, 245, 255 }, // KnobSlider,
 		Color{ 225, 225, 225, 255 }, // KnobSliderB,
 		Color{ 180, 180, 180, 255 }, // KnobSliderV,
+		Color{ 195, 195, 195, 255 }, // KnobSliderS,
+									 // 
+		Color{ 245, 245, 245, 255 }, // Slider,
+		Color{ 225, 225, 225, 255 }, // SliderB,
+		Color{ 180, 180, 180, 255 }, // SliderV,
+									 // 
+		Color{ 245, 245, 245, 255 }, // ToggleButton,
+		Color{ 225, 225, 225, 255 }, // ToggleButtonB,
+		Color{ 180, 180, 180, 255 }, // ToggleButtonV,
+		Color{ 180, 180, 180, 255 }, // ToggleButtonText,
 									 // 
 		Color{ 255, 255, 255, 255 }, // Dynamics,
 		Color{ 0, 0, 0, 20 },		 // DynamicsB,
@@ -215,7 +245,7 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 126, 157, 181, 255 }, // TextOff,
 		Color{ 158, 181, 199, 255 }, // TextSmall,
 									 // 
-		Color{  44,  61,  77, 255 }, // Divider,
+		Color{  50,  69,  86, 255 }, // Divider,
 									 // 
 		Color{  50,  69,  86, 255 }, // Scrollbar,
 		Color{  95, 120, 137, 255 }, // ScrollbarH,
@@ -255,11 +285,21 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 									 // 
 		Color{  44,  61,  77, 255 }, // KnobSlider,
 		Color{  50,  69,  86, 255 }, // KnobSliderB,
-		Color{  99, 125, 142, 255 }, // KnobSliderV,
+		Color{ 126, 157, 181, 255 }, // KnobSliderV,
+		Color{  90, 116, 132, 255 }, // KnobSliderS,
 									 // 
-		Color{   18,  32,  41, 255 }, // Dynamics,
+		Color{  44,  61,  77, 255 }, // Slider,
+		Color{  99, 125, 142, 255 }, // SliderB,
+		Color{  64,  80,  91, 255 }, // SliderV,
+									 // 
+		Color{  44,  61,  77, 255 }, // ToggleButton,
+		Color{  99, 125, 142, 255 }, // ToggleButtonB,
+		Color{  64,  80,  91, 255 }, // ToggleButtonV,
+		Color{  64,  80,  91, 255 }, // ToggleButtonText,
+									 // 
+		Color{   18,  32,  41, 255 },// Dynamics,
 		Color{  200, 230, 255, 50 }, // DynamicsB,
-		Color{  200, 230, 255, 100 }, // DynamicsL,
+		Color{  200, 230, 255, 100 },// DynamicsL,
 									 // 
 	},
 	// RED
@@ -515,10 +555,107 @@ public:
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		d.Command<Fill>(Theme<C::TextSmall>::Get());
-		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-		d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
+		if (b.DisplayValue())
+		{
+			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+			d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
+		}
+		if (b.DisplayName())
+		{
+			d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
+			d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
+		}
 	}
 };
+
+
+class SliderGraphics
+{
+public:
+
+	static void Render(SliderBase<SliderGraphics>& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+
+		if (b.Vertical())
+		{
+			int _p = 6;
+			int _h = b.NormalizedValue() * (b.Height() - 2);
+
+			d.Command<Fill>(Theme<C::SliderB>::Get());
+			d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+			d.Command<Fill>(Theme<C::Slider>::Get());
+			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+			d.Command<Fill>(Theme<C::SliderV>::Get());
+			d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y() + 1, b.Width() - 2, _h});
+		}
+		else
+		{
+			int _p = 6;
+			int _w = b.NormalizedValue() * (b.Width() - 2);
+
+			d.Command<Fill>(Theme<C::SliderB>::Get());
+			d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+			d.Command<Fill>(Theme<C::Slider>::Get());
+			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+			d.Command<Fill>(Theme<C::SliderV>::Get());
+			d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y() + 1, _w, b.Height() - 2});
+		}
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Fill>(Theme<C::TextSmall>::Get());
+		if (b.DisplayValue())
+		{
+			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+			d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + b.Height() / 2});
+		}
+		if (b.DisplayName())
+		{
+			d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
+			d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
+		}
+	}
+
+};
+
+
+class ToggleButton
+{
+public:
+
+	static void Render(ButtonBase& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+
+		d.Command<Fill>(Theme<C::ToggleButtonB>::Get());
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+		if (b.Active())
+			d.Command<Fill>(Theme<C::ToggleButtonV>::Get());
+		else
+			d.Command<Fill>(Theme<C::ToggleButton>::Get());
+
+		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+
+		if (b.Hovering())
+		{
+			d.Command<Fill>(Theme<C::ButtonH>::Get());
+			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+		}
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		if (b.Active())
+			d.Command<Fill>(Theme<C::ToggleButtonText>::Get());
+		else 
+			d.Command<Fill>(Theme<C::TextOff>::Get());
+		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
+		
+	}
+
+};
+
 
 class KnobSliderGraphics
 {
@@ -528,64 +665,48 @@ public:
 	{
 		using namespace Graphics;
 		int _p = 6;
-		
-		if (true)
-		{
-			double _v = 1.0 - b.NormalizedValue();
-			double _a = _v * M_PI * 1.5 + M_PI * 0.25 - M_PI / 2.0;
 
-			int _w = b.NormalizedValue() * (b.Width() * 0.5 - 1);
 
-			int _h = b.Height() - _p * 2;
-			int _we = _w - _p * 2;
-			d.Command<Fill>(Theme<C::KnobSliderB>::Get());
-			d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()});
-			d.Command<Fill>(Theme<C::KnobSlider>::Get());
-			d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 4});
-			d.Command<Fill>(Theme<C::KnobSlider>::Get());
+		bool _double = b.Range().x < 0 && b.Range().y > 0;
 
-			int _x1 = std::cos(M_PI * 0.25 - M_PI / 2.0) * b.Width() / 2;
-			int _x2 = std::cos(M_PI * 1.75 - M_PI / 2.0) * b.Width() / 2;
+		double _v = 1.0 - b.NormalizedValue();
+		double _a = _v * M_PI * 1.5 + M_PI * 0.25 - M_PI / 2.0;
 
-			d.Command<Graphics::Quad>(Vec4<int>{ b.X() + b.Width() / 2 + _x2, b.Y(), _x1 - _x2, b.Height() / 4});
-			d.Command<Fill>(Theme<C::KnobSliderV>::Get());
-			double _x = std::cos(_a) * b.Width() / 2.0;
-			double _y = std::sin(_a) * b.Height() / 2.0;
-			//d.Command<Graphics::Ellipse>(Vec4<int>{ (int)(b.X() + b.Width() / 2.0 + _x), (int)(b.Y() + b.Height() / 2.0 + _y + 1), b.Width() / 4, b.Height() / 4 }, _v * 360);
-			d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 4.0 + (_x+1) / 2.0), (int)(b.Y() + b.Height() / 2.0 + (_y) / 2.0), b.Width() / 2, 2 }, 360 * _a / (2 * M_PI));
-		}
-		else {
-			if (b.Vertical())
-			{
-				int _p = 6;
-				int _h = b.NormalizedValue() * b.Height();
+		int _w = b.NormalizedValue() * (b.Width() * 0.5 - 1);
 
-				d.Command<Fill>(Theme<C::KnobSliderB>::Get());
-				d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-				d.Command<Fill>(Theme<C::KnobSlider>::Get());
-				d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-				d.Command<Fill>(Theme<C::KnobSliderV>::Get());
-				d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y(), b.Width() - 2, _h});
-			}
-			else
-			{
-				int _p = 6;
-				int _w = b.NormalizedValue() * b.Width();
+		int _h = b.Height() - _p * 2;
+		int _we = _w - _p * 2;
+		d.Command<Fill>(Theme<C::KnobSliderB>::Get());
+		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()});
+		d.Command<Fill>(Theme<C::KnobSliderS>::Get());
+		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()}, Vec2<double>{_double ? _a > M_PI / 2 ? _a : M_PI / 2 : -M_PI * 0.75f, _double ? _a > M_PI / 2 ? M_PI / 2 : _a : _a});
+		d.Command<Fill>(Theme<C::KnobSlider>::Get());
+		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 4});
+		d.Command<Fill>(Theme<C::KnobSlider>::Get());
 
-				d.Command<Fill>(Theme<C::KnobSliderB>::Get());
-				d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-				d.Command<Fill>(Theme<C::KnobSlider>::Get());
-				d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-				d.Command<Fill>(Theme<C::KnobSliderV>::Get());
-				d.Command<Quad>(Vec4<int>{b.X(), b.Y() + 1, _w, b.Height() - 2});
-			}
-		}
+		int _x1 = std::cos(M_PI * 0.25 - M_PI / 2.0) * b.Width() / 2;
+		int _x2 = std::cos(M_PI * 1.75 - M_PI / 2.0) * b.Width() / 2;
+
+		d.Command<Graphics::Quad>(Vec4<int>{ b.X() + b.Width() / 2 + _x2, b.Y(), _x1 - _x2, b.Height() / 4});
+		d.Command<Fill>(Theme<C::KnobSliderV>::Get());
+		double _x = std::cos(_a) * b.Width() / 2.0;
+		double _y = std::sin(_a) * b.Height() / 2.0;
+		//d.Command<Graphics::Ellipse>(Vec4<int>{ (int)(b.X() + b.Width() / 2.0 + _x), (int)(b.Y() + b.Height() / 2.0 + _y + 1), b.Width() / 4, b.Height() / 4 }, _v * 360);
+		d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 4.0 + (_x + 1) / 2.0), (int)(b.Y() + b.Height() / 2.0 + (_y) / 2.0), b.Width() / 2, 2 }, 360 * _a / (2 * M_PI));
+
+
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		d.Command<Fill>(Theme<C::TextSmall>::Get());
-		d.Command<TextAlign>(Align::CENTER, Align::TOP);
-		d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y()});
-		d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
-		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
+		if (b.DisplayValue())
+		{
+			d.Command<TextAlign>(Align::CENTER, Align::TOP);
+			d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + 3});
+		}		
+		if (b.DisplayName())
+		{
+			d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
+			d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
+		}
 	}
 };
 namespace SoundMixrGraphics
