@@ -111,14 +111,10 @@ EffectsGroup::EffectsGroup()
 		Event _copy = e;
 		Event _copy2 = e;
 
-		if (e.type == Event::Type::KeyPressed)
+		if (e.type == Event::Type::KeyPressed || e.type == Event::Type::KeyReleased)
 		{
-			if (!e.repeat)
-				for (auto& _c : m_Effects)
-					_c->AddEvent(_copy);
-			else
-				if (m_Focussed)
-					m_Focussed->AddEvent(_copy);
+			for (auto& _c : m_Components)
+				_c->AddEvent(_copy);
 
 			return;
 		}
@@ -155,6 +151,13 @@ EffectsGroup::EffectsGroup()
 	};
 }
 
+EffectsGroup::~EffectsGroup()
+{
+	m_Dead = true;
+	m_Mutex.lock();
+	m_Mutex.unlock();
+}
+
 EffectsGroup::operator json()
 {
 	json _json = json::array();
@@ -183,10 +186,11 @@ void EffectsGroup::operator=(const json& json)
 
 float EffectsGroup::NextSample(float a, int ch)
 {
+	Lock();
 	float out = a;
 	for (int i = 0; i < m_EffectCount; i++)
 		out = m_Effects[i]->NextSample(out, ch);
-
+	Unlock();
 	return out;
 }
 
@@ -208,6 +212,8 @@ bool EffectsGroup::Hovering()
 
 void EffectsGroup::Update(const Vec4<int>& viewport)
 {
+
+	Lock();
 	for (int i = m_EffectCount - 1; i >= 0; i--)
 	{
 		if (m_Effects[i]->Delete())
@@ -218,6 +224,7 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 			m_Focussed = nullptr;
 		}
 	}
+	Unlock();
 
 
 	m_LayoutManager.Update({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor

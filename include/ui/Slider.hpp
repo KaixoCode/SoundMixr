@@ -89,6 +89,9 @@ public:
 	virtual void   DisplayValue(bool v) { m_DisplayValue = v; }
 	virtual bool   DisplayName() { return m_DisplayName; }
 	virtual void   DisplayName(bool v) { m_DisplayName = v; }
+	virtual bool   Disabled() { return m_Disabled; }
+	virtual void   Disable() { m_Disabled = true; }
+	virtual void   Enable() { m_Disabled = false; }
 
     virtual bool Hovering() const { return m_Hovering; }
 
@@ -151,7 +154,8 @@ protected:
 		m_Dragging = false,
 		m_Shift = false,
 		m_DisplayValue = true,
-		m_DisplayName = true;
+		m_DisplayName = true,
+		m_Disabled = false;
 
 	std::string m_ValueText, m_Name;
 	std::unordered_map<int, std::string> m_Units;

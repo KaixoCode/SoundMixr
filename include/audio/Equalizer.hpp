@@ -147,7 +147,7 @@ public:
 	float Apply(float s, P& p) override
 	{
 		x[0] = s;
-		y[0] = constrain(p.b0a0 * x[0] + p.b1a0 * x[1] + p.b2a0 * x[2] - p.a1a0 * y[1] - p.a2a0 * y[2], -2, 2);
+		y[0] = constrain(p.b0a0 * x[0] + p.b1a0 * x[1] + p.b2a0 * x[2] - p.a1a0 * y[1] - p.a2a0 * y[2], -5, 5);
 
 		for (int i = sizeof(y) / sizeof(double) - 2; i >= 0; i--)
 			y[i + 1] = y[i];
@@ -360,16 +360,16 @@ public:
 			m_Knob3[i]->Multiplier(0.4);
 			m_Knob3[i]->Decimals(2);
 
-			m_Dropdown[i] = &Emplace<Dropdown<FilterType, SoundMixrGraphics::Normal<>>>();
+			m_Dropdown[i] = &Emplace<Dropdown<FilterType, DropdownButton>>();
 			m_Dropdown[i]->AddOption("Off", FilterType::Off);
-			m_Dropdown[i]->AddOption("Lowpass", FilterType::LowPass);
-			m_Dropdown[i]->AddOption("HighPass", FilterType::HighPass);
-			m_Dropdown[i]->AddOption("BandPass", FilterType::BandPass);
-			m_Dropdown[i]->AddOption("AllPass", FilterType::AllPass);
-			m_Dropdown[i]->AddOption("PeakingEQ", FilterType::PeakingEQ);
-			m_Dropdown[i]->AddOption("LowShelf", FilterType::LowShelf);
-			m_Dropdown[i]->AddOption("HighShelf", FilterType::HighShelf);
-			m_Dropdown[i]->Size({59, 20});
+			m_Dropdown[i]->AddOption("LP", FilterType::LowPass);
+			m_Dropdown[i]->AddOption("HP", FilterType::HighPass);
+			m_Dropdown[i]->AddOption("BP", FilterType::BandPass);
+			m_Dropdown[i]->AddOption("AP", FilterType::AllPass);
+			m_Dropdown[i]->AddOption("Peak", FilterType::PeakingEQ);
+			m_Dropdown[i]->AddOption("LS", FilterType::LowShelf);
+			m_Dropdown[i]->AddOption("HS", FilterType::HighShelf);
+			m_Dropdown[i]->Size({40, 20});
 			m_Dropdown[i]->Select(FilterType::Off);
 		}
 
@@ -382,7 +382,7 @@ public:
 		for (int i = 0; i < N; i++)
 		{
 			int x = Width() - 45 - i * 59;
-			m_Dropdown[i]->Position({ x - 14, 210 });
+			m_Dropdown[i]->Position({ x - 5, 210 });
 			m_Knob1[i]->Position({ x, 160 });
 			m_Knob2[i]->Position({ x, 90 });
 			m_Knob3[i]->Position({ x, 20 });
@@ -422,6 +422,22 @@ public:
 
 	void UpdateParams()
 	{
+		for (int i = 0; i < N; i++)
+		{
+			if (m_Dropdown[i]->Value() == FilterType::Off)
+			{
+				m_Knob1[i]->Disable();
+				m_Knob2[i]->Disable();
+				m_Knob3[i]->Disable();
+			}
+			else
+			{
+				m_Knob1[i]->Enable();
+				m_Knob2[i]->Enable();
+				m_Knob3[i]->Enable();
+
+			}
+		}
 		if constexpr (std::is_same_v<Filter, BiquadFilter<>>)
 			for (int i = 0; i < N; i++)
 			{
@@ -490,7 +506,7 @@ private:
 		m_Knob3Name = "Q";
 
 	KnobSlider * m_Knob1[N], * m_Knob2[N], * m_Knob3[N];
-	Dropdown<FilterType, SoundMixrGraphics::Normal<>>* m_Dropdown[N];
+	Dropdown<FilterType, DropdownButton>* m_Dropdown[N];
 
 	Params m_Parameters[N];
 	std::vector<ChannelEqualizer<N, Filter, Params>> m_Equalizers;

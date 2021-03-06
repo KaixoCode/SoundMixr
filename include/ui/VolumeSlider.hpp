@@ -22,7 +22,7 @@ public:
 		Vertical(true);
 	}
 
-	double Decibels() { return 20 * std::log10(Value()); };
+	double Decibels() { return 20 * std::log10(std::max(Value(), 0.000001)); };
 
 	void Update(const Vec4<int>& v)
 	{

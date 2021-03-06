@@ -31,6 +31,7 @@ public:
 	virtual float Level() const { return m_OutLevel; }
 
 	int	  ID()               const { return m_Id; }
+	int	  GroupIndex()       const { return m_GroupIndex; }
 	float Volume()           const { return m_Volume; }
 	float Pan()              const { return m_Pan; }
 	float Peak()             const { return m_Peak; }

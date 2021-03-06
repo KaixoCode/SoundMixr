@@ -25,7 +25,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	Background(Theme<C::MainPanel>::Get());
 
 	Panel().Background(Theme<C::MainPanel>::Get());
-	Panel().Layout<Layout::Border>(0, 8, true, true, true, true);
+	Panel().Layout<Layout::Border>(0, 8, false, false, false, false);
 	Panel().AutoResize(false, false);
 
 	m_Inputs.AutoResize(true, false);

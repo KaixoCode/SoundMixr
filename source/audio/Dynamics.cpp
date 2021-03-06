@@ -5,54 +5,54 @@
 // -------------------------------------------------------------------------- \\
 
 Dynamics::Dynamics()
-	: m_Knob(Emplace<KnobSlider>("PreGain")),
-	m_Knob2(Emplace<KnobSlider>("Attack")),
-	m_Knob3(Emplace<KnobSlider>("Release")),
-	m_Knob4(Emplace<KnobSlider>("PostGain")),
-	m_Knob5(Emplace<KnobSlider>("Mix")),
+	: m_PreGain(Emplace<KnobSlider>("PreGain")),
+	m_Attack(Emplace<KnobSlider>("Attack")),
+	m_Release(Emplace<KnobSlider>("Release")),
+	m_PostGain(Emplace<KnobSlider>("PostGain")),
+	m_Mix(Emplace<KnobSlider>("Mix")),
 	m_Slider(Emplace<DynamicsSlider>()),
 	Effect("Dynamics")
 {
 	Height(200);
-	m_Knob.Range({ -24, 24 });
-	m_Knob.ResetValue(0);
-	m_Knob.ResetValue();
-	m_Knob.Unit("dB");
-	m_Knob.Size({ 30, 30 });
-	m_Knob.Multiplier(0.4);
-	m_Knob.Decimals(2);
+	m_PreGain.Range({ -24, 24 });
+	m_PreGain.ResetValue(0);
+	m_PreGain.ResetValue();
+	m_PreGain.Unit("dB");
+	m_PreGain.Size({ 30, 30 });
+	m_PreGain.Multiplier(0.4);
+	m_PreGain.Decimals(2);
 
-	m_Knob2.Range({ .1f, 30 });
-	m_Knob2.Power(2);
-	m_Knob2.Multiplier(0.4);
-	m_Knob2.ResetValue(3);
-	m_Knob2.ResetValue();
-	m_Knob2.Unit(" ms");
-	m_Knob2.Size({ 30, 30 });
+	m_Attack.Range({ .1f, 30 });
+	m_Attack.Power(2);
+	m_Attack.Multiplier(0.4);
+	m_Attack.ResetValue(3);
+	m_Attack.ResetValue();
+	m_Attack.Unit(" ms");
+	m_Attack.Size({ 30, 30 });
 
-	m_Knob3.Range({ 1, 300 });
-	m_Knob3.Power(2);
-	m_Knob3.ResetValue(30);
-	m_Knob3.ResetValue();
-	m_Knob3.Multiplier(0.4);
-	m_Knob3.Unit(" ms");
-	m_Knob3.Size({ 30, 30 });
+	m_Release.Range({ 1, 300 });
+	m_Release.Power(2);
+	m_Release.ResetValue(30);
+	m_Release.ResetValue();
+	m_Release.Multiplier(0.4);
+	m_Release.Unit(" ms");
+	m_Release.Size({ 30, 30 });
 
-	m_Knob4.Range({ -24, 24 });
-	m_Knob4.Unit("dB");
-	m_Knob4.ResetValue(0);
-	m_Knob4.ResetValue();
-	m_Knob4.Size({ 30, 30 });
-	m_Knob4.Multiplier(0.4);
-	m_Knob4.Decimals(2);
+	m_PostGain.Range({ -24, 24 });
+	m_PostGain.Unit("dB");
+	m_PostGain.ResetValue(0);
+	m_PostGain.ResetValue();
+	m_PostGain.Size({ 30, 30 });
+	m_PostGain.Multiplier(0.4);
+	m_PostGain.Decimals(2);
 
-	m_Knob5.Range({ 0, 100 });
-	m_Knob5.Multiplier(0.4);
-	m_Knob5.ResetValue(100);
-	m_Knob5.ResetValue();
-	m_Knob5.Unit(" %");
-	m_Knob5.Size({ 30, 30 });
-	m_Knob5.Decimals(0);
+	m_Mix.Range({ 0, 100 });
+	m_Mix.Multiplier(0.4);
+	m_Mix.ResetValue(100);
+	m_Mix.ResetValue();
+	m_Mix.Unit(" %");
+	m_Mix.Size({ 30, 30 });
+	m_Mix.Decimals(0);
 
 	UpdateParams();
 
@@ -61,11 +61,11 @@ Dynamics::Dynamics()
 
 void Dynamics::Update(const Vec4<int>& v)
 {
-	m_Knob.Position({ Width() - 280, 20 });
-	m_Knob4.Position({ Width() - 225, 20 });
-	m_Knob2.Position({ Width() - 155, 20 });
-	m_Knob3.Position({ Width() - 105, 20 });
-	m_Knob5.Position({ Width() - 45, 20 });
+	m_PreGain.Position({ Width() - 280, 20 });
+	m_PostGain.Position({ Width() - 225, 20 });
+	m_Attack.Position({ Width() - 162, 20 });
+	m_Release.Position({ Width() - 107, 20 });
+	m_Mix.Position({ Width() - 45, 20 });
 	m_Slider.Position({ 12, 93 });
 	m_Slider.Size({ (Width() - 24), Height() - 123 });
 	Background(Theme<C::Channel>::Get());
@@ -83,8 +83,8 @@ void Dynamics::Render(CommandCollection& d)
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
 	d.Command<Fill>(Theme<C::Divider>::Get());
-	d.Command<Quad>(Vec4<int>{(m_Knob4.X() + m_Knob4.Width() + m_Knob2.X()) / 2, 10, 1, 50});
-	d.Command<Quad>(Vec4<int>{(m_Knob3.X() + m_Knob3.Width() + m_Knob5.X()) / 2, 10, 1, 50});
+	d.Command<Quad>(Vec4<int>{(m_PostGain.X() + m_PostGain.Width() + m_Attack.X()) / 2, 10, 1, 50});
+	d.Command<Quad>(Vec4<int>{(m_Release.X() + m_Release.Width() + m_Mix.X()) / 2, 10, 1, 50});
 	d.Command<Fill>(Theme<C::TextSmall>::Get());
 	d.Command<Font>(Fonts::Gidole14, 14.0f);
 	d.Command<TextAlign>(Align::LEFT, Align::BOTTOM);
@@ -128,99 +128,22 @@ void Dynamics::Channels(int c)
 
 float Dynamics::NextSample(float sin, int c) 
 {
-	if (m_Channels <= c)
-		return 0;
-
-	if (sin == 0 && zerocounter <= 100)
-		zerocounter++;
-	else if (sin != 0)
-		zerocounter = 0;
-
-	if (zerocounter > 100)
-		return 0;
-
-	float out = 0;
-	if (c != 0)
-	{
-		float abs = sin;
-		myabs(abs);
-		if (biggest < abs)
-			biggest = abs;
-		out = sin * pregain * compressMult * expanderMult * postgain;
-	}
-	else
+	if (c == 0)
 	{
 		if (counter > 512)
 			counter = 0;
 
 		counter++;
-
-		double s = biggest;
-		biggest = 0;
-		s *= pregain;
-		float _absSample = s;
-		myabs(_absSample);
-
-		// convert key to dB
-		_absSample += DC_OFFSET;	// add DC offset to avoid log( 0 )
-		double _absSampledB = lin2db(_absSample); // convert linear -> dB
-
-		// threshold
-		double _overdB = _absSampledB - expanderThreshhold;
-		if (_overdB > 0.0)
-			_overdB = 0.0;
-
-		// attack/release
-		_overdB += DC_OFFSET; // add DC offset to avoid denormal	
-		if (_overdB > expanderEnv)
-			expanderEnv = _overdB + attcoef * (expanderEnv - _overdB);
-		else
-			expanderEnv = _overdB + relcoef * (expanderEnv - _overdB);
-
-		_overdB = expanderEnv - DC_OFFSET; // subtract DC offset
-
-			// transfer function
-		double _gr = _overdB * (expanderRatio - 1.0) * mix;
-		expanderMult = db2lin(_gr); // convert dB -> linear
-
-		// output gain expander
-		s *= expanderMult;
-
-		// Absolute of new sample
-		_absSample = s;
-		myabs(_absSample);
-
-		// convert key to dB
-		_absSample += DC_OFFSET;	// add DC offset to avoid log( 0 )
-		_absSampledB = lin2db(_absSample); // convert linear -> dB
-
-		// threshold
-		_overdB = _absSampledB - compressThreshhold;
-		if (_overdB < 0.0)
-			_overdB = 0.0;
-
-		// attack/release
-		_overdB += DC_OFFSET; // add DC offset to avoid denormal	
-		if (_overdB > compressEnv)
-			compressEnv = _overdB + attcoef * (compressEnv - _overdB);
-		else
-			compressEnv = _overdB + relcoef * (compressEnv - _overdB);
-		_overdB = compressEnv - DC_OFFSET;// subtract DC offset
-
-		// transfer function
-		_gr = _overdB * (compressRatio - 1.0) * mix;
-		compressMult = db2lin(_gr); // convert dB -> linear
-
-		// output gain
-		s;
-		out = sin * pregain * compressMult * expanderMult * postgain;
 	}
+
+	float out = m_Compressor.NextSample(sin, c);
 
 	float abs = out;
 	myabs(abs);
 	auto& l = m_Peaks[c];
 	if (abs > l)
 		l = abs;
+
 	if (counter > 512)
 		m_Levels[c] = m_Levels[c] * r + m_Peaks[c] * (1.0 - r),
 		m_Peaks[c] = 0;

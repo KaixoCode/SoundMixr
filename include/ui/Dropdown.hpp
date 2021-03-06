@@ -19,11 +19,11 @@ private:
 };
 
 template<typename Enum, typename Graphics>
-class Dropdown : public Button<Graphics, ButtonType::Normal>
+class Dropdown : public ButtonType::Normal
 {
 public:
 	Dropdown()
-		: Button<Graphics, ButtonType::Normal>{ [this] { RightClickMenu::Get().Open(&m_Menu); } }, 
+		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); } }, 
 		m_Key(ButtonType::List::NewKey())
 	{
 		m_Menu.ButtonSize({ 140, 20 });
@@ -51,6 +51,12 @@ public:
 	}
 
 	Enum Value() { return m_Value; }
+
+	void Render(CommandCollection& d) override
+	{
+		ButtonType::Normal::Render(d);
+		Graphics::Render(*this, d);
+	};
 
 private:
 

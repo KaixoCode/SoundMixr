@@ -43,7 +43,10 @@ class EffectsGroup : public Panel
 {
 public:
 	EffectsGroup();
+	~EffectsGroup();
 
+	bool  Lock()	const { if (!m_Dead) m_Mutex.lock(); return !m_Dead; }
+	void  Unlock()	const { m_Mutex.unlock(); }
 	float NextSample(float a, int ch);
 	void  Channels(int channels);
 	bool  Hovering();
@@ -68,6 +71,11 @@ public:
 private:
 	std::vector<std::unique_ptr<Effect>> m_Effects;
 	int m_Channels = 0, m_EffectCount = 0;
+
+	bool m_Dead = false;
+
+	mutable std::mutex m_Mutex;
+
 
 	void Determine(Event& e);
 };

@@ -40,7 +40,7 @@ void ChannelGroup::Pan(float p)
 {
 	m_Pan = p;
 	int _index = 0;
-	double _p = -p / 50.0;
+	double _p = p / 50.0;
 	double _a = 1.0 - std::abs((ChannelAmount() - 1) / 2.0 * _p);
 	for (auto& c : m_Channels)
 	{
@@ -109,7 +109,13 @@ void ChannelGroup::AddChannel(Channel* c)
 		}
 		m_EffectsGroup.Channels(m_ChannelAmount + 1);
 		m_Channels.push_back(c);
-		c->Group(this, ChannelAmount());
+		std::sort(m_Channels.begin(), m_Channels.end(),
+			[](Channel* a, Channel* b) -> bool
+			{
+				return a->ID() < b->ID();
+			});
+		for (int i = 0; i < ChannelAmount() + 1; i++)
+			m_Channels[i]->Group(this, i);
 		c->Mono(Mono());
 		c->Mute(Muted());
 		Pan(Pan());

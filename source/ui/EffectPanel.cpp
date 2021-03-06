@@ -15,25 +15,38 @@ EffectPanel::EffectPanel()
 			m_EffectsGroup->AddEvent(e);
 		}
 	};
+	Width(314);
 }
 
 void EffectPanel::Update(const Vec4<int>& viewport)
 {
+
+	if (m_EffectsGroup)
+	{
+		Height(m_EffectsGroup->Height() + 64);
+		auto& newv = viewport.Translate({ X(), Y() });
+		newv.height += 96;
+		newv.y -= 96;
+		m_EffectsGroup->Width(Width());
+		m_EffectsGroup->Y(64);
+		m_EffectsGroup->Update(newv);
+	}
+	auto& newvv = viewport.Translate({ X(), Y() });
+	newvv.height += 96;
+	newvv.y -= 96;
+
 	if (m_EffectsGroup)
 		m_Cursor = m_EffectsGroup ? m_EffectsGroup->Cursor() : m_Pressed && m_LayoutManager.Cursor() == -1 ?
 		GLFW_CURSOR_NORMAL : m_LayoutManager.Cursor();
 
-	auto& newv = viewport.Overlap({ X(), Y(), Width(), Height() }).Translate({ X(), Y() });
-
 	if (m_EffectsGroup)
 	{
-		Height(m_EffectsGroup->Height() + 8);
+		Height(m_EffectsGroup->Height() + 64);
 		m_EffectsGroup->Width(Width());
-		m_EffectsGroup->Y(8);
-		m_EffectsGroup->Update(newv);
+		m_EffectsGroup->Y(64);
 	}
 
-	Container::Update(newv);
+	Container::Update(newvv);
 }
 
 void EffectPanel::Render(CommandCollection& d)
@@ -53,7 +66,7 @@ void EffectPanel::Render(CommandCollection& d)
 EffectScrollPanel::EffectScrollPanel()
 	: m_EffectPanel(Panel<EffectPanel>())
 {
-	EnableScrollbars(false, true);
+	EnableScrollbars(true, true);
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Effect Panel").Disable();
 	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 4);
@@ -89,10 +102,6 @@ void EffectScrollPanel::Render(CommandCollection& d)
 
 	d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
 	d.Command<Graphics::Quad>(Vec4<int>{X() - 8, Y(), 8, Height()});
-	d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
-	d.Command<Graphics::Quad>(Vec4<int>{X() - 6, Y() + Height() / 2 - 8, 1, 16});
-	d.Command<Graphics::Quad>(Vec4<int>{X() - 4, Y() + Height() / 2 - 8, 1, 16});
-	d.Command<Graphics::Quad>(Vec4<int>{X() - 2, Y() + Height() / 2 - 8, 1, 16});
 
 	SMXRScrollPanel::Render(d);
 }

@@ -553,8 +553,11 @@ public:
 		d.Command<Fill>(Theme<C::PSliderS>::Get());
 		d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2, b.Y() + 1, _w, b.Height() - 2});
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		d.Command<Fill>(Theme<C::TextSmall>::Get());
+		d.Command<Font>(Fonts::Gidole14, 14.0f);		
+		if (b.Disabled())
+			d.Command<Fill>(Theme<C::TextOff>::Get());
+		else
+			d.Command<Fill>(Theme<C::TextSmall>::Get());
 		if (b.DisplayValue())
 		{
 			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
@@ -604,7 +607,10 @@ public:
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		d.Command<Fill>(Theme<C::TextSmall>::Get());
+		if (b.Disabled())
+			d.Command<Fill>(Theme<C::TextOff>::Get());
+		else
+			d.Command<Fill>(Theme<C::TextSmall>::Get());
 		if (b.DisplayValue())
 		{
 			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
@@ -656,6 +662,46 @@ public:
 
 };
 
+class DropdownButton
+{
+public:
+
+	template<typename T>
+	static void Render(T& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+
+		d.Command<Fill>(Theme<C::ToggleButtonB>::Get());
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+		if (b.Active())
+			d.Command<Fill>(Theme<C::ToggleButtonV>::Get());
+		else
+			d.Command<Fill>(Theme<C::ToggleButton>::Get());
+
+		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+
+		if (b.Hovering())
+		{
+			d.Command<Fill>(Theme<C::ButtonH>::Get());
+			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+		}
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+
+		if ((int)b.Value() != 0)
+			d.Command<Fill>(Theme<C::TextSmall>::Get());
+		else
+			d.Command<Fill>(Theme<C::TextOff>::Get());
+
+
+		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2 });
+	}
+
+};
+
+
 
 class KnobSliderGraphics
 {
@@ -696,7 +742,11 @@ public:
 
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		d.Command<Fill>(Theme<C::TextSmall>::Get());
+		if (b.Disabled())
+			d.Command<Fill>(Theme<C::TextOff>::Get());
+		else
+			d.Command<Fill>(Theme<C::TextSmall>::Get());
+
 		if (b.DisplayValue())
 		{
 			d.Command<TextAlign>(Align::CENTER, Align::TOP);

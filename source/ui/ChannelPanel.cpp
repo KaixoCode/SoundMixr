@@ -94,7 +94,6 @@ void ChannelPanel::Render(CommandCollection& d)
 	d.Command<Translate>(Position());
 	Background(d);
 
-
 	int _channels = m_ChannelGroup.ChannelAmount();
 
 	int _width = std::floor((_channels-1) / 4 + 1) * 32.0;
@@ -191,7 +190,7 @@ void ChannelPanel::Render(CommandCollection& d)
 	}
 	d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
 	d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
-	d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
+	d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
 	d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 
 	Container::Render(d);
