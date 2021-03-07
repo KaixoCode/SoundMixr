@@ -131,6 +131,8 @@ public:
 			s;
 			out = sin * pregain * compressMult * expanderMult * postgain;
 		}
+
+		return out;
 	}
 
 	float Coeficient(float ms) { return std::exp(-1.0 / ((ms / 1000.0) * Effect::sampleRate)); }
@@ -168,6 +170,8 @@ public:
 	operator json()
 	{
 		json _json = json::object();
+		_json["enabled"] = m_Enable.Active();
+		_json["small"] = m_Minim->Active();
 		_json["type"] = "Dynamics";
 		_json["expt"] = m_Slider.threshhold2;
 		_json["comt"] = m_Slider.threshhold1;
@@ -183,15 +187,17 @@ public:
 
 	void operator=(const json& json)
 	{
-		double p1 = json["expt"].get<double>();
-		double p2 = json["comt"].get<double>();
-		double p3 = json["expr"].get<double>();
-		double p4 = json["comr"].get<double>();
-		double p5 = json["att"].get<double>();
-		double p6 = json["ret"].get<double>();
-		double p7 = json["prg"].get<double>();
-		double p8 = json["pog"].get<double>();
-		double p9 = json["mix"].get<double>();
+		m_Enable.Active(json.at("enabled").get<bool>());
+		m_Minim->Active(json.at("small").get<bool>());
+		double p1 = json.at("expt").get<double>();
+		double p2 = json.at("comt").get<double>();
+		double p3 = json.at("expr").get<double>();
+		double p4 = json.at("comr").get<double>();
+		double p5 = json.at("att").get<double>();
+		double p6 = json.at("ret").get<double>();
+		double p7 = json.at("prg").get<double>();
+		double p8 = json.at("pog").get<double>();
+		double p9 = json.at("mix").get<double>();
 		m_Slider.threshhold2 = p1;
 		m_Slider.threshhold1 = p2;
 		m_Slider.ratio2 = p3;

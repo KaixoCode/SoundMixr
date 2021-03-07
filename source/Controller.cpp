@@ -219,12 +219,12 @@ void Controller::Run()
         }, "Dark", _key);
     if (Themes::Theme == Themes::DARK) _theme1.Selected(true);
 
-    auto& _theme2 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
+    /*auto& _theme2 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
             Themes::Theme = Themes::LIGHT;
             _themeCallback();
         }, "Light", _key);
-    if (Themes::Theme == Themes::LIGHT) _theme2.Selected(true);
+    if (Themes::Theme == Themes::LIGHT) _theme2.Selected(true);*/
 
     auto& _theme3 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
@@ -325,86 +325,90 @@ void Controller::LoadRouting()
     std::ifstream _in;
     _in.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
 
-    bool _error = false;
-    try 
+    bool _error = true;
+    if (!_in.fail())
     {
-        json _json;
-        _in >> _json;
-
-        auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
-        for (auto& a : m_AsioDevice.SoundboardChannels())
-            _soundboardChannel.AddChannel(&a);
-
-        // First load all the output channels
-        auto _outputs = _json["output_channels"];
-        for (auto& i : _outputs)
+        _error = false;
+        try 
         {
-            // Emplace a channelgroup to the list
-            auto& _c = m_List->EmplaceChannel(false);
+            json _json;
+            _in >> _json;
+
+            auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+            for (auto& a : m_AsioDevice.SoundboardChannels())
+                _soundboardChannel.AddChannel(&a);
+
+            // First load all the output channels
+            auto _outputs = _json.at("output_channels");
+            for (auto& i : _outputs)
+            {
+                // Emplace a channelgroup to the list
+                auto& _c = m_List->EmplaceChannel(false);
            
-            // Add all channels that are in this channelgroup
-            json _channels = i["channels"];
-            for (int i : _channels)
-            {
-                _outputIdsLoaded[i] = true;
-                _c.AddChannel(&m_AsioDevice.Outputs()[i]);
+                // Add all channels that are in this channelgroup
+                json _channels = i.at("channels");
+                for (int i : _channels)
+                {
+                    _outputIdsLoaded[i] = true;
+                    _c.AddChannel(&m_AsioDevice.Outputs()[i]);
+                }
+
+                // Set the rest of the parameters
+                _c = i;
             }
 
-            // Set the rest of the parameters
-            _c = i;
-        }
-
-        // Load all the input channels
-        auto _inputs = _json["input_channels"];
-        for (auto& i : _inputs)
-        {
-            // Emplace a channelgroup to the list
-            auto& _c = m_List->EmplaceChannel(true);
-
-            // Add all channels that are in this channelgroup
-            json _channels = i["channels"];
-            for (int i : _channels)
+            // Load all the input channels
+            auto _inputs = _json.at("input_channels");
+            for (auto& i : _inputs)
             {
-                _inputIdsLoaded[i] = true;
-                _c.AddChannel(&m_AsioDevice.Inputs()[i]);
-            }
+                // Emplace a channelgroup to the list
+                auto& _c = m_List->EmplaceChannel(true);
 
-            // Then add all the connections of this channelgroup
-            json _connections = i["connections"];
-            for (int i : _connections)
-            {
-                // Find the output channelgroup by id.
-                auto& _it = std::find_if(m_List->Channels().begin(), m_List->Channels().end(),
-                    [=](ChannelPanel* c) { return !c->IsInput() && c->ChannelGroup().ID() == i; }
-                );
+                // Add all channels that are in this channelgroup
+                json _channels = i.at("channels");
+                for (int i : _channels)
+                {
+                    _inputIdsLoaded[i] = true;
+                    _c.AddChannel(&m_AsioDevice.Inputs()[i]);
+                }
+
+                // Then add all the connections of this channelgroup
+                json _connections = i.at("connections");
+                for (int i : _connections)
+                {
+                    // Find the output channelgroup by id.
+                    auto& _it = std::find_if(m_List->Channels().begin(), m_List->Channels().end(),
+                        [=](ChannelPanel* c) { return !c->IsInput() && c->ChannelGroup().ID() == i; }
+                    );
                 
-                // If it exists, connect with it.
-                if (_it != m_List->Channels().end())
-                    _c.ChannelGroup().Connect(&(*_it)->ChannelGroup());
-            }
+                    // If it exists, connect with it.
+                    if (_it != m_List->Channels().end())
+                        _c.ChannelGroup().Connect(&(*_it)->ChannelGroup());
+                }
 
-            _c = i;
+                _c = i;
+            }
+        }
+    
+        // If error occured (either file didn't exist or was parced incorrectly
+        // load all the channels as stereo channels.
+        catch (json::parse_error err)
+        {
+            _error = true;
+        }
+        catch (json::other_error err)
+        {
+            _error = true;
+        }
+        catch (json::type_error err)
+        {
+            _error = true;
+        }
+        catch (std::exception& e)
+        {
+            _error = true;
         }
     }
-    // If error occured (either file didn't exist or was parced incorrectly
-    // load all the channels as stereo channels.
-    catch (json::parse_error err)
-    {
-        _error = true;
-    }
-    catch (json::other_error err)
-    {
-        _error = true;
-    }
-    catch (json::type_error err)
-    {
-        _error = true;
-    }
-    catch (std::exception& e)
-    {
-        _error = true;
-    }
-
     if (_error)
     {
         m_List->Clear();

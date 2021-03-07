@@ -3,18 +3,31 @@
 #include "audio/Equalizer.hpp"
 #include "audio/Utility.hpp"
 
+template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex)
+{
+	if (oldIndex > newIndex)
+		std::rotate(v.rend() - oldIndex - 1, v.rend() - oldIndex, v.rend() - newIndex);
+	else
+		std::rotate(v.begin() + oldIndex, v.begin() + oldIndex + 1, v.begin() + newIndex + 1);
+}
+
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
 // -------------------------------------------------------------------------- \\
 
 Effect::Effect(const std::string& name)
-	: m_Name(name), m_Channels(0)
+	: m_Name(name), m_Channels(0),
+	m_Enable(Emplace<Button<ToggleButton, ButtonType::Toggle>>(&m_Enabled, ""))
 {
+	m_RealHeight = -1;
+	m_Enable.Size({ 18, 18 });
+
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, name).Disable();
-	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 4);
+	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
 	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s)
-		{
+			{
 			if (s)
 			{
 				m_RealHeight = Height();
@@ -23,10 +36,14 @@ Effect::Effect(const std::string& name)
 			}
 			else
 			{
+				if (m_RealHeight == -1)
+					m_RealHeight = Height();
+
 				Height(m_RealHeight);
 				m_Small = false;
 			}
 		}, "Minimize");
+	m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_Delete = true; }, "Remove");
 	m_Listener += [this](Event::MousePressed& e)
 	{
@@ -52,6 +69,19 @@ Effect::Effect(const std::string& name)
 	{
 		m_Hovering = false;
 	};
+
+	m_Listener += [this](Event::MouseMoved& e)
+	{
+		m_HoveringDrag = false;
+		if (e.x > 25 && e.y > Height() - 25 && e.x < Width() - 25)
+			m_HoveringDrag = true;
+	};
+}
+
+void Effect::Update(const Vec4<int>& v) 
+{
+	m_Enable.Position({ 3, Height() - 22 });
+	Panel::Update(v);
 }
 
 void Effect::Render(CommandCollection& d)
@@ -65,9 +95,14 @@ void Effect::Render(CommandCollection& d)
 	d.Command<Fill>(Theme<C::ChannelSelected>::Get());
 	d.Command<Quad>(Vec4<int>{ 0, Height() - 25, Width(), 25 });
 	d.Command<Font>(Fonts::Gidole16, 16.0f);
-	d.Command<Fill>(Theme<C::TextSmall>::Get());
+
+	if (m_Enabled)
+		d.Command<Fill>(Theme<C::TextSmall>::Get());
+	else
+		d.Command<Fill>(Theme<C::TextOff>::Get());
+
 	d.Command<TextAlign>(Align::LEFT, Align::TOP);
-	d.Command<Text>(&m_Name, Vec2<int>{ 5, Height() - 2});
+	d.Command<Text>(&m_Name, Vec2<int>{ 30, Height() - 2});
 	
 	d.Command<Fill>(Theme<C::TextOff>::Get());
 	if (!m_Small)
@@ -75,9 +110,17 @@ void Effect::Render(CommandCollection& d)
 	else
 		d.Command<Triangle>(Vec4<int>{Width() - 12, Height() - 12, 10, 10}, 270.0f);
 
+	m_Enable.Render(d);
+
+	if (!m_Enabled)
+	{
+		d.Command<Fill>(Color{ 0, 0, 0, 50 });
+		d.Command<Quad>(Vec4<int>{ 0, 0, Width(), Height() - 25 });
+	}
 	d.Command<PopMatrix>();
 
 	m_Div->Color(Theme<C::Divider>::Get());
+	m_Div2->Color(Theme<C::Divider>::Get());
 }
 
 // -------------------------------------------------------------------------- \\
@@ -144,6 +187,41 @@ EffectsGroup::EffectsGroup()
 		if (e.type == Event::Type::MouseReleased)
 			this->Determine(e);
 	};
+
+	m_Listener += [this](Event::MousePressed& e)
+	{
+		if (e.button == Event::MouseButton::LEFT && m_Hovering && m_Hovering->HoveringDrag())
+			m_Dragging = m_Hovering,
+			m_InsertIndex = constrain(GetIndex(e.y), 0, m_EffectCount - 1);;
+	};
+
+	m_Listener += [this](Event::MouseDragged& e)
+	{
+		if (m_Dragging)
+			m_InsertIndex = constrain(GetIndex(e.y), 0, m_EffectCount - 1);
+	};
+
+	m_Listener += [this](Event::MouseReleased& e)
+	{
+		if (m_Dragging)
+		{
+			int _myIndex = 0;
+			int _index = 0;
+			for (auto& i : m_Effects)
+			{
+				if (i.get() == m_Dragging)
+				{
+					_myIndex = _index;
+					break;
+				}
+				_index++;
+			}
+			move(m_Effects, _index, m_InsertIndex);
+			m_Dragging = nullptr;
+			m_InsertIndex = -1;
+		}
+	};
+
 }
 
 EffectsGroup::~EffectsGroup()
@@ -165,7 +243,7 @@ void EffectsGroup::operator=(const json& json)
 {
 	for (auto effect : json)
 	{
-		auto& type = effect["type"].get<std::string>();
+		auto& type = effect.at("type").get<std::string>();
 		if (type == "Dynamics")
 		{
 			auto& _d = Emplace<Dynamics>();
@@ -226,9 +304,11 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 	}
 	Unlock();
 
-
 	m_LayoutManager.Update({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor
-	m_Cursor = m_Pressed && m_LayoutManager.Cursor() == -1 ? GLFW_CURSOR_NORMAL : m_LayoutManager.Cursor();
+	m_Cursor = 
+		(m_Hovering && m_Hovering->HoveringDrag()) || m_Dragging ? GLFW_RESIZE_ALL_CURSOR : 
+		m_Hovering ? m_Hovering->Cursor() :
+		m_Pressed && m_LayoutManager.Cursor() == -1 ? GLFW_CURSOR_NORMAL : m_LayoutManager.Cursor();
 
 	if (m_AutoResizeX)
 		Width(m_LayoutManager.BiggestCoords().x);
@@ -266,12 +346,26 @@ void EffectsGroup::Render(CommandCollection& d)
 		return;
 
 	// Render all the components that lie within the viewport and are visible.
+	int _index = 0;
+	bool _past = false;
 	for (auto& _c : m_Effects)
+	{
+		if (m_InsertIndex == _index)
+		{
+			d.Command<Fill>(Theme<C::TextOff>::Get());
+			d.Command<Quad>(Vec4<int>{_c->X(), _c->Y() + (_past ? -5 : _c->Height() + 3), _c->Width(), 2});
+		}
+	
+		if (_c.get() == m_Dragging)
+			_past = true;
+		
 		if (_c->Visible() &&
 			_c->X() + _c->Width() >= m_Viewport.x && _c->Y() + _c->Height() >= m_Viewport.y &&
 			_c->X() <= m_Viewport.x + m_Viewport.width && _c->Y() <= m_Viewport.y + m_Viewport.height)
 			_c->Render(d);
-
+		
+		_index++;
+	}
 
 	d.Command<PopMatrix>();
 }
@@ -279,7 +373,7 @@ void EffectsGroup::Render(CommandCollection& d)
 void EffectsGroup::Determine(Event& e)
 {
 	// Determine the next hovering
-	Component* _nextHover = 0;
+	Effect* _nextHover = 0;
 	for (auto& _c : m_Effects)
 		if (_c->Visible())
 			if (_c->WithinBounds({ e.x, e.y }))

@@ -71,9 +71,10 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 	c.a = m_Transparency ? 245.0f : 255.0f;
 	Background(c);
 
-	m_Div1->Color(Theme<C::Divider>::Get());
+	//m_Div1->Color(Theme<C::Divider>::Get());
 	m_Div2->Color(Theme<C::Divider>::Get());
 	m_Div3->Color(Theme<C::Divider>::Get());
+	m_Div4->Color(Theme<C::Divider>::Get());
 	m_Div3->Visible(m_Connect->Visible() || m_Split->Visible());
 	m_Split->Visible(m_ChannelGroup.Channels().size() > 1 && !m_IsSpecial);
 

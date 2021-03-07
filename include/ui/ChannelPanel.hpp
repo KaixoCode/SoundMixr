@@ -49,12 +49,13 @@ public:
 		m_MenuTitle = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(m_ChannelGroup.Name());
 		m_MenuTitle->Disable();
 		
+		m_Div4 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {
 				l->ShowEffectsPanel(ChannelGroup().EffectsGroup());
 			}, "Show Effects");
 		
-		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
+		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {
 				if (auto ss = m_SelectedSame)
@@ -90,18 +91,18 @@ public:
 
 			}, "Split");
 
-		m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
-			[&] { 
-				volume.Value(1); 
-			}, "Reset Volume");
+		//m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
+		//m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+		//	[&] { 
+		//		volume.Value(1); 
+		//	}, "Reset Volume");
 
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
-			[&] { 
-				pan.Value(0); 
-			}, "Reset Pan");
+		//m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+		//	[&] { 
+		//		pan.Value(0); 
+		//	}, "Reset Pan");
 
-		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 2, 2);
+		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
 		m_MenuMuted = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(
 			[&](bool s) {
 				m_ChannelGroup.Mute(s);
@@ -160,8 +161,8 @@ public:
 
 	void operator=(const json& json)
 	{
-		volume.Value(json["volume"].get<double>());
-		pan.Value(json["pan"].get<double>());
+		volume.Value(json.at("volume").get<double>());
+		pan.Value(json.at("pan").get<double>());
 		m_ChannelGroup = json;
 	}
 
@@ -206,7 +207,8 @@ private:
 	MenuAccessories::Divider
 		*m_Div1, 
 		*m_Div2, 
-		*m_Div3;
+		*m_Div3,
+		*m_Div4;
 
 	::ChannelGroup
 		*m_SelectedChannels,

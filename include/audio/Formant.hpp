@@ -44,8 +44,6 @@ public:
 		Effect::Render(d);
 	}
 
-
-
 	void Channels(int c) override
 	{
 		m_Buffers.reserve(c);
@@ -81,6 +79,9 @@ public:
 	double m_Mix = 0.5;
 	float NextSample(float sin, int c) override
 	{
+		if (!m_Enabled)
+			return sin;
+
 		auto& buffer = m_Buffers[c];
 		auto& buffer2 = m_Buffers2[c];
 		auto& bufferptr = m_BuffersPointers[c];

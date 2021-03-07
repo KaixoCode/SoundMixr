@@ -128,6 +128,9 @@ void Dynamics::Channels(int c)
 
 float Dynamics::NextSample(float sin, int c) 
 {
+	if (!m_Enabled)
+		return sin;
+
 	if (c == 0)
 	{
 		if (counter > 512)

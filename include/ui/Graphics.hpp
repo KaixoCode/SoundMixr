@@ -84,6 +84,7 @@ enum class C
 	ToggleButton,
 	ToggleButtonB,
 	ToggleButtonV,
+	ToggleButtonH,
 	ToggleButtonText,
 
 	Dynamics,
@@ -152,11 +153,12 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 									 // 
 		Color{ 29, 29, 29, 255 },	 // Slider,
 		Color{ 23, 23, 23, 255 },    // SliderB,
-		Color{ 65, 65, 65, 255 },   // SliderV,
+		Color{ 65, 65, 65, 255 },    // SliderV,
 									 // 
 		Color{ 29, 29, 29, 255 },	 // ToggleButton,
 		Color{ 23, 23, 23, 255 },    // ToggleButtonB,
 		Color{ 65, 65, 65, 255 },    // ToggleButtonV,
+		Color{ 40, 40, 40, 255 },    // ToggleButtonH,
 		Color{ 255, 255, 255, 255 }, // ToggleButtonText,
 									 // 
 		Color{ 15, 15, 15, 255 },	 // Dynamics,
@@ -226,6 +228,7 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 245, 245, 245, 255 }, // ToggleButton,
 		Color{ 225, 225, 225, 255 }, // ToggleButtonB,
 		Color{ 180, 180, 180, 255 }, // ToggleButtonV,
+		Color{ 180, 180, 180, 255 }, // ToggleButtonH,
 		Color{ 180, 180, 180, 255 }, // ToggleButtonText,
 									 // 
 		Color{ 255, 255, 255, 255 }, // Dynamics,
@@ -242,7 +245,7 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{  50,  69,  86, 255 }, // ChannelSelected,
 									 // 
 		Color{ 190, 206, 218, 255 }, // Text,
-		Color{ 126, 157, 181, 255 }, // TextOff,
+		Color{ 109, 135, 156, 255 }, // TextOff,
 		Color{ 158, 181, 199, 255 }, // TextSmall,
 									 // 
 		Color{  50,  69,  86, 255 }, // Divider,
@@ -255,8 +258,8 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 									 // 
 		Color{ 0, 0, 0, 0 },     	 // Button,
 		Color{ 0, 0, 0, 0 },    	 // ButtonD,
-		Color{ 255, 255, 255, 13 },	 // ButtonH,
-		Color{ 255, 255, 255, 26 },	 // ButtonS,
+		Color{ 190, 206, 218, 13 },	 // ButtonH,
+		Color{ 190, 206, 218, 26 },	 // ButtonS,
 									 // 
 		Color{  38,  52,  66, 255 }, // MButton,
 		Color{  64,  80,  91, 255 }, // MButtonH,
@@ -288,14 +291,15 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 126, 157, 181, 255 }, // KnobSliderV,
 		Color{  90, 116, 132, 255 }, // KnobSliderS,
 									 // 
-		Color{  44,  61,  77, 255 }, // Slider,
-		Color{  99, 125, 142, 255 }, // SliderB,
-		Color{  64,  80,  91, 255 }, // SliderV,
+		Color{  38,  52,  66, 255 }, // Slider,
+		Color{  44,  61,  77, 255 }, // SliderB,
+		Color{  99, 125, 142, 255 }, // SliderV,
 									 // 
-		Color{  44,  61,  77, 255 }, // ToggleButton,
-		Color{  99, 125, 142, 255 }, // ToggleButtonB,
-		Color{  64,  80,  91, 255 }, // ToggleButtonV,
-		Color{  64,  80,  91, 255 }, // ToggleButtonText,
+		Color{  38,  52,  66, 255 }, // ToggleButton,
+		Color{  44,  61,  77, 255 }, // ToggleButtonB,
+		Color{  99, 125, 142, 255 }, // ToggleButtonV,
+		Color{  50,  69,  86, 255 }, // ToggleButtonH,
+		Color{ 190, 206, 218, 255 }, // ToggleButtonText,
 									 // 
 		Color{   18,  32,  41, 255 },// Dynamics,
 		Color{  200, 230, 255, 50 }, // DynamicsB,
@@ -644,9 +648,9 @@ public:
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (b.Hovering())
+		if (!b.Active() && b.Hovering())
 		{
-			d.Command<Fill>(Theme<C::ButtonH>::Get());
+			d.Command<Fill>(Theme<C::ToggleButtonH>::Get());
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 		}
 
@@ -681,9 +685,9 @@ public:
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (b.Hovering())
+		if (!b.Active() && b.Hovering())
 		{
-			d.Command<Fill>(Theme<C::ButtonH>::Get());
+			d.Command<Fill>(Theme<C::ToggleButtonH>::Get());
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 		}
 

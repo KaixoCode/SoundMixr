@@ -130,9 +130,9 @@ public:
 			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
 				ratio1 = 0;
 			else if (m_PVal < DbToPixel(threshhold2) + m_DragRange)
-				threshhold2 = -50;
+				threshhold2 = -50, threshhold1 = std::max(threshhold1, -50.0);
 			else if (m_PVal > DbToPixel(threshhold1) - m_DragRange)
-				threshhold1 = -10;
+				threshhold1 = -10, threshhold2 = std::min(threshhold2, -10.0);
 
 			UpdateStrings();
 		};

@@ -138,12 +138,11 @@ public:
 
 	void operator=(const json& json)
 	{
-		LOG(ChannelAmount());
-		Mono(json["mono"].get<bool>());
-		Mute(json["muted"].get<bool>());
-		Pan(json["pan"].get<double>());
-		Volume(json["volume"].get<double>());
-		m_EffectsGroup = json["effects"];
+		Mono(json.at("mono").get<bool>());
+		Mute(json.at("muted").get<bool>());
+		Pan(json.at("pan").get<double>());
+		Volume(json.at("volume").get<double>());
+		m_EffectsGroup = json.at("effects");
 	}
 
 private:

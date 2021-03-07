@@ -65,12 +65,11 @@ public:
 			alpha = sinw0 / (2.0 * Q);
 			//alpha = sinw0 * std::sinh((log2 / 2.0) * BW * (w0 / sinw0));
 			b0 = (1.0 - cosw0) / 2.0, b1 = 1.0 - cosw0, b2 = b0;
-			a0 = 1.0 + alpha, a1 = -2.0 * alpha, a2 = 1.0 - alpha;
+			a0 = 1.0 + alpha, a1 = -2.0 * cosw0, a2 = 1.0 - alpha;
 		} break;
 		case FilterType::HighPass:
 		{
 			alpha = sinw0 / (2.0 * Q);
-			alpha = sinw0 * std::sinh((log2 / 2.0) * BW * (w0 / sinw0));
 			b0 = (1.0 + cosw0) / 2.0, b1 = -(1.0 + cosw0), b2 = b0;
 			a0 = 1.0 + alpha, a1 = -2.0 * cosw0, a2 = 1.0 - alpha;
 		} break;
@@ -147,7 +146,7 @@ public:
 	float Apply(float s, P& p) override
 	{
 		x[0] = s;
-		y[0] = constrain(p.b0a0 * x[0] + p.b1a0 * x[1] + p.b2a0 * x[2] - p.a1a0 * y[1] - p.a2a0 * y[2], -5, 5);
+		y[0] = constrain(p.b0a0 * x[0] + p.b1a0 * x[1] + p.b2a0 * x[2] - p.a1a0 * y[1] - p.a2a0 * y[2], -10000000, 10000000);
 
 		for (int i = sizeof(y) / sizeof(double) - 2; i >= 0; i--)
 			y[i + 1] = y[i];
@@ -237,61 +236,6 @@ private:
 	double x[M];
 };
 
-
-class IIR12dBOctParams
-{
-public:
-	void RecalculateParameters()
-	{
-		w = 2.0 * pi * resofreq / Effect::sampleRate; // Pole angle
-		q = 1.0 - w / (2.0 * (amp + 0.5 / (1.0 + w)) + w - 2.0); // Pole magnitude
-		r = q * q;
-		c = r + 1.0 - 2.0 * cos(w) * q;
-	}
-
-	double pi = 3.141592654;
-
-	/* Parameters. Change these! */
-	double resofreq = 5000;
-	double amp = 1.0;
-
-	double w = 2.0 * pi * resofreq / Effect::sampleRate; // Pole angle
-	double q = 1.0 - w / (2.0 * (amp + 0.5 / (1.0 + w)) + w - 2.0); // Pole magnitude
-	double r = q * q;
-	double c = r + 1.0 - 2.0 * cos(w) * q;
-	double vibrapos = 0;
-	double vibraspeed = 0;
-	FilterType type;
-};
-
-template<typename P = IIR12dBOctParams>
-class IIR12dBOctFilter : public Filter<P>
-{
-public:
-	float Apply(float s, P& p) override
-	{
-		/* Accelerate vibra by signal-vibra, multiplied by lowpasscutoff */
-		p.vibraspeed += (s - p.vibrapos) * p.c;
-
-		/* Add velocity to vibra's position */
-		p.vibrapos += p.vibraspeed;
-
-		/* Attenuate/amplify vibra's velocity by resonance */
-		p.vibraspeed *= p.r;
-
-		/* Check clipping */
-		double temp = p.vibrapos;
-		if (temp > 1) {
-			temp = 1;
-		}
-		else if (temp < -1) temp = -1;
-
-		/* Store new value */
-		return temp;
-	}
-
-};
-
 template<size_t N, class F, class P = F::Params>
 class ChannelEqualizer
 {
@@ -365,7 +309,7 @@ public:
 			m_Dropdown[i]->AddOption("LP", FilterType::LowPass);
 			m_Dropdown[i]->AddOption("HP", FilterType::HighPass);
 			m_Dropdown[i]->AddOption("BP", FilterType::BandPass);
-			m_Dropdown[i]->AddOption("AP", FilterType::AllPass);
+			m_Dropdown[i]->AddOption("Notch", FilterType::Notch);
 			m_Dropdown[i]->AddOption("Peak", FilterType::PeakingEQ);
 			m_Dropdown[i]->AddOption("LS", FilterType::LowShelf);
 			m_Dropdown[i]->AddOption("HS", FilterType::HighShelf);
@@ -417,6 +361,9 @@ public:
 
 	float NextSample(float sin, int c) override
 	{
+		if (!m_Enabled)
+			return sin;
+
 		return m_Equalizers[c].Apply(sin);
 	}
 
@@ -432,12 +379,27 @@ public:
 			}
 			else
 			{
+				switch (m_Dropdown[i]->Value())
+				{
+				case FilterType::LowPass:
+				case FilterType::HighPass:
+				case FilterType::BandPass:
+				case FilterType::Notch:
+				case FilterType::AllPass:
+					m_Knob2[i]->Disable();
+					break;
+				case FilterType::PeakingEQ:
+				case FilterType::LowShelf:
+				case FilterType::HighShelf:
+					m_Knob2[i]->Enable();
+					break;
+				}
 				m_Knob1[i]->Enable();
-				m_Knob2[i]->Enable();
 				m_Knob3[i]->Enable();
 
 			}
 		}
+
 		if constexpr (std::is_same_v<Filter, BiquadFilter<>>)
 			for (int i = 0; i < N; i++)
 			{
@@ -471,6 +433,8 @@ public:
 	operator json() override
 	{
 		json _json = json::object();
+		_json["enabled"] = m_Enable.Active();
+		_json["small"] = m_Minim->Active();
 		_json["type"] = "Equalizer";
 		_json["filters"] = json::array();
 		for (int i = 0; i < N; i++)
@@ -488,13 +452,15 @@ public:
 
 	void operator=(const json& json)
 	{
-		for (auto& i : json["filters"])
+		m_Enable.Active(json.at("enabled").get<bool>());
+		m_Minim->Active(json.at("small").get<bool>());
+		for (auto& i : json.at("filters"))
 		{
-			int index = i["filter"].get<int>();
-			m_Dropdown[index]->Select(i["type"].get<FilterType>());
-			m_Knob1[index]->Value(i["freq"].get<double>());
-			m_Knob2[index]->Value(i["gain"].get<double>());
-			m_Knob3[index]->Value(i["q"].get<double>());
+			int index = i.at("filter").get<int>();
+			m_Dropdown[index]->Select(i.at("type").get<FilterType>());
+			m_Knob1[index]->Value(i.at("freq").get<double>());
+			m_Knob2[index]->Value(i.at("gain").get<double>());
+			m_Knob3[index]->Value(i.at("q").get<double>());
 		}
 		UpdateParams();
 	}

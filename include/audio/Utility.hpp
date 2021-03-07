@@ -128,7 +128,7 @@ public:
 
 		m_EnableEq.Position({ 33, 117 });
 		m_Low.Position({ 10, 52 });
-		m_LowFreq.Position({ 5, 10 });
+		m_LowFreq.Position({ 5, Height() - 160 });
 		m_Mid.Position({ 50, 52 });
 		m_High.Position({ 90, 52 });
 		m_HighFreq.Position({ 67, 10 });
@@ -253,7 +253,10 @@ public:
 	int m_Freq = 128;
 	double m_Mix = 0.5;
 	float NextSample(float sin, int c) override
-	{
+	{	
+		if (!m_Enabled)
+			return sin;
+		
 		if (m_Mute.Active())
 			return 0;
 
@@ -353,6 +356,8 @@ public:
 	{
 		json _json = json::object();
 		_json["type"] = "Utility";
+		_json["enabled"] = m_Enable.Active();
+		_json["small"] = m_Minim->Active();
 		_json["eqlow"] = m_Low.Value();
 		_json["eqmid"] = m_Mid.Value();
 		_json["eqhigh"] = m_High.Value();
@@ -371,19 +376,21 @@ public:
 
 	void operator=(const json& json)
 	{
-		m_Low.Value(json["eqlow"].get<double>());
-		m_Mid.Value(json["eqmid"].get<double>());
-		m_High.Value(json["eqhigh"].get<double>());
-		m_EnableEq.Active(json["eqon"].get<bool>());
-		m_LowFreq.Value(json["eqlowf"].get<double>());
-		m_HighFreq.Value(json["eqhighf"].get<double>());
-		m_Gain.Value(json["limgain"].get<double>());
-		m_Release.Value(json["limrel"].get<double>());
-		m_Limiter.Value(json["limth"].get<double>());
-		m_Pan.Value(json["pan"].get<double>());
-		m_PhaseInvert.Active(json["phase"].get<bool>());
-		m_Mono.Active(json["mono"].get<bool>());
-		m_Mute.Active(json["mute"].get<bool>());
+		m_Enable.Active(json.at("enabled").get<bool>());
+		m_Minim->Active(json.at("small").get<bool>());
+		m_Low.Value(json.at("eqlow").get<double>());
+		m_Mid.Value(json.at("eqmid").get<double>());
+		m_High.Value(json.at("eqhigh").get<double>());
+		m_EnableEq.Active(json.at("eqon").get<bool>());
+		m_LowFreq.Value(json.at("eqlowf").get<double>());
+		m_HighFreq.Value(json.at("eqhighf").get<double>());
+		m_Gain.Value(json.at("limgain").get<double>());
+		m_Release.Value(json.at("limrel").get<double>());
+		m_Limiter.Value(json.at("limth").get<double>());
+		m_Pan.Value(json.at("pan").get<double>());
+		m_PhaseInvert.Active(json.at("phase").get<bool>());
+		m_Mono.Active(json.at("mono").get<bool>());
+		m_Mute.Active(json.at("mute").get<bool>());
 		UpdateParams();
 	}
 
