@@ -61,11 +61,11 @@ Dynamics::Dynamics()
 
 void Dynamics::Update(const Vec4<int>& v)
 {
-	m_PreGain.Position({ Width() - 280, 20 });
-	m_PostGain.Position({ Width() - 225, 20 });
-	m_Attack.Position({ Width() - 162, 20 });
-	m_Release.Position({ Width() - 107, 20 });
-	m_Mix.Position({ Width() - 45, 20 });
+	m_PreGain.Position({ Width() - 282, 20 });
+	m_PostGain.Position({ Width() - 227, 20 });
+	m_Attack.Position({ Width() - 164, 20 });
+	m_Release.Position({ Width() - 109, 20 });
+	m_Mix.Position({ Width() - 46, 20 });
 	m_Slider.Position({ 12, 93 });
 	m_Slider.Size({ (Width() - 24), Height() - 123 });
 	Background(Theme<C::Channel>::Get());

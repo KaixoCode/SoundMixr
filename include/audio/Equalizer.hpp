@@ -325,7 +325,7 @@ public:
 	{
 		for (int i = 0; i < N; i++)
 		{
-			int x = Width() - 45 - i * 59;
+			int x = Width() - 46 - i * 59;
 			m_Dropdown[i]->Position({ x - 5, 212 });
 			m_Knob1[i]->Position({ x, Height() - 109 });
 			m_Knob2[i]->Position({ x, Height() - 177 });

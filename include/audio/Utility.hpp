@@ -126,12 +126,12 @@ public:
 			m_HighFreq.Enable();
 		}
 
-		m_EnableEq.Position({ 33, 117 });
-		m_Low.Position({ 10, 52 });
-		m_LowFreq.Position({ 5, Height() - 160 });
-		m_Mid.Position({ 50, 52 });
-		m_High.Position({ 90, 52 });
-		m_HighFreq.Position({ 67, 10 });
+		m_EnableEq.Position({ 31, 117 });
+		m_Low.Position({ 11, 52 });
+		m_LowFreq.Position({ 6, Height() - 160 });
+		m_Mid.Position({ 51, 52 });
+		m_High.Position({ 91, 52 });
+		m_HighFreq.Position({ 68, 10 });
 
 		m_Pan.Position({ 255, 89 });
 		m_Mono.Position({ 247, 32 });
@@ -140,7 +140,7 @@ public:
 
 		m_Release.Position({ 148, 21 });
 		m_Gain.Position({ 148, 89 });
-		m_Limiter.Position({ 188, 6 });
+		m_Limiter.Position({ 188, 5 });
 		Background(Color{ 0, 0, 0, 0 });
 		UpdateParams();
 		Effect::Update(v);
@@ -163,13 +163,13 @@ public:
 			int _rh = m_Limiter.Height();
 			int _0db = ((std::powf(m_Limiter.Value(), 0.25) / 1.412536) * (_rh)) + _y;
 
-			d.Command<Graphics::Quad>(Vec4<int>{ _x, _y, _w, _rh });
+			d.Command<Graphics::Quad>(Vec4<int>{ _x, _y, _w, _rh + 1});
 		
 			float _level1 = std::powf(m_Level1, 0.25);
 			float _level2 = std::powf(m_Level2, 0.25);
 
-			int _h1 = (std::min(_level1, 1.412536f) / 1.412536) * (_rh);
-			int _h2 = (std::min(_level2, 1.412536f) / 1.412536) * (_rh);
+			int _h1 = (std::min(_level1, 1.412536f) / 1.412536) * (_rh + 1);
+			int _h2 = (std::min(_level2, 1.412536f) / 1.412536) * (_rh + 1);
 			
 
 			d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
@@ -224,7 +224,7 @@ public:
 		d.Command<Graphics::PushMatrix>();
 		d.Command<Graphics::Translate>(Position());
 		d.Command<Graphics::Fill>(Theme<C::Divider>::Get());
-		d.Command<Graphics::Quad>(Vec4<int>{(m_HighFreq.X() + m_HighFreq.Width()) + 7, 10, 1, Height() - 45});
+		d.Command<Graphics::Quad>(Vec4<int>{(m_HighFreq.X() + m_HighFreq.Width()) + 6, 10, 1, Height() - 45});
 		d.Command<Graphics::Quad>(Vec4<int>{m_Mono.X() - 7, 10, 1, Height() - 45});
 				
 		d.Command<Graphics::PopMatrix>();
@@ -244,14 +244,12 @@ public:
 		while (m_PreDelay.size() < c)
 		{
 			auto& a = m_PreDelay.emplace_back();
-			while (a.size() < 1024)
+			while (a.size() < PRE_BUFFER_SIZE)
 				a.push_back(0);
 		}
 		Effect::Channels(c);
 	}
 
-	int m_Freq = 128;
-	double m_Mix = 0.5;
 	float NextSample(float sin, int c) override
 	{	
 		if (!m_Enabled)
@@ -271,18 +269,19 @@ public:
 		}
 
 		// Predelay
-		float predelay = m_PreDelay[c][(m_PreDC + 512) % 1024] = filter * m_PreGain;
+		auto& _pd = m_PreDelay[c];
+		float predelay = _pd[(m_PreDC + 144) % PRE_BUFFER_SIZE] = filter * m_PreGain;
 		m_Compressor.NextSample(predelay, c);
 
-		float prelimit = m_PreDelay[c][(m_PreDC) % 1024];
+		float prelimit = _pd[(m_PreDC) % PRE_BUFFER_SIZE];
 		float limit = prelimit * m_Compressor.compressMult;
-		if (limit > m_Limiter.Value())
-			limit = m_Limiter.Value();
+		if (limit > m_LimiterValue)
+			limit = m_LimiterValue;
 
-		if (-limit > m_Limiter.Value())
-			limit = -m_Limiter.Value();
+		if (-limit > m_LimiterValue)
+			limit = -m_LimiterValue;
 
-		m_PreDC = (m_PreDC + 1) % 1024;
+		m_PreDC = (m_PreDC + 1) % PRE_BUFFER_SIZE;
 		float sina = prelimit;
 		float sinb = limit;
 		myabs(sina);
@@ -340,6 +339,8 @@ public:
 		m_Compressor.mix = 1;
 		m_PreGain = db2lin(m_Gain.Value());
 
+		m_LimiterValue = m_Limiter.Value();
+
 		int _panv = m_Pan.Value();
 		int _index = 0;
 		double _p = _panv / 50.0;
@@ -395,6 +396,7 @@ public:
 	}
 
 private:
+	static inline constexpr int PRE_BUFFER_SIZE = 256;
 	static inline std::unordered_map<int, std::string> m_Numbers;
 	static inline std::string m_NegInf = "Inf";
 
@@ -414,6 +416,7 @@ private:
 	float m_Peak2 = 0;
 	float m_PreGain = 1;
 
+	float m_LimiterValue = 0;
 	float m_MonoValue = 0;
 	float m_MonoTemp = 0;
 

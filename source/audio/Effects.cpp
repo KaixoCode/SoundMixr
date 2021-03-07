@@ -2,6 +2,8 @@
 #include "audio/Dynamics.hpp"
 #include "audio/Equalizer.hpp"
 #include "audio/Utility.hpp"
+#include "audio/Delay.hpp"
+#include "audio/Reverb.hpp"
 
 template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex)
 {
@@ -259,6 +261,16 @@ void EffectsGroup::operator=(const json& json)
 			auto& _d = Emplace<Utility>();
 			_d = effect;
 		}
+		else if (type == "Delay")
+		{
+			auto& _d = Emplace<Delay>();
+			_d = effect;
+		}
+		else if (type == "Reverb")
+		{
+			auto& _d = Emplace<Reverb>();
+			_d = effect;
+		}
 	}
 }
 
@@ -291,18 +303,18 @@ bool EffectsGroup::Hovering()
 void EffectsGroup::Update(const Vec4<int>& viewport)
 {
 
-	Lock();
 	for (int i = m_EffectCount - 1; i >= 0; i--)
 	{
 		if (m_Effects[i]->Delete())
 		{
-			m_Effects.erase(m_Effects.begin() + i);
+			Lock();
 			m_EffectCount--;
+			m_Effects.erase(m_Effects.begin() + i);
 			m_Hovering = nullptr;
 			m_Focussed = nullptr;
+			Unlock();
 		}
 	}
-	Unlock();
 
 	m_LayoutManager.Update({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor
 	m_Cursor = 

@@ -5,6 +5,8 @@
 #include "audio/Equalizer.hpp"
 #include "audio/Formant.hpp"
 #include "audio/Utility.hpp"
+#include "audio/Delay.hpp"
+#include "audio/Reverb.hpp"
 
 // -------------------------------------------------------------------------- \\
 // --------------------------- Effect Panel --------------------------------- \\
