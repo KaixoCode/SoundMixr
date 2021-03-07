@@ -183,10 +183,10 @@ void Controller::Run()
         }, "Windows Aero Effect", Key::CTRL_T);
 
 
-    _file.Emplace<MenuButton>([&]
+    /*_file.Emplace<MenuButton>([&]
         {
             SaveRouting();
-        }, "Save Routing", Key::CTRL_S);
+        }, "Save Routing", Key::CTRL_S);*/
 
     //
     // Themes
@@ -242,14 +242,20 @@ void Controller::Run()
             m_List->ResetGrouping();
         }, "Reset Grouping");
 
+
+    _file.Emplace<MenuButton>([&]
+        {
+            m_Gui.Close();
+        }, "Exit");
+
     //
     // Soundboard button
     //
 
-    _file.Emplace<MenuToggleButton>([&] (bool s)
+    /*_file.Emplace<MenuToggleButton>([&] (bool s)
         {
             if (s) soundboard.Show(); else soundboard.Hide();
-        }, "Soundboard", Key::CTRL_SHIFT_S);
+        }, "Soundboard", Key::CTRL_SHIFT_S);*/
 
     //
     // Main loop
@@ -334,9 +340,9 @@ void Controller::LoadRouting()
             json _json;
             _in >> _json;
 
-            auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
-            for (auto& a : m_AsioDevice.SoundboardChannels())
-                _soundboardChannel.AddChannel(&a);
+            //auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+            //for (auto& a : m_AsioDevice.SoundboardChannels())
+            //    _soundboardChannel.AddChannel(&a);
 
             // First load all the output channels
             auto _outputs = _json.at("output_channels");
@@ -413,9 +419,9 @@ void Controller::LoadRouting()
     {
         m_List->Clear();
 
-        auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
-        for (auto& a : m_AsioDevice.SoundboardChannels())
-            _soundboardChannel.AddChannel(&a);
+        //auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+        //for (auto& a : m_AsioDevice.SoundboardChannels())
+        //    _soundboardChannel.AddChannel(&a);
 
         int i = 0;
         for (i = 0; i < m_AsioDevice.Device().info.maxInputChannels - 1; i += 2)

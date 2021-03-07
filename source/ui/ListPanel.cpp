@@ -11,7 +11,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_Inputs(m_ChannelsPanel.Panel<::Panel>().Emplace<::Panel>()),
 	m_Divider(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
 	m_Outputs(m_ChannelsPanel.Panel().Emplace<::Panel>()),
-	m_Divider2(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	//m_Divider2(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
 	m_Specials(m_ChannelsPanel.Panel().Emplace<::Panel>())
 {
 	m_Effect.Width(330);
@@ -36,6 +36,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 
 	m_Specials.AutoResize(true, false);
 	m_Specials.Layout<Layout::SidewaysStack>(8);
+	m_Specials.Hide();
 
 	Background(Color{ 38, 38, 38, 355 });
 	EnableScrollbars(false, false);

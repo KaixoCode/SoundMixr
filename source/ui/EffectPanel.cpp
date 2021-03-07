@@ -80,14 +80,14 @@ EffectScrollPanel::EffectScrollPanel()
 		{
 			m_EffectPanel.AddEffect<Equalizer<>>();
 		}, "+ Equalizer");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
+	/*m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
 		{
 			m_EffectPanel.AddEffect<Delay>();
 		}, "+ Delay");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
 		{
 			m_EffectPanel.AddEffect<Reverb>();
-		}, "+ Reverb");
+		}, "+ Reverb");*/
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
 		{
 			m_EffectPanel.AddEffect<Utility>();
