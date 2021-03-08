@@ -1,7 +1,7 @@
 #include "ui/Soundboard.hpp"
 
 Soundboard::Soundboard()
-    : Frame("Soundboard", 500, 500, true, true, false)
+    : Frame("Soundboard", 500, 500, true, false, true)
 {
     namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 
