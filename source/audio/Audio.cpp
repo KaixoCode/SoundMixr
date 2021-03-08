@@ -195,6 +195,12 @@ int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigne
 		{
 			auto& _sbChannel = _specials[k];
 
+			if (i == 0)
+			{
+				_sbChannel.Peak(_sbChannel.Peak() * _r + (1 - _r) * _sbChannel.TPeak());
+				_sbChannel.TPeak(0);
+			}
+
 			_sbChannel.CalcLevel();
 			float _level = _sbChannel.Level();
 			if (_level > _sbChannel.TPeak())
