@@ -260,5 +260,5 @@ float OutputChannel::Level() const
 
 void SoundboardChannel::CalcLevel() 
 { 
-	m_OutLevel = m_Pan * m_Volume * m_Soundboard.GetLevel(ID()); 
+	m_OutLevel = m_Pan * m_Volume * m_Soundboard.GetLevel(GroupIndex()); 
 }

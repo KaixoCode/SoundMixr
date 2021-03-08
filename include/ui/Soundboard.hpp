@@ -10,6 +10,23 @@ public:
 		: Button<G::Menu, BT::Normal>([&] { PlayFile(); }, "")
 	{ };
 
+	float GetLevel(int channel)
+	{
+		if (m_SampleNum < 0)
+			return 0;
+
+		if (m_SampleNum == m_File.getNumSamplesPerChannel())
+		{
+			m_SampleNum = -1;
+			return 0;
+		}
+
+		if (m_SampleNum >= 0 && channel == 0)
+			m_SampleNum++;
+
+		return m_File.samples[channel][m_SampleNum];
+	}
+
 	void LoadFile(const std::string& path) { m_Filepath = path; }
 	void PlayFile()
 	{
@@ -62,4 +79,5 @@ public:
 	
 private:
 	std::map<int, AudioFile<double>> m_files;
+	std::vector<SoundboardButton*> m_Buttons;
 };
