@@ -24,7 +24,7 @@ AsioDevice::AsioDevice(Soundboard& soundboard)
 	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
 	{
 		info = Pa_GetDeviceInfo(i);
-		if (info->hostApi == 0)
+		if (std::string(Pa_GetHostApiInfo(info->hostApi)->name) == "ASIO")
 			m_Devices.emplace_back(i, *info);
 	}
 }
