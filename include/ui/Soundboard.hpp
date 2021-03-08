@@ -16,7 +16,7 @@ public:
 			return 0;
 
 		int curSample = std::floor(m_SampleNum * m_MultiplicationFactor);
-
+		
 		if (curSample == m_File.getNumSamplesPerChannel())
 		{
 			m_SampleNum = -1;
