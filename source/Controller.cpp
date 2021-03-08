@@ -242,20 +242,20 @@ void Controller::Run()
             m_List->ResetGrouping();
         }, "Reset Grouping");
 
+    //
+    // Soundboard button
+    //
+
+    _file.Emplace<MenuToggleButton>([&](bool s)
+        {
+            if (s) soundboard.Show(); else soundboard.Hide();
+        }, "Soundboard", Key::CTRL_SHIFT_S);
+
 
     _file.Emplace<MenuButton>([&]
         {
             m_Gui.Close();
         }, "Exit");
-
-    //
-    // Soundboard button
-    //
-
-    _file.Emplace<MenuToggleButton>([&] (bool s)
-        {
-            if (s) soundboard.Show(); else soundboard.Hide();
-        }, "Soundboard", Key::CTRL_SHIFT_S);
 
     //
     // Main loop
