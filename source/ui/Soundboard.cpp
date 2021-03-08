@@ -2,6 +2,7 @@
 
 Soundboard::Soundboard()
     : Frame("Soundboard", 500, 500, true, false, true)
+    : Frame("Soundboard", 1000, 1000, true, false, true)
 {
     namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 
