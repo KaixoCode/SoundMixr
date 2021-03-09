@@ -62,6 +62,8 @@ foreach(file ${files})
     SoundMixrLib
   )
   
+  set_target_properties(${effectname} PROPERTIES FOLDER "Effects")
+  
 endforeach()
 
 add_definitions(-DABSOLUTE_ASSETS_PATH=\"${SRCGUI}assets/\")

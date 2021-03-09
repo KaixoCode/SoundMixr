@@ -13,6 +13,9 @@ public:
 		m_FeedbackKnob(Emplace<KnobSlider>("Feedback")),
 		m_MixKnob(Emplace<KnobSlider>("Mix")),
 		Effect("Delay")
+	{}
+
+	void Init() override
 	{
 		Height(140);
 		m_DelayKnob.Range({ 0.1, 20000 });
@@ -117,3 +120,11 @@ private:
 	KnobSlider
 		& m_DelayKnob, &m_MixKnob, &m_FeedbackKnob;
 };
+
+extern "C"
+{
+	DLLDIR void* NewInstance()
+	{
+		return new Delay();
+	}
+}

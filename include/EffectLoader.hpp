@@ -32,7 +32,8 @@ public:
 	{
 		instfunc = (inst_func)GetProcAddress(m_Module, "NewInstance");
 		themefunc = (theme_func)GetProcAddress(m_Module, "SetTheme");
-		themefunc(theme->theme);
+		if (themefunc)
+			themefunc(theme->theme);
 	}
 
 	Effect* CreateInstance()
