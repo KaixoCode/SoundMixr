@@ -242,20 +242,20 @@ void Controller::Run()
             m_List->ResetGrouping();
         }, "Reset Grouping");
 
+    //
+    // Soundboard button
+    //
+
+    _file.Emplace<MenuToggleButton>([&](bool s)
+        {
+            if (s) soundboard.Show(); else soundboard.Hide();
+        }, "Soundboard", Key::CTRL_SHIFT_S);
+
 
     _file.Emplace<MenuButton>([&]
         {
             m_Gui.Close();
         }, "Exit");
-
-    //
-    // Soundboard button
-    //
-
-    /*_file.Emplace<MenuToggleButton>([&] (bool s)
-        {
-            if (s) soundboard.Show(); else soundboard.Hide();
-        }, "Soundboard", Key::CTRL_SHIFT_S);*/
 
     //
     // Main loop
@@ -306,6 +306,17 @@ void Controller::SaveRouting()
         _json["output_channels"].push_back(*_ch);
     }
 
+    _json["special_channels"] = json::array();
+
+    // Special channels
+    for (auto& _ch : m_List->Channels())
+    {
+        if (!_ch->IsSpecial())
+            continue;
+
+        _json["special_channels"].push_back(*_ch);
+    }
+
     std::ofstream _out;
     _out.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
     _out << std::setw(4) << _json;
@@ -339,10 +350,6 @@ void Controller::LoadRouting()
         {
             json _json;
             _in >> _json;
-
-            //auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
-            //for (auto& a : m_AsioDevice.SoundboardChannels())
-            //    _soundboardChannel.AddChannel(&a);
 
             // First load all the output channels
             auto _outputs = _json.at("output_channels");
@@ -394,6 +401,26 @@ void Controller::LoadRouting()
 
                 _c = i;
             }
+
+            auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+            for (auto& a : m_AsioDevice.SoundboardChannels())
+                _soundboardChannel.AddChannel(&a);
+
+            // Then add all the connections of this channelgroup
+            json _connections = _json.at("special_channels")[0].at("connections");
+            for (int i : _connections)
+            {
+                // Find the output channelgroup by id.
+                auto& _it = std::find_if(m_List->Channels().begin(), m_List->Channels().end(),
+                    [=](ChannelPanel* c) { return !c->IsInput() && c->ChannelGroup().ID() == i; }
+                );
+
+                // If it exists, connect with it.
+                if (_it != m_List->Channels().end())
+                    _soundboardChannel.ChannelGroup().Connect(&(*_it)->ChannelGroup());
+            }
+
+            _soundboardChannel = _json.at("special_channels")[0];
         }
     
         // If error occured (either file didn't exist or was parced incorrectly
@@ -419,9 +446,9 @@ void Controller::LoadRouting()
     {
         m_List->Clear();
 
-        //auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
-        //for (auto& a : m_AsioDevice.SoundboardChannels())
-        //    _soundboardChannel.AddChannel(&a);
+        auto& _soundboardChannel = m_List->EmplaceSpecialChannel();
+        for (auto& a : m_AsioDevice.SoundboardChannels())
+            _soundboardChannel.AddChannel(&a);
 
         int i = 0;
         for (i = 0; i < m_AsioDevice.Device().info.maxInputChannels - 1; i += 2)
