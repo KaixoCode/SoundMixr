@@ -24,7 +24,7 @@ include_directories(
   resources/
 )
 
-add_executable(SoundMixr WIN32
+add_executable(SoundMixr
   ${SOURCE}
 )
 
