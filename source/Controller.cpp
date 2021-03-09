@@ -1,4 +1,5 @@
 #include "Controller.hpp"
+#include "EffectLoader.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
@@ -13,6 +14,8 @@ m_AsioDevice(soundboard)
 void Controller::Run()
 {
 
+    EffectLoader::LoadEffects();
+
     // 
     // Loading Theme
     //
@@ -23,7 +26,8 @@ void Controller::Run()
     std::string _line;
     std::getline(_in, _line);
     int _themeId = std::atoi(_line.c_str());
-    Themes::Theme = (Themes::N) _themeId;
+    theme->theme = (Themes::N) _themeId;
+    EffectLoader::SetTheme(theme->theme);
     _in.close();
 
     //
@@ -36,8 +40,8 @@ void Controller::Run()
     using TitleMenuButton = Button<G::TitleMenu, BT::Menu<G::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
     using SubMenuButton = Button<G::SubMenu, BT::Menu<G::Vertical, MT::Normal, BT::Hover, Align::RIGHT>>;
 
-    mainWindow.Color(Theme<C::WindowBorder>::Get());
-    soundboard.Color(Theme<C::WindowBorder>::Get());
+    mainWindow.Color(theme->Get(C::WindowBorder));
+    soundboard.Color(theme->Get(C::WindowBorder));
     mainWindow.Icon(ASSET("textures/logo.png"));
 
     //
@@ -66,7 +70,7 @@ void Controller::Run()
 
     auto& _panel = mainWindow.Panel();
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
-    _panel.Background(Theme<C::WindowBorder>::Get());
+    _panel.Background(theme->Get(C::WindowBorder));
     _panel.SmartPanel(false);
 
     auto& _p3 = _panel.Emplace<Panel>();
@@ -196,16 +200,16 @@ void Controller::Run()
     // components, and saves the theme.
     auto& _themeCallback = [&] 
     {            
-        _panel.Background(Theme<C::WindowBorder>::Get());
-        mainWindow.Color(Theme<C::WindowBorder>::Get());
-        soundboard.Color(Theme<C::WindowBorder>::Get());
-        m_List->Panel().Background(Theme<C::MainPanel>::Get());
-        m_List->Background(Theme<C::MainPanel>::Get());
-        _div.Color(Theme<C::Divider>::Get());
+        _panel.Background(theme->Get(C::WindowBorder));
+        mainWindow.Color(theme->Get(C::WindowBorder));
+        soundboard.Color(theme->Get(C::WindowBorder));
+        m_List->Panel().Background(theme->Get(C::MainPanel));
+        m_List->Background(theme->Get(C::MainPanel));
+        _div.Color(theme->Get(C::Divider));
 
         std::ofstream _out;
         _out.open("./settings/theme");
-        _out << std::to_string(Themes::Theme);
+        _out << std::to_string((int)theme->theme);
         _out.close();
     };
 
@@ -214,10 +218,11 @@ void Controller::Run()
     _key = BT::List::NewKey();
     auto& _theme1 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
-            Themes::Theme = Themes::DARK;
+            theme->theme = Themes::DARK;
+            EffectLoader::SetTheme(theme->theme);
             _themeCallback();
         }, "Dark", _key);
-    if (Themes::Theme == Themes::DARK) _theme1.Selected(true);
+    if (theme->theme == Themes::DARK) _theme1.Selected(true);
 
     /*auto& _theme2 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
@@ -228,10 +233,11 @@ void Controller::Run()
 
     auto& _theme3 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
-            Themes::Theme = Themes::BLUE;
+            theme->theme = Themes::BLUE;
+            EffectLoader::SetTheme(theme->theme);
             _themeCallback();
         }, "Blue", _key);
-    if (Themes::Theme == Themes::BLUE) _theme3.Selected(true);
+    if (theme->theme == Themes::BLUE) _theme3.Selected(true);
 
     //
     // Reset channel grouping button.

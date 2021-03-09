@@ -1,5 +1,7 @@
 #include <iostream>
 
+#define DLLDIR  __declspec(dllexport)   // export DLL information
+
 #include "GuiCode/pch.hpp"
 #include "GuiCode/Gui.hpp"
 #include "GuiCode/ui/components/panels/Panel.hpp"

@@ -48,7 +48,7 @@ public:
 		m_FeedbackKnob.Position({ 65, 21 });
 		m_MixKnob.Position({ 120, 21 });
 		UpdateParams();
-		Background(Theme<C::Channel>::Get());
+		Background(theme->Get(C::Channel));
 		Effect::Update(v);
 	}
 	

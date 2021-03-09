@@ -1,5 +1,6 @@
 #pragma once
-#include "audio/Effects.hpp"
+#include "pch.hpp"
+#include "Effects.hpp"
 
 class Compressor
 {
@@ -136,104 +137,4 @@ public:
 	}
 
 	float Coeficient(float ms) { return std::exp(-1.0 / ((ms / 1000.0) * Effect::sampleRate)); }
-};
-
-
-// -------------------------------------------------------------------------- \\
-// ------------------------- Dynamics Effect -------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
-class Dynamics : public Effect
-{
-public:
-	Dynamics();
-
-	void Update(const Vec4<int>& v) override;
-	void Render(CommandCollection& d) override;
-
-	void Channels(int c) override;
-	float NextSample(float sin, int c) override;
-
-	void UpdateParams()
-	{
-		m_Compressor.compressRatio = m_Slider.ratio1 >= 0 ? m_Slider.ratio1 / 32.0 + 1 : (-1.0 / (m_Slider.ratio1 - 1.0));
-		m_Compressor.expanderRatio = m_Slider.ratio2 >= 0 ? m_Slider.ratio2 + 1 : (-1.0 / (m_Slider.ratio2 / 8.0 - 1.0));
-		m_Compressor.compressThreshhold = m_Slider.threshhold1;
-		m_Compressor.expanderThreshhold = m_Slider.threshhold2;
-		m_Compressor.Attack(m_Attack.Value());
-		m_Compressor.Release(m_Release.Value());
-		m_Compressor.pregain = db2lin(m_PreGain.Value());
-		m_Compressor.postgain = db2lin(m_PostGain.Value());
-		m_Compressor.mix = m_Mix.Value() * 0.01;
-	}
-
-	operator json()
-	{
-		json _json = json::object();
-		_json["enabled"] = m_Enable.Active();
-		_json["small"] = m_Minim->Active();
-		_json["type"] = "Dynamics";
-		_json["expt"] = m_Slider.threshhold2;
-		_json["comt"] = m_Slider.threshhold1;
-		_json["expr"] = m_Slider.ratio2;
-		_json["comr"] = m_Slider.ratio1;
-		_json["att"] = m_Attack.Value();
-		_json["ret"] = m_Release.Value();
-		_json["prg"] = m_PreGain.Value();
-		_json["pog"] = m_PostGain.Value();
-		_json["mix"] = m_Mix.Value();
-		return _json;
-	}
-
-	void operator=(const json& json)
-	{
-		m_Enable.Active(json.at("enabled").get<bool>());
-		m_Minim->Active(json.at("small").get<bool>());
-		double p1 = json.at("expt").get<double>();
-		double p2 = json.at("comt").get<double>();
-		double p3 = json.at("expr").get<double>();
-		double p4 = json.at("comr").get<double>();
-		double p5 = json.at("att").get<double>();
-		double p6 = json.at("ret").get<double>();
-		double p7 = json.at("prg").get<double>();
-		double p8 = json.at("pog").get<double>();
-		double p9 = json.at("mix").get<double>();
-		m_Slider.threshhold2 = p1;
-		m_Slider.threshhold1 = p2;
-		m_Slider.ratio2 = p3;
-		m_Slider.ratio1 = p4;
-		m_Attack.Value(p5);
-		m_Release.Value(p6);
-		m_PreGain.Value(p7);
-		m_PostGain.Value(p8);
-		m_Mix.Value(p9);
-		UpdateParams();
-	}
-
-private:
-	static inline const double DC_OFFSET = 1.0E-25;
-
-	static inline std::string
-		m_Knob1Name = "PreGain",
-		m_Knob2Name = "Attack",
-		m_Knob3Name = "Release",
-		m_Knob4Name = "PostGain",
-		m_Knob5Name = "Mix";
-
-	KnobSlider
-		&m_PreGain,
-		&m_Attack,
-		&m_Release,
-		&m_PostGain,
-		&m_Mix;
-
-	DynamicsSlider& m_Slider;
-
-	std::vector<float> m_Levels;
-	std::vector<float> m_Peaks;
-
-	int counter = 0;
-	double r = 0.9;
-
-	Compressor m_Compressor;
 };

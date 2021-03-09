@@ -29,6 +29,13 @@ public:
 		m_Menu.ButtonSize({ 140, 20 });
 	}
 
+	Dropdown(RightClickMenu* r)
+		: ButtonType::Normal{ [this, r] { if (r) r->Open(&m_Menu); } },
+		m_Key(ButtonType::List::NewKey())
+	{
+		m_Menu.ButtonSize({ 140, 20 });
+	}
+
 	DropdownOption<Enum>& AddOption(const std::string& name, Enum value)
 	{
 		auto& a = m_Menu.Emplace<DropdownOption<Enum>>(name, value, m_Key, this);

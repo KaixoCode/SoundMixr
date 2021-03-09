@@ -1,8 +1,7 @@
-#pragma once
 #include "audio/Effects.hpp"
 #include "ui/Dropdown.hpp"
-#include "audio/Equalizer.hpp"
-#include "audio/Dynamics.hpp"
+#include "audio/Compressor.hpp"
+#include "audio/Filters.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------- Dynamics Effect -------------------------------- \\
@@ -27,6 +26,9 @@ public:
 		m_PhaseInvert(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "Phase")),
 		m_EnableEq(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "EQ")),
 		Effect("Utility")
+	{}
+
+	void Init() override
 	{
 		Height(170);
 
@@ -91,7 +93,7 @@ public:
 		m_LowFreq.Multiplier(1);
 		m_LowFreq.Vertical(false);
 		m_LowFreq.DisplayName(false);
-		
+
 		m_HighFreq.Size({ 58, 18 });
 		m_HighFreq.Range({ 2000, 22000 });
 		m_HighFreq.Power(3);
@@ -153,9 +155,9 @@ public:
 		{
 			d.Command<Graphics::PushMatrix>();
 			d.Command<Graphics::Translate>(Position());
-			d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::Channel));
 			d.Command<Graphics::Quad>(0, 0, Width(), Height());
-			d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeter));
 
 			int _x = m_Limiter.X() + 9;
 			int _y = m_Limiter.Y() + 5;
@@ -172,9 +174,9 @@ public:
 			int _h2 = (std::min(_level2, 1.412536f) / 1.412536) * (_rh + 1);
 			
 
-			d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterFill));
 			d.Command<Graphics::Quad>(Vec4<int>{ _x, _y, _w, _h1 });
-			d.Command<Graphics::Fill>(Theme<C::VMeterFillC1>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC1));
 			d.Command<Graphics::Quad>(Vec4<int>{ _x, _y + _h1, _w, _h2 - _h1 });
 
 			// db numbers besides volume meter
@@ -192,9 +194,9 @@ public:
 					break;
 
 				if (_b)
-					d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
+					d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
 				else
-					d.Command<Graphics::Fill>(Theme<C::VMeterIndD>::Get());
+					d.Command<Graphics::Fill>(theme->Get(C::VMeterIndD));
 
 				int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 				d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
@@ -204,14 +206,14 @@ public:
 					{
 						m_Numbers.emplace(i, std::to_string(std::abs(i)));
 					}
-					d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
+					d.Command<Graphics::Fill>(theme->Get(C::TextOff));
 					d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
 				}
 				_b ^= true;
 			}
-			d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
 			d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
-			d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::TextOff));
 			d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y + 5});
 
 			d.Command<Graphics::PopMatrix>();
@@ -223,7 +225,7 @@ public:
 
 		d.Command<Graphics::PushMatrix>();
 		d.Command<Graphics::Translate>(Position());
-		d.Command<Graphics::Fill>(Theme<C::Divider>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::Divider));
 		d.Command<Graphics::Quad>(Vec4<int>{(m_HighFreq.X() + m_HighFreq.Width()) + 6, 10, 1, Height() - 45});
 		d.Command<Graphics::Quad>(Vec4<int>{m_Mono.X() - 7, 10, 1, Height() - 45});
 				
@@ -428,3 +430,12 @@ private:
 	std::vector<std::vector<float>> m_PreDelay;
 	std::vector<ChannelEqualizer<3, BiquadFilter<>>> m_Equalizers;
 };
+
+
+extern "C"
+{
+	DLLDIR void* NewInstance()
+	{
+		return new Utility();
+	}
+}

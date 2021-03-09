@@ -22,9 +22,9 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_ChannelsPanel.Panel().AutoResize(true, false);
 	m_ChannelsPanel.MinWidth(200);
 	m_ChannelsPanel.EnableScrollbars(true, false);
-	Background(Theme<C::MainPanel>::Get());
+	Background(theme->Get(C::MainPanel));
 
-	Panel().Background(Theme<C::MainPanel>::Get());
+	Panel().Background(theme->Get(C::MainPanel));
 	Panel().Layout<Layout::Border>(0, 8, false, false, false, false);
 	Panel().AutoResize(false, false);
 
@@ -232,10 +232,10 @@ void ListPanel::Update(const Vec4<int>& s)
 	}
 
 	if (m_Divider)
-		m_Divider->Color(Theme<C::Divider>::Get());
+		m_Divider->Color(theme->Get(C::Divider));
 
 	if (m_Divider2)
-		m_Divider2->Color(Theme<C::Divider>::Get());
+		m_Divider2->Color(theme->Get(C::Divider));
 
 	ScrollPanel::Update(s);
 }

@@ -1,9 +1,13 @@
 #include "audio/Effects.hpp"
-#include "audio/Dynamics.hpp"
-#include "audio/Equalizer.hpp"
-#include "audio/Utility.hpp"
-#include "audio/Delay.hpp"
-#include "audio/Reverb.hpp"
+#include "EffectLoader.hpp"
+
+extern "C"
+{
+	DLLDIR void SetTheme(int t)
+	{
+		theme->theme = (Themes::N) t;
+	}
+}
 
 template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex)
 {
@@ -49,8 +53,8 @@ Effect::Effect(const std::string& name)
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_Delete = true; }, "Remove");
 	m_Listener += [this](Event::MousePressed& e)
 	{
-		if (e.button == Event::MouseButton::RIGHT)
-			RightClickMenu::Get().Open(&m_Menu);
+		if (e.button == Event::MouseButton::RIGHT && m_RightClickMenu)
+			m_RightClickMenu->Open(&m_Menu);
 
 		if (e.button == Event::MouseButton::LEFT)
 			if (e.y > Height() - 25 && e.x > Width() - 25)
@@ -94,19 +98,19 @@ void Effect::Render(CommandCollection& d)
 
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
-	d.Command<Fill>(Theme<C::ChannelSelected>::Get());
+	d.Command<Fill>(theme->Get(C::ChannelSelected));
 	d.Command<Quad>(Vec4<int>{ 0, Height() - 25, Width(), 25 });
 	d.Command<Font>(Fonts::Gidole16, 16.0f);
 
 	if (m_Enabled)
-		d.Command<Fill>(Theme<C::TextSmall>::Get());
+		d.Command<Fill>(theme->Get(C::TextSmall));
 	else
-		d.Command<Fill>(Theme<C::TextOff>::Get());
+		d.Command<Fill>(theme->Get(C::TextOff));
 
 	d.Command<TextAlign>(Align::LEFT, Align::TOP);
 	d.Command<Text>(&m_Name, Vec2<int>{ 30, Height() - 2});
 	
-	d.Command<Fill>(Theme<C::TextOff>::Get());
+	d.Command<Fill>(theme->Get(C::TextOff));
 	if (!m_Small)
 		d.Command<Quad>(Vec4<int>{Width() - 17, Height() - 13, 10, 2});
 	else
@@ -121,8 +125,8 @@ void Effect::Render(CommandCollection& d)
 	}
 	d.Command<PopMatrix>();
 
-	m_Div->Color(Theme<C::Divider>::Get());
-	m_Div2->Color(Theme<C::Divider>::Get());
+	m_Div->Color(theme->Get(C::Divider));
+	m_Div2->Color(theme->Get(C::Divider));
 }
 
 // -------------------------------------------------------------------------- \\
@@ -211,7 +215,7 @@ EffectsGroup::EffectsGroup()
 			int _index = 0;
 			for (auto& i : m_Effects)
 			{
-				if (i.get() == m_Dragging)
+				if (i == m_Dragging)
 				{
 					_myIndex = _index;
 					break;
@@ -246,7 +250,15 @@ void EffectsGroup::operator=(const json& json)
 	for (auto effect : json)
 	{
 		auto& type = effect.at("type").get<std::string>();
-		if (type == "Dynamics")
+
+		auto& _it = EffectLoader::Effects().find(type);
+		if (_it != EffectLoader::Effects().end())
+		{
+			Effect* inst = (*_it).second->CreateInstance();
+			Add(inst);
+			*inst = effect;
+		}
+		/*if (type == "Dynamics")
 		{
 			auto& _d = Emplace<Dynamics>();
 			_d = effect;
@@ -270,7 +282,7 @@ void EffectsGroup::operator=(const json& json)
 		{
 			auto& _d = Emplace<Reverb>();
 			_d = effect;
-		}
+		}*/
 	}
 }
 
@@ -316,7 +328,7 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 		}
 	}
 
-	m_LayoutManager.Update({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor
+	m_LayoutManager.UpdateLayoutStack({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor
 	m_Cursor = 
 		(m_Hovering && m_Hovering->HoveringDrag()) || m_Dragging ? GLFW_RESIZE_ALL_CURSOR : 
 		m_Hovering ? m_Hovering->Cursor() :
@@ -364,11 +376,11 @@ void EffectsGroup::Render(CommandCollection& d)
 	{
 		if (m_InsertIndex == _index)
 		{
-			d.Command<Fill>(Theme<C::TextOff>::Get());
+			d.Command<Fill>(theme->Get(C::TextOff));
 			d.Command<Quad>(Vec4<int>{_c->X(), _c->Y() + (_past ? -5 : _c->Height() + 3), _c->Width(), 2});
 		}
 	
-		if (_c.get() == m_Dragging)
+		if (_c == m_Dragging)
 			_past = true;
 		
 		if (_c->Visible() &&
@@ -389,7 +401,7 @@ void EffectsGroup::Determine(Event& e)
 	for (auto& _c : m_Effects)
 		if (_c->Visible())
 			if (_c->WithinBounds({ e.x, e.y }))
-				_nextHover = _c.get();
+				_nextHover = _c;
 
 	// If it is different, send MouseEntered and MouseExited events.
 	if (_nextHover != m_Hovering)

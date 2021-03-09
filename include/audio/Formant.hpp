@@ -33,7 +33,7 @@ public:
 	{
 		m_Freq = m_Knob1.Value();
 		m_Mix = m_Knob2.Value() * 0.01;
-		Background(Theme<C::Channel>::Get());
+		Background(theme->Get(C::Channel));
 		m_Knob1.Position({ Width() - 45, 20 });
 		m_Knob2.Position({ Width() - 105, 20 });
 		Effect::Update(v);

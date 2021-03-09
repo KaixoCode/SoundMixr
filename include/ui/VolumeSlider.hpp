@@ -224,7 +224,7 @@ public:
 	{
 		Container::Render(d);
 		using namespace Graphics;
-		d.Command<Fill>(Theme<C::Dynamics>::Get());
+		d.Command<Fill>(theme->Get(C::Dynamics));
 		d.Command<Quad>(Vec4<int>{ X() - 7, Y() - 20, Width() + 14, Height() + 20 });
 
 		d.Command<PushMatrix>();
@@ -244,9 +244,9 @@ public:
 				_d = 24;
 
 			if (_b)
-				d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
+				d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
 			else
-				d.Command<Graphics::Fill>(Theme<C::VMeterIndD>::Get());
+				d.Command<Graphics::Fill>(theme->Get(C::VMeterIndD));
 
 			int _mdb = DbToPixel(i) - 1;
 			d.Command<Quad>(Vec4<int>{ _mdb, _y, 1, 5});
@@ -256,29 +256,29 @@ public:
 				{
 					m_Numbers.emplace(i, std::to_string(std::abs(i)));
 				}
-				d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
+				d.Command<Graphics::Fill>(theme->Get(C::TextSmall));
 				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_mdb, _y + 7});
 			}
 			_b ^= true;
 		}
-		d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
 		d.Command<Graphics::Quad>(Vec4<int>{0, _y, 1, 5});
-		d.Command<Graphics::Fill>(Theme<C::TextSmall>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::TextSmall));
 		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{5, _y + 7});
 
 		int _y2 = 5;
-		d.Command<Graphics::Fill>(Theme<C::DynamicsL>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::DynamicsL));
 		d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, Width(), 1 });
 		d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, 1, _y });
 		d.Command<Graphics::Quad>(Vec4<int>{ 0, _y, Width(), 1 });
 		d.Command<Graphics::Quad>(Vec4<int>{ Width() - 1, 0, 1, _y });
 		int p1 = DbToPixel(threshhold1);
-		d.Command<Graphics::Fill>(Theme<C::DynamicsB>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::DynamicsB));
 		d.Command<Graphics::Quad>(Vec4<int>{ p1, _y2, Width() - p1, _y - _y2 - 5 });
 		double _xp = p1;
 		for (int i = 0; i < 8; i++)
 		{
-			auto c = Theme<C::DynamicsL>::Get();
+			auto c = theme->Get(C::DynamicsL);
 			c.a *= (8 - i) / 8.0f;
 			d.Command<Graphics::Fill>(c);
 			d.Command<Graphics::Quad>(Vec4<int>{ (int)_xp, _y2, 1, _y - _y2 - 5 });
@@ -288,12 +288,12 @@ public:
 		}
 
 		int p2 = DbToPixel(threshhold2);
-		d.Command<Graphics::Fill>(Theme<C::DynamicsB>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::DynamicsB));
 		d.Command<Graphics::Quad>(Vec4<int>{ 0, _y2, p2, _y - _y2 - 5 });
 		_xp = p2;
 		for (int i = 0; i < 8; i++)
 		{
-			auto c = Theme<C::DynamicsL>::Get();
+			auto c = theme->Get(C::DynamicsL);
 			c.a *= (8 - i) / 8.0f;
 			d.Command<Graphics::Fill>(c);
 			d.Command<Graphics::Quad>(Vec4<int>{ (int)_xp, _y2, 1, _y - _y2 - 5 });

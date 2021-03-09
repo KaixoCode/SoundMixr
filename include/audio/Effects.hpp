@@ -14,6 +14,8 @@ public:
 
 	Effect(const std::string& name);
 
+	virtual void Init() = 0;
+
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
 	
@@ -28,7 +30,10 @@ public:
 
 	bool Delete() { return m_Delete; }
 
+	void SetRightClickMenu(RightClickMenu* r) { m_RightClickMenu = r; }
+
 protected:
+	RightClickMenu* m_RightClickMenu = nullptr;
 	int m_Channels = -1, m_RealHeight = 0, m_Delete = false;
 	bool m_Hovering = false, m_Small = false, m_HoveringDrag = false, m_Enabled = true;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
@@ -55,15 +60,14 @@ public:
 	bool  Hovering();
 	bool  Dragging() { return m_Dragging != nullptr; }
 
-	template<typename T>
-	T& Emplace()
+	Effect& Add(Effect* e)
 	{
 		int p = m_EffectCount;
 		m_EffectCount = 0;
-		auto& _t = m_Effects.emplace_back(std::make_unique<T>());
-		_t->Channels(m_Channels);
+		m_Effects.push_back(e);
+		e->Channels(m_Channels);
 		m_EffectCount = p + 1;
-		return *dynamic_cast<T*>(_t.get());;
+		return *e;
 	}
 
 	void Update(const Vec4<int>& viewport) override;
@@ -91,7 +95,7 @@ public:
 	void operator=(const json& json);
 
 private:
-	std::vector<std::unique_ptr<Effect>> m_Effects;
+	std::vector<Effect*> m_Effects;
 	int m_Channels = 0, m_EffectCount = 0;
 
 	Effect* m_Hovering;

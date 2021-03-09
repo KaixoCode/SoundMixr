@@ -25,9 +25,17 @@ add_executable(SoundMixr
   ${SOURCE}
 )
 
+add_library(SoundMixrLib STATIC
+  ${SOURCE}
+)
+
 source_group(TREE ${SRC} FILES ${SOURCE})
 
 target_precompile_headers(SoundMixr PUBLIC
+  "${SRC}include/pch.hpp"
+)
+
+target_precompile_headers(SoundMixrLib PUBLIC
   "${SRC}include/pch.hpp"
 )
 
@@ -35,5 +43,25 @@ target_link_libraries(SoundMixr
   GuiCode
   portaudio
 )
+
+target_link_libraries(SoundMixrLib
+  GuiCode
+  portaudio
+)
+
+file(GLOB files "effects/*.cpp")
+foreach(file ${files})
+  get_filename_component(effectname ${file} NAME_WE)
+  add_library(${effectname} SHARED 
+	${file}
+  )
+  
+  target_link_libraries(${effectname}
+    GuiCode
+    portaudio
+    SoundMixrLib
+  )
+  
+endforeach()
 
 add_definitions(-DABSOLUTE_ASSETS_PATH=\"${SRCGUI}assets/\")
