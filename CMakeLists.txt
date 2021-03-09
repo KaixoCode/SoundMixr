@@ -10,6 +10,8 @@ set(SRC "${SoundMixr_SOURCE_DIR}/")
 file(GLOB_RECURSE SOURCE
   "${SRC}source/*.cpp"
   "${SRC}include/*.hpp"
+  "${SRC}resources/*.h"
+  "${SRC}resources/*.rc"
 )
 
 include_directories(
@@ -19,9 +21,10 @@ include_directories(
   libs/AudioFile
   libs/json/include
   include/
+  resources/
 )
 
-add_executable(SoundMixr
+add_executable(SoundMixr WIN32
   ${SOURCE}
 )
 
