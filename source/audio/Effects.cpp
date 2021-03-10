@@ -258,31 +258,6 @@ void EffectsGroup::operator=(const json& json)
 			Add(inst);
 			*inst = effect;
 		}
-		/*if (type == "Dynamics")
-		{
-			auto& _d = Emplace<Dynamics>();
-			_d = effect;
-		}
-		else if (type == "Equalizer")
-		{
-			auto& _d = Emplace<Equalizer<>>();
-			_d = effect;
-		}
-		else if (type == "Utility")
-		{
-			auto& _d = Emplace<Utility>();
-			_d = effect;
-		}
-		else if (type == "Delay")
-		{
-			auto& _d = Emplace<Delay>();
-			_d = effect;
-		}
-		else if (type == "Reverb")
-		{
-			auto& _d = Emplace<Reverb>();
-			_d = effect;
-		}*/
 	}
 }
 

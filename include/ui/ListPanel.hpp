@@ -12,6 +12,11 @@ class ListPanel : public SMXRScrollPanel
 public:
 	ListPanel(AsioDevice& sarasio);
 
+	void ReloadEffects()
+	{
+		m_Effect.SetupMenu();
+	}
+
 	void SortChannels();
 
 	ChannelPanel& EmplaceChannel(bool IsInput)

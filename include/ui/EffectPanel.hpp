@@ -37,6 +37,8 @@ class EffectScrollPanel : public SMXRScrollPanel
 public:
 	EffectScrollPanel();
 
+	void SetupMenu();
+
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
 

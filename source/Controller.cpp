@@ -248,14 +248,21 @@ void Controller::Run()
             m_List->ResetGrouping();
         }, "Reset Grouping");
 
+    _file.Emplace<MenuButton>([&]
+        {                
+            // First save the routing
+            EffectLoader::LoadEffects();
+            m_List->ReloadEffects();
+        }, "Refresh Effects");
+
     //
     // Soundboard button
     //
 
-    _file.Emplace<MenuToggleButton>([&](bool s)
+    /*_file.Emplace<MenuToggleButton>([&](bool s)
         {
             if (s) soundboard.Show(); else soundboard.Hide();
-        }, "Soundboard", Key::CTRL_SHIFT_S);
+        }, "Soundboard", Key::CTRL_SHIFT_S);*/
 
 
     _file.Emplace<MenuButton>([&]

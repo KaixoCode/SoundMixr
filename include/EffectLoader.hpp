@@ -76,6 +76,9 @@ public:
 				if (!entry.path().extension().compare(".dll"))
 				{
 					std::string name = entry.path().stem().string();
+					if (m_Effects.find(name) != m_Effects.end())
+						continue;
+
 					std::string path = std::filesystem::absolute(entry.path()).string();
 					HMODULE module = LoadLibrary((LPCTSTR)path.c_str());
 					LOG(path);
