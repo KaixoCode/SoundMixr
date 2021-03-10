@@ -30,8 +30,6 @@ using namespace nlohmann;
 #include "portaudio.h"
 #include "pa_asio.h"
 
-#include "resource.h"
-
 #include <AudioFile.h>
 
 #define db2lin(db) std::powf(10.0f, 0.05 * (db))

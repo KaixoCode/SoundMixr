@@ -42,7 +42,7 @@ void Controller::Run()
 
     mainWindow.Color(theme->Get(C::WindowBorder));
     soundboard.Color(theme->Get(C::WindowBorder));
-    mainWindow.Icon(IDI_ICON1);
+    mainWindow.Icon(ASSET("textures/logo.png"));
 
     //
     // Set shell icon
@@ -55,12 +55,12 @@ void Controller::Run()
     _closeMenu.Emplace<MenuButton>([&] { mainWindow.Show(); }, "Open GUI");
     _closeMenu.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit");
 
-    mainWindow.AddShellIcon(IDI_ICON1, "SoundMixr", [&] (Event& e)
+    Frame::AddShellIcon("SoundMixr.ico", "SoundMixr", [&] (Event& e)
         { 
             if (e.button == Event::MouseButton::LEFT && e.mod)
                 mainWindow.Show();
-    
-           if (e.button == Event::MouseButton::RIGHT)
+
+            if (e.button == Event::MouseButton::RIGHT)
                 RightClickMenu::Get().Open(&_closeMenu, true);
         });
 
