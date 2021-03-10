@@ -378,7 +378,7 @@ public:
 		
 		d.Command<Fill>(_c1);
 		d.Command<Quad>(b.Position(), b.Size());
-		d.Command<Font>(Fonts::Gidole, 24.0f);
+		d.Command<Font>(Gidole, 24.0f);
 		d.Command<Fill>(_c2);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -393,7 +393,7 @@ public:
 		using namespace Graphics;
 		Color _c2 = theme->Get(C::TextSmall);
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(Gidole14, 14.0f);
 		d.Command<Fill>(_c2);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -456,7 +456,7 @@ public:
 		int _h = b.Height();
 		d.Command<Fill>(_c2);
 		d.Command<Quad>(Vec4<int>{b.Position(), _w, _h });
-		d.Command<Font>(Fonts::Gidole16, 11.0f);
+		d.Command<Font>(Gidole16, 11.0f);
 		d.Command<Fill>(_c1);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2 + 2, b.Y() + b.Height() / 2);
@@ -487,7 +487,7 @@ public:
 		int _h = b.Height();
 		d.Command<Fill>(_c2);
 		d.Command<Quad>(Vec4<int>{b.Position(), _w, _h });
-		d.Command<Font>(Fonts::Gidole16, 11.0f);
+		d.Command<Font>(Gidole16, 11.0f);
 		d.Command<Fill>(_c1);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2 + 2, b.Y() + b.Height() / 2);
@@ -515,7 +515,7 @@ public:
 			d.Command<Triangle>(Vec4<int>{b.X() - _p + b.Width(), _y + _p, 8, _he}, 180.0f);
 			d.Command<Quad>(Vec4<int>{b.X() + _p, _y + _p - 1, b.Width() - _p * 2, 3});
 
-			//d.Command<Font>(Fonts::Gidole14, 14.0f);
+			//d.Command<Font>(Gidole14, 14.0f);
 			//d.Command<Fill>(theme->Get(C::TextSmall));
 			//d.Command<TextAlign>(Align::CENTER, Align::TOP);
 			//d.Command<Text>(&b.ValueText(), Vec2<int>{b.X() + _p + _w / 2, b.Y()});
@@ -534,7 +534,7 @@ public:
 			d.Command<Triangle>(Vec4<int>{_x + _p, b.Y() - _p + b.Height(), _we, 8}, 270.0f);
 			d.Command<Quad>(Vec4<int>{_x + _p - 1, b.Y() + _p, 3, b.Height() - _p * 2});
 
-			//d.Command<Font>(Fonts::Gidole14, 14.0f);
+			//d.Command<Font>(Gidole14, 14.0f);
 			//d.Command<Fill>(theme->Get(C::TextSmall));
 			//d.Command<TextAlign>(Align::CENTER, Align::TOP);
 			//d.Command<Text>(&b.ValueText(), Vec2<int>{b.X(), b.Y() + _p + _h / 2});
@@ -561,7 +561,7 @@ public:
 		d.Command<Fill>(theme->Get(C::PSliderS));
 		d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2, b.Y() + 1, _w, b.Height() - 2});
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);		
+		d.Command<Font>(Gidole14, 14.0f);		
 		if (b.Disabled())
 			d.Command<Fill>(theme->Get(C::TextOff));
 		else
@@ -614,7 +614,7 @@ public:
 			d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y() + 1, _w, b.Height() - 2});
 		}
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(Gidole14, 14.0f);
 		if (b.Disabled())
 			d.Command<Fill>(theme->Get(C::TextOff));
 		else
@@ -658,7 +658,7 @@ public:
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 		}
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(Gidole14, 14.0f);
 		if (b.Active())
 			d.Command<Fill>(theme->Get(C::ToggleButtonText));
 		else 
@@ -695,7 +695,7 @@ public:
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 		}
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(Gidole14, 14.0f);
 
 		if ((int)b.Value() != 0)
 			d.Command<Fill>(theme->Get(C::TextSmall));
@@ -749,7 +749,7 @@ public:
 		d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 4.0 + (_x + 1) / 2.0), (int)(b.Y() + b.Height() / 2.0 + (_y) / 2.0), b.Width() / 2, 2 }, 360 * _a / (2 * M_PI));
 
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(Gidole14, 14.0f);
 		if (b.Disabled())
 			d.Command<Fill>(theme->Get(C::TextOff));
 		else
@@ -782,7 +782,7 @@ namespace SoundMixrGraphics
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
 			d.Command<Fill>(theme->Get(C::Text));
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(Gidole14, 14.0f);
 			d.Command<TextAlign>(Hori, Vert);
 			if (Hori == Align::CENTER)
 				d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -805,7 +805,7 @@ namespace SoundMixrGraphics
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(Gidole14, 14.0f);
 			d.Command<Fill>(_c2);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
@@ -832,7 +832,7 @@ namespace SoundMixrGraphics
 				int _p = 2;
 				d.Command<Quad>(b.Position() + Vec2<int>{ _p, _p }, Vec2<int>{ b.Size().y - _p * 2, b.Size().y - _p * 2 });
 			}
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(Gidole14, 14.0f);
 			d.Command<Fill>(_c2);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
@@ -859,7 +859,7 @@ namespace SoundMixrGraphics
 				int _p = 2;
 				d.Command<Quad>(b.Position() + Vec2<int>{ _p, _p }, Vec2<int>{ b.Size().y - _p * 2, b.Size().y - _p * 2 });
 			}
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(Gidole14, 14.0f);
 			d.Command<Fill>(_c2);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
@@ -879,7 +879,7 @@ namespace SoundMixrGraphics
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
-			d.Command<Font>(Fonts::Gidole14, 14);
+			d.Command<Font>(Gidole14, 14);
 			d.Command<Fill>(_c2);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
@@ -942,7 +942,7 @@ namespace SoundMixrGraphics
 			 d.Command<Fill>(_c1);
 			 d.Command<Quad>(b.X(), b.Y(), b.Width(), b.Height() - 1);
 			 d.Command<Fill>(_c2);
-			 d.Command<Font>(Fonts::Gidole14, 14.0f);
+			 d.Command<Font>(Gidole14, 14.0f);
 			 d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 			 d.Command<Text>(&b.Name(), Vec2<int>{b.X() + b.Width() / 2, b.Y() + b.Height() / 2});
 		 }

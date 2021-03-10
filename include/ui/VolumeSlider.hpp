@@ -232,7 +232,7 @@ public:
 		int _y = Height() - 22;
 		int _d = 3;
 		bool _b = true;
-		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
+		d.Command<Graphics::Font>(Gidole14, 14.0f);
 		d.Command<Graphics::TextAlign>(Align::CENTER, Align::BOTTOM);
 		for (int i = 0; i > -120; i -= _d)
 		{

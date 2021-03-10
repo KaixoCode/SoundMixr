@@ -148,13 +148,13 @@ void ChannelPanel::Render(CommandCollection& d)
 	mono.Position(Vec2<int>{Width() / 2 + 3, 50});
 
 	// Volume level
-	d.Command<Font>(Fonts::Gidole14, 14.0f);
+	d.Command<Font>(Gidole14, 14.0f);
 	d.Command<Fill>(theme->Get(C::TextSmall));
 	d.Command<TextAlign>(Align::CENTER, Align::TOP);
 	d.Command<Text>(&volume.ValueText(), Vec2<int>{volume.X() + 6 + (volume.Width() - 6 * 2) / 2, volume.Y()});
 
 	// Channel name
-	d.Command<Font>(Fonts::Gidole14, 14.0f);
+	d.Command<Font>(Gidole14, 14.0f);
 	d.Command<Fill>(theme->Get(C::TextSmall));
 	d.Command<TextAlign>(Align::CENTER, Align::TOP);
 	d.Command<Text>(&m_ChannelGroup.Name(), Vec2<int>{ Width() / 2, Height() - 4 });
@@ -163,7 +163,7 @@ void ChannelPanel::Render(CommandCollection& d)
 	// db numbers besides volume meter
 	int _d = 3;
 	bool _b = true;
-	d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
+	d.Command<Graphics::Font>(Gidole14, 14.0f);
 	d.Command<Graphics::TextAlign>(Align::RIGHT, Align::CENTER);
 	for (int i = 12; i > -120; i -= _d)
 	{

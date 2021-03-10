@@ -4,6 +4,7 @@
 
 #include "GuiCode/pch.hpp"
 #include "GuiCode/Gui.hpp"
+#include "GuiCode/ui/graphics/Graphics.hpp"
 #include "GuiCode/ui/components/panels/Panel.hpp"
 #include "GuiCode/ui/components/panels/ScrollPanel.hpp"
 #include "GuiCode/ui/components/menus/MenuAccessories.hpp"

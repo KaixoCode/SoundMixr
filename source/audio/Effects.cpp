@@ -100,7 +100,7 @@ void Effect::Render(CommandCollection& d)
 	d.Command<Translate>(Position());
 	d.Command<Fill>(theme->Get(C::ChannelSelected));
 	d.Command<Quad>(Vec4<int>{ 0, Height() - 25, Width(), 25 });
-	d.Command<Font>(Fonts::Gidole16, 16.0f);
+	d.Command<Font>(Gidole16, 16.0f);
 
 	if (m_Enabled)
 		d.Command<Fill>(theme->Get(C::TextSmall));
