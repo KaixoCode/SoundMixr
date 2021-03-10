@@ -6,7 +6,7 @@ Soundboard::Soundboard()
     namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 
     auto& _panel = this->Panel();
-    this->Icon(ASSET("textures/logo.png"));
+    this->Icon(IDI_ICON1);
 
     _panel.Layout<Layout::Grid>(4, 4, 8, 8);
 
