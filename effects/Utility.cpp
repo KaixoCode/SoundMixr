@@ -182,7 +182,7 @@ public:
 			// db numbers besides volume meter
 			int _d = 6;
 			bool _b = true;
-			d.Command<Graphics::Font>(Gidole14, 14.0f);
+			d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
 			d.Command<Graphics::TextAlign>(Align::RIGHT, Align::CENTER);
 			for (int i = 12; i > -120; i -= _d)
 			{

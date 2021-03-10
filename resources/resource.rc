@@ -1,5 +1,0 @@
-#include "resource.h"
-
-IDI_ICON1 ICON  "SoundMixr.ico"
-IDI_BMIC1 BITMAP  "SoundMixr.bmp"
-IDI_FONT1 RCDATA  "Gidole-Regular.otf"

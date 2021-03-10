@@ -13,9 +13,6 @@ m_AsioDevice(soundboard)
 
 void Controller::Run()
 {
-    Graphics::LoadFont(IDI_FONT1, Gidole);
-    Graphics::LoadFont(IDI_FONT1, Gidole14, 14);
-    Graphics::LoadFont(IDI_FONT1, Gidole16, 16);
 
     EffectLoader::LoadEffects();
 

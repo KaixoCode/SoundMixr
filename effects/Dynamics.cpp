@@ -93,7 +93,7 @@ public:
 		d.Command<Quad>(Vec4<int>{(m_PostGain.X() + m_PostGain.Width() + m_Attack.X()) / 2, 10, 1, 50});
 		d.Command<Quad>(Vec4<int>{(m_Release.X() + m_Release.Width() + m_Mix.X()) / 2, 10, 1, 50});
 		d.Command<Fill>(theme->Get(C::TextSmall));
-		d.Command<Font>(Gidole14, 14.0f);
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		d.Command<TextAlign>(Align::LEFT, Align::BOTTOM);
 		d.Command<Text>(&m_Slider.m_TH2Str, Vec2<int>{10, 77});
 		d.Command<Text>(&m_Slider.m_RT2Str, Vec2<int>{70, 77});
