@@ -105,11 +105,13 @@ void Controller::Run()
     if (!_line.empty())
     {
         auto _it = std::find_if(m_AsioDevice.Devices().begin(), m_AsioDevice.Devices().end(), [=](const Device& obj) {return obj.id == _deviceId; });
-        m_AsioDevice.Device(*_it);
-        m_AsioDevice.OpenStream();
-        m_AsioDevice.StartStream();
-        LoadRouting();
-        _titleButton.Name(m_AsioDevice.Device().info.name);
+        if (_it != m_AsioDevice.Devices().end()) {
+            m_AsioDevice.Device(*_it);
+            m_AsioDevice.OpenStream();
+            m_AsioDevice.StartStream();
+            LoadRouting();
+            _titleButton.Name(m_AsioDevice.Device().info.name);
+        }
     }
     _in.close();
 
@@ -187,6 +189,11 @@ void Controller::Run()
         {
             SaveRouting();
         }, "Save Routing", Key::CTRL_S);*/
+
+    _file.Emplace<MenuButton>([&]
+        {
+            soundboard.Save();
+        }, "Save Soundboard", Key::CTRL_S);
 
     //
     // Themes

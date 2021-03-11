@@ -29,7 +29,7 @@ public:
 		return m_File.samples[channel][curSample];
 	}
 
-	void LoadFile(const std::string& path) { m_Filepath = path; }
+	void LoadFile(const std::string& path, const std::string& filename) { m_Filepath = path; m_Filename = filename; }
 	void PlayFile()
 	{
 		if (m_File.getNumSamplesPerChannel() > 0) 
@@ -60,18 +60,29 @@ public:
 			if (GetOpenFileName(&ofn))
 				fileNameStr = fileName;
 
-			m_Filepath = fileNameStr;
-			m_File.load(fileNameStr);
-			m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
-
 			// Set the name of the button to the filename
 			std::filesystem::directory_entry loadedFile{ fileNameStr };
 			ButtonBase::Name(loadedFile.path().filename().string());
+
+			m_Filepath = fileNameStr;
+			m_Filename = loadedFile.path().filename().string();
+			m_File.load(fileNameStr);
+			m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
 		}
 	};
 
+	operator json()
+	{
+		json _json = json::object();
+		_json["filepath"] = m_Filepath;
+		_json["filename"] = m_Filename;
+
+		return _json;
+	}
+
 private:
 	std::string m_Filepath;
+	std::string m_Filename;
 	AudioFile<double> m_File;
 	int m_SampleNum = -1;
 	float m_MultiplicationFactor = 1.0F;
@@ -83,6 +94,29 @@ public:
 	Soundboard();
 
 	float GetLevel(int);
+
+	void Save()
+	{
+		LOG("Saving Soundboard");
+		json _json;
+		_json["data"] = json::array();
+
+		// Soundboard sounds
+		for (auto& _btn : m_Buttons) {
+			_json["data"].push_back(*_btn);
+		}
+
+		// Save the soundboard data
+		std::ofstream _out;
+		_out.open("./settings/soundboarddata.json");
+		_out << std::setw(4) << _json;
+		_out.close();
+	}
+
+	void Load()
+	{
+
+	}
 	
 private:
 	std::map<int, AudioFile<double>> m_files;
