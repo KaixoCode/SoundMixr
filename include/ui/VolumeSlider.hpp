@@ -3,6 +3,151 @@
 #include "ui/Slider.hpp"
 #include "ui/Graphics.hpp"
 
+class ToggleButtonComponent : public Button<ToggleButtonG, ButtonType::Toggle>
+{
+public:
+	ToggleButtonComponent(ToggleButton& t)
+		: m_Toggle(t), Button<ToggleButtonG, ButtonType::Toggle>(&t.state, t.Name())
+	{}
+
+	void Update(const Vec4<int>& v)
+	{
+		m_Size = { m_Toggle.Size().width, m_Toggle.Size().height };
+		m_Pos = { m_Toggle.Position().x, m_Toggle.Position().y };
+
+		Button<ToggleButtonG, ButtonType::Toggle>::Update(v);
+	}
+
+	ToggleButton& m_Toggle;
+};
+
+class VolumeSliderComponent : public SliderBase<VolumeSliderGraphics>
+{
+public:
+	VolumeSliderComponent(VolumeSlider& s)
+		: SliderBase<VolumeSliderGraphics>(s), m_Slider(s)
+	{
+		m_Parameter.Range({ 0.0, 3.98107 });
+		m_Parameter.Power(4);
+		m_Parameter.Value(1);
+		m_Parameter.ResetValue(1);
+		m_Parameter.Vertical(true);
+	}
+
+	double Decibels() { return 20 * std::log10(std::max(m_Parameter.Value(), 0.000001)); };
+
+	void Update(const Vec4<int>& v)
+	{
+		m_Size = { m_Parameter.Size().width, m_Parameter.Size().height };
+		m_Pos = { m_Parameter.Position().x, m_Parameter.Position().y };
+
+		Component::Update(v);
+
+		char s[10];
+		if (Decibels() < -100)
+			m_ValueText = "-inf";
+		else {
+			std::sprintf(s, "%.1f", Decibels());
+			m_ValueText = s;
+		}
+		m_ValueText += "dB";
+	}
+
+	void Render(CommandCollection& d) override
+	{
+		using namespace Graphics;
+		d.Command<PushMatrix>();
+		d.Command<Translate>(Position());
+		int _channels = m_Slider.Channels();
+
+		int _width = m_Slider.Size().width - 16;
+		int _x = 6;
+		int _y = 5;
+		int _rh = Height();
+		int _w = (_width / _channels) - 2;
+		int _0db = ((std::powf(1, 0.25) / 1.412536) * (_rh)) + _y;
+
+		// Draw all audio meters
+		for (int i = 0; i < _channels; i++)
+		{
+			_x = 9 + i * (_w + 2);
+			float _level1 = std::powf(m_Slider.Values()[i], 0.25);
+			float _level2 = std::powf(m_Slider.Reduces()[i], 0.25);
+
+			int _h1 = (std::min(_level1, 1.412536f) / 1.412536) * (_rh);
+			int _h2 = (std::min(_level2, 1.412536f) / 1.412536) * (_rh);
+			d.Command<Graphics::Fill>(theme->Get(C::VMeter));
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
+			d.Command<Graphics::Fill>(theme->Get(C::Channel));
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC1));
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h1});
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterFill));
+			d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h2});
+
+		}
+
+		// db numbers besides volume meter
+		int _d = 3;
+		if (Height() < 200)
+			_d = 6;
+			
+		bool _b = true;
+		d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
+		d.Command<Graphics::TextAlign>(Align::RIGHT, Align::CENTER);
+		for (int i = 12; i > -120; i -= _d)
+		{
+			if (Height() < 200)
+			{
+				if (i < -11)
+					_d = 12;
+				if (i < -35)
+					_d = 36;
+				if (i < -86)
+					break;
+			}
+			else
+			{
+				if (i < -11)
+					_d = 6;
+				if (i < -47)
+					_d = 12;
+				if (i < -71)
+					_d = 24;
+			}
+
+			if (_b)
+				d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
+			else
+				d.Command<Graphics::Fill>(theme->Get(C::VMeterIndD));
+
+			int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
+			d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
+			if (_b)
+			{
+				if (m_Numbers.find(i) == m_Numbers.end())
+				{
+					m_Numbers.emplace(i, std::to_string(std::abs(i)));
+				}
+				d.Command<Graphics::Fill>(theme->Get(C::TextOff));
+				d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
+			}
+			_b ^= true;
+		}
+		d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
+		d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
+		d.Command<Graphics::Fill>(theme->Get(C::TextOff));
+		d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
+		d.Command<PopMatrix>();
+		SliderBase<VolumeSliderGraphics>::Render(d);
+	}
+private:
+	static inline std::unordered_map<int, std::string> m_Numbers;
+	static inline std::string m_NegInf = "Inf";
+
+	VolumeSlider& m_Slider;
+};
+
 // -------------------------------------------------------------------------- \\
 // --------------------------- Volume Slider -------------------------------- \\
 // -------------------------------------------------------------------------- \\
@@ -43,7 +188,7 @@ private:
 	Parameter m_Parameter;
 };
 
-using VolumeSlider = VolumeSliderG<VolumeSliderGraphics>;
+using OldVolumeSlider = VolumeSliderG<VolumeSliderGraphics>;
 
 // -------------------------------------------------------------------------- \\
 // ----------------------------- Pan Slider --------------------------------- \\

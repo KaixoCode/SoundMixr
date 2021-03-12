@@ -16,7 +16,7 @@ EffectPanel::EffectPanel()
 			m_EffectsGroup->AddEvent(e);
 		}
 	};
-	Width(314);
+	Width(316);
 }
 
 void EffectPanel::Update(const Vec4<int>& viewport)

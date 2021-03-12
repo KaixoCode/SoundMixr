@@ -14,19 +14,21 @@ template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIn
 // -------------------------------------------------------------------------- \\
 
 Effect::Effect(EffectBase* effect)
-	: m_Effect(effect), m_Channels(0),
-	m_Enable(Emplace<Button<ToggleButton, ButtonType::Toggle>>(&m_Enabled, ""))
+	: m_Effect(effect), m_Channels(0)
 {
 	Init();
 	m_RealHeight = -1;
-	m_Enable.Size({ 18, 18 });
+	m_MinimB = &Emplace<Button<NOTHING, ButtonType::Toggle>>([&](bool s) { m_Minim->Active(s); }, "");
+	m_Enable = &Emplace<Button<ToggleButtonG, ButtonType::Toggle>>(&m_Enabled, "");
+	m_Enable->Size({ 18, 18 });
+	m_MinimB->Size({ 25, 25 });
 
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Effect->Name()).Disable();
 	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
 	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s)
-			{
+		{
 			if (s)
 			{
 				m_RealHeight = Height();
@@ -46,17 +48,8 @@ Effect::Effect(EffectBase* effect)
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_Delete = true; }, "Remove");
 	m_Listener += [this](Event::MousePressed& e)
 	{
-		if (e.button == Event::MouseButton::RIGHT && m_RightClickMenu)
-			m_RightClickMenu->Open(&m_Menu);
-
-		if (e.button == Event::MouseButton::LEFT)
-			if (e.y > Height() - 25 && e.x > Width() - 25)
-				if (!m_Small)
-					m_Minim->Active(true);
-				
-				else
-					m_Minim->Active(false);
-		
+		if (e.button == Event::MouseButton::RIGHT)
+			RightClickMenu::Get().Open(&m_Menu);
 	};
 
 	m_Listener += [this](Event::MouseEntered& e)
@@ -75,12 +68,19 @@ Effect::Effect(EffectBase* effect)
 		if (e.x > 25 && e.y > Height() - 25 && e.x < Width() - 25)
 			m_HoveringDrag = true;
 	};
+
+	m_Listener += [this](Event& e)
+	{
+		if (e.x - X() >= 25 && e.x - X() <= Width() - 25 && m_Small && e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
+			e.y = Y() + 1;
+	};
 }
 
 void Effect::Update(const Vec4<int>& v) 
 {
-	m_Size.height = m_Effect->Height();
-	m_Enable.Position({ 3, Height() - 22 });
+	m_Size.height = m_Small ? 25 : m_Effect->Height() + 25;
+	m_Enable->Position({ 3, Height() - 22 });
+	m_MinimB->Position({ Width() - 25, Height() - 25 });
 	m_Effect->Update();
 	Background(theme->Get(C::Channel));
 	Panel::Update(v);
@@ -112,13 +112,22 @@ void Effect::Render(CommandCollection& d)
 	else
 		d.Command<Triangle>(Vec4<int>{Width() - 12, Height() - 12, 10, 10}, 270.0f);
 
-	m_Enable.Render(d);
+	m_Enable->Render(d);
+	m_MinimB->Render(d);
 
 	if (!m_Enabled)
 	{
 		d.Command<Fill>(Color{ 0, 0, 0, 50 });
 		d.Command<Quad>(Vec4<int>{ 0, 0, Width(), Height() - 25 });
 	}
+
+	if (!m_Small)
+	{
+		d.Command<Fill>(theme->Get(C::Divider));
+		for (auto& i : m_Dividers)
+			d.Command<Quad>(i);
+	}
+
 	d.Command<PopMatrix>();
 
 	m_Div->Color(theme->Get(C::Divider));
@@ -251,8 +260,8 @@ void EffectsGroup::operator=(const json& json)
 		if (_it != EffectLoader::Effects().end())
 		{
 			EffectBase* inst = (*_it).second->CreateInstance();
-			Add(inst);
-			//inst->operator nlohmann:: = effect;
+			auto& a = Add(inst);
+			a = effect;
 		}
 	}
 }
@@ -319,11 +328,7 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 
 	// Update all the components that lie within the viewport and are visible.
 	for (auto& _c : m_Effects)
-		if (_c->Visible() &&
-			_c->X() + _c->Width() >= m_Viewport.x && _c->Y() + _c->Height() >= m_Viewport.y &&
-			_c->X() <= m_Viewport.x + m_Viewport.width && _c->Y() <= m_Viewport.y + m_Viewport.height)
-			_c->Update(viewport);
-
+		_c->Update(viewport);
 }
 
 void EffectsGroup::Render(CommandCollection& d)

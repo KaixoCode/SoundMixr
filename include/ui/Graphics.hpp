@@ -634,7 +634,7 @@ public:
 };
 
 
-class ToggleButton
+class ToggleButtonG
 {
 public:
 

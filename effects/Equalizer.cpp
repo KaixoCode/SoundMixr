@@ -59,17 +59,22 @@ public:
 			m_Dropdown[i]->Select((int)FilterType::Off);
 		}
 
-		Height(265);
+		Height(240);
+
+		Div().Cells(N);
+		Div().Dividers(true);
+		Div().CellType(EffectLayout::Type::COLS);
 
 		for (int i = 0; i < N; i++)
 		{
-			int x = Width() - 46 - i * 59;
-			m_Dropdown[i]->Position({ x - 5, 212 });
-			m_Knob1[i]->Position({ x, Height() - 109 });
-			m_Knob2[i]->Position({ x, Height() - 177 });
-			m_Knob3[i]->Position({ x, Height() - 245 });
+			Div()[i].Cells(4);
+			Div()[i].CellType(EffectLayout::Type::ROWS);
+			Div()[i][3] = m_Dropdown[i];
+			Div()[i][3].CellSize(32);
+			Div()[i][2] = m_Knob1[i];
+			Div()[i][1] = m_Knob2[i];
+			Div()[i][0] = m_Knob3[i];
 		}
-
 	}
 
 	void Update() override 

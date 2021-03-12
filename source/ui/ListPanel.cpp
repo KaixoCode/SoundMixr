@@ -14,8 +14,8 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_Divider2(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
 	m_Specials(m_ChannelsPanel.Panel().Emplace<::Panel>())
 {
-	m_Effect.Width(330);
-	m_Effect.MinWidth(330);
+	m_Effect.Width(332);
+	m_Effect.MinWidth(332);
 	m_Effect.Hide();
 	m_ChannelsPanel.Panel<::Panel>();
 	m_ChannelsPanel.Panel().Layout<Layout::SidewaysStack>(0);

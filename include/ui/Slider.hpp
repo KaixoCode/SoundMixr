@@ -109,10 +109,18 @@ public:
 		int _unit = -1;
 		for (auto& i : Units())
 		{
-			int _p = std::pow(10, i.first);
-			if (std::abs(_v) >= _p)
-				_unit = i.first;
-
+			if (i.first < 0)
+			{
+				int _p = std::pow(10, -i.first);
+				if (std::abs(_v) >= _p && _unit <= 0)
+					_unit = i.first;
+			}
+			else
+			{
+				int _p = std::pow(10, i.first);
+				if (std::abs(_v) >= _p && _unit >= 0)
+					_unit = i.first;
+			}
 			if (i.first == 0 && _unit == -1)
 				_unit = 0;
 		}
@@ -158,8 +166,6 @@ protected:
 	std::string m_ValueText;
 };
 
-
-
 template<typename Graphics>
 class SliderBase : public ParameterComponent
 {
@@ -172,4 +178,3 @@ public:
 		Graphics::Render(*this, d);
 	};
 };
-

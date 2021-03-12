@@ -14,7 +14,7 @@ public:
 	template<typename T>
 	ChannelPanel(T* l, bool isinput, bool special = false)
 		: m_ChannelGroup(), m_IsInput(isinput), m_IsSpecial(special),
-		volume(Emplace<VolumeSlider>()),
+		volume(Emplace<OldVolumeSlider>()),
 		routed(Emplace<Button<RouteButton, ButtonType::Toggle>>(&m_Routed, isinput ? "in" : "")),
 
 		muted(Emplace<Button<MuteButton, ButtonType::Toggle>>(
@@ -177,7 +177,7 @@ public:
 	Button<MuteButton, ButtonType::Toggle>& muted;
 	Button<MonoButton, ButtonType::Toggle>& mono;
 	PanSlider& pan;
-	VolumeSlider& volume;
+	OldVolumeSlider& volume;
 
 private:
 	static inline std::unordered_map<int, std::string> m_Numbers;

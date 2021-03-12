@@ -4,6 +4,11 @@
 #include "ui/Graphics.hpp"
 #include "ui/Dropdown.hpp"
 
+struct NOTHING
+{
+	static void Render(ButtonBase&, CommandCollection&) {}
+};
+
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
 // -------------------------------------------------------------------------- \\
@@ -24,41 +29,201 @@ public:
 	bool Hovering() { return m_Hovering; }
 	bool HoveringDrag() { return m_HoveringDrag; }
 
-	// TODO: m_Small and m_Enabled
-	// 		m_Enable.Active(json.at("enabled").get<bool>());
-	//      m_Minim->Active(json.at("small").get<bool>());
-	operator json() { return *m_Effect; };
-	void operator=(const json& json) { *m_Effect = json; };
+	operator json() 
+	{ 
+		json _json = *m_Effect;
+		_json["enabled"] = m_Enable->Active();
+		_json["small"] = m_Minim->Active();
+		return _json;
+	}
+
+	void operator=(const json& json) 
+	{ 
+		m_Enable->Active(json.at("enabled").get<bool>());
+		m_Minim->Active(json.at("small").get<bool>());
+		*m_Effect = json;
+	}
 
 	bool Delete() { return m_Delete; }
 
-	void SetRightClickMenu(RightClickMenu* r) { m_RightClickMenu = r; }
-
 protected:
-	RightClickMenu* m_RightClickMenu = nullptr;
 	int m_Channels = -1, m_RealHeight = 0, m_Delete = false;
 	bool m_Hovering = false, m_Small = false, m_HoveringDrag = false, m_Enabled = true;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	MenuAccessories::Divider* m_Div, * m_Div2;
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_Minim;
-	Button<ToggleButton, ButtonType::Toggle>& m_Enable;
+	Button<ToggleButtonG, ButtonType::Toggle>* m_Enable;
+	Button<NOTHING, ButtonType::Toggle>* m_MinimB;
 	EffectBase* m_Effect;
+	std::vector<Vec4<int>> m_Dividers;
 
 	void Init()
 	{
-		auto& params = m_Effect->Parameters();
-		for (auto& i : params)
+		InitDiv(m_Effect->Div(), { 0, 0, 300, m_Effect->Height()});
+	}
+
+	void InitDiv(EffectLayout::Div& div, const Vec4<int>& dim)
+	{
+		if (div.DivType() == EffectLayout::Div::Type::OBJECT)
+			SetObject(div, dim);
+
+		else 
+			if (div.CellType() == EffectLayout::Type::COLS)
+			{
+				// Get all the sizes of the sub-divs
+				std::vector<int> sizes;
+				int width = dim.width, amt = 0, obamt = 0;
+				for (auto& i : div.Divs())
+					if (i->CellSize() == EffectLayout::Div::AUTO)
+					{
+						if (i->DivType() == EffectLayout::Div::Type::OBJECT)
+							sizes.push_back(i->Object().Size().width + i->Padding()), width -= i->Object().Size().width + i->Padding(), obamt++;
+						else
+							sizes.push_back(0), amt++;
+					} 
+					else
+						width -= i->CellSize(), sizes.push_back(-i->CellSize());
+
+				// See what's left to divide
+				int x = dim.x;
+				int w = width;
+				if (amt)
+					w /= amt;
+				else if (obamt)
+					w /= obamt;
+
+				// If there's some space left, either give it to divs or objects
+				if (w > 0)
+					for (auto& i : sizes)
+						if (amt && i == 0) // Give space to div with no given size
+							i = w;
+						else if (obamt && i > 0) // Give space to object
+							i += w;
+
+				// if we're short on space, take some away from objects or divs.
+				if (width < 0)
+					for (auto& i : sizes)
+						if (i > 0 && obamt) // Take away from object
+							i -= w;
+						else if (i < 0 && !obamt) // Take away from div with a given size
+							i -= w;
+
+				// Set sizes and positions
+				for (int i = 0; i < div.Divs().size(); i++)
+				{
+					if (div.Dividers() && i != 0)
+						m_Dividers.emplace_back(Vec4<int>{ x, dim.y + 8, 1, dim.height - 16 });
+
+					if (sizes[i] < 0) // If div with given space, size is negative so negate
+						InitDiv(*div.Divs()[i], { x + div.Padding(), dim.y + div.Padding(), -sizes[i] - 2 * div.Padding(), dim.height - 2 * div.Padding() }), x += -sizes[i];
+					else // Otherwise just recurse
+						InitDiv(*div.Divs()[i], { x + div.Padding(), dim.y + div.Padding(), sizes[i] - 2 * div.Padding(), dim.height - 2 * div.Padding() }), x += sizes[i];
+				}
+			}
+			else
+			{
+				// Get all the sizes of the sub-divs
+				std::vector<int> sizes;
+				int height = dim.height, amt = 0, obamt = 0;
+				for (auto& i : div.Divs())
+					if (i->CellSize() == EffectLayout::Div::AUTO)
+					{
+						if (i->DivType() == EffectLayout::Div::Type::OBJECT)
+							sizes.push_back(i->Object().Size().height + i->Padding()), height -= i->Object().Size().height + i->Padding(), obamt++;
+						else
+							sizes.push_back(0), amt++;
+					}
+					else
+						height -= i->CellSize(), sizes.push_back(-i->CellSize());
+
+				// See what's left to divide
+				int y = dim.y;
+				int h = height;
+				if (amt)
+					h /= amt;
+				else if (obamt)
+					h /= obamt;
+
+				// If there's some space left, either give it to divs or objects
+				if (h > 0)
+					for (auto& i : sizes)
+						if (amt && i == 0) // Give space to div with no given size
+							i = h;
+						else if (obamt && i > 0) // Give space to object
+							i += h;
+
+				// if we're short on space, take some away from objects or divs.
+				if (height < 0)
+					for (auto& i : sizes)
+						if (i > 0 && obamt) // Take away from object
+							i += h;
+						else if (i < 0 && !obamt) // Take away from div with a given size
+							i += h;
+
+				// Set sizes and positions
+				for (int i = 0; i < div.Divs().size(); i++)
+				{
+					if (div.Dividers() && i != 0)
+						m_Dividers.emplace_back(Vec4<int>{ dim.x + 8, y, dim.width - 16, 1 });
+					
+					if (sizes[i] < 0) // If div with given space, size is negative so negate
+						InitDiv(*div.Divs()[i], { dim.x + div.Padding(), y + div.Padding(), dim.width - 2 * div.Padding(), -sizes[i] - 2 * div.Padding() }), y += -sizes[i];
+					else // Otherwise just recurse
+						InitDiv(*div.Divs()[i], { dim.x + div.Padding(), y + div.Padding(), dim.width - 2 * div.Padding(), sizes[i] - 2 * div.Padding() }), y += sizes[i];
+				}
+			}
+	}
+
+	void SetObject(EffectLayout::Div& div, const Vec4<int>& dim)
+	{
+		// Get the object from the div
+		EffectObject* object = &div.Object();
+
+		// Calculate the position using the alignment
+		Vec2<int> position = { dim.x, dim.y };
+		if (div.Align() == EffectLayout::Align::CENTER)
+			position += { dim.width / 2 - object->Size().width / 2, dim.height / 2 - object->Size().height / 2 };
+		else if (div.Align() == EffectLayout::Align::RIGHT)
+			position += { dim.width - object->Size().width, dim.height / 2 - object->Size().height / 2 };
+		else if (div.Align() == EffectLayout::Align::LEFT)
+			position += { 0, dim.height / 2 - object->Size().height / 2 };
+		else if (div.Align() == EffectLayout::Align::BOTTOM)
+			position += { dim.width / 2 - object->Size().width / 2, 0 };
+		else if (div.Align() == EffectLayout::Align::TOP)
+			position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
+
+		// Determine type and add to effect.
+		auto vs = dynamic_cast<VolumeSlider*>(object);
+		if (vs != nullptr)
 		{
-			if (i->Type() == ParameterType::Slider)
-				Emplace<NormalSlider>(*i.get());
-			else if (i->Type() == ParameterType::Knob)
-				Emplace<KnobSlider>(*i.get());
+			Emplace<VolumeSliderComponent>(*vs), vs->Position({ position.x, position.y - 5 });
+			return;
 		}
 
-		auto& dd = m_Effect->DropDowns();
-		for (auto& i : dd)
+		auto param = dynamic_cast<Parameter*>(object);
+		if (param != nullptr)
 		{
-			auto& d = Emplace<DropDownComponent<int, DropdownButton>>(*i);
+			if (param->Type() == ParameterType::Slider)
+				Emplace<NormalSlider>(*param), param->Position({ position.x, position.y });
+			else if (param->Type() == ParameterType::Knob)
+				Emplace<KnobSlider>(*param), param->Position({ position.x, position.y });
+			else if (param->Type() == ParameterType::TwoWaySlider)
+				Emplace<NormalSlider>(*param), param->Position({ position.x, position.y });
+			return;
+		}
+
+		auto dd = dynamic_cast<DropDown*>(object);
+		if (dd != nullptr)
+		{
+			Emplace<DropDownComponent<int, DropdownButton>>(*dd), dd->Position({ position.x, position.y });
+			return;
+		}
+
+		auto toggle = dynamic_cast<ToggleButton*>(object);
+		if (toggle != nullptr)
+		{
+			Emplace<ToggleButtonComponent>(*toggle), toggle->Position({ position.x, position.y });
+			return;
 		}
 	}
 };
