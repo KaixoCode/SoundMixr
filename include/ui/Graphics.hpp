@@ -670,6 +670,43 @@ public:
 
 };
 
+
+class RadioButton
+{
+public:
+
+	static void Render(Button<RadioButton, ButtonType::List>& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+
+		d.Command<Fill>(theme->Get(C::ToggleButtonB));
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+		if (b.Selected())
+			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		else
+			d.Command<Fill>(theme->Get(C::ToggleButton));
+
+		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+
+		if (!b.Selected() && (b.Hovering() || b.Active()))
+		{
+			d.Command<Fill>(theme->Get(C::ToggleButtonH));
+			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+		}
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		if (b.Selected())
+			d.Command<Fill>(theme->Get(C::ToggleButtonText));
+		else
+			d.Command<Fill>(theme->Get(C::TextOff));
+		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
+
+	}
+
+};
+
 class DropdownButton
 {
 public:

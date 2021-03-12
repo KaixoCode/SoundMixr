@@ -147,6 +147,18 @@ bool AsioDevice::StopStream()
 	return true;
 }
 
+void AsioDevice::RemoveGroups()
+{
+	for (auto& i : m_Inputs)
+		i.Group(nullptr, -1);
+
+	for (auto& i : m_Outputs)
+		i.Group(nullptr, -1);
+
+	for (auto& i : m_SoundboardChannels)
+		i.Group(nullptr, -1);
+}
+
 int AsioDevice::SarCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
 	const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData)
 {

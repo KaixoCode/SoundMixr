@@ -36,13 +36,12 @@ public:
 			themefunc(theme->theme);
 	}
 
-	Effect* CreateInstance()
+	EffectBase* CreateInstance()
 	{
 		if (instfunc)
 		{
-			Effect* p = static_cast<Effect*>(instfunc());
+			EffectBase* p = static_cast<EffectBase*>(instfunc());
 			m_Effects.push_back(p);
-			p->SetRightClickMenu(&RightClickMenu::Get());
 			p->Init();
 			return p;
 		}
@@ -61,7 +60,7 @@ private:
 	theme_func themefunc;
 	std::string m_Name;
 	HMODULE m_Module;
-	std::vector<Effect*> m_Effects;
+	std::vector<EffectBase*> m_Effects;
 };
 
 class EffectLoader
@@ -76,8 +75,8 @@ public:
 				if (!entry.path().extension().compare(".dll"))
 				{
 					std::string name = entry.path().stem().string();
-					if (m_Effects.find(name) != m_Effects.end())
-						continue;
+					//if (m_Effects.find(name) != m_Effects.end())
+					//	continue;
 
 					std::string path = std::filesystem::absolute(entry.path()).string();
 					HMODULE module = LoadLibrary((LPCTSTR)path.c_str());

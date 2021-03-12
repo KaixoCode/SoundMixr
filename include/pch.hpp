@@ -32,6 +32,7 @@ using namespace nlohmann;
 
 #include <AudioFile.h>
 
+#include "EffectBase.hpp"
 #include "resource.h"
 
 #define db2lin(db) std::powf(10.0f, 0.05 * (db))

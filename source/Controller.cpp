@@ -251,8 +251,14 @@ void Controller::Run()
     _file.Emplace<MenuButton>([&]
         {                
             // First save the routing
+            SaveRouting();
+            m_AsioDevice.StopStream();
+            m_AsioDevice.RemoveGroups();
+            m_List->Clear();
+            m_AsioDevice.StartStream();
             EffectLoader::LoadEffects();
             m_List->ReloadEffects();
+            LoadRouting();
         }, "Refresh Effects");
 
     //

@@ -38,6 +38,7 @@ public:
 	void CloseStream();
 	bool StartStream();
 	bool StopStream();
+	void RemoveGroups();
 
 	std::vector<InputChannel>& Inputs() { return m_Inputs; }
 	std::vector<OutputChannel>& Outputs() { return m_Outputs; }
