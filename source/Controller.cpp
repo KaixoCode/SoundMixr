@@ -27,7 +27,6 @@ void Controller::Run()
     std::getline(_in, _line);
     int _themeId = std::atoi(_line.c_str());
     theme->theme = (Themes::N) _themeId;
-    EffectLoader::SetTheme(theme->theme);
     _in.close();
 
     //
@@ -219,7 +218,6 @@ void Controller::Run()
     auto& _theme1 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
             theme->theme = Themes::DARK;
-            EffectLoader::SetTheme(theme->theme);
             _themeCallback();
         }, "Dark", _key);
     if (theme->theme == Themes::DARK) _theme1.Selected(true);
@@ -234,7 +232,6 @@ void Controller::Run()
     auto& _theme3 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
             theme->theme = Themes::BLUE;
-            EffectLoader::SetTheme(theme->theme);
             _themeCallback();
         }, "Blue", _key);
     if (theme->theme == Themes::BLUE) _theme3.Selected(true);

@@ -9,7 +9,6 @@
 #endif
 
 typedef void* (__stdcall* inst_func)();
-typedef void (__stdcall* theme_func)(int);
 
 class DynamicEffect
 {
@@ -31,9 +30,6 @@ public:
 		: m_Module(h), m_Name(name)
 	{
 		instfunc = (inst_func)GetProcAddress(m_Module, "NewInstance");
-		themefunc = (theme_func)GetProcAddress(m_Module, "SetTheme");
-		if (themefunc)
-			themefunc(theme->theme);
 	}
 
 	EffectBase* CreateInstance()
@@ -42,22 +38,14 @@ public:
 		{
 			EffectBase* p = static_cast<EffectBase*>(instfunc());
 			m_Effects.push_back(p);
-			p->Init();
 			return p;
 		}
 		else 
 			return nullptr;
 	}
 
-	void SetTheme(Themes::N t)
-	{
-		if (themefunc)
-			themefunc((int)t);
-	}
-
 private:
 	inst_func instfunc;
-	theme_func themefunc;
 	std::string m_Name;
 	HMODULE m_Module;
 	std::vector<EffectBase*> m_Effects;
@@ -95,15 +83,9 @@ public:
 		return m_Effects;
 	}
 
-	static inline Effect* CreateInstance(const std::string& name)
+	static inline EffectBase* CreateInstance(const std::string& name)
 	{
 		return m_Effects[name]->CreateInstance();
-	}
-
-	static inline void SetTheme(Themes::N t)
-	{
-		for (auto& i : m_Effects)
-			i.second->SetTheme(t);
 	}
 
 public:

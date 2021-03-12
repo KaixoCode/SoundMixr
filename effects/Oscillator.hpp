@@ -1,13 +1,12 @@
 #pragma once
-#include "pch.hpp"
-#include "Effects.hpp"
+#include <cmath>
 
 class Oscillator
 {
 public:
 	float NextSample()
 	{
-        double delta = frequency / Effect::sampleRate;
+        double delta = frequency / sampleRate;
         phase = std::fmod(1 + phase + delta, 1);
         sample = wavetable(phase);
         return sample;
@@ -18,4 +17,5 @@ public:
     double sample = 0;
 	double frequency = 0;
 	double phase = 0;
+    double sampleRate = 48000;
 };

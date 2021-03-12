@@ -1,6 +1,8 @@
 #pragma once
-#include "audio/Effects.hpp"
-#include "ui/Dropdown.hpp"
+#include <algorithm>
+#include <cmath>
+
+#define constrain(x, y, z) (x < y ? y : x > z ? z : x)
 
 enum class FilterType
 {
@@ -48,11 +50,12 @@ public:
 	// Parameters
 	union { double Q, BW, S = 1; };
 	double f0 = 22000, dbgain = 0;
+	double sampleRate = 48000;
 	FilterType type = FilterType::Off;
 
 	void RecalculateParameters()
 	{
-		w0 = 2 * M_PI * (f0 / Effect::sampleRate);
+		w0 = 6.28318530718 * (f0 / sampleRate);
 		cosw0 = std::cos(w0), sinw0 = std::sin(w0);
 
 		switch (type) {
@@ -165,13 +168,14 @@ template<size_t M>
 class KaiserBesselParameters : public FIRFilterParameters<M>
 {
 public:
+	double sampleRate = 48000;
 	void RecalculateParameters()
 	{
 		// Calculate the impulse response
-		A[0] = 2 * (Fb - Fa) / Effect::sampleRate;
+		A[0] = 2 * (Fb - Fa) / sampleRate;
 		int _np = (M - 1) / 2;
 		for (int j = 1; j <= _np; j++)
-			A[j] = (std::sin(2.0 * j * M_PI * Fb / Effect::sampleRate) - std::sin(2.0 * j * M_PI * Fa / Effect::sampleRate)) / (j * M_PI);
+			A[j] = (std::sin(j * 6.28318530718 * Fb / sampleRate) - std::sin(j * 6.28318530718 * Fa / sampleRate)) / (j * 3.14159265359);
 
 		// Calculate alpha
 		double _alpha;

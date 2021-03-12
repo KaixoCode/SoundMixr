@@ -2,6 +2,7 @@
 #include "pch.hpp"
 #include "ui/VolumeSlider.hpp"
 #include "ui/Graphics.hpp"
+#include "ui/Dropdown.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
@@ -12,21 +13,22 @@ class Effect : public Panel
 public:
 	static inline double sampleRate = 48000;
 
-	Effect(const std::string& name);
-
-	virtual void Init() = 0;
+	Effect(EffectBase*);
 
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
 	
-	virtual float NextSample(float, int) = 0;
-	virtual void Channels(int c) { m_Channels = c; }
+	float NextSample(float s, int c) { return m_Effect->NextSample(s, c); };
+	void Channels(int c) { m_Effect->Channels(c); m_Channels = c; }
 
 	bool Hovering() { return m_Hovering; }
 	bool HoveringDrag() { return m_HoveringDrag; }
 
-	virtual operator json() = 0;
-	virtual void operator=(const json& json) = 0;
+	// TODO: m_Small and m_Enabled
+	// 		m_Enable.Active(json.at("enabled").get<bool>());
+	//      m_Minim->Active(json.at("small").get<bool>());
+	operator json() { return *m_Effect; };
+	void operator=(const json& json) { *m_Effect = json; };
 
 	bool Delete() { return m_Delete; }
 
@@ -40,7 +42,25 @@ protected:
 	MenuAccessories::Divider* m_Div, * m_Div2;
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_Minim;
 	Button<ToggleButton, ButtonType::Toggle>& m_Enable;
-	const std::string m_Name = "";
+	EffectBase* m_Effect;
+
+	void Init()
+	{
+		auto& params = m_Effect->Parameters();
+		for (auto& i : params)
+		{
+			if (i->Type() == ParameterType::Slider)
+				Emplace<NormalSlider>(*i.get());
+			else if (i->Type() == ParameterType::Knob)
+				Emplace<KnobSlider>(*i.get());
+		}
+
+		auto& dd = m_Effect->DropDowns();
+		for (auto& i : dd)
+		{
+			auto& d = Emplace<DropDownComponent<int, DropdownButton>>(*i);
+		}
+	}
 };
 
 // -------------------------------------------------------------------------- \\
@@ -60,14 +80,14 @@ public:
 	bool  Hovering();
 	bool  Dragging() { return m_Dragging != nullptr; }
 
-	Effect& Add(Effect* e)
+	Effect& Add(EffectBase* e)
 	{
 		int p = m_EffectCount;
 		m_EffectCount = 0;
-		m_Effects.push_back(e);
+		auto& a = m_Effects.emplace_back(std::make_unique<Effect>(e));
 		e->Channels(m_Channels);
 		m_EffectCount = p + 1;
-		return *e;
+		return *a;
 	}
 
 	void Update(const Vec4<int>& viewport) override;
@@ -95,7 +115,7 @@ public:
 	void operator=(const json& json);
 
 private:
-	std::vector<Effect*> m_Effects;
+	std::vector<std::unique_ptr<Effect>> m_Effects;
 	int m_Channels = 0, m_EffectCount = 0;
 
 	Effect* m_Hovering;

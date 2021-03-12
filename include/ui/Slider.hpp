@@ -30,10 +30,10 @@ public:
 
 			m_NeedsRedraw = true;
 			if (Vertical())
-				Value(Value() + (m_Shift ? Multiplier() / 4 : Multiplier()) * ((e.y - m_PressMouse) / (float)(Height()))), m_PressMouse = e.y;
+				NormalizedValue(NormalizedValue() + (m_Shift ? Multiplier() / 4 : Multiplier()) * ((e.y - m_PressMouse) / (float)(Height()))), m_PressMouse = e.y;
 
 			else
-				Value(Value() + (m_Shift ? Multiplier() / 4 : Multiplier()) * ((e.x - m_PressMouse) / (float)(Width()))), m_PressMouse = e.x;
+				NormalizedValue(NormalizedValue() + (m_Shift ? Multiplier() / 4 : Multiplier()) * ((e.x - m_PressMouse) / (float)(Width()))), m_PressMouse = e.x;
 		};
 
 		m_Listener += [this](Event::MouseClicked& e)
@@ -70,8 +70,8 @@ public:
 
 	virtual void   Name(const std::string& n) { m_Parameter.Name(n); }
 	virtual auto   Name() -> std::string& { return m_Parameter.Name(); }
-	virtual void   Range(const Vec2<double>& r) { m_Parameter.Range(r); }
-    virtual auto   Range() -> Vec2<double> const { return m_Parameter.Range(); }
+	virtual void   Range(const Vec2<double>& r) { m_Parameter.Range({ r.start, r.end }); }
+	virtual auto   Range() -> Vec2<double> const { return Vec2<double>{ m_Parameter.Range().start, m_Parameter.Range().end }; }
 	virtual void   Value(double v) { m_Parameter.Value(v); }
     virtual double Value() const { return m_Parameter.Value(); }
 	virtual double NormalizedValue() const { return m_Parameter.NormalizedValue(); }
@@ -86,6 +86,7 @@ public:
 	virtual void   Vertical(bool v) { m_Parameter.Vertical(v); }
 	virtual auto   ValueText() -> std::string& const { return m_ValueText; }
 	virtual void   Unit(const std::string& str, int tenp = 0) { m_Parameter.Unit(str, tenp); }
+	virtual auto   Units() -> std::unordered_map<int, std::string>& { return m_Parameter.Units(); }
 	virtual void   Decimals(int d) { m_Parameter.Decimals(d); }
 	virtual int    Decimals() { return m_Parameter.Decimals(); }
 	virtual bool   DisplayValue() { return m_Parameter.DisplayValue(); }
@@ -100,10 +101,13 @@ public:
 
 	void Update(const Vec4<int>& vp) override
 	{
+		m_Size = { m_Parameter.Size().width, m_Parameter.Size().height };
+		m_Pos = { m_Parameter.Position().x, m_Parameter.Position().y };
+
 		m_ValueText = "";
 		double _v = Value();
 		int _unit = -1;
-		for (auto& i : m_Units)
+		for (auto& i : Units())
 		{
 			int _p = std::pow(10, i.first);
 			if (std::abs(_v) >= _p)
@@ -115,8 +119,8 @@ public:
 
 		if (_unit != -1)
 		{
-			auto& i = m_Units[_unit];
-			char s[10];
+			auto& i = Units()[_unit];
+			char s[30];
 			int _p = std::pow(10, _unit);
 			std::sprintf(s, (std::string("%.") + std::to_string(m_Parameter.Decimals()) + "f").c_str(), _v / _p);
 			m_ValueText += s;
@@ -124,7 +128,7 @@ public:
 		}
 		else
 		{
-			char s[10];
+			char s[30];
 			std::sprintf(s, (std::string("%.") + std::to_string(m_Parameter.Decimals()) + "f").c_str(), _v);
 			m_ValueText += s;
 		}
@@ -152,20 +156,19 @@ protected:
 		m_Shift = false;
 
 	std::string m_ValueText;
-	std::unordered_map<int, std::string> m_Units;
 };
 
 
 
 template<typename Graphics>
-class SliderBase : public Parameter
+class SliderBase : public ParameterComponent
 {
 public:
-	using Parameter::Parameter;
+	using ParameterComponent::ParameterComponent;
 
 	void Render(CommandCollection& d) override
 	{
-		Parameter::Render(d);
+		ParameterComponent::Render(d);
 		Graphics::Render(*this, d);
 	};
 };

@@ -14,15 +14,16 @@ public:
 	using Parent = SliderBase<T>;
 
 	VolumeSliderG()
+		: Parent(m_Parameter)
 	{
-		Range(Vec2<double>{0, 3.98107});
-		Power(4);
-		Value(1);
-		ResetValue(1);
-		Vertical(true);
+		m_Parameter.Range({0.0, 3.98107});
+		m_Parameter.Power(4);
+		m_Parameter.Value(1);
+		m_Parameter.ResetValue(1);
+		m_Parameter.Vertical(true);
 	}
 
-	double Decibels() { return 20 * std::log10(std::max(Value(), 0.000001)); };
+	double Decibels() { return 20 * std::log10(std::max(m_Parameter.Value(), 0.000001)); };
 
 	void Update(const Vec4<int>& v)
 	{
@@ -37,6 +38,9 @@ public:
 		}
 		m_ValueText += "dB";
 	}
+
+private:
+	Parameter m_Parameter;
 };
 
 using VolumeSlider = VolumeSliderG<VolumeSliderGraphics>;
@@ -52,13 +56,13 @@ public:
 	using Parent = SliderBase<Graphics>;
 
 	PanSliderG(const std::string& name = "")
-		: Parent(name)
+		: m_Parameter(name, ParameterType::Slider), Parent(m_Parameter)
 	{
 		m_ValueText.reserve(10);
-		Range(Vec2<double>{ -50, 50 });
-		Value(0);
-		Vertical(false);
-		ResetValue(0);
+		m_Parameter.Range({ -50, 50 });
+		m_Parameter.Value(0);
+		m_Parameter.Vertical(false);
+		m_Parameter.ResetValue(0);
 
 		m_Listener += [this](Event::MouseEntered& e)
 		{ m_Hovering = true; };
@@ -71,19 +75,21 @@ public:
 		Component::Update(v);
 
 		char s[10];
-		if (Value() == 0)
+		if (m_Parameter.Value() == 0)
 			m_ValueText = "C";
-		else if (Value() < 0) {
-			std::sprintf(s, "%.0f", std::abs(Value()));
+		else if (m_Parameter.Value() < 0) {
+			std::sprintf(s, "%.0f", std::abs(m_Parameter.Value()));
 			m_ValueText = s;
 			m_ValueText += "L";
 		}
 		else {
-			std::sprintf(s, "%.0f", Value());
+			std::sprintf(s, "%.0f", m_Parameter.Value());
 			m_ValueText = s;
 			m_ValueText += "R";
 		}
 	}
+private:
+	Parameter m_Parameter;
 };
 
 using PanSlider = PanSliderG<PanSliderGraphics>;

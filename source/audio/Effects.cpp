@@ -1,14 +1,6 @@
 #include "audio/Effects.hpp"
 #include "EffectLoader.hpp"
 
-extern "C"
-{
-	DLLDIR void SetTheme(int t)
-	{
-		theme->theme = (Themes::N) t;
-	}
-}
-
 template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex)
 {
 	if (oldIndex > newIndex)
@@ -21,15 +13,16 @@ template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIn
 // ------------------------------ Effect ------------------------------------ \\
 // -------------------------------------------------------------------------- \\
 
-Effect::Effect(const std::string& name)
-	: m_Name(name), m_Channels(0),
+Effect::Effect(EffectBase* effect)
+	: m_Effect(effect), m_Channels(0),
 	m_Enable(Emplace<Button<ToggleButton, ButtonType::Toggle>>(&m_Enabled, ""))
 {
+	Init();
 	m_RealHeight = -1;
 	m_Enable.Size({ 18, 18 });
 
 	m_Menu.ButtonSize({ 160, 20 });
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, name).Disable();
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Effect->Name()).Disable();
 	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
 	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s)
@@ -86,7 +79,10 @@ Effect::Effect(const std::string& name)
 
 void Effect::Update(const Vec4<int>& v) 
 {
+	m_Size.height = m_Effect->Height();
 	m_Enable.Position({ 3, Height() - 22 });
+	m_Effect->Update();
+	Background(theme->Get(C::Channel));
 	Panel::Update(v);
 }
 
@@ -108,7 +104,7 @@ void Effect::Render(CommandCollection& d)
 		d.Command<Fill>(theme->Get(C::TextOff));
 
 	d.Command<TextAlign>(Align::LEFT, Align::TOP);
-	d.Command<Text>(&m_Name, Vec2<int>{ 30, Height() - 2});
+	d.Command<Text>(&m_Effect->Name(), Vec2<int>{ 30, Height() - 2});
 	
 	d.Command<Fill>(theme->Get(C::TextOff));
 	if (!m_Small)
@@ -215,7 +211,7 @@ EffectsGroup::EffectsGroup()
 			int _index = 0;
 			for (auto& i : m_Effects)
 			{
-				if (i == m_Dragging)
+				if (i.get() == m_Dragging)
 				{
 					_myIndex = _index;
 					break;
@@ -254,9 +250,9 @@ void EffectsGroup::operator=(const json& json)
 		auto& _it = EffectLoader::Effects().find(type);
 		if (_it != EffectLoader::Effects().end())
 		{
-			Effect* inst = (*_it).second->CreateInstance();
+			EffectBase* inst = (*_it).second->CreateInstance();
 			Add(inst);
-			*inst = effect;
+			//inst->operator nlohmann:: = effect;
 		}
 	}
 }
@@ -355,7 +351,7 @@ void EffectsGroup::Render(CommandCollection& d)
 			d.Command<Quad>(Vec4<int>{_c->X(), _c->Y() + (_past ? -5 : _c->Height() + 3), _c->Width(), 2});
 		}
 	
-		if (_c == m_Dragging)
+		if (_c.get() == m_Dragging)
 			_past = true;
 		
 		if (_c->Visible() &&
@@ -376,7 +372,7 @@ void EffectsGroup::Determine(Event& e)
 	for (auto& _c : m_Effects)
 		if (_c->Visible())
 			if (_c->WithinBounds({ e.x, e.y }))
-				_nextHover = _c;
+				_nextHover = _c.get();
 
 	// If it is different, send MouseEntered and MouseExited events.
 	if (_nextHover != m_Hovering)

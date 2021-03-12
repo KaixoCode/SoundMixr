@@ -1,24 +1,21 @@
-#include "audio/Effects.hpp"
-#include "audio/Compressor.hpp"
+#include "EffectBase.hpp"
+#include "Compressor.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------- Dynamics Effect -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class Dynamics : public Effect
+class Dynamics : public EffectBase
 {
 public:
 	Dynamics()
-		: m_PreGain(Emplace<KnobSlider>("PreGain")),
-		m_Attack(Emplace<KnobSlider>("Attack")),
-		m_Release(Emplace<KnobSlider>("Release")),
-		m_PostGain(Emplace<KnobSlider>("PostGain")),
-		m_Mix(Emplace<KnobSlider>("Mix")),
+		: m_PreGain(Parameter("PreGain", ParameterType::Knob)),
+		m_Attack(Parameter("Attack", ParameterType::Knob)),
+		m_Release(Parameter("Release", ParameterType::Knob)),
+		m_PostGain(Parameter("PostGain", ParameterType::Knob)),
+		m_Mix(Parameter("Mix", ParameterType::Knob)),
 		m_Slider(Emplace<DynamicsSlider>()),
-		Effect("Dynamics")
-	{}
-
-	void Init() override
+		EffectBase("Dynamics")
 	{
 		Height(200);
 		m_PreGain.Range({ -24, 24 });
@@ -63,11 +60,6 @@ public:
 
 		UpdateParams();
 
-		Background(theme->Get(C::Channel));
-	}
-
-	void Update(const Vec4<int>& v) override
-	{
 		m_PreGain.Position({ Width() - 282, 20 });
 		m_PostGain.Position({ Width() - 227, 20 });
 		m_Attack.Position({ Width() - 164, 20 });
@@ -75,8 +67,10 @@ public:
 		m_Mix.Position({ Width() - 46, 20 });
 		m_Slider.Position({ 12, 93 });
 		m_Slider.Size({ (Width() - 24), Height() - 123 });
-		Background(theme->Get(C::Channel));
-		Effect::Update(v);
+	}
+
+	void Update()
+	{
 		UpdateParams();
 	}
 
@@ -220,7 +214,7 @@ public:
 private:
 	static inline const double DC_OFFSET = 1.0E-25;
 	
-	KnobSlider
+	::Parameter
 		&m_PreGain,
 		&m_Attack,
 		&m_Release,

@@ -1,10 +1,17 @@
 #pragma once
-#include "pch.hpp"
-#include "Effects.hpp"
+#include <algorithm>
+#include <cmath>
+
+
+#define db2lin(db) std::powf(10.0f, 0.05 * (db))
+#define lin2db(lin) (20.0f * std::log10f(lin))
+#define myabs(f) if (f < 0) f = -f;
+
 
 class Compressor
 {
 public:
+	double sampleRate = 48000;
 	static inline const double DC_OFFSET = 1.0E-25;
 
 	double expanderThreshhold = -50;
@@ -16,8 +23,8 @@ public:
 	double compressEnv = DC_OFFSET;
 	double attms = 1;
 	double relms = 100;
-	double attcoef = std::exp(-1.0 / ((attms / 1000.0) * Effect::sampleRate));
-	double relcoef = std::exp(-1.0 / ((relms / 1000.0) * Effect::sampleRate));
+	double attcoef = std::exp(-1.0 / ((attms / 1000.0) * sampleRate));
+	double relcoef = std::exp(-1.0 / ((relms / 1000.0) * sampleRate));
 
 	double pregain = 0;
 	double postgain = 0;
@@ -36,7 +43,7 @@ public:
 		if (newval != attms)
 		{
 			attms = newval;
-			attcoef = std::exp(-1.0 / ((attms / 1000.0) * Effect::sampleRate));
+			attcoef = std::exp(-1.0 / ((attms / 1000.0) * sampleRate));
 		}
 
 	}
@@ -47,7 +54,7 @@ public:
 		if (newval != relms)
 		{
 			relms = newval;
-			relcoef = std::exp(-1.0 / ((relms / 1000.0) * Effect::sampleRate));
+			relcoef = std::exp(-1.0 / ((relms / 1000.0) * sampleRate));
 		}
 	}
 
@@ -136,5 +143,5 @@ public:
 		return out;
 	}
 
-	float Coeficient(float ms) { return std::exp(-1.0 / ((ms / 1000.0) * Effect::sampleRate)); }
+	float Coeficient(float ms) { return std::exp(-1.0 / ((ms / 1000.0) * sampleRate)); }
 };
