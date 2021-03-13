@@ -278,6 +278,41 @@ private:
 	std::string m_Name;
 };
 
+class RadioButton : public EffectObject
+{
+public:
+	RadioButton(const std::string& n, int id, std::function<void()> callback = [] {})
+		: m_Name(n), m_Id(id), Callback(callback)
+	{}
+
+	void Selected(bool s) { selected = s; if (s) Callback(); }
+	bool Selected() { return selected; }
+	int  Id() { return m_Id; }
+	auto Name() -> std::string& { return m_Name; }
+	std::function<void()> Callback;
+
+	bool selected = false;
+private:
+	int m_Id;
+	std::string m_Name;
+};
+
+class XYController : public EffectObject
+{
+public:
+	XYController(Parameter& p1, Parameter& p2)
+		: p1(p1), p2(p2)
+	{}
+
+	Parameter& Param1() { return p1; }
+	Parameter& Param2() { return p2; }
+
+private:
+	Parameter& p1;
+	Parameter& p2;
+};
+
+
 class DynamicsObject : public EffectObject
 {
 public:
@@ -378,6 +413,16 @@ public:
 	::DynamicsObject& Dynamics()
 	{
 		return dynamic_cast<::DynamicsObject&>(*m_EffectObjects.emplace_back(std::make_unique<::DynamicsObject>()));
+	}
+
+	::RadioButton& RadioButton(const std::string& name, int id, std::function<void()> callback = [] {})
+	{
+		return dynamic_cast<::RadioButton&>(*m_EffectObjects.emplace_back(std::make_unique<::RadioButton>(name, id, callback)));
+	}
+
+	::XYController& XYController(::Parameter& p1, ::Parameter& p2)
+	{
+		return dynamic_cast<::XYController&>(*m_EffectObjects.emplace_back(std::make_unique<::XYController>(p1, p2)));
 	}
 
 	std::vector<std::unique_ptr<::EffectObject>>& Parameters()

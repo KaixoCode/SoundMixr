@@ -110,8 +110,8 @@ void Controller::Run()
         auto _it = std::find_if(m_AsioDevice.Devices().begin(), m_AsioDevice.Devices().end(), [=](const Device& obj) {return obj.id == _deviceId; });
         m_AsioDevice.Device(*_it);
         m_AsioDevice.OpenStream();
-        m_AsioDevice.StartStream();
         LoadRouting();
+        m_AsioDevice.StartStream();
         _titleButton.Name(m_AsioDevice.Device().info.name);
     }
     _in.close();
@@ -137,8 +137,6 @@ void Controller::Run()
                 m_List->Clear();
                 m_AsioDevice.Device(_d);
                 m_AsioDevice.OpenStream();
-                m_AsioDevice.StartStream();
-
                 // Set title to ASIO device name
                 _titleButton.Name(_d.info.name);
 
@@ -150,6 +148,7 @@ void Controller::Run()
 
                 // Load the routing for this new device.
                 LoadRouting();
+                m_AsioDevice.StartStream();
             }, _d.info.name, _key);
 
         // Make sure the correct initial button in the List Group is set to 'Selected'
@@ -170,9 +169,9 @@ void Controller::Run()
             m_AsioDevice.CloseStream();
             PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
             m_AsioDevice.OpenStream();
-            m_AsioDevice.StartStream();
             m_List->Clear();
             LoadRouting();
+            m_AsioDevice.StartStream();
         }, "ASIO Control Panel", Key::CTRL_O);
 
     //
@@ -252,10 +251,10 @@ void Controller::Run()
             m_AsioDevice.StopStream();
             m_AsioDevice.RemoveGroups();
             m_List->Clear();
-            m_AsioDevice.StartStream();
             EffectLoader::LoadEffects();
             m_List->ReloadEffects();
             LoadRouting();
+            m_AsioDevice.StartStream();
         }, "Refresh Effects");
 
     //
@@ -458,6 +457,7 @@ void Controller::LoadRouting()
             _error = true;
         }
     }
+
     if (_error)
     {
         m_List->Clear();

@@ -41,6 +41,7 @@ public:
 	{ 
 		m_Enable->Active(json.at("enabled").get<bool>());
 		m_Minim->Active(json.at("small").get<bool>());
+		m_MinimB->Active(m_Small);
 		*m_Effect = json;
 	}
 
@@ -192,7 +193,22 @@ protected:
 		else if (div.Align() == EffectLayout::Align::TOP)
 			position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
 
+
 		// Determine type and add to effect.
+		auto xy = dynamic_cast<XYController*>(object);
+		if (xy != nullptr)
+		{
+			Emplace<XYControllerComponent>(*xy), xy->Position({ position.x, position.y });
+			return;
+		}
+
+		auto rb = dynamic_cast<RadioButton*>(object);
+		if (rb != nullptr)
+		{
+			Emplace<RadioButtonComponent>(*rb), rb->Position({ position.x, position.y });
+			return;
+		}
+
 		auto dy = dynamic_cast<DynamicsObject*>(object);
 		if (dy != nullptr)
 		{
@@ -200,7 +216,6 @@ protected:
 			return;
 		}
 
-		// Determine type and add to effect.
 		auto vs = dynamic_cast<VolumeSlider*>(object);
 		if (vs != nullptr)
 		{

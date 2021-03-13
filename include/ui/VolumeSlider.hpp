@@ -3,6 +3,57 @@
 #include "ui/Slider.hpp"
 #include "ui/Graphics.hpp"
 
+class RadioButtonComponent : public Button<RadioButtonGraphics, ButtonType::List>
+{
+public:
+	RadioButtonComponent(RadioButton& t)
+		: m_Toggle(t), Button<RadioButtonGraphics, ButtonType::List>([&]
+			{
+				for (auto& i : m_RButtons)
+					if (i.first == m_Keys[m_Toggle.Id()])
+						for (auto& c : i.second)
+							c->Selected(false);
+
+				m_Toggle.Selected(true);
+			}, t.Name(), GetKey(t))
+	{}
+
+	void Update(const Vec4<int>& v)
+	{
+		m_Size = { m_Toggle.Size().width, m_Toggle.Size().height };
+		m_Pos = { m_Toggle.Position().x, m_Toggle.Position().y };
+
+		if (!Selected() && m_Toggle.Selected())
+		{
+			Selected(true);
+		}
+
+		Button<RadioButtonGraphics, ButtonType::List>::Update(v);
+	}
+
+private:
+	static inline std::unordered_map<int, int> m_Keys;
+	static inline std::unordered_map<int, std::vector<RadioButton*>> m_RButtons;
+	static inline int GetKey(RadioButton& k)
+	{
+		int id = 0;
+		auto& _it = m_Keys.find(k.Id());
+		if (_it == m_Keys.end())
+		{
+			id = m_Keys.emplace(k.Id(), ButtonType::List::NewKey()).first->second;
+			auto& i = m_RButtons.emplace(id, std::vector<RadioButton*>{});
+			i.first->second.push_back(&k);
+		}
+		else
+		{
+			id = _it->second;
+			m_RButtons[id].push_back(&k);
+		}
+		return id;
+	}
+	RadioButton& m_Toggle;
+};
+
 class ToggleButtonComponent : public Button<ToggleButtonG, ButtonType::Toggle>
 {
 public:
@@ -19,6 +70,78 @@ public:
 	}
 
 	ToggleButton& m_Toggle;
+};
+
+class XYControllerComponent : public Container
+{
+public:
+	XYControllerComponent(XYController& c)
+		: controller(c)
+	{
+		m_Listener += [this](Event::MousePressed& e)
+		{
+			if (e.button == Event::MouseButton::LEFT && e.x > X() && e.x < X() + Width() && e.y > Y() && e.y < Y() + Height())
+				m_Dragging = true;
+
+		};
+
+		m_Listener += [this](Event::MouseClicked& e)
+		{
+			if (e.button == Event::MouseButton::LEFT)
+			{
+				if (m_Click > 0)
+					controller.Param1().ResetValue(), controller.Param2().ResetValue();
+				m_Click = 20;
+			}
+		};
+
+		m_Listener += [this](Event::MouseDragged& e)
+		{
+			if (m_Dragging)
+			{
+				double _x = constrain((e.x - X() - 8) / (Width() - 8 * 2.0), 0, 1);
+				double _y = constrain((e.y - Y() - 8) / (Height() - 8 * 2.0), 0, 1);
+				controller.Param1().NormalizedValue(_x);
+				controller.Param2().NormalizedValue(_y);
+			}
+		};
+
+		m_Listener += [this](Event::MouseReleased& e)
+		{
+			m_Dragging = false;
+		};
+	}
+
+	void Render(CommandCollection& d) override
+	{
+		using namespace Graphics;
+		d.Command<PushMatrix>();
+		d.Command<Translate>(Position());
+		d.Command<Fill>(theme->Get(C::Dynamics));
+		d.Command<Quad>(Vec4<int>{ 0, 0, Width(), Height() });
+
+		int _p = 8;
+		int _x = controller.Param1().NormalizedValue() * (Width() - 2 * _p) + _p;
+		int _y = controller.Param2().NormalizedValue() * (Height() - 2 * _p) + _p;
+		d.Command<Fill>(theme->Get(C::VSlider));
+		d.Command<Graphics::Ellipse>(Vec4<int>{ _x, _y, _p * 2, _p * 2 });
+		d.Command<PopMatrix>();
+	}
+
+	void Update(const Vec4<int>& v)
+	{
+		if (m_Click)
+			m_Click--;
+		m_Size = { controller.Size().width, controller.Size().height };
+		m_Pos = { controller.Position().x, controller.Position().y };
+
+		Container::Update(v);
+	}
+
+private:
+	int m_Click = 0;
+	bool m_Dragging = false;
+	XYController& controller;
 };
 
 class VolumeSliderComponent : public SliderBase<VolumeSliderGraphics>

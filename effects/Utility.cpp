@@ -111,7 +111,9 @@ public:
 
 		m_Limiter.Size({ 30, 120 });
 		m_Limiter.Channels(1);
-	
+		m_Limiter.ResetValue(1);
+		m_Limiter.ResetValue();
+
 		Div().Cells(3);
 		Div().Dividers(true);
 		Div()[0].CellType(EffectLayout::Type::ROWS);

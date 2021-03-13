@@ -671,11 +671,11 @@ public:
 };
 
 
-class RadioButton
+class RadioButtonGraphics
 {
 public:
 
-	static void Render(Button<RadioButton, ButtonType::List>& b, CommandCollection& d)
+	static void Render(Button<RadioButtonGraphics, ButtonType::List>& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		int _p = 6;
