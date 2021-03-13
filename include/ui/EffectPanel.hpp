@@ -18,7 +18,7 @@ public:
 	void EffectsGroup(EffectsGroup* e) { m_EffectsGroup = e; }
 	auto EffectsGroup() -> ::EffectsGroup* { return m_EffectsGroup; }
 
-	void AddEffect(EffectBase* effect)
+	void AddEffect(Effects::EffectBase* effect)
 	{
 		if (m_EffectsGroup && effect)
 			m_EffectsGroup->Add(effect);

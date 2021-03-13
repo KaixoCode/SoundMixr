@@ -13,7 +13,7 @@ template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIn
 // ------------------------------ Effect ------------------------------------ \\
 // -------------------------------------------------------------------------- \\
 
-Effect::Effect(EffectBase* effect)
+Effect::Effect(Effects::EffectBase* effect)
 	: m_Effect(effect), m_Channels(0)
 {
 	Init();
@@ -261,7 +261,7 @@ void EffectsGroup::operator=(const json& json)
 		auto& _it = EffectLoader::Effects().find(type);
 		if (_it != EffectLoader::Effects().end())
 		{
-			EffectBase* inst = (*_it).second->CreateInstance();
+			Effects::EffectBase* inst = (*_it).second->CreateInstance();
 			auto& a = Add(inst);
 			a = effect;
 		}

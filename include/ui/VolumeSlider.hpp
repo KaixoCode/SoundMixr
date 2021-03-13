@@ -6,7 +6,7 @@
 class RadioButtonComponent : public Button<RadioButtonGraphics, ButtonType::List>
 {
 public:
-	RadioButtonComponent(RadioButton& t)
+	RadioButtonComponent(Effects::RadioButton& t)
 		: m_Toggle(t), Button<RadioButtonGraphics, ButtonType::List>([&]
 			{
 				for (auto& i : m_RButtons)
@@ -33,15 +33,15 @@ public:
 
 private:
 	static inline std::unordered_map<int, int> m_Keys;
-	static inline std::unordered_map<int, std::vector<RadioButton*>> m_RButtons;
-	static inline int GetKey(RadioButton& k)
+	static inline std::unordered_map<int, std::vector<Effects::RadioButton*>> m_RButtons;
+	static inline int GetKey(Effects::RadioButton& k)
 	{
 		int id = 0;
 		auto& _it = m_Keys.find(k.Id());
 		if (_it == m_Keys.end())
 		{
 			id = m_Keys.emplace(k.Id(), ButtonType::List::NewKey()).first->second;
-			auto& i = m_RButtons.emplace(id, std::vector<RadioButton*>{});
+			auto& i = m_RButtons.emplace(id, std::vector<Effects::RadioButton*>{});
 			i.first->second.push_back(&k);
 		}
 		else
@@ -51,13 +51,13 @@ private:
 		}
 		return id;
 	}
-	RadioButton& m_Toggle;
+	Effects::RadioButton& m_Toggle;
 };
 
 class ToggleButtonComponent : public Button<ToggleButtonG, ButtonType::Toggle>
 {
 public:
-	ToggleButtonComponent(ToggleButton& t)
+	ToggleButtonComponent(Effects::ToggleButton& t)
 		: m_Toggle(t), Button<ToggleButtonG, ButtonType::Toggle>(&t.state, t.Name())
 	{}
 
@@ -69,13 +69,13 @@ public:
 		Button<ToggleButtonG, ButtonType::Toggle>::Update(v);
 	}
 
-	ToggleButton& m_Toggle;
+	Effects::ToggleButton& m_Toggle;
 };
 
 class XYControllerComponent : public Container
 {
 public:
-	XYControllerComponent(XYController& c)
+	XYControllerComponent(Effects::XYController& c)
 		: controller(c)
 	{
 		m_Listener += [this](Event::MousePressed& e)
@@ -141,13 +141,13 @@ public:
 private:
 	int m_Click = 0;
 	bool m_Dragging = false;
-	XYController& controller;
+	Effects::XYController& controller;
 };
 
 class VolumeSliderComponent : public SliderBase<VolumeSliderGraphics>
 {
 public:
-	VolumeSliderComponent(VolumeSlider& s)
+	VolumeSliderComponent(Effects::VolumeSlider& s)
 		: SliderBase<VolumeSliderGraphics>(s), m_Slider(s)
 	{
 		m_Parameter.Range({ 0.0, 3.98107 });
@@ -268,7 +268,7 @@ private:
 	static inline std::unordered_map<int, std::string> m_Numbers;
 	static inline std::string m_NegInf = "Inf";
 
-	VolumeSlider& m_Slider;
+	Effects::VolumeSlider& m_Slider;
 };
 
 // -------------------------------------------------------------------------- \\
@@ -308,7 +308,7 @@ public:
 	}
 
 private:
-	Parameter m_Parameter;
+	Effects::Parameter m_Parameter;
 };
 
 using OldVolumeSlider = VolumeSliderG<VolumeSliderGraphics>;
@@ -324,7 +324,7 @@ public:
 	using Parent = SliderBase<Graphics>;
 
 	PanSliderG(const std::string& name = "")
-		: m_Parameter(name, ParameterType::Slider), Parent(m_Parameter)
+		: m_Parameter(name, Effects::ParameterType::Slider), Parent(m_Parameter)
 	{
 		m_ValueText.reserve(10);
 		m_Parameter.Range({ -50, 50 });
@@ -357,7 +357,7 @@ public:
 		}
 	}
 private:
-	Parameter m_Parameter;
+	Effects::Parameter m_Parameter;
 };
 
 using PanSlider = PanSliderG<PanSliderGraphics>;
@@ -371,7 +371,7 @@ using NormalSlider = SliderBase<SliderGraphics>;
 class DynamicsSlider : public Container
 {
 public:
-	DynamicsSlider(DynamicsObject& o)
+	DynamicsSlider(Effects::DynamicsSlider& o)
 		: m_Object(o)
 	{
 		UpdateStrings();
@@ -631,7 +631,7 @@ public:
 	std::string m_RT1Str = "1:8";
 	std::string m_RT2Str = "1:8";
 private:
-	DynamicsObject& m_Object;
+	Effects::DynamicsSlider& m_Object;
 	int m_Click = 0;
 	int m_PVal = 0;
 	int m_Dragging = 0;

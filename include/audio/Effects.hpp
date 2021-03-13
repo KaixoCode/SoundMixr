@@ -18,7 +18,7 @@ class Effect : public Panel
 public:
 	static inline double sampleRate = 48000;
 
-	Effect(EffectBase*);
+	Effect(Effects::EffectBase*);
 
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
@@ -55,7 +55,7 @@ protected:
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_Minim;
 	Button<ToggleButtonG, ButtonType::Toggle>* m_Enable;
 	Button<NOTHING, ButtonType::Toggle>* m_MinimB;
-	EffectBase* m_Effect;
+	Effects::EffectBase* m_Effect;
 	std::vector<Vec4<int>> m_Dividers;
 
 	void Init()
@@ -63,27 +63,27 @@ protected:
 		InitDiv(m_Effect->Div(), { 0, 0, 300, m_Effect->Height()});
 	}
 
-	void InitDiv(EffectLayout::Div& div, const Vec4<int>& dim)
+	void InitDiv(Effects::Div& div, const Vec4<int>& dim)
 	{
-		if (div.DivType() == EffectLayout::Div::Type::OBJECT)
+		if (div.DivType() == Effects::Div::Type::Object)
 			SetObject(div, dim);
 
 		else 
-			if (div.CellType() == EffectLayout::Type::COLS)
+			if (div.Align() == Effects::Div::Alignment::Horizontal)
 			{
 				// Get all the sizes of the sub-divs
 				std::vector<int> sizes;
 				int width = dim.width, amt = 0, obamt = 0;
 				for (auto& i : div.Divs())
-					if (i->CellSize() == EffectLayout::Div::AUTO)
+					if (i->DivSize() == Effects::Div::AUTO)
 					{
-						if (i->DivType() == EffectLayout::Div::Type::OBJECT)
+						if (i->DivType() == Effects::Div::Type::Object)
 							sizes.push_back(i->Object().Size().width + i->Padding()), width -= i->Object().Size().width + i->Padding(), obamt++;
 						else
 							sizes.push_back(0), amt++;
 					} 
 					else
-						width -= i->CellSize(), sizes.push_back(-i->CellSize());
+						width -= i->DivSize(), sizes.push_back(-i->DivSize());
 
 				// See what's left to divide
 				int x = dim.x;
@@ -127,15 +127,15 @@ protected:
 				std::vector<int> sizes;
 				int height = dim.height, amt = 0, obamt = 0;
 				for (auto& i : div.Divs())
-					if (i->CellSize() == EffectLayout::Div::AUTO)
+					if (i->DivSize() == Effects::Div::AUTO)
 					{
-						if (i->DivType() == EffectLayout::Div::Type::OBJECT)
+						if (i->DivType() == Effects::Div::Type::Object)
 							sizes.push_back(i->Object().Size().height + i->Padding()), height -= i->Object().Size().height + i->Padding(), obamt++;
 						else
 							sizes.push_back(0), amt++;
 					}
 					else
-						height -= i->CellSize(), sizes.push_back(-i->CellSize());
+						height -= i->DivSize(), sizes.push_back(-i->DivSize());
 
 				// See what's left to divide
 				int y = dim.y;
@@ -175,74 +175,72 @@ protected:
 			}
 	}
 
-	void SetObject(EffectLayout::Div& div, const Vec4<int>& dim)
+	void SetObject(Effects::Div& div, const Vec4<int>& dim)
 	{
 		// Get the object from the div
-		EffectObject* object = &div.Object();
+		Effects::Object* object = &div.Object();
 
 		// Calculate the position using the alignment
 		Vec2<int> position = { dim.x, dim.y };
-		if (div.Align() == EffectLayout::Align::CENTER)
+		if (div.Align() == Effects::Div::Alignment::Center)
 			position += { dim.width / 2 - object->Size().width / 2, dim.height / 2 - object->Size().height / 2 };
-		else if (div.Align() == EffectLayout::Align::RIGHT)
+		else if (div.Align() == Effects::Div::Alignment::Right)
 			position += { dim.width - object->Size().width, dim.height / 2 - object->Size().height / 2 };
-		else if (div.Align() == EffectLayout::Align::LEFT)
+		else if (div.Align() == Effects::Div::Alignment::Left)
 			position += { 0, dim.height / 2 - object->Size().height / 2 };
-		else if (div.Align() == EffectLayout::Align::BOTTOM)
+		else if (div.Align() == Effects::Div::Alignment::Bottom)
 			position += { dim.width / 2 - object->Size().width / 2, 0 };
-		else if (div.Align() == EffectLayout::Align::TOP)
+		else if (div.Align() == Effects::Div::Alignment::Top)
 			position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
 
 
 		// Determine type and add to effect.
-		auto xy = dynamic_cast<XYController*>(object);
+		auto xy = dynamic_cast<Effects::XYController*>(object);
 		if (xy != nullptr)
 		{
 			Emplace<XYControllerComponent>(*xy), xy->Position({ position.x, position.y });
 			return;
 		}
 
-		auto rb = dynamic_cast<RadioButton*>(object);
+		auto rb = dynamic_cast<Effects::RadioButton*>(object);
 		if (rb != nullptr)
 		{
 			Emplace<RadioButtonComponent>(*rb), rb->Position({ position.x, position.y });
 			return;
 		}
 
-		auto dy = dynamic_cast<DynamicsObject*>(object);
+		auto dy = dynamic_cast<Effects::DynamicsSlider*>(object);
 		if (dy != nullptr)
 		{
 			Emplace<DynamicsSlider>(*dy), dy->Position({ position.x, position.y });
 			return;
 		}
 
-		auto vs = dynamic_cast<VolumeSlider*>(object);
+		auto vs = dynamic_cast<Effects::VolumeSlider*>(object);
 		if (vs != nullptr)
 		{
 			Emplace<VolumeSliderComponent>(*vs), vs->Position({ position.x, position.y - 5 });
 			return;
 		}
 
-		auto param = dynamic_cast<Parameter*>(object);
+		auto param = dynamic_cast<Effects::Parameter*>(object);
 		if (param != nullptr)
 		{
-			if (param->Type() == ParameterType::Slider)
+			if (param->Type() == Effects::ParameterType::Slider)
 				Emplace<NormalSlider>(*param), param->Position({ position.x, position.y });
-			else if (param->Type() == ParameterType::Knob)
+			else if (param->Type() == Effects::ParameterType::Knob)
 				Emplace<KnobSlider>(*param), param->Position({ position.x, position.y });
-			else if (param->Type() == ParameterType::TwoWaySlider)
-				Emplace<NormalSlider>(*param), param->Position({ position.x, position.y });
 			return;
 		}
 
-		auto dd = dynamic_cast<DropDown*>(object);
+		auto dd = dynamic_cast<Effects::DropDown*>(object);
 		if (dd != nullptr)
 		{
 			Emplace<DropDownComponent<int, DropdownButton>>(*dd), dd->Position({ position.x, position.y });
 			return;
 		}
 
-		auto toggle = dynamic_cast<ToggleButton*>(object);
+		auto toggle = dynamic_cast<Effects::ToggleButton*>(object);
 		if (toggle != nullptr)
 		{
 			Emplace<ToggleButtonComponent>(*toggle), toggle->Position({ position.x, position.y });
@@ -268,7 +266,7 @@ public:
 	bool  Hovering();
 	bool  Dragging() { return m_Dragging != nullptr; }
 
-	Effect& Add(EffectBase* e)
+	Effect& Add(Effects::EffectBase* e)
 	{
 		int p = m_EffectCount;
 		m_EffectCount = 0;

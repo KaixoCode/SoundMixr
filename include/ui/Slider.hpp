@@ -4,7 +4,7 @@
 class ParameterComponent : public Component
 {
 public:
-	ParameterComponent(Parameter& param)
+	ParameterComponent(Effects::Parameter& param)
 		: m_Parameter(param)
 	{
 		m_Listener += [this](Event::MousePressed& e)
@@ -177,7 +177,7 @@ public:
 	};
 
 protected:
-	Parameter& m_Parameter;
+	Effects::Parameter& m_Parameter;
 
 	int m_Counter = 0;
 

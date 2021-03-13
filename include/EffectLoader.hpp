@@ -32,11 +32,11 @@ public:
 		instfunc = (inst_func)GetProcAddress(m_Module, "NewInstance");
 	}
 
-	EffectBase* CreateInstance()
+	Effects::EffectBase* CreateInstance()
 	{
 		if (instfunc)
 		{
-			EffectBase* p = static_cast<EffectBase*>(instfunc());
+			Effects::EffectBase* p = static_cast<Effects::EffectBase*>(instfunc());
 			m_Effects.push_back(p);
 			return p;
 		}
@@ -48,7 +48,7 @@ private:
 	inst_func instfunc;
 	std::string m_Name;
 	HMODULE m_Module;
-	std::vector<EffectBase*> m_Effects;
+	std::vector<Effects::EffectBase*> m_Effects;
 };
 
 class EffectLoader
@@ -83,7 +83,7 @@ public:
 		return m_Effects;
 	}
 
-	static inline EffectBase* CreateInstance(const std::string& name)
+	static inline Effects::EffectBase* CreateInstance(const std::string& name)
 	{
 		return m_Effects[name]->CreateInstance();
 	}

@@ -14,7 +14,7 @@ public:
 	{}
 
 	template<typename T>
-	DropDownOption(DropDown& d, DropDown::Option& i, int key, T* parent)
+	DropDownOption(Effects::DropDown& d, Effects::DropDown::Option& i, int key, T* parent)
 		: Button<SoundMixrGraphics::Menu, ButtonType::List>([parent, &i, &d] { d.Select(i.id); parent->SelectP(i.id); parent->Name(i.name); }, i.name, key),
 		m_Value(i.id)
 	{}
@@ -36,7 +36,7 @@ public:
 		m_Menu.ButtonSize({ 140, 20 });
 	}
 
-	DropDownComponent(DropDown& d)
+	DropDownComponent(Effects::DropDown& d)
 		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); } },
 		m_DropDown(&d),
 		m_Key(ButtonType::List::NewKey())
@@ -66,7 +66,7 @@ public:
 		return a;
 	}
 
-	DropDownOption<Enum>& AddOption(DropDown& d, DropDown::Option& i)
+	DropDownOption<Enum>& AddOption(Effects::DropDown& d, Effects::DropDown::Option& i)
 	{
 		auto& a = m_Menu.Emplace<DropDownOption<Enum>>(d, i, m_Key, this);
 
@@ -114,7 +114,7 @@ private:
 	int m_Key;
 	Enum m_Value;
 
-	DropDown* m_DropDown;
+	Effects::DropDown* m_DropDown;
 
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 };
