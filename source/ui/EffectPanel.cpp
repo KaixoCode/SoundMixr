@@ -1,4 +1,5 @@
 #include "ui/EffectPanel.hpp"
+#include "EffectLoader.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Effect Panel -------------------------------- \\
@@ -15,7 +16,7 @@ EffectPanel::EffectPanel()
 			m_EffectsGroup->AddEvent(e);
 		}
 	};
-	Width(314);
+	Width(316);
 }
 
 void EffectPanel::Update(const Vec4<int>& viewport)
@@ -67,31 +68,7 @@ EffectScrollPanel::EffectScrollPanel()
 	: m_EffectPanel(Panel<EffectPanel>())
 {
 	EnableScrollbars(true, true);
-	m_Menu.ButtonSize({ 160, 20 });
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Effect Panel").Disable();
-	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Visible(false); }, "Hide Effects Panel");
-	m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
-		{
-			m_EffectPanel.AddEffect<Dynamics>();
-		}, "+ Dynamics");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
-		{
-			m_EffectPanel.AddEffect<Equalizer<>>();
-		}, "+ Equalizer");
-	/*m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
-		{
-			m_EffectPanel.AddEffect<Delay>();
-		}, "+ Delay");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
-		{
-			m_EffectPanel.AddEffect<Reverb>();
-		}, "+ Reverb");*/
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
-		{
-			m_EffectPanel.AddEffect<Utility>();
-		}, "+ Utility");
+	SetupMenu();
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		if (e.button == Event::MouseButton::RIGHT && !(m_EffectPanel.EffectsGroup() && m_EffectPanel.EffectsGroup()->Hovering()))
@@ -109,12 +86,30 @@ EffectScrollPanel::EffectScrollPanel()
 	};
 }
 
+void EffectScrollPanel::SetupMenu()
+{
+	m_Menu.Clear();
+	m_Menu.ButtonSize({ 160, 20 });
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Effect Panel").Disable();
+	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Visible(false); }, "Hide Effects Panel");
+	m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
+
+	for (auto& i : EffectLoader::Effects())
+	{
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
+			{
+				m_EffectPanel.AddEffect(i.second->CreateInstance());
+			}, "+ " + i.first);
+	}
+}
+
 void EffectScrollPanel::Render(CommandCollection& d)
 {
-	m_Div->Color(Theme<C::Divider>::Get());
-	m_Div2->Color(Theme<C::Divider>::Get());
+	m_Div->Color(theme->Get(C::Divider));
+	m_Div2->Color(theme->Get(C::Divider));
 
-	d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
+	d.Command<Graphics::Fill>(theme->Get(C::Channel));
 	d.Command<Graphics::Quad>(Vec4<int>{X() - 8, Y(), 8, Height()});
 
 	SMXRScrollPanel::Render(d);

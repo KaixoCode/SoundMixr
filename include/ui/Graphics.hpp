@@ -18,8 +18,6 @@ public:
 
 		ITEMS
 	};
-
-	static inline N Theme = N::DARK;
 };
 
 enum class C
@@ -355,12 +353,18 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 	}
 };
 
-template<C T>
 class Theme
 {
 public:
-	static Color Get() { return THEMES[(int)Themes::Theme][(int)T]; };
+	Themes::N theme;
+
+	Color Get(C c) 
+	{ 
+		return THEMES[theme][(int)c];
+	};
 };
+
+extern Theme* theme;
 
 class TitleText
 {
@@ -369,8 +373,8 @@ public:
 	{
 		using namespace Graphics;
 		int _padding = 20;
-		Color _c1 = Theme<C::Channel>::Get();
-		Color _c2 = Theme<C::Text>::Get();
+		Color _c1 = theme->Get(C::Channel);
+		Color _c2 = theme->Get(C::Text);
 		
 		d.Command<Fill>(_c1);
 		d.Command<Quad>(b.Position(), b.Size());
@@ -387,7 +391,7 @@ public:
 	static void Render(ButtonBase& b, CommandCollection& d)
 	{
 		using namespace Graphics;
-		Color _c2 = Theme<C::TextSmall>::Get();
+		Color _c2 = theme->Get(C::TextSmall);
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		d.Command<Fill>(_c2);
@@ -405,17 +409,17 @@ public:
 			return;
 		using namespace Graphics;
 		double _div = 3;
-		Color _c1 = Theme<C::RButtonB>::Get();
-		Color _c2 = Theme<C::RButton>::Get();
+		Color _c1 = theme->Get(C::RButtonB);
+		Color _c2 = theme->Get(C::RButton);
 		if ((b.Hovering()))
 		{
-			_c1 = Theme<C::RButtonHB>::Get();
-			_c2 = Theme<C::RButtonH>::Get();
+			_c1 = theme->Get(C::RButtonHB);
+			_c2 = theme->Get(C::RButtonH);
 		}
 		if (b.Active())
 		{
-			_c1 = Theme<C::RButtonSB>::Get();
-			_c2 = Theme<C::RButtonS>::Get();
+			_c1 = theme->Get(C::RButtonSB);
+			_c2 = theme->Get(C::RButtonS);
 			_div = 2.7;
 		}
 
@@ -436,16 +440,16 @@ public:
 		if (b.Disabled())
 			return;
 		using namespace Graphics;
-		Color _c1 = Theme<C::TextOff>::Get();
-		Color _c2 = Theme<C::MButton>::Get();
+		Color _c1 = theme->Get(C::TextOff);
+		Color _c2 = theme->Get(C::MButton);
 		if ((b.Hovering()))
 		{
-			_c2 = Theme<C::MButtonH>::Get();
+			_c2 = theme->Get(C::MButtonH);
 		}
 		if (b.Active())
 		{
-			_c1 = Theme<C::Text>::Get();
-			_c2 = Theme<C::MButtonS>::Get();
+			_c1 = theme->Get(C::Text);
+			_c2 = theme->Get(C::MButtonS);
 		}
 
 		int _w = b.Width();
@@ -467,16 +471,16 @@ public:
 		if (b.Disabled())
 			return;
 		using namespace Graphics;
-		Color _c1 = Theme<C::TextOff>::Get();
-		Color _c2 = Theme<C::MButton>::Get();
+		Color _c1 = theme->Get(C::TextOff);
+		Color _c2 = theme->Get(C::MButton);
 		if ((b.Hovering()))
 		{
-			_c2 = Theme<C::MButtonH>::Get();
+			_c2 = theme->Get(C::MButtonH);
 		}
 		if (b.Active())
 		{
-			_c1 = Theme<C::Text>::Get();
-			_c2 = Theme<C::MButtonS>::Get();
+			_c1 = theme->Get(C::Text);
+			_c2 = theme->Get(C::MButtonS);
 		}
 
 		int _w = b.Width();
@@ -503,7 +507,7 @@ public:
 			int _h = 25;
 			int _y = b.NormalizedValue() * b.Height() + b.Y();
 
-			d.Command<Fill>(Theme<C::VSlider>::Get());
+			d.Command<Fill>(theme->Get(C::VSlider));
 
 			int _w = b.Width() - _p * 2;
 			int _he = _h - _p * 2;
@@ -512,7 +516,7 @@ public:
 			d.Command<Quad>(Vec4<int>{b.X() + _p, _y + _p - 1, b.Width() - _p * 2, 3});
 
 			//d.Command<Font>(Fonts::Gidole14, 14.0f);
-			//d.Command<Fill>(Theme<C::TextSmall>::Get());
+			//d.Command<Fill>(theme->Get(C::TextSmall));
 			//d.Command<TextAlign>(Align::CENTER, Align::TOP);
 			//d.Command<Text>(&b.ValueText(), Vec2<int>{b.X() + _p + _w / 2, b.Y()});
 		}
@@ -522,7 +526,7 @@ public:
 			int _w = 25;
 			int _x = b.NormalizedValue() * (b.Width()) + b.X();
 
-			d.Command<Fill>(Theme<C::VSlider>::Get());
+			d.Command<Fill>(theme->Get(C::VSlider));
 
 			int _h = b.Height() - _p * 2;
 			int _we = _w - _p * 2;
@@ -531,7 +535,7 @@ public:
 			d.Command<Quad>(Vec4<int>{_x + _p - 1, b.Y() + _p, 3, b.Height() - _p * 2});
 
 			//d.Command<Font>(Fonts::Gidole14, 14.0f);
-			//d.Command<Fill>(Theme<C::TextSmall>::Get());
+			//d.Command<Fill>(theme->Get(C::TextSmall));
 			//d.Command<TextAlign>(Align::CENTER, Align::TOP);
 			//d.Command<Text>(&b.ValueText(), Vec2<int>{b.X(), b.Y() + _p + _h / 2});
 		}
@@ -550,18 +554,18 @@ public:
 
 		int _h = b.Height() - _p * 2;
 		int _we = _w - _p * 2;
-		d.Command<Fill>(Theme<C::PSliderB>::Get());
+		d.Command<Fill>(theme->Get(C::PSliderB));
 		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		d.Command<Fill>(Theme<C::PSlider>::Get());
+		d.Command<Fill>(theme->Get(C::PSlider));
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-		d.Command<Fill>(Theme<C::PSliderS>::Get());
+		d.Command<Fill>(theme->Get(C::PSliderS));
 		d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2, b.Y() + 1, _w, b.Height() - 2});
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);		
 		if (b.Disabled())
-			d.Command<Fill>(Theme<C::TextOff>::Get());
+			d.Command<Fill>(theme->Get(C::TextOff));
 		else
-			d.Command<Fill>(Theme<C::TextSmall>::Get());
+			d.Command<Fill>(theme->Get(C::TextSmall));
 		if (b.DisplayValue())
 		{
 			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
@@ -590,11 +594,11 @@ public:
 			int _p = 6;
 			int _h = b.NormalizedValue() * (b.Height() - 2);
 
-			d.Command<Fill>(Theme<C::SliderB>::Get());
+			d.Command<Fill>(theme->Get(C::SliderB));
 			d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-			d.Command<Fill>(Theme<C::Slider>::Get());
+			d.Command<Fill>(theme->Get(C::Slider));
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-			d.Command<Fill>(Theme<C::SliderV>::Get());
+			d.Command<Fill>(theme->Get(C::SliderV));
 			d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y() + 1, b.Width() - 2, _h});
 		}
 		else
@@ -602,19 +606,19 @@ public:
 			int _p = 6;
 			int _w = b.NormalizedValue() * (b.Width() - 2);
 
-			d.Command<Fill>(Theme<C::SliderB>::Get());
+			d.Command<Fill>(theme->Get(C::SliderB));
 			d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-			d.Command<Fill>(Theme<C::Slider>::Get());
+			d.Command<Fill>(theme->Get(C::Slider));
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-			d.Command<Fill>(Theme<C::SliderV>::Get());
+			d.Command<Fill>(theme->Get(C::SliderV));
 			d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y() + 1, _w, b.Height() - 2});
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		if (b.Disabled())
-			d.Command<Fill>(Theme<C::TextOff>::Get());
+			d.Command<Fill>(theme->Get(C::TextOff));
 		else
-			d.Command<Fill>(Theme<C::TextSmall>::Get());
+			d.Command<Fill>(theme->Get(C::TextSmall));
 		if (b.DisplayValue())
 		{
 			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
@@ -630,7 +634,7 @@ public:
 };
 
 
-class ToggleButton
+class ToggleButtonG
 {
 public:
 
@@ -639,29 +643,66 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-		d.Command<Fill>(Theme<C::ToggleButtonB>::Get());
+		d.Command<Fill>(theme->Get(C::ToggleButtonB));
 		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
 		if (b.Active())
-			d.Command<Fill>(Theme<C::ToggleButtonV>::Get());
+			d.Command<Fill>(theme->Get(C::ToggleButtonV));
 		else
-			d.Command<Fill>(Theme<C::ToggleButton>::Get());
+			d.Command<Fill>(theme->Get(C::ToggleButton));
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
 		if (!b.Active() && b.Hovering())
 		{
-			d.Command<Fill>(Theme<C::ToggleButtonH>::Get());
+			d.Command<Fill>(theme->Get(C::ToggleButtonH));
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		if (b.Active())
-			d.Command<Fill>(Theme<C::ToggleButtonText>::Get());
+			d.Command<Fill>(theme->Get(C::ToggleButtonText));
 		else 
-			d.Command<Fill>(Theme<C::TextOff>::Get());
+			d.Command<Fill>(theme->Get(C::TextOff));
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
 		
+	}
+
+};
+
+
+class RadioButtonGraphics
+{
+public:
+
+	static void Render(Button<RadioButtonGraphics, ButtonType::List>& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+
+		d.Command<Fill>(theme->Get(C::ToggleButtonB));
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+		if (b.Selected())
+			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		else
+			d.Command<Fill>(theme->Get(C::ToggleButton));
+
+		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+
+		if (!b.Selected() && (b.Hovering() || b.Active()))
+		{
+			d.Command<Fill>(theme->Get(C::ToggleButtonH));
+			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+		}
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		if (b.Selected())
+			d.Command<Fill>(theme->Get(C::ToggleButtonText));
+		else
+			d.Command<Fill>(theme->Get(C::TextOff));
+		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
+
 	}
 
 };
@@ -676,27 +717,27 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-		d.Command<Fill>(Theme<C::ToggleButtonB>::Get());
+		d.Command<Fill>(theme->Get(C::ToggleButtonB));
 		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
 		if (b.Active())
-			d.Command<Fill>(Theme<C::ToggleButtonV>::Get());
+			d.Command<Fill>(theme->Get(C::ToggleButtonV));
 		else
-			d.Command<Fill>(Theme<C::ToggleButton>::Get());
+			d.Command<Fill>(theme->Get(C::ToggleButton));
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
 		if (!b.Active() && b.Hovering())
 		{
-			d.Command<Fill>(Theme<C::ToggleButtonH>::Get());
+			d.Command<Fill>(theme->Get(C::ToggleButtonH));
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 
 		if ((int)b.Value() != 0)
-			d.Command<Fill>(Theme<C::TextSmall>::Get());
+			d.Command<Fill>(theme->Get(C::TextSmall));
 		else
-			d.Command<Fill>(Theme<C::TextOff>::Get());
+			d.Command<Fill>(theme->Get(C::TextOff));
 
 
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
@@ -726,19 +767,19 @@ public:
 
 		int _h = b.Height() - _p * 2;
 		int _we = _w - _p * 2;
-		d.Command<Fill>(Theme<C::KnobSliderB>::Get());
+		d.Command<Fill>(theme->Get(C::KnobSliderB));
 		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()});
-		d.Command<Fill>(Theme<C::KnobSliderS>::Get());
+		d.Command<Fill>(theme->Get(C::KnobSliderS));
 		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()}, Vec2<double>{_double ? _a > M_PI / 2 ? _a : M_PI / 2 : -M_PI * 0.75f, _double ? _a > M_PI / 2 ? M_PI / 2 : _a : _a});
-		d.Command<Fill>(Theme<C::KnobSlider>::Get());
+		d.Command<Fill>(theme->Get(C::KnobSlider));
 		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 4});
-		d.Command<Fill>(Theme<C::KnobSlider>::Get());
+		d.Command<Fill>(theme->Get(C::KnobSlider));
 
 		int _x1 = std::cos(M_PI * 0.25 - M_PI / 2.0) * b.Width() / 2;
 		int _x2 = std::cos(M_PI * 1.75 - M_PI / 2.0) * b.Width() / 2;
 
 		d.Command<Graphics::Quad>(Vec4<int>{ b.X() + b.Width() / 2 + _x2, b.Y(), _x1 - _x2, b.Height() / 4});
-		d.Command<Fill>(Theme<C::KnobSliderV>::Get());
+		d.Command<Fill>(theme->Get(C::KnobSliderV));
 		double _x = std::cos(_a) * b.Width() / 2.0;
 		double _y = std::sin(_a) * b.Height() / 2.0;
 		//d.Command<Graphics::Ellipse>(Vec4<int>{ (int)(b.X() + b.Width() / 2.0 + _x), (int)(b.Y() + b.Height() / 2.0 + _y + 1), b.Width() / 4, b.Height() / 4 }, _v * 360);
@@ -747,9 +788,9 @@ public:
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		if (b.Disabled())
-			d.Command<Fill>(Theme<C::TextOff>::Get());
+			d.Command<Fill>(theme->Get(C::TextOff));
 		else
-			d.Command<Fill>(Theme<C::TextSmall>::Get());
+			d.Command<Fill>(theme->Get(C::TextSmall));
 
 		if (b.DisplayValue())
 		{
@@ -773,11 +814,11 @@ namespace SoundMixrGraphics
 		static void Render(ButtonBase& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Active() ? Theme<C::ButtonS>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
+			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Active() ? theme->Get(C::ButtonS) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
-			d.Command<Fill>(Theme<C::Text>::Get());
+			d.Command<Fill>(theme->Get(C::Text));
 			d.Command<Font>(Fonts::Gidole14, 14.0f);
 			d.Command<TextAlign>(Hori, Vert);
 			if (Hori == Align::CENTER)
@@ -795,9 +836,9 @@ namespace SoundMixrGraphics
 		static void Render(This& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Active() ? Theme<C::ButtonS>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
-			Color _c2 = Theme<C::Text>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
-			Color _c3 = Theme<C::TextOff>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
+			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Active() ? theme->Get(C::ButtonS) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
+			Color _c2 = theme->Get(C::Text);
+			Color _c3 = theme->Get(C::TextOff);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
@@ -815,16 +856,16 @@ namespace SoundMixrGraphics
 		static void Render<Button<Menu, ButtonType::List>>(Button<Menu, ButtonType::List>& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Active() ? Theme<C::ButtonS>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
-			Color _c2 = Theme<C::Text>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
-			Color _c3 = Theme<C::TextOff>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
+			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Active() ? theme->Get(C::ButtonS) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
+			Color _c2 = theme->Get(C::Text);
+			Color _c3 = theme->Get(C::TextOff);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
 
 			if (b.Selected())
 			{
-				d.Command<Fill>(Theme<C::ButtonS>::Get());
+				d.Command<Fill>(theme->Get(C::ButtonS));
 				int _p = 2;
 				d.Command<Quad>(b.Position() + Vec2<int>{ _p, _p }, Vec2<int>{ b.Size().y - _p * 2, b.Size().y - _p * 2 });
 			}
@@ -842,16 +883,16 @@ namespace SoundMixrGraphics
 		static void Render<Button<Menu, ButtonType::Toggle>>(Button<Menu, ButtonType::Toggle>& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
-			Color _c2 = Theme<C::Text>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
-			Color _c3 = Theme<C::TextOff>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
+			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
+			Color _c2 = theme->Get(C::Text);
+			Color _c3 = theme->Get(C::TextOff);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
 
 			if (b.Active())
 			{
-				d.Command<Fill>(Theme<C::ButtonS>::Get());
+				d.Command<Fill>(theme->Get(C::ButtonS));
 				int _p = 2;
 				d.Command<Quad>(b.Position() + Vec2<int>{ _p, _p }, Vec2<int>{ b.Size().y - _p * 2, b.Size().y - _p * 2 });
 			}
@@ -869,9 +910,9 @@ namespace SoundMixrGraphics
 		static void Render<Button<Menu, ButtonType::Hover>>(Button<Menu, ButtonType::Hover>& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? Theme<C::ButtonD>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
-			Color _c2 = Theme<C::Text>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
-			Color _c3 = Theme<C::TextOff>::Get() * (Graphics::WindowFocused() ? 1.0f : 0.8f);
+			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
+			Color _c2 = theme->Get(C::Text);
+			Color _c3 = theme->Get(C::TextOff);
 
 			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
@@ -926,13 +967,13 @@ namespace SoundMixrGraphics
 		 */    
 		static void TitleMenu::Render(ButtonBase& b, CommandCollection& d)
 		 {
-			 Color _c1 = b.Active() ? Theme<C::Menu>::Get() : b.Hovering() ? Theme<C::ButtonH>::Get() : Theme<C::Button>::Get();
-			 Color _c2 = Theme<C::Text>::Get();
+			 Color _c1 = b.Active() ? theme->Get(C::Menu) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
+			 Color _c2 = theme->Get(C::Text);
 
 			 int _padding = 20;
 			 if (b.Active())
 			 {
-				 d.Command<Fill>(Theme<C::MenuB>::Get());
+				 d.Command<Fill>(theme->Get(C::MenuB));
 				 d.Command<Quad>(b.X() - 1, b.Y(), b.Width() + 2, b.Height());
 			 }
 			 d.Command<Fill>(_c1);
@@ -992,10 +1033,10 @@ namespace SoundMixrGraphics
 			int _iy = _y;
 			int _mw = 0;
 
-			d.Command<Fill>(Theme<C::MenuB>::Get());
+			d.Command<Fill>(theme->Get(C::MenuB));
 			d.Command<Quad>(b.X() - 1, b.Y() - 1, b.Width() + 2, b.Height() + 2);
 
-			d.Command<Fill>(Theme<C::Menu>::Get());
+			d.Command<Fill>(theme->Get(C::Menu));
 			d.Command<Quad>(b.X(), b.Y(), b.Width(), b.Height());
 
 			for (auto& _item : _menuItems)
@@ -1036,13 +1077,13 @@ namespace SoundMixrGraphics
 
 			if (b.Hovering() && b.Mouse() >= _x && b.Mouse() <= _x + _w)
 			{
-				d.Command<Fill>(Theme<C::Scrollbar>::Get());
+				d.Command<Fill>(theme->Get(C::Scrollbar));
 				d.Command<Quad>(b.Position().x, b.Position().y + b.Size().height / 2 - 1, b.Size().width, 2);
-				d.Command<Fill>(Theme<C::ScrollbarH>::Get());
+				d.Command<Fill>(theme->Get(C::ScrollbarH));
 				_p = 4;
 			}
 			else
-				d.Command<Fill>(Theme<C::Scrollbar>::Get());
+				d.Command<Fill>(theme->Get(C::Scrollbar));
 
 			d.Command<Quad>(_x + _p, b.Position().y + _p, _w - _p * 2, b.Size().height - _p * 2);
 		}
@@ -1056,13 +1097,13 @@ namespace SoundMixrGraphics
 
 			if (b.Hovering() && b.Mouse() >= _y && b.Mouse() <= _y + _h)
 			{
-				d.Command<Fill>(Theme<C::Scrollbar>::Get());
+				d.Command<Fill>(theme->Get(C::Scrollbar));
 				d.Command<Quad>(b.Position().x + b.Size().width / 2 - 1, b.Position().y, 2, b.Size().height);
-				d.Command<Fill>(Theme<C::ScrollbarH>::Get());
+				d.Command<Fill>(theme->Get(C::ScrollbarH));
 				_p = 4;
 			}
 			else
-				d.Command<Fill>(Theme<C::Scrollbar>::Get());
+				d.Command<Fill>(theme->Get(C::Scrollbar));
 
 			d.Command<Quad>(b.Position().x + _p, _y + _p, b.Size().width - _p * 2, _h - _p * 2);
 

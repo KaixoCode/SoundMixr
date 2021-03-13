@@ -65,16 +65,16 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 
 	Color c;
 	if (Selected())
-		c = Theme<C::ChannelSelected>::Get();
+		c = theme->Get(C::ChannelSelected);
 	else
-		c = Theme<C::Channel>::Get();
+		c = theme->Get(C::Channel);
 	c.a = m_Transparency ? 245.0f : 255.0f;
 	Background(c);
 
-	//m_Div1->Color(Theme<C::Divider>::Get());
-	m_Div2->Color(Theme<C::Divider>::Get());
-	m_Div3->Color(Theme<C::Divider>::Get());
-	m_Div4->Color(Theme<C::Divider>::Get());
+	//m_Div1->Color(theme->Get(C::Divider));
+	m_Div2->Color(theme->Get(C::Divider));
+	m_Div3->Color(theme->Get(C::Divider));
+	m_Div4->Color(theme->Get(C::Divider));
 	m_Div3->Visible(m_Connect->Visible() || m_Split->Visible());
 	m_Split->Visible(m_ChannelGroup.Channels().size() > 1 && !m_IsSpecial);
 
@@ -117,25 +117,25 @@ void ChannelPanel::Render(CommandCollection& d)
 		float _level = std::powf(m_ChannelGroup.Channels()[i]->Peak(), 0.25);
 
 		int _h = (std::min(_level, 1.412536f) / 1.412536) * (_rh);
-		d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::VMeter));
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
-		d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::Channel));
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
-		d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
+		d.Command<Graphics::Fill>(theme->Get(C::VMeterFill));
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
 		if (_level > 1.0)
 		{
-			d.Command<Graphics::Fill>(Theme<C::VMeterFillC1>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC1));
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, _h - _0db + _y});
 		}
 		if (_level > std::powf(std::powf(10, 3 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Theme<C::VMeterFillC2>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC2));
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _3db, _w, _h - _3db + _y});
 		}
 		if (_level > std::powf(std::powf(10, 6 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(Theme<C::VMeterFillC3>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC3));
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
 		}
 	}
@@ -149,13 +149,13 @@ void ChannelPanel::Render(CommandCollection& d)
 
 	// Volume level
 	d.Command<Font>(Fonts::Gidole14, 14.0f);
-	d.Command<Fill>(Theme<C::TextSmall>::Get());
+	d.Command<Fill>(theme->Get(C::TextSmall));
 	d.Command<TextAlign>(Align::CENTER, Align::TOP);
 	d.Command<Text>(&volume.ValueText(), Vec2<int>{volume.X() + 6 + (volume.Width() - 6 * 2) / 2, volume.Y()});
 
 	// Channel name
 	d.Command<Font>(Fonts::Gidole14, 14.0f);
-	d.Command<Fill>(Theme<C::TextSmall>::Get());
+	d.Command<Fill>(theme->Get(C::TextSmall));
 	d.Command<TextAlign>(Align::CENTER, Align::TOP);
 	d.Command<Text>(&m_ChannelGroup.Name(), Vec2<int>{ Width() / 2, Height() - 4 });
 
@@ -175,9 +175,9 @@ void ChannelPanel::Render(CommandCollection& d)
 			_d = 24;
 
 		if (_b)
-			d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
 		else
-			d.Command<Graphics::Fill>(Theme<C::VMeterIndD>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndD));
 
 		int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 		d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
@@ -187,14 +187,14 @@ void ChannelPanel::Render(CommandCollection& d)
 			{
 				m_Numbers.emplace(i, std::to_string(std::abs(i)));
 			}
-			d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
+			d.Command<Graphics::Fill>(theme->Get(C::TextOff));
 			d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
 		}
 		_b ^= true;
 	}
-	d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
+	d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
 	d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
-	d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
+	d.Command<Graphics::Fill>(theme->Get(C::TextOff));
 	d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 
 	Container::Render(d);

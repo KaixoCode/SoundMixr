@@ -1,12 +1,7 @@
 #pragma once
 #include "pch.hpp"
 #include "audio/Audio.hpp"
-#include "audio/Dynamics.hpp"
-#include "audio/Equalizer.hpp"
-#include "audio/Formant.hpp"
-#include "audio/Utility.hpp"
-#include "audio/Delay.hpp"
-#include "audio/Reverb.hpp"
+#include "audio/Effects.hpp"
 
 // -------------------------------------------------------------------------- \\
 // --------------------------- Effect Panel --------------------------------- \\
@@ -23,11 +18,10 @@ public:
 	void EffectsGroup(EffectsGroup* e) { m_EffectsGroup = e; }
 	auto EffectsGroup() -> ::EffectsGroup* { return m_EffectsGroup; }
 
-	template<typename T>
-	void AddEffect()
+	void AddEffect(EffectBase* effect)
 	{
-		if (m_EffectsGroup)
-			m_EffectsGroup->Emplace<T>();
+		if (m_EffectsGroup && effect)
+			m_EffectsGroup->Add(effect);
 	}
 
 private:
@@ -42,6 +36,8 @@ class EffectScrollPanel : public SMXRScrollPanel
 {
 public:
 	EffectScrollPanel();
+
+	void SetupMenu();
 
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;

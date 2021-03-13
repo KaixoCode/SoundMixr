@@ -10,20 +10,39 @@ set(SRC "${SoundMixr_SOURCE_DIR}/")
 file(GLOB_RECURSE SOURCE
   "${SRC}source/*.cpp"
   "${SRC}include/*.hpp"
+  "${SRC}resources/*.h"
+  "${SRC}resources/*.rc"
 )
 
-include_directories(
+file(GLOB_RECURSE EFFECTBASE_SOURCE
+  "${SRC}effects/*.hpp"
+)
+
+add_library(EffectBase STATIC
+  ${EFFECTBASE_SOURCE}
+)
+
+target_include_directories(EffectBase PUBLIC
+  libs/json/include
+  effects/
+)
+
+add_executable(SoundMixr
+  ${SOURCE}
+)
+
+target_include_directories(SoundMixr PUBLIC
   libs/GuiCode/include
   libs/GuiCode/libs
   libs/portaudio/include
   libs/AudioFile
   libs/json/include
   include/
+  resources/
+  effects/
 )
 
-add_executable(SoundMixr
-  ${SOURCE}
-)
+set_target_properties(EffectBase PROPERTIES LINKER_LANGUAGE CXX)
 
 source_group(TREE ${SRC} FILES ${SOURCE})
 
@@ -35,5 +54,21 @@ target_link_libraries(SoundMixr
   GuiCode
   portaudio
 )
+
+file(GLOB files "effects/*.cpp")
+foreach(file ${files})
+  get_filename_component(effectname ${file} NAME_WE)
+  add_library(${effectname} SHARED 
+	${file}
+  )
+  
+  target_include_directories(${effectname} PUBLIC
+    effects/
+    libs/json/include
+  )
+  
+  set_target_properties(${effectname} PROPERTIES FOLDER "Effects")
+  
+endforeach()
 
 add_definitions(-DABSOLUTE_ASSETS_PATH=\"${SRCGUI}assets/\")

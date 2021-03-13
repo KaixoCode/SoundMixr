@@ -1,4 +1,5 @@
 #include "Controller.hpp"
+#include "EffectLoader.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
@@ -13,6 +14,8 @@ m_AsioDevice(soundboard)
 void Controller::Run()
 {
 
+    EffectLoader::LoadEffects();
+
     // 
     // Loading Theme
     //
@@ -23,7 +26,7 @@ void Controller::Run()
     std::string _line;
     std::getline(_in, _line);
     int _themeId = std::atoi(_line.c_str());
-    Themes::Theme = (Themes::N) _themeId;
+    theme->theme = (Themes::N) _themeId;
     _in.close();
 
     //
@@ -36,9 +39,9 @@ void Controller::Run()
     using TitleMenuButton = Button<G::TitleMenu, BT::Menu<G::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
     using SubMenuButton = Button<G::SubMenu, BT::Menu<G::Vertical, MT::Normal, BT::Hover, Align::RIGHT>>;
 
-    mainWindow.Color(Theme<C::WindowBorder>::Get());
-    soundboard.Color(Theme<C::WindowBorder>::Get());
-    mainWindow.Icon(ASSET("textures/logo.png"));
+    mainWindow.Color(theme->Get(C::WindowBorder));
+    soundboard.Color(theme->Get(C::WindowBorder));
+    mainWindow.Icon(IDI_ICON1);
 
     //
     // Set shell icon
@@ -51,7 +54,7 @@ void Controller::Run()
     _closeMenu.Emplace<MenuButton>([&] { mainWindow.Show(); }, "Open GUI");
     _closeMenu.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit");
 
-    Frame::AddShellIcon("SoundMixr.ico", "SoundMixr", [&] (Event& e)
+    Frame::AddShellIcon(IDI_ICON1, "SoundMixr", [&] (Event& e)
         { 
             if (e.button == Event::MouseButton::LEFT && e.mod)
                 mainWindow.Show();
@@ -66,7 +69,7 @@ void Controller::Run()
 
     auto& _panel = mainWindow.Panel();
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
-    _panel.Background(Theme<C::WindowBorder>::Get());
+    _panel.Background(theme->Get(C::WindowBorder));
     _panel.SmartPanel(false);
 
     auto& _p3 = _panel.Emplace<Panel>();
@@ -136,8 +139,6 @@ void Controller::Run()
                 m_List->Clear();
                 m_AsioDevice.Device(_d);
                 m_AsioDevice.OpenStream();
-                m_AsioDevice.StartStream();
-
                 // Set title to ASIO device name
                 _titleButton.Name(_d.info.name);
 
@@ -149,6 +150,7 @@ void Controller::Run()
 
                 // Load the routing for this new device.
                 LoadRouting();
+                m_AsioDevice.StartStream();
             }, _d.info.name, _key);
 
         // Make sure the correct initial button in the List Group is set to 'Selected'
@@ -169,9 +171,9 @@ void Controller::Run()
             m_AsioDevice.CloseStream();
             PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
             m_AsioDevice.OpenStream();
-            m_AsioDevice.StartStream();
             m_List->Clear();
             LoadRouting();
+            m_AsioDevice.StartStream();
         }, "ASIO Control Panel", Key::CTRL_O);
 
     //
@@ -203,16 +205,16 @@ void Controller::Run()
     // components, and saves the theme.
     auto& _themeCallback = [&] 
     {            
-        _panel.Background(Theme<C::WindowBorder>::Get());
-        mainWindow.Color(Theme<C::WindowBorder>::Get());
-        soundboard.Color(Theme<C::WindowBorder>::Get());
-        m_List->Panel().Background(Theme<C::MainPanel>::Get());
-        m_List->Background(Theme<C::MainPanel>::Get());
-        _div.Color(Theme<C::Divider>::Get());
+        _panel.Background(theme->Get(C::WindowBorder));
+        mainWindow.Color(theme->Get(C::WindowBorder));
+        soundboard.Color(theme->Get(C::WindowBorder));
+        m_List->Panel().Background(theme->Get(C::MainPanel));
+        m_List->Background(theme->Get(C::MainPanel));
+        _div.Color(theme->Get(C::Divider));
 
         std::ofstream _out;
         _out.open("./settings/theme");
-        _out << std::to_string(Themes::Theme);
+        _out << std::to_string((int)theme->theme);
         _out.close();
     };
 
@@ -221,10 +223,10 @@ void Controller::Run()
     _key = BT::List::NewKey();
     auto& _theme1 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
-            Themes::Theme = Themes::DARK;
+            theme->theme = Themes::DARK;
             _themeCallback();
         }, "Dark", _key);
-    if (Themes::Theme == Themes::DARK) _theme1.Selected(true);
+    if (theme->theme == Themes::DARK) _theme1.Selected(true);
 
     /*auto& _theme2 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
@@ -235,10 +237,10 @@ void Controller::Run()
 
     auto& _theme3 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
         {
-            Themes::Theme = Themes::BLUE;
+            theme->theme = Themes::BLUE;
             _themeCallback();
         }, "Blue", _key);
-    if (Themes::Theme == Themes::BLUE) _theme3.Selected(true);
+    if (theme->theme == Themes::BLUE) _theme3.Selected(true);
 
     //
     // Reset channel grouping button.
@@ -249,14 +251,27 @@ void Controller::Run()
             m_List->ResetGrouping();
         }, "Reset Grouping");
 
+    _file.Emplace<MenuButton>([&]
+        {                
+            // First save the routing
+            SaveRouting();
+            m_AsioDevice.StopStream();
+            m_AsioDevice.RemoveGroups();
+            m_List->Clear();
+            EffectLoader::LoadEffects();
+            m_List->ReloadEffects();
+            LoadRouting();
+            m_AsioDevice.StartStream();
+        }, "Refresh Effects");
+
     //
     // Soundboard button
     //
 
-    _file.Emplace<MenuToggleButton>([&](bool s)
+    /*_file.Emplace<MenuToggleButton>([&](bool s)
         {
             if (s) soundboard.Show(); else soundboard.Hide();
-        }, "Soundboard", Key::CTRL_SHIFT_S);
+        }, "Soundboard", Key::CTRL_SHIFT_S);*/
 
 
     _file.Emplace<MenuButton>([&]
@@ -451,6 +466,7 @@ void Controller::LoadRouting()
             _error = true;
         }
     }
+
     if (_error)
     {
         m_List->Clear();

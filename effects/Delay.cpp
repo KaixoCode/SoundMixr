@@ -13,6 +13,9 @@ public:
 		m_FeedbackKnob(Emplace<KnobSlider>("Feedback")),
 		m_MixKnob(Emplace<KnobSlider>("Mix")),
 		Effect("Delay")
+	{}
+
+	void Init() override
 	{
 		Height(140);
 		m_DelayKnob.Range({ 0.1, 20000 });
@@ -48,7 +51,7 @@ public:
 		m_FeedbackKnob.Position({ 65, 21 });
 		m_MixKnob.Position({ 120, 21 });
 		UpdateParams();
-		Background(Theme<C::Channel>::Get());
+		Background(theme->Get(C::Channel));
 		Effect::Update(v);
 	}
 	
@@ -117,3 +120,11 @@ private:
 	KnobSlider
 		& m_DelayKnob, &m_MixKnob, &m_FeedbackKnob;
 };
+
+extern "C"
+{
+	DLLDIR void* NewInstance()
+	{
+		return new Delay();
+	}
+}

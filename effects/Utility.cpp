@@ -1,34 +1,32 @@
-#pragma once
-#include "audio/Effects.hpp"
-#include "ui/Dropdown.hpp"
-#include "audio/Equalizer.hpp"
-#include "audio/Dynamics.hpp"
+#include "EffectBase.hpp"
+#include "Compressor.hpp"
+#include "Filters.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------- Dynamics Effect -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class Utility : public Effect
+class Utility : public EffectBase
 {
 public:
 	Utility()
 		: 
-		m_Low(Emplace<KnobSlider>("Low")),
-		m_Mid(Emplace<KnobSlider>("Mid")),
-		m_High(Emplace<KnobSlider>("High")),
-		m_Release(Emplace<KnobSlider>("Release")),
-		m_LowFreq(Emplace<NormalSlider>("Freq")),
-		m_HighFreq(Emplace<NormalSlider>("Freq")),
-		m_Pan(Emplace<PanKnob>("Pan")),
-		m_Gain(Emplace<KnobSlider>("Gain")),
-		m_Limiter(Emplace<VolumeSlider>()),
-		m_Mono(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "Mono")),
-		m_Mute(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "Mute")),
-		m_PhaseInvert(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "Phase")),
-		m_EnableEq(Emplace<Button<ToggleButton, ButtonType::Toggle>>([](bool s) {}, "EQ")),
-		Effect("Utility")
+		m_Low(Parameter("Low", ParameterType::Knob)),
+		m_Mid(Parameter("Mid", ParameterType::Knob)),
+		m_High(Parameter("High", ParameterType::Knob)),
+		m_Release(Parameter("Release", ParameterType::Knob)),
+		m_LowFreq(Parameter("Freq", ParameterType::Slider)),
+		m_HighFreq(Parameter("Freq", ParameterType::Slider)),
+		m_Pan(Parameter("Pan", ParameterType::Knob)),
+		m_Gain(Parameter("Gain", ParameterType::Knob)),
+		m_Limiter(VolumeSlider()),
+		m_Mono(Toggle("Mono")),
+		m_Mute(Toggle("Mute")),
+		m_PhaseInvert(Toggle("Phase")),
+		m_EnableEq(Toggle("EQ")),
+		EffectBase("Utility")
 	{
-		Height(170);
+		Height(145);
 
 		m_Release.Size({ 30, 30 });
 		m_Release.Range({ 1, 5000 });
@@ -64,7 +62,14 @@ public:
 		m_High.Multiplier(0.4);
 
 		m_Pan.Size({ 30, 30 });
-		m_Pan.Vertical(true);
+		m_Pan.Range({ -50, 50 });
+		m_Pan.Power(1);
+		m_Pan.Decimals(-1);
+		m_Pan.ResetValue(0);
+		m_Pan.ResetValue();
+		m_Pan.Unit("L", -1);
+		m_Pan.Unit("C", INT_MAX);
+		m_Pan.Unit("R", 0);
 		m_Pan.Multiplier(0.4);
 
 		m_Gain.Size({ 30, 30 });
@@ -91,7 +96,7 @@ public:
 		m_LowFreq.Multiplier(1);
 		m_LowFreq.Vertical(false);
 		m_LowFreq.DisplayName(false);
-		
+
 		m_HighFreq.Size({ 58, 18 });
 		m_HighFreq.Range({ 2000, 22000 });
 		m_HighFreq.Power(3);
@@ -105,11 +110,55 @@ public:
 		m_HighFreq.DisplayName(false);
 
 		m_Limiter.Size({ 30, 120 });
+		m_Limiter.Channels(1);
+		m_Limiter.ResetValue(1);
+		m_Limiter.ResetValue();
+
+		Div().Cells(3);
+		Div().Dividers(true);
+		Div()[0].CellType(EffectLayout::Type::ROWS);
+		Div()[0].CellSize(132);
+		Div()[0].Padding(4);
+		Div()[0].Cells(3);
+		Div()[0][2] = m_EnableEq;
+		Div()[0][2].CellSize(34);
+		Div()[0][1].CellType(EffectLayout::Type::COLS);
+		Div()[0][1].Cells(3);
+		Div()[0][1][0] = m_Low;
+		Div()[0][1][1] = m_Mid;
+		Div()[0][1][2] = m_High;
+		Div()[0][0].CellSize(34);
+		Div()[0][0].CellType(EffectLayout::Type::COLS);
+		Div()[0][0].Cells(2);
+		Div()[0][0][0] = m_LowFreq;
+		Div()[0][0][1] = m_HighFreq;
+		Div()[1].CellType(EffectLayout::Type::COLS);
+		Div()[1].CellSize(110);
+		Div()[1].Cells(2);
+		Div()[1][0].CellType(EffectLayout::Type::ROWS);
+		Div()[1][0].Cells(2);
+		Div()[1][0].CellSize(60);
+		Div()[1][0][1] = m_Gain;
+		Div()[1][0][0] = m_Release;
+		Div()[1][1].Align(EffectLayout::Align::LEFT);
+		Div()[1][1] = m_Limiter;
+		Div()[2].CellType(EffectLayout::Type::ROWS);
+		Div()[2].Cells(4);
+		Div()[2][0].Align(EffectLayout::Align::TOP);
+		Div()[2][0].CellSize(26);
+		Div()[2][0] = m_Mute;
+		Div()[2][1].Align(EffectLayout::Align::TOP);
+		Div()[2][1] = m_Mono;
+		Div()[2][2].Align(EffectLayout::Align::TOP);
+		Div()[2][2] = m_PhaseInvert;
+		Div()[2][3].CellSize(72);
+		Div()[2][3] = m_Pan;
+		UpdateParams();
 	}
 
-	void Update(const Vec4<int>& v) override
+	void Update() override
 	{
-		if (!m_EnableEq.Active())
+		if (!m_EnableEq.State())
 		{
 			m_Low.Disable();
 			m_LowFreq.Disable();
@@ -126,112 +175,14 @@ public:
 			m_HighFreq.Enable();
 		}
 
-		m_EnableEq.Position({ 31, 117 });
-		m_Low.Position({ 11, 52 });
-		m_LowFreq.Position({ 6, Height() - 160 });
-		m_Mid.Position({ 51, 52 });
-		m_High.Position({ 91, 52 });
-		m_HighFreq.Position({ 68, 10 });
-
-		m_Pan.Position({ 255, 89 });
-		m_Mono.Position({ 247, 32 });
-		m_Mute.Position({ 247, Height() - 160 });
-		m_PhaseInvert.Position({ 247, 54 });
-
-		m_Release.Position({ 148, 21 });
-		m_Gain.Position({ 148, 89 });
-		m_Limiter.Position({ 188, 5 });
-		Background(Color{ 0, 0, 0, 0 });
+		m_Limiter.SetValue(0, m_Level1);
+		m_Limiter.SetReduce(0, m_Level2);
 		UpdateParams();
-		Effect::Update(v);
-	}
-
-	void Render(CommandCollection& d) override
-	{
-
-		if (!m_Small)
-		{
-			d.Command<Graphics::PushMatrix>();
-			d.Command<Graphics::Translate>(Position());
-			d.Command<Graphics::Fill>(Theme<C::Channel>::Get());
-			d.Command<Graphics::Quad>(0, 0, Width(), Height());
-			d.Command<Graphics::Fill>(Theme<C::VMeter>::Get());
-
-			int _x = m_Limiter.X() + 9;
-			int _y = m_Limiter.Y() + 5;
-			int _w = m_Limiter.Width() - 18;
-			int _rh = m_Limiter.Height();
-			int _0db = ((std::powf(m_Limiter.Value(), 0.25) / 1.412536) * (_rh)) + _y;
-
-			d.Command<Graphics::Quad>(Vec4<int>{ _x, _y, _w, _rh + 1});
-		
-			float _level1 = std::powf(m_Level1, 0.25);
-			float _level2 = std::powf(m_Level2, 0.25);
-
-			int _h1 = (std::min(_level1, 1.412536f) / 1.412536) * (_rh + 1);
-			int _h2 = (std::min(_level2, 1.412536f) / 1.412536) * (_rh + 1);
-			
-
-			d.Command<Graphics::Fill>(Theme<C::VMeterFill>::Get());
-			d.Command<Graphics::Quad>(Vec4<int>{ _x, _y, _w, _h1 });
-			d.Command<Graphics::Fill>(Theme<C::VMeterFillC1>::Get());
-			d.Command<Graphics::Quad>(Vec4<int>{ _x, _y + _h1, _w, _h2 - _h1 });
-
-			// db numbers besides volume meter
-			int _d = 6;
-			bool _b = true;
-			d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
-			d.Command<Graphics::TextAlign>(Align::RIGHT, Align::CENTER);
-			for (int i = 12; i > -120; i -= _d)
-			{
-				if (i < -11)
-					_d = 12;
-				if (i < -35)
-					_d = 36;
-				if (i < -86)
-					break;
-
-				if (_b)
-					d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
-				else
-					d.Command<Graphics::Fill>(Theme<C::VMeterIndD>::Get());
-
-				int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
-				d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
-				if (_b)
-				{
-					if (m_Numbers.find(i) == m_Numbers.end())
-					{
-						m_Numbers.emplace(i, std::to_string(std::abs(i)));
-					}
-					d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
-					d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
-				}
-				_b ^= true;
-			}
-			d.Command<Graphics::Fill>(Theme<C::VMeterIndB>::Get());
-			d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
-			d.Command<Graphics::Fill>(Theme<C::TextOff>::Get());
-			d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y + 5});
-
-			d.Command<Graphics::PopMatrix>();
-		}
-		
-		Effect::Render(d);
-		if (m_Small)
-			return;
-
-		d.Command<Graphics::PushMatrix>();
-		d.Command<Graphics::Translate>(Position());
-		d.Command<Graphics::Fill>(Theme<C::Divider>::Get());
-		d.Command<Graphics::Quad>(Vec4<int>{(m_HighFreq.X() + m_HighFreq.Width()) + 6, 10, 1, Height() - 45});
-		d.Command<Graphics::Quad>(Vec4<int>{m_Mono.X() - 7, 10, 1, Height() - 45});
-				
-		d.Command<Graphics::PopMatrix>();
 	}
 
 	void Channels(int c) override
 	{
+		m_Channels = c;
 		m_Pans.reserve(c);
 		while (m_Pans.size() < c)
 			m_Pans.emplace_back(0);
@@ -247,18 +198,14 @@ public:
 			while (a.size() < PRE_BUFFER_SIZE)
 				a.push_back(0);
 		}
-		Effect::Channels(c);
 	}
 
 	float NextSample(float sin, int c) override
-	{	
-		if (!m_Enabled)
-			return sin;
-		
-		if (m_Mute.Active())
+	{
+		if (m_Mute.State())
 			return 0;
 
-		float filter = m_EnableEq.Active() ? m_Equalizers[c].Apply(sin) : sin;
+		float filter = m_EnableEq.State() ? m_Equalizers[c].Apply(sin) : sin;
 		
 		if (c == 0)
 		{
@@ -305,7 +252,7 @@ public:
 			m_MonoTemp = 0;
 		}
 
-		return (m_PhaseInvert.Active() ? -1 : 1) * (m_Mono.Active() ? m_MonoValue : limit) * m_Pans[c];
+		return (m_PhaseInvert.State() ? -1 : 1) * (m_Mono.State() ? m_MonoValue : limit) * m_Pans[c];
 	}
 
 	void UpdateParams()
@@ -334,7 +281,7 @@ public:
 		m_Compressor.pregain = 1;
 		m_Compressor.expanderRatio = 1;
 		m_Compressor.expanderThreshhold = -100;
-		m_Compressor.compressThreshhold = m_Limiter.Decibels();
+		m_Compressor.compressThreshhold = lin2db(std::max(m_Limiter.Value(), 0.000001));
 		m_Compressor.compressRatio = 0;
 		m_Compressor.mix = 1;
 		m_PreGain = db2lin(m_Gain.Value());
@@ -357,41 +304,37 @@ public:
 	{
 		json _json = json::object();
 		_json["type"] = "Utility";
-		_json["enabled"] = m_Enable.Active();
-		_json["small"] = m_Minim->Active();
 		_json["eqlow"] = m_Low.Value();
 		_json["eqmid"] = m_Mid.Value();
 		_json["eqhigh"] = m_High.Value();
-		_json["eqon"] = m_EnableEq.Active();
+		_json["eqon"] = m_EnableEq.State();
 		_json["eqlowf"] = m_LowFreq.Value();
 		_json["eqhighf"] = m_HighFreq.Value();
 		_json["limgain"] = m_Gain.Value();
 		_json["limrel"] = m_Release.Value();
 		_json["limth"] = m_Limiter.Value();
 		_json["pan"] = m_Pan.Value();
-		_json["phase"] = m_PhaseInvert.Active();
-		_json["mono"] = m_Mono.Active();
-		_json["mute"] = m_Mute.Active();
+		_json["phase"] = m_PhaseInvert.State();
+		_json["mono"] = m_Mono.State();
+		_json["mute"] = m_Mute.State();
 		return _json;
 	}
 
-	void operator=(const json& json)
+	void operator=(const json& json) override
 	{
-		m_Enable.Active(json.at("enabled").get<bool>());
-		m_Minim->Active(json.at("small").get<bool>());
 		m_Low.Value(json.at("eqlow").get<double>());
 		m_Mid.Value(json.at("eqmid").get<double>());
 		m_High.Value(json.at("eqhigh").get<double>());
-		m_EnableEq.Active(json.at("eqon").get<bool>());
+		m_EnableEq.State(json.at("eqon").get<bool>());
 		m_LowFreq.Value(json.at("eqlowf").get<double>());
 		m_HighFreq.Value(json.at("eqhighf").get<double>());
 		m_Gain.Value(json.at("limgain").get<double>());
 		m_Release.Value(json.at("limrel").get<double>());
 		m_Limiter.Value(json.at("limth").get<double>());
 		m_Pan.Value(json.at("pan").get<double>());
-		m_PhaseInvert.Active(json.at("phase").get<bool>());
-		m_Mono.Active(json.at("mono").get<bool>());
-		m_Mute.Active(json.at("mute").get<bool>());
+		m_PhaseInvert.State(json.at("phase").get<bool>());
+		m_Mono.State(json.at("mono").get<bool>());
+		m_Mute.State(json.at("mute").get<bool>());
 		UpdateParams();
 	}
 
@@ -402,12 +345,13 @@ private:
 
 	int counter = 0;
 	double r = 0.9;
+	int m_Channels = 0;
 
-	KnobSlider& m_Low, & m_Mid, & m_High, & m_Gain, & m_Release;
-	NormalSlider& m_LowFreq, & m_HighFreq;
-	PanKnob & m_Pan;
-	VolumeSlider& m_Limiter;
-	Button<ToggleButton, ButtonType::Toggle>& m_Mono, & m_Mute, & m_EnableEq, & m_PhaseInvert;
+	::Parameter& m_Low, & m_Mid, & m_High, & m_Gain, & m_Release;
+	::Parameter& m_LowFreq, & m_HighFreq;
+	::Parameter& m_Pan;
+	::VolumeSlider& m_Limiter;
+	ToggleButton & m_Mono, & m_Mute, & m_EnableEq, & m_PhaseInvert;
 
 	std::vector<float> m_Pans;
 	float m_Level1 = 0;
@@ -428,3 +372,12 @@ private:
 	std::vector<std::vector<float>> m_PreDelay;
 	std::vector<ChannelEqualizer<3, BiquadFilter<>>> m_Equalizers;
 };
+
+
+extern "C"
+{
+	DLLDIR void* NewInstance()
+	{
+		return new Utility();
+	}
+}

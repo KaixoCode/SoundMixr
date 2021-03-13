@@ -1,9 +1,5 @@
 #include "audio/Effects.hpp"
-#include "audio/Dynamics.hpp"
-#include "audio/Equalizer.hpp"
-#include "audio/Utility.hpp"
-#include "audio/Delay.hpp"
-#include "audio/Reverb.hpp"
+#include "EffectLoader.hpp"
 
 template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex)
 {
@@ -17,19 +13,22 @@ template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIn
 // ------------------------------ Effect ------------------------------------ \\
 // -------------------------------------------------------------------------- \\
 
-Effect::Effect(const std::string& name)
-	: m_Name(name), m_Channels(0),
-	m_Enable(Emplace<Button<ToggleButton, ButtonType::Toggle>>(&m_Enabled, ""))
+Effect::Effect(EffectBase* effect)
+	: m_Effect(effect), m_Channels(0)
 {
+	Init();
 	m_RealHeight = -1;
-	m_Enable.Size({ 18, 18 });
+	m_MinimB = &Emplace<Button<NOTHING, ButtonType::Toggle>>([&](bool s) { m_Minim->Active(s); }, "");
+	m_Enable = &Emplace<Button<ToggleButtonG, ButtonType::Toggle>>(&m_Enabled, "");
+	m_Enable->Size({ 18, 18 });
+	m_MinimB->Size({ 25, 25 });
 
 	m_Menu.ButtonSize({ 160, 20 });
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, name).Disable();
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Effect->Name()).Disable();
 	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
 	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s)
-			{
+		{
 			if (s)
 			{
 				m_RealHeight = Height();
@@ -51,15 +50,6 @@ Effect::Effect(const std::string& name)
 	{
 		if (e.button == Event::MouseButton::RIGHT)
 			RightClickMenu::Get().Open(&m_Menu);
-
-		if (e.button == Event::MouseButton::LEFT)
-			if (e.y > Height() - 25 && e.x > Width() - 25)
-				if (!m_Small)
-					m_Minim->Active(true);
-				
-				else
-					m_Minim->Active(false);
-		
 	};
 
 	m_Listener += [this](Event::MouseEntered& e)
@@ -78,11 +68,21 @@ Effect::Effect(const std::string& name)
 		if (e.x > 25 && e.y > Height() - 25 && e.x < Width() - 25)
 			m_HoveringDrag = true;
 	};
+
+	m_Listener += [this](Event& e)
+	{
+		if (e.x - X() >= 25 && e.x - X() <= Width() - 25 && m_Small && e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
+			e.y = Y() + 1;
+	};
 }
 
 void Effect::Update(const Vec4<int>& v) 
 {
-	m_Enable.Position({ 3, Height() - 22 });
+	m_Size.height = m_Small ? 25 : m_Effect->Height() + 25;
+	m_Enable->Position({ 3, Height() - 22 });
+	m_MinimB->Position({ Width() - 25, Height() - 25 });
+	m_Effect->Update();
+	Background(theme->Get(C::Channel));
 	Panel::Update(v);
 }
 
@@ -94,35 +94,44 @@ void Effect::Render(CommandCollection& d)
 
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
-	d.Command<Fill>(Theme<C::ChannelSelected>::Get());
+	d.Command<Fill>(theme->Get(C::ChannelSelected));
 	d.Command<Quad>(Vec4<int>{ 0, Height() - 25, Width(), 25 });
 	d.Command<Font>(Fonts::Gidole16, 16.0f);
 
 	if (m_Enabled)
-		d.Command<Fill>(Theme<C::TextSmall>::Get());
+		d.Command<Fill>(theme->Get(C::TextSmall));
 	else
-		d.Command<Fill>(Theme<C::TextOff>::Get());
+		d.Command<Fill>(theme->Get(C::TextOff));
 
 	d.Command<TextAlign>(Align::LEFT, Align::TOP);
-	d.Command<Text>(&m_Name, Vec2<int>{ 30, Height() - 2});
+	d.Command<Text>(&m_Effect->Name(), Vec2<int>{ 30, Height() - 2});
 	
-	d.Command<Fill>(Theme<C::TextOff>::Get());
+	d.Command<Fill>(theme->Get(C::TextOff));
 	if (!m_Small)
 		d.Command<Quad>(Vec4<int>{Width() - 17, Height() - 13, 10, 2});
 	else
 		d.Command<Triangle>(Vec4<int>{Width() - 12, Height() - 12, 10, 10}, 270.0f);
 
-	m_Enable.Render(d);
+	m_Enable->Render(d);
+	m_MinimB->Render(d);
 
 	if (!m_Enabled)
 	{
 		d.Command<Fill>(Color{ 0, 0, 0, 50 });
 		d.Command<Quad>(Vec4<int>{ 0, 0, Width(), Height() - 25 });
 	}
+
+	if (!m_Small)
+	{
+		d.Command<Fill>(theme->Get(C::Divider));
+		for (auto& i : m_Dividers)
+			d.Command<Quad>(i);
+	}
+
 	d.Command<PopMatrix>();
 
-	m_Div->Color(Theme<C::Divider>::Get());
-	m_Div2->Color(Theme<C::Divider>::Get());
+	m_Div->Color(theme->Get(C::Divider));
+	m_Div2->Color(theme->Get(C::Divider));
 }
 
 // -------------------------------------------------------------------------- \\
@@ -246,30 +255,13 @@ void EffectsGroup::operator=(const json& json)
 	for (auto effect : json)
 	{
 		auto& type = effect.at("type").get<std::string>();
-		if (type == "Dynamics")
+
+		auto& _it = EffectLoader::Effects().find(type);
+		if (_it != EffectLoader::Effects().end())
 		{
-			auto& _d = Emplace<Dynamics>();
-			_d = effect;
-		}
-		else if (type == "Equalizer")
-		{
-			auto& _d = Emplace<Equalizer<>>();
-			_d = effect;
-		}
-		else if (type == "Utility")
-		{
-			auto& _d = Emplace<Utility>();
-			_d = effect;
-		}
-		else if (type == "Delay")
-		{
-			auto& _d = Emplace<Delay>();
-			_d = effect;
-		}
-		else if (type == "Reverb")
-		{
-			auto& _d = Emplace<Reverb>();
-			_d = effect;
+			EffectBase* inst = (*_it).second->CreateInstance();
+			auto& a = Add(inst);
+			a = effect;
 		}
 	}
 }
@@ -316,7 +308,7 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 		}
 	}
 
-	m_LayoutManager.Update({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor
+	m_LayoutManager.UpdateLayoutStack({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor
 	m_Cursor = 
 		(m_Hovering && m_Hovering->HoveringDrag()) || m_Dragging ? GLFW_RESIZE_ALL_CURSOR : 
 		m_Hovering ? m_Hovering->Cursor() :
@@ -336,11 +328,7 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 
 	// Update all the components that lie within the viewport and are visible.
 	for (auto& _c : m_Effects)
-		if (_c->Visible() &&
-			_c->X() + _c->Width() >= m_Viewport.x && _c->Y() + _c->Height() >= m_Viewport.y &&
-			_c->X() <= m_Viewport.x + m_Viewport.width && _c->Y() <= m_Viewport.y + m_Viewport.height)
-			_c->Update(viewport);
-
+		_c->Update(viewport);
 }
 
 void EffectsGroup::Render(CommandCollection& d)
@@ -364,7 +352,7 @@ void EffectsGroup::Render(CommandCollection& d)
 	{
 		if (m_InsertIndex == _index)
 		{
-			d.Command<Fill>(Theme<C::TextOff>::Get());
+			d.Command<Fill>(theme->Get(C::TextOff));
 			d.Command<Quad>(Vec4<int>{_c->X(), _c->Y() + (_past ? -5 : _c->Height() + 3), _c->Width(), 2});
 		}
 	
