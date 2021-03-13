@@ -23,7 +23,7 @@ public:
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
 	
-	float NextSample(float s, int c) { return m_Effect->NextSample(s, c); };
+	float NextSample(float s, int c) { return m_Enabled ? m_Effect->NextSample(s, c) : s; };
 	void Channels(int c) { m_Effect->Channels(c); m_Channels = c; }
 
 	bool Hovering() { return m_Hovering; }

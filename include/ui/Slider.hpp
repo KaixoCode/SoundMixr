@@ -30,10 +30,10 @@ public:
 
 			m_NeedsRedraw = true;
 			if (Vertical())
-				NormalizedValue(NormalizedValue() + (m_Shift ? Multiplier() / 4 : Multiplier()) * ((e.y - m_PressMouse) / (float)(Height()))), m_PressMouse = e.y;
+				NormalizedValue(NormalizedValue() + (m_Shift ? Multiplier() / 8 : Multiplier()) * ((e.y - m_PressMouse) / (float)(Height()))), m_PressMouse = e.y;
 
 			else
-				NormalizedValue(NormalizedValue() + (m_Shift ? Multiplier() / 4 : Multiplier()) * ((e.x - m_PressMouse) / (float)(Width()))), m_PressMouse = e.x;
+				NormalizedValue(NormalizedValue() + (m_Shift ? Multiplier() / 8 : Multiplier()) * ((e.x - m_PressMouse) / (float)(Width()))), m_PressMouse = e.x;
 		};
 
 		m_Listener += [this](Event::MouseClicked& e)

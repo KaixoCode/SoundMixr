@@ -192,8 +192,8 @@ public:
 			else
 				m_Delay2t = ((m_Delay2 + m_Oscillator.sample * m_Amount) / 1000.0) * m_Samplerate;
 
-			m_Delay1t = (std::max(m_Delay1t, 0)) % BUFFER_SIZE;
-			m_Delay2t = (std::max(m_Delay2t, 0)) % BUFFER_SIZE;
+			m_Delay1t = (std::max(m_Delay1t, 1)) % BUFFER_SIZE;
+			m_Delay2t = (std::max(m_Delay2t, 1)) % BUFFER_SIZE;
 		}
 
 		auto& _buffer = m_Buffers[c];
