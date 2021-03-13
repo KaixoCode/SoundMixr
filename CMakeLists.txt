@@ -23,10 +23,10 @@ target_include_directories(SoundMixr PUBLIC
   libs/GuiCode/libs
   libs/portaudio/include
   libs/AudioFile
-  libs/json/include
   include/
   resources/
   libs/EffectBase/include
+  libs/EffectBase/libs/json/include
 )
 
 set_target_properties(EffectBase PROPERTIES LINKER_LANGUAGE CXX)
@@ -51,7 +51,7 @@ foreach(file ${files})
   
   target_include_directories(${effectname} PUBLIC
     libs/EffectBase/include
-    libs/json/include
+    libs/EffectBase/libs/json/include
   )
   
   set_target_properties(${effectname} PROPERTIES FOLDER "Effects")
