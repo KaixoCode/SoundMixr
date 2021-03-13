@@ -278,6 +278,57 @@ private:
 	std::string m_Name;
 };
 
+class DynamicsObject : public EffectObject
+{
+public:
+
+
+	void   ExpanderThreshhold(double v) { expanderThreshhold = v; }
+	double ExpanderThreshhold() { return expanderThreshhold; }
+	void   CompressorThreshhold(double v) { compressThreshhold = v; }
+	double CompressorThreshhold() { return compressThreshhold; }
+	void   ExpanderRatio(double r) { expanderRatio = r; }
+	double ExpanderRatio() { return expanderRatio; }
+	void   CompressorRatio(double r) { compressRatio = r; }
+	double CompressorRatio() { return compressRatio; }
+	void   AttackTime(double a) { attms = a; }
+	double AttackTime() { return attms; }
+	void   ReleaseTime(double a) { relms = a; }
+	double ReleaseTime() { return relms; }
+	void   PreGain(double a) { pregain = a; }
+	double PreGain() { return pregain; }
+	void   PostGain(double a) { postgain = a; }
+	double PostGain() { return postgain; }
+	void   Mix(double a) { mix = a; }
+	double Mix() { return mix; }
+	double Channels() { return channels; }
+	auto   Levels() -> std::vector<float>& { return levels; }
+	void   Level(int i, float v) { levels[i] = v; }
+
+	void Channels(int i)
+	{
+		channels = i;
+		while (levels.size() < i)
+			levels.push_back(0);
+	}
+
+private:
+	double expanderThreshhold = -50;
+	double compressThreshhold = -10;
+	double expanderRatio = 8.0 / 1.0;
+	double compressRatio = 1.0 / 8.0;
+
+	double attms = 1;
+	double relms = 100;
+
+	double pregain = 0;
+	double postgain = 0;
+	double mix = 0;
+
+	int channels = 0;
+	std::vector<float> levels;
+};
+
 class EffectBase
 {
 public:
@@ -322,6 +373,11 @@ public:
 	::VolumeSlider& VolumeSlider()
 	{
 		return dynamic_cast<::VolumeSlider&>(*m_EffectObjects.emplace_back(std::make_unique<::VolumeSlider>()));
+	}
+
+	::DynamicsObject& Dynamics()
+	{
+		return dynamic_cast<::DynamicsObject&>(*m_EffectObjects.emplace_back(std::make_unique<::DynamicsObject>()));
 	}
 
 	std::vector<std::unique_ptr<::EffectObject>>& Parameters()

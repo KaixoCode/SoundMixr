@@ -14,10 +14,10 @@ public:
 		m_Release(Parameter("Release", ParameterType::Knob)),
 		m_PostGain(Parameter("PostGain", ParameterType::Knob)),
 		m_Mix(Parameter("Mix", ParameterType::Knob)),
-		m_Slider(Emplace<DynamicsSlider>()),
+		m_Slider(EffectBase::Dynamics()),
 		EffectBase("Dynamics")
 	{
-		Height(200);
+		Height(175);
 		m_PreGain.Range({ -24, 24 });
 		m_PreGain.ResetValue(0);
 		m_PreGain.ResetValue();
@@ -58,62 +58,43 @@ public:
 		m_Mix.Size({ 30, 30 });
 		m_Mix.Decimals(0);
 
+		m_Slider.Size({ (Width() - 24), 77 });
+
 		UpdateParams();
 
-		m_PreGain.Position({ Width() - 282, 20 });
-		m_PostGain.Position({ Width() - 227, 20 });
-		m_Attack.Position({ Width() - 164, 20 });
-		m_Release.Position({ Width() - 109, 20 });
-		m_Mix.Position({ Width() - 46, 20 });
-		m_Slider.Position({ 12, 93 });
-		m_Slider.Size({ (Width() - 24), Height() - 123 });
+
+		Div().CellType(EffectLayout::Type::ROWS);
+		Div().Cells(2);
+		Div()[1].CellType(EffectLayout::Type::ROWS);
+		Div()[1].Align(EffectLayout::Align::CENTER);
+		Div()[1].Cells(2);
+		Div()[1][0].CellSize(15);
+		Div()[1][1] = m_Slider;
+		Div()[0].CellType(EffectLayout::Type::COLS);
+		Div()[0].CellSize(70);
+		Div()[0].Cells(3);
+		Div()[0].Dividers(true);
+		Div()[0][0].CellType(EffectLayout::Type::COLS);
+		Div()[0][0].CellSize(118);
+		Div()[0][0].Cells(2);
+		Div()[0][0][0] = m_PreGain;
+		Div()[0][0][1] = m_PostGain;
+		Div()[0][1].CellType(EffectLayout::Type::COLS);
+		Div()[0][1].CellSize(118);
+		Div()[0][1].Cells(2);
+		Div()[0][1][0] = m_Attack;
+		Div()[0][1][1] = m_Release;
+		Div()[0][2].CellType(EffectLayout::Type::COLS);
+		Div()[0][2].Cells(1);
+		Div()[0][2][0] = m_Mix;
 	}
 
 	void Update()
 	{
+		for (int i = 0; i < m_Levels.size(); i++)
+			m_Slider.Level(i, m_Levels[i]);
+
 		UpdateParams();
-	}
-
-	void Render(CommandCollection& d) override 
-	{
-		Effect::Render(d);
-		if (m_Small)
-			return;
-
-		using namespace Graphics;
-		d.Command<PushMatrix>();
-		d.Command<Translate>(Position());
-		d.Command<Fill>(theme->Get(C::Divider));
-		d.Command<Quad>(Vec4<int>{(m_PostGain.X() + m_PostGain.Width() + m_Attack.X()) / 2, 10, 1, 50});
-		d.Command<Quad>(Vec4<int>{(m_Release.X() + m_Release.Width() + m_Mix.X()) / 2, 10, 1, 50});
-		d.Command<Fill>(theme->Get(C::TextSmall));
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		d.Command<TextAlign>(Align::LEFT, Align::BOTTOM);
-		d.Command<Text>(&m_Slider.m_TH2Str, Vec2<int>{10, 77});
-		d.Command<Text>(&m_Slider.m_RT2Str, Vec2<int>{70, 77});
-		d.Command<Text>(&m_Slider.m_RT1Str, Vec2<int>{Width() - 110, 77});
-		d.Command<TextAlign>(Align::RIGHT, Align::BOTTOM);
-		d.Command<Text>(&m_Slider.m_TH1Str, Vec2<int>{Width() - 10, 77});
-
-		int _channels = m_Channels;
-		int _x = 12;
-		int _rw = Width() - 24;
-		int _p = 16;
-		int _h = ((Height() - 123 - 22 - _p * 2) / _channels) - (_channels > 4 ? 1 : 2);
-		int _y = 94 + _p;
-
-		// Draw all audio meters
-		for (int i = 0; i < _channels; i++)
-		{
-			_y = 94 + _p + i * (_h + (_channels > 4 ? 1 : 2));
-			float _level = std::powf(m_Levels[i], 0.25);
-
-			int _w = (std::min(_level, 1.0f) / 1.0f) * (_rw);
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterFill));
-			d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
-		}
-
-		d.Command<PopMatrix>();
 	}
 
 	void Channels(int c) override 
@@ -124,14 +105,11 @@ public:
 		while (m_Peaks.size() < c)
 			m_Peaks.push_back(0);
 
-		m_Channels = c;
+		m_Slider.Channels(c);
 	}
 
 	float NextSample(float sin, int c) override
 	{
-		if (!m_Enabled)
-			return sin;
-
 		if (c == 0)
 		{
 			if (counter > 512)
@@ -157,10 +135,10 @@ public:
 
 	void UpdateParams()
 	{
-		m_Compressor.compressRatio = m_Slider.ratio1 >= 0 ? m_Slider.ratio1 / 32.0 + 1 : (-1.0 / (m_Slider.ratio1 - 1.0));
-		m_Compressor.expanderRatio = m_Slider.ratio2 >= 0 ? m_Slider.ratio2 + 1 : (-1.0 / (m_Slider.ratio2 / 8.0 - 1.0));
-		m_Compressor.compressThreshhold = m_Slider.threshhold1;
-		m_Compressor.expanderThreshhold = m_Slider.threshhold2;
+		m_Compressor.compressRatio = m_Slider.CompressorRatio() >= 0 ? m_Slider.CompressorRatio() / 32.0 + 1 : (-1.0 / (m_Slider.CompressorRatio() - 1.0));
+		m_Compressor.expanderRatio = m_Slider.ExpanderRatio() >= 0 ? m_Slider.ExpanderRatio() + 1 : (-1.0 / (m_Slider.ExpanderRatio() / 8.0 - 1.0));
+		m_Compressor.compressThreshhold = m_Slider.CompressorThreshhold();
+		m_Compressor.expanderThreshhold = m_Slider.ExpanderThreshhold();
 		m_Compressor.Attack(m_Attack.Value());
 		m_Compressor.Release(m_Release.Value());
 		m_Compressor.pregain = db2lin(m_PreGain.Value());
@@ -171,13 +149,11 @@ public:
 	operator json() override
 	{
 		json _json = json::object();
-		_json["enabled"] = m_Enable.Active();
-		_json["small"] = m_Minim->Active();
 		_json["type"] = "Dynamics";
-		_json["expt"] = m_Slider.threshhold2;
-		_json["comt"] = m_Slider.threshhold1;
-		_json["expr"] = m_Slider.ratio2;
-		_json["comr"] = m_Slider.ratio1;
+		_json["expt"] = m_Slider.ExpanderThreshhold();
+		_json["comt"] = m_Slider.CompressorThreshhold();
+		_json["expr"] = m_Slider.ExpanderRatio();
+		_json["comr"] = m_Slider.CompressorRatio();
 		_json["att"] = m_Attack.Value();
 		_json["ret"] = m_Release.Value();
 		_json["prg"] = m_PreGain.Value();
@@ -188,8 +164,6 @@ public:
 
 	void operator=(const json& json) override
 	{
-		m_Enable.Active(json.at("enabled").get<bool>());
-		m_Minim->Active(json.at("small").get<bool>());
 		double p1 = json.at("expt").get<double>();
 		double p2 = json.at("comt").get<double>();
 		double p3 = json.at("expr").get<double>();
@@ -199,10 +173,10 @@ public:
 		double p7 = json.at("prg").get<double>();
 		double p8 = json.at("pog").get<double>();
 		double p9 = json.at("mix").get<double>();
-		m_Slider.threshhold2 = p1;
-		m_Slider.threshhold1 = p2;
-		m_Slider.ratio2 = p3;
-		m_Slider.ratio1 = p4;
+		m_Slider.ExpanderThreshhold(p1);
+		m_Slider.CompressorThreshhold(p2);
+		m_Slider.ExpanderRatio(p3);
+		m_Slider.CompressorRatio(p4);
 		m_Attack.Value(p5);
 		m_Release.Value(p6);
 		m_PreGain.Value(p7);
@@ -221,7 +195,7 @@ private:
 		&m_PostGain,
 		&m_Mix;
 
-	DynamicsSlider& m_Slider;
+	DynamicsObject& m_Slider;
 
 	std::vector<float> m_Levels;
 	std::vector<float> m_Peaks;

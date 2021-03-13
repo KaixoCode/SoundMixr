@@ -193,6 +193,14 @@ protected:
 			position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
 
 		// Determine type and add to effect.
+		auto dy = dynamic_cast<DynamicsObject*>(object);
+		if (dy != nullptr)
+		{
+			Emplace<DynamicsSlider>(*dy), dy->Position({ position.x, position.y });
+			return;
+		}
+
+		// Determine type and add to effect.
 		auto vs = dynamic_cast<VolumeSlider*>(object);
 		if (vs != nullptr)
 		{

@@ -106,31 +106,55 @@ public:
 
 		m_ValueText = "";
 		double _v = Value();
-		int _unit = -1;
+		int _unit = -9999999;
 		for (auto& i : Units())
 		{
+			if (i.first == INT_MAX && _v == 0)
+			{
+				_unit = INT_MAX;
+				break;
+			}
+
+			if (i.first == -1 && _unit == -9999999 && _v < 0)
+				_unit = -1;
+
+			if (i.first == 0 && _unit == -9999999)
+				_unit = 0;
+
 			if (i.first < 0)
 			{
-				int _p = std::pow(10, -i.first);
-				if (std::abs(_v) >= _p && _unit <= 0)
+				int _p = std::pow(10, -i.first - 1);
+				if (_v < 0 && std::abs(_v) >= _p && _unit <= 0)
 					_unit = i.first;
 			}
 			else
 			{
 				int _p = std::pow(10, i.first);
-				if (std::abs(_v) >= _p && _unit >= 0)
+				if (_v >= 0 && std::abs(_v) >= _p && _unit >= 0)
 					_unit = i.first;
 			}
-			if (i.first == 0 && _unit == -1)
-				_unit = 0;
+
 		}
 
-		if (_unit != -1)
+		if (_unit != -9999999)
 		{
 			auto& i = Units()[_unit];
 			char s[30];
-			int _p = std::pow(10, _unit);
-			std::sprintf(s, (std::string("%.") + std::to_string(m_Parameter.Decimals()) + "f").c_str(), _v / _p);
+			int _p = std::pow(10, _unit < 0 ? -_unit - 1 : _unit);
+			int d = m_Parameter.Decimals();
+			if (d == -1)
+			{
+				d += 1;
+				if (_v < 0)
+					_v = -_v;
+
+				if (_v == 0)
+					std::sprintf(s, "");
+				else
+					std::sprintf(s, (std::string("%.") + std::to_string(d) + "f").c_str(), _v / _p);
+			}
+			else
+				std::sprintf(s, (std::string("%.") + std::to_string(d) + "f").c_str(), _v / _p);
 			m_ValueText += s;
 			m_ValueText += i;
 		}

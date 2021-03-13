@@ -64,10 +64,12 @@ public:
 		m_Pan.Size({ 30, 30 });
 		m_Pan.Range({ -50, 50 });
 		m_Pan.Power(1);
+		m_Pan.Decimals(-1);
 		m_Pan.ResetValue(0);
 		m_Pan.ResetValue();
-		m_Pan.Unit(" L", -1);
-		m_Pan.Unit(" R", 1);
+		m_Pan.Unit("L", -1);
+		m_Pan.Unit("C", INT_MAX);
+		m_Pan.Unit("R", 0);
 		m_Pan.Multiplier(0.4);
 
 		m_Gain.Size({ 30, 30 });

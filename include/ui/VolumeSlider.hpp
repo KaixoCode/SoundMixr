@@ -248,7 +248,8 @@ using NormalSlider = SliderBase<SliderGraphics>;
 class DynamicsSlider : public Container
 {
 public:
-	DynamicsSlider()
+	DynamicsSlider(DynamicsObject& o)
+		: m_Object(o)
 	{
 		UpdateStrings();
 
@@ -258,14 +259,14 @@ public:
 				return;
 
 			m_PVal = constrain(e.x - X(), 0, Width());
-			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
-				m_Dragging = RT2, m_PressVal = ratio2;
-			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
-				m_Dragging = RT1, m_PressVal = ratio1;
-			else if (m_PVal < DbToPixel(threshhold2) + m_DragRange)
-				m_Dragging = TH2, m_PressVal = DbToPixel(threshhold2);
-			else if (m_PVal > DbToPixel(threshhold1) - m_DragRange)
-				m_Dragging = TH1, m_PressVal = DbToPixel(threshhold1);
+			if (m_PVal < DbToPixel(m_Object.ExpanderThreshhold()) - m_DragRange)
+				m_Dragging = RT2, m_PressVal = m_Object.ExpanderRatio();
+			else if (m_PVal > DbToPixel(m_Object.CompressorThreshhold()) + m_DragRange)
+				m_Dragging = RT1, m_PressVal = m_Object.CompressorRatio();
+			else if (m_PVal < DbToPixel(m_Object.ExpanderThreshhold()) + m_DragRange)
+				m_Dragging = TH2, m_PressVal = DbToPixel(m_Object.ExpanderThreshhold());
+			else if (m_PVal > DbToPixel(m_Object.CompressorThreshhold()) - m_DragRange)
+				m_Dragging = TH1, m_PressVal = DbToPixel(m_Object.CompressorThreshhold());
 		};
 		m_Listener += [this](Event::MouseClicked& e)
 		{
@@ -276,27 +277,27 @@ public:
 				return; 
 
 			m_PVal = constrain(e.x - X(), 0, Width());
-			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
-				ratio2 = 0;
-			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
-				ratio1 = 0;
-			else if (m_PVal < DbToPixel(threshhold2) + m_DragRange)
-				threshhold2 = -50, threshhold1 = std::max(threshhold1, -50.0);
-			else if (m_PVal > DbToPixel(threshhold1) - m_DragRange)
-				threshhold1 = -10, threshhold2 = std::min(threshhold2, -10.0);
+			if (m_PVal < DbToPixel(m_Object.ExpanderThreshhold()) - m_DragRange)
+				m_Object.ExpanderRatio(0);
+			else if (m_PVal > DbToPixel(m_Object.CompressorThreshhold()) + m_DragRange)
+				m_Object.CompressorRatio(0);
+			else if (m_PVal < DbToPixel(m_Object.ExpanderThreshhold()) + m_DragRange)
+				m_Object.ExpanderThreshhold(-50), m_Object.CompressorThreshhold(std::max(m_Object.CompressorThreshhold(), -50.0));
+			else if (m_PVal > DbToPixel(m_Object.CompressorThreshhold()) - m_DragRange)
+				m_Object.CompressorThreshhold(-10), m_Object.ExpanderThreshhold(std::min(m_Object.ExpanderThreshhold(), -10.0));
 
 			UpdateStrings();
 		};
 		m_Listener += [this](Event::MouseMoved& e)
 		{
 			m_PVal = constrain(e.x - X(), 0, Width());
-			if (m_PVal < DbToPixel(threshhold2) - m_DragRange)
+			if (m_PVal < DbToPixel(m_Object.ExpanderThreshhold()) - m_DragRange)
 				m_Cursor = GLFW_RESIZE_EW_CURSOR;
-			else if (m_PVal > DbToPixel(threshhold1) + m_DragRange)
+			else if (m_PVal > DbToPixel(m_Object.CompressorThreshhold()) + m_DragRange)
 				m_Cursor = GLFW_RESIZE_EW_CURSOR;
-			else if (m_PVal < DbToPixel(threshhold2) + m_DragRange)
+			else if (m_PVal < DbToPixel(m_Object.ExpanderThreshhold()) + m_DragRange)
 				m_Cursor = GLFW_HAND_CURSOR;
-			else if (m_PVal > DbToPixel(threshhold1) - m_DragRange)
+			else if (m_PVal > DbToPixel(m_Object.CompressorThreshhold()) - m_DragRange)
 				m_Cursor = GLFW_HAND_CURSOR;
 			else
 				m_Cursor = GLFW_CURSOR_NORMAL;
@@ -309,10 +310,10 @@ public:
 			{
 				double db1 = PixelToDb(constrain(cval - m_PVal + m_PressVal, 0, Width()));
 				m_Cursor = GLFW_HAND_CURSOR;
-				threshhold2 = db1;
+				m_Object.ExpanderThreshhold(db1);
 
-				if (threshhold2 > threshhold1)
-					threshhold1 = threshhold2;
+				if (m_Object.ExpanderThreshhold() > m_Object.CompressorThreshhold())
+					m_Object.CompressorThreshhold(m_Object.ExpanderThreshhold());
 			
 				UpdateStrings();
 			}
@@ -320,10 +321,10 @@ public:
 			{
 				double db1 = PixelToDb(constrain(cval - m_PVal + m_PressVal, 0, Width()));
 				m_Cursor = GLFW_HAND_CURSOR;
-				threshhold1 = db1;
+				m_Object.CompressorThreshhold(db1);
 
-				if (threshhold2 > threshhold1)
-					threshhold2 = threshhold1;
+				if (m_Object.ExpanderThreshhold() > m_Object.CompressorThreshhold())
+					m_Object.ExpanderThreshhold(m_Object.CompressorThreshhold());
 
 				UpdateStrings();
 			}
@@ -332,7 +333,7 @@ public:
 				double db1 = (cval - m_PVal) * (m_Shift ? 0.1 : 0.2);
 				m_PVal = cval;
 				m_Cursor = GLFW_RESIZE_EW_CURSOR;
-				ratio1 = constrain(db1 + ratio1, -31, 32);
+				m_Object.CompressorRatio(constrain(db1 + m_Object.CompressorRatio(), -31, 32));
 				UpdateStrings();
 			}
 			else if (m_Dragging == RT2)
@@ -340,7 +341,7 @@ public:
 				double db1 = (cval - m_PVal) * (m_Shift ? 0.1 : 0.2);
 				m_PVal = cval;
 				m_Cursor = GLFW_RESIZE_EW_CURSOR;
-				ratio2 = constrain(ratio2 - db1, -31, 32);
+				m_Object.ExpanderRatio(constrain(m_Object.ExpanderRatio() - db1, -31, 32));
 				UpdateStrings();
 			}
 		};
@@ -365,8 +366,15 @@ public:
 
 	void Update(const Vec4<int>& v)
 	{
+		m_Pos.x = m_Object.Position().x;
+		m_Pos.y = m_Object.Position().y;
+		m_Size.width = m_Object.Size().width;
+		m_Size.height = m_Object.Size().height;
+
 		if (m_Click)
 			m_Click--;
+
+		UpdateStrings();
 
 		Container::Update(v);
 	}
@@ -423,7 +431,7 @@ public:
 		d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, 1, _y });
 		d.Command<Graphics::Quad>(Vec4<int>{ 0, _y, Width(), 1 });
 		d.Command<Graphics::Quad>(Vec4<int>{ Width() - 1, 0, 1, _y });
-		int p1 = DbToPixel(threshhold1);
+		int p1 = DbToPixel(m_Object.CompressorThreshhold());
 		d.Command<Graphics::Fill>(theme->Get(C::DynamicsB));
 		d.Command<Graphics::Quad>(Vec4<int>{ p1, _y2, Width() - p1, _y - _y2 - 5 });
 		double _xp = p1;
@@ -433,12 +441,12 @@ public:
 			c.a *= (8 - i) / 8.0f;
 			d.Command<Graphics::Fill>(c);
 			d.Command<Graphics::Quad>(Vec4<int>{ (int)_xp, _y2, 1, _y - _y2 - 5 });
-			_xp += ratio1 * 0.5 + 17;
+			_xp += m_Object.CompressorRatio() * 0.5 + 17;
 			if (_xp > Width())
 				break;
 		}
 
-		int p2 = DbToPixel(threshhold2);
+		int p2 = DbToPixel(m_Object.ExpanderThreshhold());
 		d.Command<Graphics::Fill>(theme->Get(C::DynamicsB));
 		d.Command<Graphics::Quad>(Vec4<int>{ 0, _y2, p2, _y - _y2 - 5 });
 		_xp = p2;
@@ -448,10 +456,38 @@ public:
 			c.a *= (8 - i) / 8.0f;
 			d.Command<Graphics::Fill>(c);
 			d.Command<Graphics::Quad>(Vec4<int>{ (int)_xp, _y2, 1, _y - _y2 - 5 });
-			_xp -= ratio2 * 0.5 + 17;
+			_xp -= m_Object.ExpanderRatio() * 0.5 + 17;
 			if (_xp < 0)
 				break;
+		}
+		d.Command<Fill>(theme->Get(C::TextSmall));
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<TextAlign>(Align::LEFT, Align::TOP);
+		d.Command<Text>(&m_TH2Str, Vec2<int>{0, -3});
+		d.Command<Text>(&m_RT2Str, Vec2<int>{60, -3});
+		d.Command<Text>(&m_RT1Str, Vec2<int>{Width() - 100, -3});
+		d.Command<TextAlign>(Align::RIGHT, Align::TOP);
+		d.Command<Text>(&m_TH1Str, Vec2<int>{Width(), -3});
 
+		int _channels = m_Object.Channels();
+		if (_channels)
+		{
+			int _x = 0;
+			int _rw = m_Object.Size().width;
+			int _p = 16;
+			int _h = ((m_Object.Size().height - 21 - _p * 2) / _channels) - (_channels > 4 ? 1 : 2);
+			_y = _p;
+
+			// Draw all audio meters
+			for (int i = 0; i < _channels; i++)
+			{
+				_y = _p + i * (_h + (_channels > 4 ? 1 : 2));
+				float _level = std::powf(m_Object.Levels()[i], 0.25);
+
+				int _w = (std::min(_level, 1.0f) / 1.0f) * (_rw);
+				d.Command<Graphics::Fill>(theme->Get(C::VMeterFill));
+				d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
+			}
 		}
 		d.Command<PopMatrix>();
 	}
@@ -467,16 +503,12 @@ public:
 		return std::pow(std::pow(10, p / 20.0), 0.25) * (Width());
 	}
 
-	double threshhold1 = -10;
-	double threshhold2 = -50;
-	double ratio1 = 0;
-	double ratio2 = 0;
-
 	std::string m_TH1Str = "";
 	std::string m_TH2Str = "";
 	std::string m_RT1Str = "1:8";
 	std::string m_RT2Str = "1:8";
 private:
+	DynamicsObject& m_Object;
 	int m_Click = 0;
 	int m_PVal = 0;
 	int m_Dragging = 0;
@@ -494,13 +526,13 @@ private:
 	void UpdateStrings()
 	{
 		char s[10];
-		std::sprintf(s, "%.1f", threshhold1);
+		std::sprintf(s, "%.1f", m_Object.CompressorThreshhold());
 		m_TH1Str = s;
 		m_TH1Str += "dB";
-		std::sprintf(s, "%.1f", threshhold2);
+		std::sprintf(s, "%.1f", m_Object.ExpanderThreshhold());
 		m_TH2Str = s;
 		m_TH2Str += "dB";
-		double rt1 = ratio1;
+		double rt1 = m_Object.CompressorRatio();
 		if (rt1 >= 0)
 		{
 			rt1 = 1.0 / ((rt1 / 32.0) + 1);
@@ -515,7 +547,7 @@ private:
 			m_RT1Str = "1 : ";
 			m_RT1Str += s;
 		}
-		double rt2 = ratio2;
+		double rt2 = m_Object.ExpanderRatio();
 		if (rt2 >= 0)
 		{
 			rt2 = 1.0 / ((rt2 / 8.0) + 1);
