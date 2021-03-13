@@ -10,3 +10,6 @@
 [submodule "libs/json"]
 	path = libs/json
 	url = https://github.com/nlohmann/json.git
+[submodule "libs/EffectBase"]
+	path = libs/EffectBase
+	url = https://github.com/KaixoCode/EffectBase.git

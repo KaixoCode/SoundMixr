@@ -14,19 +14,6 @@ file(GLOB_RECURSE SOURCE
   "${SRC}resources/*.rc"
 )
 
-file(GLOB_RECURSE EFFECTBASE_SOURCE
-  "${SRC}effects/*.hpp"
-)
-
-add_library(EffectBase STATIC
-  ${EFFECTBASE_SOURCE}
-)
-
-target_include_directories(EffectBase PUBLIC
-  libs/json/include
-  effects/
-)
-
 add_executable(SoundMixr
   ${SOURCE}
 )
@@ -39,7 +26,7 @@ target_include_directories(SoundMixr PUBLIC
   libs/json/include
   include/
   resources/
-  effects/
+  libs/EffectBase/include
 )
 
 set_target_properties(EffectBase PROPERTIES LINKER_LANGUAGE CXX)
@@ -63,7 +50,7 @@ foreach(file ${files})
   )
   
   target_include_directories(${effectname} PUBLIC
-    effects/
+    libs/EffectBase/include
     libs/json/include
   )
   
