@@ -161,9 +161,15 @@ public:
 
 	void operator=(const json& json)
 	{
+		try
+		{
 		volume.Value(json.at("volume").get<double>());
 		pan.Value(json.at("pan").get<double>());
 		m_ChannelGroup = json;
+		}
+		catch (...)
+		{
+		}
 	}
 
 private:

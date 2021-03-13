@@ -254,6 +254,8 @@ void EffectsGroup::operator=(const json& json)
 {
 	for (auto effect : json)
 	{
+		try
+		{
 		auto& type = effect.at("type").get<std::string>();
 
 		auto& _it = EffectLoader::Effects().find(type);
@@ -263,6 +265,9 @@ void EffectsGroup::operator=(const json& json)
 			auto& a = Add(inst);
 			a = effect;
 		}
+		}
+		catch(...)
+		{ }
 	}
 }
 
