@@ -190,10 +190,10 @@ void Controller::Run()
             SaveRouting();
         }, "Save Routing", Key::CTRL_S);*/
 
-    _file.Emplace<MenuButton>([&]
+    /*_file.Emplace<MenuButton>([&]
         {
             soundboard.Save();
-        }, "Save Soundboard", Key::CTRL_S);
+        }, "Save Soundboard", Key::CTRL_S);*/
 
     //
     // Themes
@@ -276,11 +276,13 @@ void Controller::Run()
         {
             _saveCounter = 5 * 60 * 60;
             SaveRouting();
+            soundboard.Save();
         }
     }
 
     // Final save to make sure it is saved when exited.
     SaveRouting();
+    soundboard.Save();
 }
 
 void Controller::SaveRouting()
