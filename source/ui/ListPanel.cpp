@@ -36,8 +36,8 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 
 	m_Specials.AutoResize(true, false);
 	m_Specials.Layout<Layout::SidewaysStack>(8);
-	m_Specials.Hide();
-	m_Divider2->Hide();
+	//m_Specials.Hide();
+	//m_Divider2->Hide();
 
 	Background(Color{ 38, 38, 38, 355 });
 	EnableScrollbars(false, false);
