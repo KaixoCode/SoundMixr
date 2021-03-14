@@ -4,6 +4,6 @@ SoundMixr is a simple audio mixer for ASIO devices, but specifically made for SA
 ![Image](https://i.imgur.com/QWbTfhW.png)
 
 ## Code your own SoundMixr Effects
-You can code your own effects as well! There is a Git repo called [EffectBase](https://github.com/KaixoCode/EffectBase) that contains the necessary headers to code a SoundMixr effect. And here is a small example of an effect: [SoundMixrEffect](https://github.com/KaixoCode/SoundMixrEffect)
+You can code your own effects as well! There is a Git repo called [EffectBase](https://github.com/KaixoCode/EffectBase) that contains the necessary headers to code a SoundMixr effect. And here is a small example of an effect: [SoundMixrEffect](https://github.com/KaixoCode/SoundMixrEffect). See [Documentation](https://code.kaixo.me/SoundMixr/EffectBase/) for more info.
 
  If you have any ideas or feedback you can find me on Discord: @\Kaixo#0001
