@@ -246,7 +246,6 @@ namespace Effects
 		operator nlohmann::json()
 		{
 			nlohmann::json _json = nlohmann::json::object();
-			_json["type"] = "Chorus";
 			_json["del1"] = m_Delay1Knob.Value();
 			_json["del2"] = m_Delay2Knob.Value();
 			_json["highp"] = m_Highpass.Value();

@@ -246,7 +246,11 @@ EffectsGroup::operator json()
 {
 	json _json = json::array();
 	for (auto& i : m_Effects)
-		_json.push_back(*i);
+	{
+		json _j = *i;
+		_j["type"] = i->Name();
+		_json.push_back(_j);
+	}
 	return _json;
 }
 

@@ -151,7 +151,6 @@ namespace Effects
 		operator nlohmann::json() override
 		{
 			nlohmann::json _json = nlohmann::json::object();
-			_json["type"] = "Dynamics";
 			_json["expt"] = m_Slider.ExpanderThreshhold();
 			_json["comt"] = m_Slider.CompressorThreshhold();
 			_json["expr"] = m_Slider.ExpanderRatio();

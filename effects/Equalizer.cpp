@@ -138,7 +138,6 @@ namespace Effects
 		operator nlohmann::json() override
 		{
 			nlohmann::json _json = nlohmann::json::object();
-			_json["type"] = "Equalizer";
 			_json["filters"] = nlohmann::json::array();
 			for (int i = 0; i < N; i++)
 			{

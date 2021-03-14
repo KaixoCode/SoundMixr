@@ -151,6 +151,9 @@ float ChannelGroup::DoEffects(float lvl, int indx)
 
 float ChannelGroup::GetLevel(int id)
 {
+	if (id == -1)
+		return 0;
+
 	m_FirstMono = true;
 	float level = 0;
 
@@ -260,5 +263,8 @@ float OutputChannel::Level() const
 
 void SoundboardChannel::CalcLevel() 
 { 
+	if (GroupIndex() == -1)
+		return;
+
 	m_OutLevel = m_Pan * m_Volume * m_Soundboard.GetLevel(GroupIndex()); 
 }
