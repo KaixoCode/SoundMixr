@@ -248,13 +248,13 @@ void Controller::Run()
         {                
             // First save the routing
             SaveRouting();
-            m_AsioDevice.StopStream();
+            //m_AsioDevice.StopStream();
             m_AsioDevice.RemoveGroups();
             m_List->Clear();
             EffectLoader::LoadEffects();
             m_List->ReloadEffects();
             LoadRouting();
-            m_AsioDevice.StartStream();
+            //m_AsioDevice.StartStream();
         }, "Refresh Effects");
 
     //
