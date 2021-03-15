@@ -140,7 +140,7 @@ ChannelPanel& ListPanel::EmplaceChannel(bool IsInput)
 		return *m_Channels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this, false));
 }
 
-ChannelPanel& ListPanel::EmplaceSpecialChannel(bool IsInput = true)
+ChannelPanel& ListPanel::EmplaceSpecialChannel(bool IsInput)
 {
 	return *m_Channels.emplace_back(&m_Specials.Emplace<ChannelPanel>(this, IsInput, true));
 }

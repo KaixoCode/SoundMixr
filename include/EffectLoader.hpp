@@ -18,11 +18,6 @@ public:
 
 	~DynamicEffect()
 	{
-		for (auto& i : m_Effects)
-			delete i, i = nullptr;
-
-		m_Effects.clear();
-
 		FreeLibrary(m_Module);
 	}
 
@@ -37,7 +32,6 @@ public:
 		if (instfunc)
 		{
 			Effects::EffectBase* p = static_cast<Effects::EffectBase*>(instfunc());
-			m_Effects.push_back(p);
 			return p;
 		}
 		else 
@@ -48,7 +42,6 @@ private:
 	inst_func instfunc;
 	std::string m_Name;
 	HMODULE m_Module;
-	std::vector<Effects::EffectBase*> m_Effects;
 };
 
 class EffectLoader

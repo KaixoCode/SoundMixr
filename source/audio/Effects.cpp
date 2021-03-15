@@ -76,6 +76,12 @@ Effect::Effect(Effects::EffectBase* effect)
 	};
 }
 
+Effect::~Effect()
+{
+	delete m_Effect;
+	m_Effect = nullptr;
+}
+
 void Effect::Update(const Vec4<int>& v) 
 {
 	m_Size.height = m_Small ? 25 : m_Effect->Height() + 25;

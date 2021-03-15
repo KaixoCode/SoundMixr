@@ -14,6 +14,7 @@ public:
 	static inline double sampleRate = 48000;
 
 	Effect(Effects::EffectBase*);
+	~Effect();
 
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
