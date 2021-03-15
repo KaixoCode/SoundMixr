@@ -192,6 +192,43 @@ float ChannelGroup::GetMonoLevel()
 	return m_MonoLevel;
 }
 
+ChannelGroup::operator nlohmann::json()
+{
+	nlohmann::json _json = nlohmann::json::object();
+	_json["id"] = ID();
+	_json["volume"] = Volume();
+	_json["muted"] = Muted();
+	_json["mono"] = Mono();
+	_json["pan"] = Pan();
+
+	if (IsInput())
+	{
+		std::vector<int> _connections{};
+		for (auto& i : m_Connected)
+			_connections.push_back(i->ID());
+
+		_json["connections"] = _connections;
+	}
+
+	std::vector<int> _channels{};
+	for (auto& i : m_Channels)
+		_channels.push_back(i->ID());
+
+	_json["channels"] = _channels;
+
+	_json["effects"] = m_EffectsGroup;
+	return _json;
+}
+
+void ChannelGroup::operator=(const nlohmann::json& json)
+{
+	Mono(json.at("mono").get<bool>());
+	Mute(json.at("muted").get<bool>());
+	Pan(json.at("pan").get<double>());
+	Volume(json.at("volume").get<double>());
+	m_EffectsGroup = json.at("effects");
+}
+
 // -------------------------------------------------------------------------- \\
 // ---------------------------- InputChannel -------------------------------- \\
 // -------------------------------------------------------------------------- \\
@@ -260,6 +297,10 @@ float OutputChannel::Level() const
 // -------------------------------------------------------------------------- \\
 // -------------------------- SoundboardChannel ----------------------------- \\
 // -------------------------------------------------------------------------- \\
+
+SoundboardChannel::SoundboardChannel(Soundboard& soundBoard)
+	: Channel(m_Counter++, "Soundboard", true), m_Soundboard(soundBoard)
+{}
 
 void SoundboardChannel::CalcLevel() 
 { 

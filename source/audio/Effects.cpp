@@ -134,6 +134,212 @@ void Effect::Render(CommandCollection& d)
 	m_Div2->Color(theme->Get(C::Divider));
 }
 
+Effect::operator nlohmann::json()
+{
+	nlohmann::json _json = *m_Effect;
+	_json["enabled"] = m_Enable->Active();
+	_json["small"] = m_Minim->Active();
+	return _json;
+}
+
+void Effect::operator=(const nlohmann::json& json)
+{
+	m_Enable->Active(json.at("enabled").get<bool>());
+	m_Minim->Active(json.at("small").get<bool>());
+	m_MinimB->Active(m_Small);
+	*m_Effect = json;
+}
+
+void Effect::Init()
+{
+	InitDiv(m_Effect->Div(), { 0, 0, 300, m_Effect->Height() });
+}
+
+void Effect::InitDiv(Effects::Div& div, const Vec4<int>& dim)
+{
+	if (div.DivType() == Effects::Div::Type::Object)
+		SetObject(div, dim);
+
+	else
+		if (div.Align() == Effects::Div::Alignment::Horizontal)
+		{
+			// Get all the sizes of the sub-divs
+			std::vector<int> sizes;
+			int width = dim.width, amt = 0, obamt = 0;
+			for (auto& i : div.Divs())
+				if (i->DivSize() == Effects::Div::AUTO)
+				{
+					if (i->DivType() == Effects::Div::Type::Object)
+						sizes.push_back(i->Object().Size().width + i->Padding()), width -= i->Object().Size().width + i->Padding(), obamt++;
+					else
+						sizes.push_back(0), amt++;
+				}
+				else
+					width -= i->DivSize(), sizes.push_back(-i->DivSize());
+
+			// See what's left to divide
+			int x = dim.x;
+			int w = width;
+			if (amt)
+				w /= amt;
+			else if (obamt)
+				w /= obamt;
+
+			// If there's some space left, either give it to divs or objects
+			if (w > 0)
+				for (auto& i : sizes)
+					if (amt && i == 0) // Give space to div with no given size
+						i = w;
+					else if (obamt && i > 0) // Give space to object
+						i += w;
+
+			// if we're short on space, take some away from objects or divs.
+			if (width < 0)
+				for (auto& i : sizes)
+					if (i > 0 && obamt) // Take away from object
+						i -= w;
+					else if (i < 0 && !obamt) // Take away from div with a given size
+						i -= w;
+
+			// Set sizes and positions
+			for (int i = 0; i < div.Divs().size(); i++)
+			{
+				if (div.Dividers() && i != 0)
+					m_Dividers.emplace_back(Vec4<int>{ x, dim.y + 8, 1, dim.height - 16 });
+
+				if (sizes[i] < 0) // If div with given space, size is negative so negate
+					InitDiv(*div.Divs()[i], { x + div.Padding(), dim.y + div.Padding(), -sizes[i] - 2 * div.Padding(), dim.height - 2 * div.Padding() }), x += -sizes[i];
+				else // Otherwise just recurse
+					InitDiv(*div.Divs()[i], { x + div.Padding(), dim.y + div.Padding(), sizes[i] - 2 * div.Padding(), dim.height - 2 * div.Padding() }), x += sizes[i];
+			}
+		}
+		else
+		{
+			// Get all the sizes of the sub-divs
+			std::vector<int> sizes;
+			int height = dim.height, amt = 0, obamt = 0;
+			for (auto& i : div.Divs())
+				if (i->DivSize() == Effects::Div::AUTO)
+				{
+					if (i->DivType() == Effects::Div::Type::Object)
+						sizes.push_back(i->Object().Size().height + i->Padding()), height -= i->Object().Size().height + i->Padding(), obamt++;
+					else
+						sizes.push_back(0), amt++;
+				}
+				else
+					height -= i->DivSize(), sizes.push_back(-i->DivSize());
+
+			// See what's left to divide
+			int y = dim.y;
+			int h = height;
+			if (amt)
+				h /= amt;
+			else if (obamt)
+				h /= obamt;
+
+			// If there's some space left, either give it to divs or objects
+			if (h > 0)
+				for (auto& i : sizes)
+					if (amt && i == 0) // Give space to div with no given size
+						i = h;
+					else if (obamt && i > 0) // Give space to object
+						i += h;
+
+			// if we're short on space, take some away from objects or divs.
+			if (height < 0)
+				for (auto& i : sizes)
+					if (i > 0 && obamt) // Take away from object
+						i += h;
+					else if (i < 0 && !obamt) // Take away from div with a given size
+						i += h;
+
+			// Set sizes and positions
+			for (int i = 0; i < div.Divs().size(); i++)
+			{
+				if (div.Dividers() && i != 0)
+					m_Dividers.emplace_back(Vec4<int>{ dim.x + 8, y, dim.width - 16, 1 });
+
+				if (sizes[i] < 0) // If div with given space, size is negative so negate
+					InitDiv(*div.Divs()[i], { dim.x + div.Padding(), y + div.Padding(), dim.width - 2 * div.Padding(), -sizes[i] - 2 * div.Padding() }), y += -sizes[i];
+				else // Otherwise just recurse
+					InitDiv(*div.Divs()[i], { dim.x + div.Padding(), y + div.Padding(), dim.width - 2 * div.Padding(), sizes[i] - 2 * div.Padding() }), y += sizes[i];
+			}
+		}
+}
+
+void Effect::SetObject(Effects::Div& div, const Vec4<int>& dim)
+{
+	// Get the object from the div
+	Effects::Object* object = &div.Object();
+
+	// Calculate the position using the alignment
+	Vec2<int> position = { dim.x, dim.y };
+	if (div.Align() == Effects::Div::Alignment::Center)
+		position += { dim.width / 2 - object->Size().width / 2, dim.height / 2 - object->Size().height / 2 };
+	else if (div.Align() == Effects::Div::Alignment::Right)
+		position += { dim.width - object->Size().width, dim.height / 2 - object->Size().height / 2 };
+	else if (div.Align() == Effects::Div::Alignment::Left)
+		position += { 0, dim.height / 2 - object->Size().height / 2 };
+	else if (div.Align() == Effects::Div::Alignment::Bottom)
+		position += { dim.width / 2 - object->Size().width / 2, 0 };
+	else if (div.Align() == Effects::Div::Alignment::Top)
+		position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
+
+
+	// Determine type and add to effect.
+	auto xy = dynamic_cast<Effects::XYController*>(object);
+	if (xy != nullptr)
+	{
+		Emplace<XYController>(*xy), xy->Position({ position.x, position.y });
+		return;
+	}
+
+	auto rb = dynamic_cast<Effects::RadioButton*>(object);
+	if (rb != nullptr)
+	{
+		Emplace<RadioButton>(*rb), rb->Position({ position.x, position.y });
+		return;
+	}
+
+	auto dy = dynamic_cast<Effects::DynamicsSlider*>(object);
+	if (dy != nullptr)
+	{
+		Emplace<DynamicsSlider>(*dy), dy->Position({ position.x, position.y });
+		return;
+	}
+
+	auto vs = dynamic_cast<Effects::VolumeSlider*>(object);
+	if (vs != nullptr)
+	{
+		Emplace<VolumeSlider>(*vs), vs->Position({ position.x, position.y - 5 });
+		return;
+	}
+
+	auto param = dynamic_cast<Effects::Parameter*>(object);
+	if (param != nullptr)
+	{
+		if (param->Type() == Effects::ParameterType::Slider)
+			Emplace<Slider>(*param), param->Position({ position.x, position.y });
+		else if (param->Type() == Effects::ParameterType::Knob)
+			Emplace<Knob>(*param), param->Position({ position.x, position.y });
+		return;
+	}
+
+	auto dd = dynamic_cast<Effects::DropDown*>(object);
+	if (dd != nullptr)
+	{
+		Emplace<DropDown<int, DropdownButton>>(*dd), dd->Position({ position.x, position.y });
+		return;
+	}
+
+	auto toggle = dynamic_cast<Effects::ToggleButton*>(object);
+	if (toggle != nullptr)
+	{
+		Emplace<ToggleButton>(*toggle), toggle->Position({ position.x, position.y });
+		return;
+	}
+}
+
 // -------------------------------------------------------------------------- \\
 // --------------------------- Effect Group --------------------------------- \\
 // -------------------------------------------------------------------------- \\
@@ -301,6 +507,16 @@ bool EffectsGroup::Hovering()
 	return false;
 }
 
+Effect& EffectsGroup::Add(Effects::EffectBase* e)
+{
+	int p = m_EffectCount;
+	m_EffectCount = 0;
+	auto& a = m_Effects.emplace_back(std::make_unique<Effect>(e));
+	e->Channels(m_Channels);
+	m_EffectCount = p + 1;
+	return *a;
+}
+
 void EffectsGroup::Update(const Vec4<int>& viewport)
 {
 
@@ -377,6 +593,24 @@ void EffectsGroup::Render(CommandCollection& d)
 	}
 
 	d.Command<PopMatrix>();
+}
+
+int EffectsGroup::GetIndex(int y)
+{
+	int index = 0;
+	int _ri = 0;
+	for (auto& i : m_Effects)
+	{
+		if (y < i->Y() + i->Height() / 2)
+			_ri = index + 1;
+
+		index++;
+	}
+
+	if (m_Dragging && y < m_Dragging->Y() + m_Dragging->Height() / 2)
+		_ri -= 1;
+
+	return _ri;
 }
 
 void EffectsGroup::Determine(Event& e)
