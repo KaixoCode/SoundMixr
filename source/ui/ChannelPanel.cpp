@@ -77,9 +77,9 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 	m_Div4->Color(theme->Get(C::Divider));
 	m_Div3->Visible(m_Connect->Visible() || m_Split->Visible());
 	m_Split->Visible(m_ChannelGroup.Channels().size() > 1 && !m_IsSpecial);
-
+	
 	volume.Size(Vec2<int>{50, Height() - 135});
-
+	
 	m_MenuMono->Active(m_ChannelGroup.Mono());
 	m_MenuMuted->Active(m_ChannelGroup.Muted());
 	mono.Active(m_ChannelGroup.Mono());
@@ -199,4 +199,23 @@ void ChannelPanel::Render(CommandCollection& d)
 
 	Container::Render(d);
 	d.Command<PopMatrix>();
+}
+
+ChannelPanel::operator nlohmann::json()
+{
+	nlohmann::json _json = m_ChannelGroup;
+	return _json;
+}
+
+void ChannelPanel::operator=(const nlohmann::json& json)
+{
+	try
+	{
+		volume.Value(json.at("volume").get<double>());
+		pan.Value(json.at("pan").get<double>());
+		m_ChannelGroup = json;
+	}
+	catch (...)
+	{
+	}
 }

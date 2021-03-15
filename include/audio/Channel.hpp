@@ -108,9 +108,9 @@ public:
 	float GetLevel(int id);
 	float GetMonoLevel();
 
-	operator json()
+	operator nlohmann::json()
 	{
-		json _json = json::object();
+		nlohmann::json _json = nlohmann::json::object();
 		_json["id"] = ID();
 		_json["volume"] = Volume();
 		_json["muted"] = Muted();
@@ -136,7 +136,7 @@ public:
 		return _json;
 	}
 
-	void operator=(const json& json)
+	void operator=(const nlohmann::json& json)
 	{
 		Mono(json.at("mono").get<bool>());
 		Mute(json.at("muted").get<bool>());

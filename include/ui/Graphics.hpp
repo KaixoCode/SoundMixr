@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.hpp"
-#include "ui/Slider.hpp"
+#include "ui/Parameter.hpp"
 
 // -------------------------------------------------------------------------- \\
 // -------------------------- Some Graphics --------------------------------- \\
@@ -366,6 +366,11 @@ public:
 
 extern Theme* theme;
 
+struct NOTHING
+{
+	static void Render(ButtonBase&, CommandCollection&) {}
+};
+
 class TitleText
 {
 public:
@@ -498,7 +503,7 @@ class VolumeSliderGraphics
 {
 public:
 
-	static void Render(SliderBase<VolumeSliderGraphics>& b, CommandCollection& d)
+	static void Render(Parameter<VolumeSliderGraphics>& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		if (b.Vertical())
@@ -546,7 +551,7 @@ class PanSliderGraphics
 {
 public:
 
-	static void Render(SliderBase<PanSliderGraphics>& b, CommandCollection& d)
+	static void Render(Parameter<PanSliderGraphics>& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		int _p = 6;
@@ -584,7 +589,7 @@ class SliderGraphics
 {
 public:
 
-	static void Render(SliderBase<SliderGraphics>& b, CommandCollection& d)
+	static void Render(Parameter<SliderGraphics>& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		int _p = 6;
@@ -634,7 +639,7 @@ public:
 };
 
 
-class ToggleButtonG
+class ToggleButtonGraphics
 {
 public:
 
@@ -748,11 +753,11 @@ public:
 
 
 
-class KnobSliderGraphics
+class KnobGraphics
 {
 public:
 
-	static void Render(SliderBase<KnobSliderGraphics>& b, CommandCollection& d)
+	static void Render(Parameter<KnobGraphics>& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		int _p = 6;

@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.hpp"
-#include "audio/Audio.hpp"
-#include "ui/VolumeSlider.hpp"
+#include "audio/AsioDevice.hpp"
+#include "ui/Components.hpp"
 #include "ui/Graphics.hpp"
 
 // -------------------------------------------------------------------------- \\
@@ -91,17 +91,6 @@ public:
 
 			}, "Split");
 
-		//m_Div1 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
-		//m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
-		//	[&] { 
-		//		volume.Value(1); 
-		//	}, "Reset Volume");
-
-		//m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
-		//	[&] { 
-		//		pan.Value(0); 
-		//	}, "Reset Pan");
-
 		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
 		m_MenuMuted = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(
 			[&](bool s) {
@@ -153,24 +142,8 @@ public:
 	bool Hovering() { return m_Hovering; }
 	bool IsSpecial() { return m_IsSpecial; }
 
-	operator json()
-	{
-		json _json = m_ChannelGroup;
-		return _json;
-	}
-
-	void operator=(const json& json)
-	{
-		try
-		{
-		volume.Value(json.at("volume").get<double>());
-		pan.Value(json.at("pan").get<double>());
-		m_ChannelGroup = json;
-		}
-		catch (...)
-		{
-		}
-	}
+	operator nlohmann::json();
+	void operator=(const nlohmann::json& json);
 
 private:
 	// This private thing is defined here because it needs to be initialized first

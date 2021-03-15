@@ -19,7 +19,7 @@ Effect::Effect(Effects::EffectBase* effect)
 	Init();
 	m_RealHeight = -1;
 	m_MinimB = &Emplace<Button<NOTHING, ButtonType::Toggle>>([&](bool s) { m_Minim->Active(s); }, "");
-	m_Enable = &Emplace<Button<ToggleButtonG, ButtonType::Toggle>>(&m_Enabled, "");
+	m_Enable = &Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(&m_Enabled, "");
 	m_Enable->Size({ 18, 18 });
 	m_MinimB->Size({ 25, 25 });
 
@@ -242,19 +242,19 @@ EffectsGroup::~EffectsGroup()
 	m_Mutex.unlock();
 }
 
-EffectsGroup::operator json()
+EffectsGroup::operator nlohmann::json()
 {
-	json _json = json::array();
+	nlohmann::json _json = nlohmann::json::array();
 	for (auto& i : m_Effects)
 	{
-		json _j = *i;
+		nlohmann::json _j = *i;
 		_j["type"] = i->Name();
 		_json.push_back(_j);
 	}
 	return _json;
 }
 
-void EffectsGroup::operator=(const json& json)
+void EffectsGroup::operator=(const nlohmann::json& json)
 {
 	for (auto effect : json)
 	{

@@ -23,7 +23,6 @@
      std::abort();}
 
 #include <nlohmann/json.hpp>
-using namespace nlohmann;
 
 #include "portaudio.h"
 #include "pa_asio.h"

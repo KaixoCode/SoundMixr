@@ -132,6 +132,19 @@ void ListPanel::SortChannels()
 		});
 }
 
+ChannelPanel& ListPanel::EmplaceChannel(bool IsInput)
+{
+	if (IsInput)
+		return *m_Channels.emplace_back(&m_Inputs.Emplace<ChannelPanel>(this, true));
+	else
+		return *m_Channels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this, false));
+}
+
+ChannelPanel& ListPanel::EmplaceSpecialChannel(bool IsInput = true)
+{
+	return *m_Channels.emplace_back(&m_Specials.Emplace<ChannelPanel>(this, IsInput, true));
+}
+
 void ListPanel::ResetGrouping()
 {
 	for (auto& i : asio.Inputs())
@@ -206,6 +219,16 @@ void ListPanel::ResetGrouping()
 		_soundboardChannel.AddChannel(&a);
 }
 
+void ListPanel::Clear()
+{
+	m_Effect.EffectsGroup(nullptr);
+	m_Effect.Visible(false);
+	m_Channels.clear();
+	m_Inputs.Clear();
+	m_Outputs.Clear();
+	m_Specials.Clear();
+};
+
 void ListPanel::Update(const Vec4<int>& s)
 {
 	for (auto& c = m_Channels.begin(); c != m_Channels.end(); ++c)
@@ -239,4 +262,10 @@ void ListPanel::Update(const Vec4<int>& s)
 		m_Divider2->Color(theme->Get(C::Divider));
 
 	ScrollPanel::Update(s);
+}
+
+void ListPanel::ShowEffectsPanel(EffectsGroup& effects)
+{
+	m_Effect.EffectsGroup(&effects);
+	m_Effect.Visible(true);
 }

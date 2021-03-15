@@ -1,13 +1,8 @@
 #pragma once
 #include "pch.hpp"
-#include "ui/VolumeSlider.hpp"
+#include "ui/Components.hpp"
 #include "ui/Graphics.hpp"
 #include "ui/Dropdown.hpp"
-
-struct NOTHING
-{
-	static void Render(ButtonBase&, CommandCollection&) {}
-};
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
@@ -30,15 +25,15 @@ public:
 	bool Hovering() { return m_Hovering; }
 	bool HoveringDrag() { return m_HoveringDrag; }
 
-	operator json() 
+	operator nlohmann::json()
 	{ 
-		json _json = *m_Effect;
+		nlohmann::json _json = *m_Effect;
 		_json["enabled"] = m_Enable->Active();
 		_json["small"] = m_Minim->Active();
 		return _json;
 	}
 
-	void operator=(const json& json) 
+	void operator=(const nlohmann::json& json)
 	{ 
 		m_Enable->Active(json.at("enabled").get<bool>());
 		m_Minim->Active(json.at("small").get<bool>());
@@ -54,7 +49,7 @@ protected:
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	MenuAccessories::Divider* m_Div, * m_Div2;
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_Minim;
-	Button<ToggleButtonG, ButtonType::Toggle>* m_Enable;
+	Button<ToggleButtonGraphics, ButtonType::Toggle>* m_Enable;
 	Button<NOTHING, ButtonType::Toggle>* m_MinimB;
 	Effects::EffectBase* m_Effect;
 	std::vector<Vec4<int>> m_Dividers;
@@ -199,14 +194,14 @@ protected:
 		auto xy = dynamic_cast<Effects::XYController*>(object);
 		if (xy != nullptr)
 		{
-			Emplace<XYControllerComponent>(*xy), xy->Position({ position.x, position.y });
+			Emplace<XYController>(*xy), xy->Position({ position.x, position.y });
 			return;
 		}
 
 		auto rb = dynamic_cast<Effects::RadioButton*>(object);
 		if (rb != nullptr)
 		{
-			Emplace<RadioButtonComponent>(*rb), rb->Position({ position.x, position.y });
+			Emplace<RadioButton>(*rb), rb->Position({ position.x, position.y });
 			return;
 		}
 
@@ -220,7 +215,7 @@ protected:
 		auto vs = dynamic_cast<Effects::VolumeSlider*>(object);
 		if (vs != nullptr)
 		{
-			Emplace<VolumeSliderComponent>(*vs), vs->Position({ position.x, position.y - 5 });
+			Emplace<VolumeSlider>(*vs), vs->Position({ position.x, position.y - 5 });
 			return;
 		}
 
@@ -228,9 +223,9 @@ protected:
 		if (param != nullptr)
 		{
 			if (param->Type() == Effects::ParameterType::Slider)
-				Emplace<NormalSlider>(*param), param->Position({ position.x, position.y });
+				Emplace<Slider>(*param), param->Position({ position.x, position.y });
 			else if (param->Type() == Effects::ParameterType::Knob)
-				Emplace<KnobSlider>(*param), param->Position({ position.x, position.y });
+				Emplace<Knob>(*param), param->Position({ position.x, position.y });
 			return;
 		}
 
@@ -244,7 +239,7 @@ protected:
 		auto toggle = dynamic_cast<Effects::ToggleButton*>(object);
 		if (toggle != nullptr)
 		{
-			Emplace<ToggleButtonComponent>(*toggle), toggle->Position({ position.x, position.y });
+			Emplace<ToggleButton>(*toggle), toggle->Position({ position.x, position.y });
 			return;
 		}
 	}
@@ -298,8 +293,8 @@ public:
 		return _ri;
 	}
 
-	operator json();
-	void operator=(const json& json);
+	operator nlohmann::json();
+	void operator=(const nlohmann::json& json);
 
 private:
 	std::vector<std::unique_ptr<Effect>> m_Effects;

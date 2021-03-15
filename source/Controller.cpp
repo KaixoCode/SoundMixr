@@ -298,8 +298,8 @@ void Controller::SaveRouting()
 
     LOG("Saving Routing");
 
-    json _json;
-    _json["input_channels"] = json::array();
+    nlohmann::json _json;
+    _json["input_channels"] = nlohmann::json::array();
 
     // Inputs
     for (auto& _ch : m_List->Channels())
@@ -310,7 +310,7 @@ void Controller::SaveRouting()
         _json["input_channels"].push_back(*_ch);
     }
 
-    _json["output_channels"] = json::array();
+    _json["output_channels"] = nlohmann::json::array();
 
     // Outputs
     for (auto& _ch : m_List->Channels())
@@ -321,7 +321,7 @@ void Controller::SaveRouting()
         _json["output_channels"].push_back(*_ch);
     }
 
-    _json["special_channels"] = json::array();
+    _json["special_channels"] = nlohmann::json::array();
 
     // Special channels
     for (auto& _ch : m_List->Channels())
@@ -363,7 +363,7 @@ void Controller::LoadRouting()
         _error = false;
         try 
         {
-            json _json;
+            nlohmann::json _json;
             _in >> _json;
 
             // First load all the output channels
@@ -374,7 +374,7 @@ void Controller::LoadRouting()
                 auto& _c = m_List->EmplaceChannel(false);
            
                 // Add all channels that are in this channelgroup
-                json _channels = i.at("channels");
+                nlohmann::json _channels = i.at("channels");
                 for (int i : _channels)
                 {
                     _outputIdsLoaded[i] = true;
@@ -393,7 +393,7 @@ void Controller::LoadRouting()
                 auto& _c = m_List->EmplaceChannel(true);
 
                 // Add all channels that are in this channelgroup
-                json _channels = i.at("channels");
+                nlohmann::json _channels = i.at("channels");
                 for (int i : _channels)
                 {
                     _inputIdsLoaded[i] = true;
@@ -401,7 +401,7 @@ void Controller::LoadRouting()
                 }
 
                 // Then add all the connections of this channelgroup
-                json _connections = i.at("connections");
+                nlohmann::json _connections = i.at("connections");
                 for (int i : _connections)
                 {
                     // Find the output channelgroup by id.
@@ -422,7 +422,7 @@ void Controller::LoadRouting()
                 _soundboardChannel.AddChannel(&a);
 
             // Then add all the connections of this channelgroup
-            json _connections = _json.at("special_channels")[0].at("connections");
+            nlohmann::json _connections = _json.at("special_channels")[0].at("connections");
             for (int i : _connections)
             {
                 // Find the output channelgroup by id.
@@ -440,19 +440,7 @@ void Controller::LoadRouting()
     
         // If error occured (either file didn't exist or was parced incorrectly
         // load all the channels as stereo channels.
-        catch (json::parse_error err)
-        {
-            _error = true;
-        }
-        catch (json::other_error err)
-        {
-            _error = true;
-        }
-        catch (json::type_error err)
-        {
-            _error = true;
-        }
-        catch (std::exception& e)
+        catch (...)
         {
             _error = true;
         }

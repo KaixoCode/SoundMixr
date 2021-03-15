@@ -3,6 +3,10 @@
 #include "ui/Graphics.hpp"
 #include "EffectBase.hpp"
 
+// -------------------------------------------------------------------------- \\
+// -------------------------- DropDown Option ------------------------------- \\
+// -------------------------------------------------------------------------- \\
+
 template<typename Enum>
 class DropDownOption : public Button<SoundMixrGraphics::Menu, ButtonType::List>
 {
@@ -25,18 +29,22 @@ private:
 	Enum m_Value;
 };
 
+// -------------------------------------------------------------------------- \\
+// ------------------------------ DropDown ---------------------------------- \\
+// -------------------------------------------------------------------------- \\
+
 template<typename Enum, typename Graphics>
-class DropDownComponent : public ButtonType::Normal
+class DropDown : public ButtonType::Normal
 {
 public:
-	DropDownComponent()
+	DropDown()
 		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); } }, 
 		m_Key(ButtonType::List::NewKey())
 	{
 		m_Menu.ButtonSize({ 140, 20 });
 	}
 
-	DropDownComponent(Effects::DropDown& d)
+	DropDown(Effects::DropDown& d)
 		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); } },
 		m_DropDown(&d),
 		m_Key(ButtonType::List::NewKey())
@@ -48,7 +56,7 @@ public:
 		} 
 	}
 
-	DropDownComponent(RightClickMenu* r)
+	DropDown(RightClickMenu* r)
 		: ButtonType::Normal{ [this, r] { if (r) r->Open(&m_Menu); } },
 		m_Key(ButtonType::List::NewKey())
 	{
