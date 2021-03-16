@@ -10,3 +10,6 @@
 [submodule "libs/EffectBase"]
 	path = libs/EffectBase
 	url = https://github.com/KaixoCode/EffectBase.git
+[submodule "libs/rtmidi"]
+	path = libs/rtmidi
+	url = https://github.com/thestk/rtmidi.git

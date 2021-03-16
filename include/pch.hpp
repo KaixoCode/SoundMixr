@@ -27,6 +27,8 @@
 #include "portaudio.h"
 #include "pa_asio.h"
 
+#include "RtMidi.h"
+
 #include <AudioFile.h>
 
 #include "EffectBase.hpp"

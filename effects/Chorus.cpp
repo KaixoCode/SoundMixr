@@ -187,16 +187,19 @@ namespace Effects
 			if (c == 0)
 			{
 				m_Position = (m_Position + 1) % BUFFER_SIZE;
-				m_Delay1t = ((m_Delay1 + m_Oscillator.NextSample() * m_Amount) / 1000.0) * m_SampleRate;
-			
-				if (m_Delay2Type == 2)
-					m_Delay2t = ((m_Delay2) / 1000.0) * m_SampleRate;
-				else
-					m_Delay2t = ((m_Delay2 + m_Oscillator.sample * m_Amount) / 1000.0) * m_SampleRate;
-
-				m_Delay1t = (std::max(m_Delay1t, 1)) % BUFFER_SIZE;
-				m_Delay2t = (std::max(m_Delay2t, 1)) % BUFFER_SIZE;
+				m_Oscillator.NextSample();
 			}
+
+			m_Delay1t = ((m_Delay1 + m_Oscillator.Sample((c % 2) * 0.5) * m_Amount) / 1000.0) * m_SampleRate;
+			
+			if (m_Delay2Type == 2)
+				m_Delay2t = ((m_Delay2) / 1000.0) * m_SampleRate;
+			else
+				m_Delay2t = ((m_Delay2 + m_Oscillator.Sample((c % 2) * 0.5) * m_Amount) / 1000.0) * m_SampleRate;
+
+			m_Delay1t = (std::max(m_Delay1t, 1)) % BUFFER_SIZE;
+			m_Delay2t = (std::max(m_Delay2t, 1)) % BUFFER_SIZE;
+			
 
 			auto& _buffer = m_Buffers[c];
 

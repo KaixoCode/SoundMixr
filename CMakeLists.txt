@@ -22,6 +22,7 @@ target_include_directories(SoundMixr PUBLIC
   libs/GuiCode/include
   libs/GuiCode/libs
   libs/portaudio/include
+  libs/rtmidi
   libs/AudioFile
   include/
   resources/
@@ -40,6 +41,7 @@ target_precompile_headers(SoundMixr PUBLIC
 target_link_libraries(SoundMixr
   GuiCode
   portaudio
+  rtmidi
 )
 
 file(GLOB files "effects/*.cpp")
