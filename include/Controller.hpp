@@ -5,6 +5,7 @@
 #include "ui/ListPanel.hpp"
 #include "ui/Soundboard.hpp"
 #include "ui/Graphics.hpp"
+#include "ui/SettingsPanel.hpp"
 
  // -------------------------------------------------------------------------- \\
  // ---------------------------- Controller ---------------------------------- \\
@@ -20,7 +21,7 @@ public:
 
 private:
     Gui m_Gui;
-    Frame& mainWindow;
+    Frame& mainWindow, &settings;
     Soundboard& soundboard;
 
     ListPanel* m_List = nullptr;

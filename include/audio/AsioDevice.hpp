@@ -32,6 +32,7 @@ public:
 
 	auto Devices() -> std::vector<::Device>& { return m_Devices; }
 	void Device(::Device& d) { m_Device = &d; }
+	void NoDevice() { m_Device = nullptr; }
 	auto Device() -> ::Device& { return *m_Device; }
 	bool StreamRunning() { return Pa_IsStreamActive(stream); }
 	bool OpenStream();

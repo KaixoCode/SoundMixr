@@ -190,7 +190,7 @@ void Effect::InitDiv(Effects::Div& div, const Vec4<int>& dim)
 				w /= amt;
 			else if (obamt)
 				w /= obamt;
-
+			
 			// If there's some space left, either give it to divs or objects
 			if (w > 0)
 				for (auto& i : sizes)

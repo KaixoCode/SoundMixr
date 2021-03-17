@@ -7,6 +7,7 @@
 
 Controller::Controller()
 : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500, true)),
+settings(m_Gui.AddWindow<Frame>("Settings", 400, 500, true, true, false)),
 soundboard(m_Gui.AddWindow<Soundboard>()),
 m_AsioDevice(soundboard)
 {}
@@ -105,7 +106,7 @@ void Controller::Run()
     _in.open("./settings/device");
     std::getline(_in, _line);
     int _deviceId = std::atoi(_line.c_str());
-    if (!_line.empty())
+    if (!_line.empty() && _deviceId != -1)
     {
         auto _it = std::find_if(m_AsioDevice.Devices().begin(), m_AsioDevice.Devices().end(), [=](const Device& obj) {return obj.id == _deviceId; });
         m_AsioDevice.Device(*_it);
@@ -201,6 +202,7 @@ void Controller::Run()
         _panel.Background(theme->Get(C::WindowBorder));
         mainWindow.Color(theme->Get(C::WindowBorder));
         soundboard.Color(theme->Get(C::WindowBorder));
+        settings.Color(theme->Get(C::WindowBorder));
         m_List->Panel().Background(theme->Get(C::MainPanel));
         m_List->Background(theme->Get(C::MainPanel));
         _div.Color(theme->Get(C::Divider));
@@ -272,6 +274,126 @@ void Controller::Run()
             m_Gui.Close();
         }, "Exit");
 
+
+    //
+    // Settings
+    //
+
+    auto& _ppp = settings.Panel();
+    _ppp.Layout<Layout::Grid>(1, 1, 8, 8);
+    auto& _sp = _ppp.Emplace<Panel>();
+
+    auto& _asioDropDown = _sp.Emplace<DropDown<int, DropdownButton>>();
+    _asioDropDown.Size({ 210, 18 });
+    _asioDropDown.ButtonSize({ 210, 20 });
+    _asioDropDown.AddOption("No Device", 0, [&](int i)
+        {
+            // First save the routing
+            SaveRouting();
+
+            // Close stream, set new device and open/start stream
+            m_AsioDevice.CloseStream();
+            m_AsioDevice.NoDevice();
+
+            // Clear the channels from the ListPanel
+            m_List->Clear();
+            _titleButton.Name("No Device");
+
+            // Save the current device 
+            std::ofstream _out;
+            _out.open("./settings/device");
+            _out << std::to_string(-1);
+            _out.close();
+        });
+    for (auto& _d : m_AsioDevice.Devices())
+    {
+        _asioDropDown.AddOption(_d.info.name, _d.id + 1, [&](int i)
+            {
+                if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
+                    return;
+
+                // First save the routing
+                SaveRouting();
+
+                // Close stream, set new device and open/start stream
+                m_AsioDevice.CloseStream();
+
+                // Clear the channels from the ListPanel
+                m_List->Clear();
+                m_AsioDevice.Device(_d);
+                m_AsioDevice.OpenStream();
+                // Set title to ASIO device name
+                _titleButton.Name(_d.info.name);
+
+                // Save the current device 
+                std::ofstream _out;
+                _out.open("./settings/device");
+                _out << std::to_string(_d.id);
+                _out.close();
+
+                // Load the routing for this new device.
+                LoadRouting();
+                m_AsioDevice.StartStream();
+            });
+        if (_deviceId == _d.id)
+            _asioDropDown.Select(_d.id + 1);
+    }
+
+    auto& _asioControlPanel = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([&]
+        {
+            if (!&m_AsioDevice.Device())
+                return;
+
+            SaveRouting();
+            m_AsioDevice.CloseStream();
+            PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
+            m_AsioDevice.OpenStream();
+            m_List->Clear();
+            LoadRouting();
+            m_AsioDevice.StartStream();
+        }, "Asio Control Panel");
+    _asioControlPanel.Size({ 140, 18 });
+
+    _sp.Layout<Layout::Divs>();
+    _sp.Div().Align(Div::Alignment::Vertical);
+    _sp.Div().Divs(4);
+    _sp.Div()[3].Align(Div::Alignment::Vertical);
+    _sp.Div()[3].Dividers(true);
+    _sp.Div()[3].Divs(2);
+    _sp.Div()[3][1] = _sp.Emplace<TextComponent<>>("Asio Settings", Graphics::Fonts::Gidole, 24.0f);;
+    _sp.Div()[3][1].DivSize(28);
+    _sp.Div()[3][0].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0].Divs(2);
+    _sp.Div()[3][0].Dividers(false);
+    _sp.Div()[3][0][0].DivSize(10);
+    _sp.Div()[3][0][1].Align(Div::Alignment::Vertical);
+    _sp.Div()[3][0][1].Divs(4);
+    _sp.Div()[3][0][1][3].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][3].DivSize(20);
+    _sp.Div()[3][0][1][3] = _asioControlPanel;
+    _sp.Div()[3][0][1][2].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1][2].Divs(2);
+    _sp.Div()[3][0][1][2][0].DivSize(150);
+    _sp.Div()[3][0][1][2][0].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][2][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Asio Device");
+    _sp.Div()[3][0][1][2][1].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][2][1] = _asioDropDown;
+    _sp.Div()[3][0][1][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1][1].Divs(2);
+    _sp.Div()[3][0][1][1][0].DivSize(150);
+    _sp.Div()[3][0][1][1][0].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Sample Rate");
+    _sp.Div()[3][0][1][1][1].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][1];
+    _sp.Div()[3][0][1][0].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1][0].Divs(2);
+    _sp.Div()[3][0][1][0][0].DivSize(150);
+    _sp.Div()[3][0][1][0][0].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][0][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Buffer Size");
+    _sp.Div()[3][0][1][0][1].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][0][1];
+
+
     //
     // Main loop
     //
@@ -279,6 +401,9 @@ void Controller::Run()
     int _saveCounter = 5 * 60 * 60;
     while (m_Gui.Loop())
     {
+        _sp.LayoutManager().DividerColor(theme->Get(C::Divider));
+        _sp.Background(theme->Get(C::MainPanel));
+
         _saveCounter--;
         if (_saveCounter <= 0)
         {

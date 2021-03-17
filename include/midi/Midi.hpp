@@ -67,11 +67,6 @@ public:
 
 	template<typename T>
 	using Callback = std::function<void(T&)>;
-	
-	template<typename T>
-	static std::vector<Callback<T>> m_Callbacks;
-
-
 
 	Midi& Get()
 	{
@@ -133,12 +128,13 @@ public:
 		m_Callbacks<T>.push_back(t);
 	}
 
-
 	auto Devices() -> std::vector<MidiDevice>& { return m_Devices; }
 	void Device(unsigned int d) { m_Device = &m_Devices[d]; }
 	void Device(MidiDevice& d) { m_Device = &d; }
 
 private:
+	template<typename T>
+	static std::vector<Callback<T>> m_Callbacks;
 
 	RtMidiIn m_Midi;
 	MidiDevice* m_Device = nullptr;

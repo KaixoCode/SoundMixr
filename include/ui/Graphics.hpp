@@ -405,6 +405,32 @@ public:
 	}
 };
 
+template<Align Xa = Align::CENTER, Align Ya = Align::CENTER>
+class TextComponent : public Component
+{
+public:
+	TextComponent(const std::string& t, Graphics::Fonts f = Graphics::Fonts::Gidole14, float fsize = 14)
+		: m_Text(t), m_Font(f), m_FontSize(fsize)
+	{}
+
+	void Render(CommandCollection& d) override
+	{
+		using namespace Graphics;
+		Color _c2 = theme->Get(C::TextSmall);
+
+		d.Command<Font>(m_Font, m_FontSize);
+		d.Command<Fill>(_c2);
+		d.Command<TextAlign>(Xa, Ya);
+		d.Command<Text>(&m_Text, X() + Width() / 2, Y() + Height() / 2);
+		Component::Render(d);
+	}
+
+private:
+	std::string m_Text;
+	float m_FontSize;
+	Graphics::Fonts m_Font;
+};
+
 class RouteButton
 {
 public:
@@ -708,6 +734,41 @@ public:
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
 
+	}
+
+};
+
+class NormalButtonGraphics
+{
+public:
+
+	template<typename T>
+	static void Render(T& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+
+		d.Command<Fill>(theme->Get(C::ToggleButtonB));
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+		if (b.Active())
+			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		else
+			d.Command<Fill>(theme->Get(C::ToggleButton));
+
+		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+
+		if (!b.Active() && b.Hovering())
+		{
+			d.Command<Fill>(theme->Get(C::ToggleButtonH));
+			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+		}
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+
+		d.Command<Fill>(theme->Get(C::TextSmall));		
+
+		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2 });
 	}
 
 };
