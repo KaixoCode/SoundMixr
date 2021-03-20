@@ -68,7 +68,7 @@ public:
 	template<typename T>
 	using Callback = std::function<void(T&)>;
 
-	Midi& Get()
+	static inline Midi& Get()
 	{
 		static Midi instance;
 		return instance;
@@ -89,9 +89,10 @@ public:
 
 	void LoadPorts()
 	{
+		m_Devices.clear();
 		int ports = m_Midi.getPortCount();
-		for (int i = 0; i < ports; i++)
-			m_Devices.emplace_back(i, m_Midi.getPortName(i));
+		for (unsigned int i = 0; i < ports; i++)
+			m_Devices.emplace_back(MidiDevice{ i, m_Midi.getPortName(i) });
 	}
 
 	void ReadMessages()

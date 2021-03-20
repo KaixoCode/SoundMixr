@@ -96,7 +96,7 @@ public:
 	void Update(const Vec4<int>& v);
 
 private:
-	Effects::Parameter m_Parameter;
+	Effects::Parameter m_Parameter{ "Volume", Effects::ParameterType::Slider };
 };
 
 // -------------------------------------------------------------------------- \\
@@ -109,7 +109,7 @@ public:
 	PanSlider();
 
 private:
-	Effects::Parameter m_Parameter;
+	Effects::Parameter m_Parameter{ "Pan", Effects::ParameterType::Slider };
 };
 
 // -------------------------------------------------------------------------- \\

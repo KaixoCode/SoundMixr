@@ -3,6 +3,7 @@
 ParameterBase::ParameterBase(Effects::Parameter& param)
 	: m_Parameter(param)
 {
+	m_Menu.ButtonSize({ 150, 20 });
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		if (e.button == Event::MouseButton::LEFT)
@@ -11,6 +12,15 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 
 			m_Dragging = true;
 			m_NeedsRedraw = true;
+		}
+
+		if (e.button == Event::MouseButton::RIGHT && !RightClickMenu::Get().Opened())
+		{
+			if (m_Menu.Components().size() == 0)
+			{
+				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Parameter.Name()).Disable();
+			}
+			RightClickMenu::Get().Open(&m_Menu);
 		}
 	};
 

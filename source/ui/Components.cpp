@@ -283,7 +283,7 @@ void OldVolumeSlider::Update(const Vec4<int>& v)
 // -------------------------------------------------------------------------- \\
 
 PanSlider::PanSlider()
-	: m_Parameter("", Effects::ParameterType::Slider), Parameter<PanSliderGraphics>(m_Parameter)
+	: Parameter<PanSliderGraphics>(m_Parameter), m_Parameter("", Effects::ParameterType::Slider)
 {
 	Range({ -50, 50 });
 	Power(1);

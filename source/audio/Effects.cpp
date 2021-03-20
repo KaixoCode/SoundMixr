@@ -48,7 +48,7 @@ Effect::Effect(Effects::EffectBase* effect)
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_Delete = true; }, "Remove");
 	m_Listener += [this](Event::MousePressed& e)
 	{
-		if (e.button == Event::MouseButton::RIGHT)
+		if (e.button == Event::MouseButton::RIGHT && !RightClickMenu::Get().Opened())
 			RightClickMenu::Get().Open(&m_Menu);
 	};
 

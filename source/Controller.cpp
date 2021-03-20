@@ -1,5 +1,6 @@
 #include "Controller.hpp"
 #include "EffectLoader.hpp"
+#include <midi\Midi.hpp>
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
@@ -55,8 +56,8 @@ void Controller::Run()
     _closeMenu.Emplace<MenuButton>([&] { mainWindow.Show(); }, "Open GUI");
     _closeMenu.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit");
 
-    Frame::AddShellIcon(IDI_ICON1, "SoundMixr", [&] (Event& e)
-        { 
+    Frame::AddShellIcon(IDI_ICON1, "SoundMixr", [&](Event& e)
+        {
             if (e.button == Event::MouseButton::LEFT && e.mod)
                 mainWindow.Show();
 
@@ -93,9 +94,7 @@ void Controller::Run()
     _file.Size({ 54, 32 });
     _file.MenuBase().ButtonSize({ 200, 20 });
 
-    auto& _sub = _file.Emplace<SubMenuButton>("Select ASIO Device");
-    _sub.MenuBase().ButtonSize({ 210, 20 });
-    int _key = BT::List::NewKey();
+    auto& _sub = _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 
 
     //
@@ -116,148 +115,6 @@ void Controller::Run()
         _titleButton.Name(m_AsioDevice.Device().info.name);
     }
     _in.close();
-
-    //
-    // Load selection menu for ASIO devices
-    //
-
-    for (auto& _d : m_AsioDevice.Devices())
-    {
-        auto& _button = _sub.Emplace<Button<G::Menu, BT::List>>([&]
-            {
-                if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
-                    return;
-
-                // First save the routing
-                SaveRouting();
-
-                // Close stream, set new device and open/start stream
-                m_AsioDevice.CloseStream();
-
-                // Clear the channels from the ListPanel
-                m_List->Clear();
-                m_AsioDevice.Device(_d);
-                m_AsioDevice.OpenStream();
-                // Set title to ASIO device name
-                _titleButton.Name(_d.info.name);
-
-                // Save the current device 
-                std::ofstream _out;
-                _out.open("./settings/device");
-                _out << std::to_string(_d.id);
-                _out.close();
-
-                // Load the routing for this new device.
-                LoadRouting();
-                m_AsioDevice.StartStream();
-            }, _d.info.name, _key);
-
-        // Make sure the correct initial button in the List Group is set to 'Selected'
-        if (_d.id == _deviceId)
-            _button.Selected(true);
-    }
-
-    //
-    // ASIO Control Panel button in Frame menu
-    //
-
-    _file.Emplace<MenuButton>([&]
-        {
-            if (!&m_AsioDevice.Device())
-                return;
-
-            SaveRouting();
-            m_AsioDevice.CloseStream();
-            PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
-            m_AsioDevice.OpenStream();
-            m_List->Clear();
-            LoadRouting();
-            m_AsioDevice.StartStream();
-        }, "ASIO Control Panel", Key::CTRL_O);
-
-    //
-    // The Windows Aero Effect button in the Frame menu
-    //
-
-    _file.Emplace<MenuToggleButton>([&](bool a)
-        {
-            m_List->Transparency(a);
-            mainWindow.Aero(a);
-        }, "Windows Aero Effect", Key::CTRL_T);
-
-
-    /*_file.Emplace<MenuButton>([&]
-        {
-            SaveRouting();
-        }, "Save Routing", Key::CTRL_S);*/
-
-    //
-    // Themes
-    //
-
-    // Callback that sets colors of staticly colored gui 
-    // components, and saves the theme.
-    auto& _themeCallback = [&] 
-    {            
-        _panel.Background(theme->Get(C::WindowBorder));
-        mainWindow.Color(theme->Get(C::WindowBorder));
-        soundboard.Color(theme->Get(C::WindowBorder));
-        settings.Color(theme->Get(C::WindowBorder));
-        m_List->Panel().Background(theme->Get(C::MainPanel));
-        m_List->Background(theme->Get(C::MainPanel));
-        _div.Color(theme->Get(C::Divider));
-
-        std::ofstream _out;
-        _out.open("./settings/theme");
-        _out << std::to_string((int)theme->theme);
-        _out.close();
-    };
-
-    auto& _sub2 = _file.Emplace<SubMenuButton>("Theme");
-    _sub2.MenuBase().ButtonSize({ 120, 20 });
-    _key = BT::List::NewKey();
-    auto& _theme1 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
-        {
-            theme->theme = Themes::DARK;
-            _themeCallback();
-        }, "Dark", _key);
-    if (theme->theme == Themes::DARK) _theme1.Selected(true);
-
-    /*auto& _theme2 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
-        {
-            Themes::Theme = Themes::LIGHT;
-            _themeCallback();
-        }, "Light", _key);
-    if (Themes::Theme == Themes::LIGHT) _theme2.Selected(true);*/
-
-    auto& _theme3 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
-        {
-            theme->theme = Themes::BLUE;
-            _themeCallback();
-        }, "Blue", _key);
-    if (theme->theme == Themes::BLUE) _theme3.Selected(true);
-
-    //
-    // Reset channel grouping button.
-    //
-
-    _file.Emplace<MenuButton>([&]
-        {
-            m_List->ResetGrouping();
-        }, "Reset Grouping");
-
-    _file.Emplace<MenuButton>([&]
-        {                
-            // First save the routing
-            SaveRouting();
-            //m_AsioDevice.StopStream();
-            m_AsioDevice.RemoveGroups();
-            m_List->Clear();
-            EffectLoader::LoadEffects();
-            m_List->ReloadEffects();
-            LoadRouting();
-            //m_AsioDevice.StartStream();
-        }, "Refresh Effects");
 
     //
     // Soundboard button
@@ -282,12 +139,105 @@ void Controller::Run()
     auto& _ppp = settings.Panel();
     _ppp.Layout<Layout::Grid>(1, 1, 8, 8);
     auto& _sp = _ppp.Emplace<Panel>();
+    auto& _scrp = _sp.Emplace<SMXRScrollPanel>();
+    _scrp.Size({ 384, 100 });
+    _scrp.EnableScrollbars(false, true);
+    auto& _midiDevices = _scrp.Panel<Panel>();
+    _midiDevices.Layout<Layout::Divs>();
 
-    auto& _asioDropDown = _sp.Emplace<DropDown<int, DropdownButton>>();
-    _asioDropDown.Size({ 210, 18 });
-    _asioDropDown.ButtonSize({ 210, 20 });
+    auto& _refreshMidi = [&] {
+        Midi::Get().LoadPorts();
+        auto& _dev = Midi::Get().Devices();
+        int _devs = _dev.size();
+        _midiDevices.Div().Clear();
+        _midiDevices.Clear();
+        _midiDevices.Width(384);
+        _midiDevices.Height(_devs * 24);
+        _midiDevices.Div().Align(Div::Alignment::Vertical);
+        _midiDevices.Div().Divs(_devs);
+        _midiDevices.Div().DivSize(_devs * 24);
+        for (int i = 0; i < _devs; i++)
+        {
+            _midiDevices.Div()[i].Align(Div::Alignment::Horizontal);
+            _midiDevices.Div()[i].Divs(4);
+            _midiDevices.Div()[i].DivSize(24);
+            _midiDevices.Div()[i][0].DivSize(8);
+            _midiDevices.Div()[i][1].DivSize(150);
+            _midiDevices.Div()[i][1].Align(Div::Alignment::Left);
+            _midiDevices.Div()[i][1] = _midiDevices.Emplace<TextComponent<Align::LEFT>>(_dev[i].name);
+            auto& _b = _midiDevices.Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>("Enable");
+            _b.Size({ 50, 18 });
+            _midiDevices.Div()[i][2].Align(Div::Alignment::Right);
+            _midiDevices.Div()[i][2] = _b;
+            _midiDevices.Div()[i][3].DivSize(8);
+        }
+        _midiDevices.LayoutManager().m_PrevDim = { 0 ,0, 0, 0 };
+    };
+
+    auto& _themeCallback = [&]
+    {
+        _panel.Background(theme->Get(C::WindowBorder));
+        mainWindow.Color(theme->Get(C::WindowBorder));
+        soundboard.Color(theme->Get(C::WindowBorder));
+        settings.Color(theme->Get(C::WindowBorder));
+        m_List->Panel().Background(theme->Get(C::MainPanel));
+        m_List->Background(theme->Get(C::MainPanel));
+        _div.Color(theme->Get(C::Divider));
+
+        std::ofstream _out;
+        _out.open("./settings/theme");
+        _out << std::to_string((int)theme->theme);
+        _out.close();
+    };
+
+    auto& _refreshEffect = [&]
+    {
+        // First save the routing
+        SaveRouting();
+        //m_AsioDevice.StopStream();
+        m_AsioDevice.RemoveGroups();
+        m_List->Clear();
+        EffectLoader::LoadEffects();
+        m_List->ReloadEffects();
+        LoadRouting();
+        //m_AsioDevice.StartStream();
+    };
+
+    auto& _resetGroup = [&] {m_List->ResetGrouping();};
+
+    _refreshMidi();
+
+    auto& _asioControlPanel = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([&]
+        {
+            if (!&m_AsioDevice.Device())
+                return;
+
+            SaveRouting();
+            m_AsioDevice.CloseStream();
+            PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
+            m_AsioDevice.OpenStream();
+            m_List->Clear();
+            LoadRouting();
+            m_AsioDevice.StartStream();
+        }, "Control Panel...");
+    _asioControlPanel.Size({ 110, 18 });
+
+    auto& _refreshMidiDevices = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_refreshMidi, "Refresh List");
+    _refreshMidiDevices.Size({ 110, 18 });
+
+    auto& _refreshEffects = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_refreshEffect, "Reload");
+    _refreshEffects.Size({ 110, 18 });
+
+    auto& _resetGrouping = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_resetGroup, "Reset");
+    _resetGrouping.Size({ 110, 18 });
+
+    auto& _asioDropDown = _sp.Emplace<DropDown<int, DropdownButton2>>();
+    _asioDropDown.Size({ 220, 18 });
+    _asioDropDown.ButtonSize({ 220, 20 });
     _asioDropDown.AddOption("No Device", 0, [&](int i)
         {
+            _asioControlPanel.Disable();
+
             // First save the routing
             SaveRouting();
 
@@ -311,6 +261,7 @@ void Controller::Run()
             {
                 if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
                     return;
+                _asioControlPanel.Enable();
 
                 // First save the routing
                 SaveRouting();
@@ -339,20 +290,21 @@ void Controller::Run()
             _asioDropDown.Select(_d.id + 1);
     }
 
-    auto& _asioControlPanel = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([&]
-        {
-            if (!&m_AsioDevice.Device())
-                return;
+    auto& _themeDropDown = _sp.Emplace<DropDown<Themes::N, DropdownButton2>>();
+    _themeDropDown.Size({ 110, 18 });
+    _themeDropDown.ButtonSize({ 110, 20 });
 
-            SaveRouting();
-            m_AsioDevice.CloseStream();
-            PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
-            m_AsioDevice.OpenStream();
-            m_List->Clear();
-            LoadRouting();
-            m_AsioDevice.StartStream();
-        }, "Asio Control Panel");
-    _asioControlPanel.Size({ 140, 18 });
+    _themeDropDown.AddOption("Dark", Themes::DARK, [&](Themes::N t)
+        {
+            theme->theme = t;
+            _themeCallback();
+        });
+    _themeDropDown.AddOption("Blue", Themes::BLUE, [&](Themes::N t)
+        {
+            theme->theme = t;
+            _themeCallback();
+        });
+    _themeDropDown.Select(theme->theme);
 
     _sp.Layout<Layout::Divs>();
     _sp.Div().Align(Div::Alignment::Vertical);
@@ -360,39 +312,87 @@ void Controller::Run()
     _sp.Div()[3].Align(Div::Alignment::Vertical);
     _sp.Div()[3].Dividers(true);
     _sp.Div()[3].Divs(2);
+    _sp.Div()[3].DivSize(120);
+    _sp.Div()[3][1].DivSize(36);
     _sp.Div()[3][1] = _sp.Emplace<TextComponent<>>("Asio Settings", Graphics::Fonts::Gidole, 24.0f);;
-    _sp.Div()[3][1].DivSize(28);
-    _sp.Div()[3][0].Align(Div::Alignment::Horizontal);
-    _sp.Div()[3][0].Divs(2);
-    _sp.Div()[3][0].Dividers(false);
-    _sp.Div()[3][0][0].DivSize(10);
-    _sp.Div()[3][0][1].Align(Div::Alignment::Vertical);
-    _sp.Div()[3][0][1].Divs(4);
-    _sp.Div()[3][0][1][3].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][3].DivSize(20);
-    _sp.Div()[3][0][1][3] = _asioControlPanel;
-    _sp.Div()[3][0][1][2].Align(Div::Alignment::Horizontal);
-    _sp.Div()[3][0][1][2].Divs(2);
-    _sp.Div()[3][0][1][2][0].DivSize(150);
-    _sp.Div()[3][0][1][2][0].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][2][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Asio Device");
-    _sp.Div()[3][0][1][2][1].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][2][1] = _asioDropDown;
-    _sp.Div()[3][0][1][1].Align(Div::Alignment::Horizontal);
-    _sp.Div()[3][0][1][1].Divs(2);
-    _sp.Div()[3][0][1][1][0].DivSize(150);
-    _sp.Div()[3][0][1][1][0].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][1][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Sample Rate");
-    _sp.Div()[3][0][1][1][1].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][1][1];
-    _sp.Div()[3][0][1][0].Align(Div::Alignment::Horizontal);
-    _sp.Div()[3][0][1][0].Divs(2);
-    _sp.Div()[3][0][1][0][0].DivSize(150);
-    _sp.Div()[3][0][1][0][0].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][0][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Buffer Size");
-    _sp.Div()[3][0][1][0][1].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][0][1];
-
+    _sp.Div()[3][0].Align(Div::Alignment::Vertical);
+    _sp.Div()[3][0].Divs(3);
+    _sp.Div()[3][0][2].DivSize(4);
+    _sp.Div()[3][0][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1].Divs(2);
+    _sp.Div()[3][0][1][0].DivSize(10);
+    _sp.Div()[3][0][1][1].Align(Div::Alignment::Vertical);
+    _sp.Div()[3][0][1][1].Divs(3);
+    _sp.Div()[3][0][1][1][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1][1][1].Divs(2);
+    _sp.Div()[3][0][1][1][1].DivSize(24);
+    _sp.Div()[3][0][1][1][1][0].DivSize(150);
+    _sp.Div()[3][0][1][1][1][0].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][1][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Asio Device");
+    _sp.Div()[3][0][1][1][1][1].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][1][1] = _asioDropDown;
+    _sp.Div()[3][0][1][1][2].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1][1][2].Divs(2);
+    _sp.Div()[3][0][1][1][2].DivSize(24);
+    _sp.Div()[3][0][1][1][2][0].DivSize(150);
+    _sp.Div()[3][0][1][1][2][0].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][2][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Control Panel");
+    _sp.Div()[3][0][1][1][2][1].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][2][1] = _asioControlPanel;
+    _sp.Div()[3][0][0].DivSize(20);
+    _sp.Div()[2].Align(Div::Alignment::Vertical);
+    _sp.Div()[2].Dividers(true);
+    _sp.Div()[2].Divs(2);
+    _sp.Div()[2].DivSize(190);
+    _sp.Div()[2][1].DivSize(36);
+    _sp.Div()[2][1] = _sp.Emplace<TextComponent<>>("Midi Settings", Graphics::Fonts::Gidole, 24.0f);
+    _sp.Div()[2][0].DivSize(158);
+    _sp.Div()[2][0].Divs(3);
+    _sp.Div()[2][0].Align(Div::Alignment::Vertical);
+    _sp.Div()[2][0][2].DivSize(108);
+    _sp.Div()[2][0][2] = _scrp;
+    _sp.Div()[2][0][1].DivSize(30);
+    _sp.Div()[2][0][1] = _refreshMidiDevices;
+    _sp.Div()[2][0][0].DivSize(20);
+    _sp.Div()[1].Align(Div::Alignment::Vertical);
+    _sp.Div()[1].Dividers(true);
+    _sp.Div()[1].Divs(2);
+    _sp.Div()[1].DivSize(150);
+    _sp.Div()[1][1].DivSize(36);
+    _sp.Div()[1][1] = _sp.Emplace<TextComponent<>>("General Settings", Graphics::Fonts::Gidole, 24.0f);
+    _sp.Div()[1][0].Divs(3);
+    _sp.Div()[1][0].Align(Div::Alignment::Vertical);
+    _sp.Div()[1][0][2].DivSize(4);
+    _sp.Div()[1][0][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1].Divs(2);
+    _sp.Div()[1][0][1][0].DivSize(10);
+    _sp.Div()[1][0][1][1].Align(Div::Alignment::Vertical);
+    _sp.Div()[1][0][1][1].Divs(4);
+    _sp.Div()[1][0][1][1][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][1].Divs(2);
+    _sp.Div()[1][0][1][1][1].DivSize(26);
+    _sp.Div()[1][0][1][1][1][0].DivSize(150);
+    _sp.Div()[1][0][1][1][1][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][1][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Theme");
+    _sp.Div()[1][0][1][1][1][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][1][1] = _themeDropDown;
+    _sp.Div()[1][0][1][1][2].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][2].Divs(2);
+    _sp.Div()[1][0][1][1][2].DivSize(26);
+    _sp.Div()[1][0][1][1][2][0].DivSize(150);
+    _sp.Div()[1][0][1][1][2][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][2][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reload Effects");
+    _sp.Div()[1][0][1][1][2][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][2][1] = _refreshEffects;
+    _sp.Div()[1][0][1][1][3].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][3].Divs(2);
+    _sp.Div()[1][0][1][1][3].DivSize(26);
+    _sp.Div()[1][0][1][1][3][0].DivSize(150);
+    _sp.Div()[1][0][1][1][3][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][3][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reload Effects");
+    _sp.Div()[1][0][1][1][3][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][3][1] = _resetGrouping;
+    _sp.Div()[1][0][0].DivSize(20);
 
     //
     // Main loop
@@ -403,6 +403,7 @@ void Controller::Run()
     {
         _sp.LayoutManager().DividerColor(theme->Get(C::Divider));
         _sp.Background(theme->Get(C::MainPanel));
+        _scrp.Background(theme->Get(C::Channel));
 
         _saveCounter--;
         if (_saveCounter <= 0)

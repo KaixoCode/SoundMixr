@@ -107,7 +107,7 @@ public:
 			m_Size = { m_DropDown->Size().width, m_DropDown->Size().height };
 
 			if (m_DropDown->Selected() != m_Value)
-				Select(m_DropDown->Selected());
+				Select((Enum)m_DropDown->Selected());
 		}
 		ButtonType::Normal::Update(v);
 	}

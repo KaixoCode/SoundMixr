@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#include "Graphics.hpp"
 
 class ParameterBase : public Component
 {
@@ -53,6 +54,7 @@ public:
 
 protected:
 	Effects::Parameter& m_Parameter;
+	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 
 	int m_Counter = 0;
 

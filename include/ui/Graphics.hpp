@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.hpp"
-#include "ui/Parameter.hpp"
 
 // -------------------------------------------------------------------------- \\
 // -------------------------- Some Graphics --------------------------------- \\
@@ -11,6 +10,7 @@ class Themes
 public:
 	enum N
 	{
+		NONE,
 		DARK, 
 		LIGHT,
 		BLUE,
@@ -94,6 +94,7 @@ enum class C
 
 constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] = 
 {
+	{},
 	// DARK
 	{ 
 		Color{ 23, 23, 23, 255 },  	 // WindowBorder, 
@@ -529,7 +530,8 @@ class VolumeSliderGraphics
 {
 public:
 
-	static void Render(Parameter<VolumeSliderGraphics>& b, CommandCollection& d)
+	template<typename T>
+	static void Render(T& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		if (b.Vertical())
@@ -577,7 +579,8 @@ class PanSliderGraphics
 {
 public:
 
-	static void Render(Parameter<PanSliderGraphics>& b, CommandCollection& d)
+	template<typename T>
+	static void Render(T& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		int _p = 6;
@@ -615,7 +618,8 @@ class SliderGraphics
 {
 public:
 
-	static void Render(Parameter<SliderGraphics>& b, CommandCollection& d)
+	template<typename T>
+	static void Render(T& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		int _p = 6;
@@ -676,24 +680,25 @@ public:
 
 		d.Command<Fill>(theme->Get(C::ToggleButtonB));
 		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Active())
+		if (b.Active() && !b.Disabled())
 			d.Command<Fill>(theme->Get(C::ToggleButtonV));
 		else
 			d.Command<Fill>(theme->Get(C::ToggleButton));
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Active() && b.Hovering())
+		if (!b.Active() && b.Hovering() && !b.Disabled())
 		{
 			d.Command<Fill>(theme->Get(C::ToggleButtonH));
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.Active())
+		if (b.Active() && !b.Disabled())
 			d.Command<Fill>(theme->Get(C::ToggleButtonText));
 		else 
 			d.Command<Fill>(theme->Get(C::TextOff));
+
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
 		
@@ -713,24 +718,25 @@ public:
 
 		d.Command<Fill>(theme->Get(C::ToggleButtonB));
 		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Selected())
+		if (b.Selected() && !b.Disabled())
 			d.Command<Fill>(theme->Get(C::ToggleButtonV));
 		else
 			d.Command<Fill>(theme->Get(C::ToggleButton));
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Selected() && (b.Hovering() || b.Active()))
+		if (!b.Selected() && (b.Hovering() || b.Active()) && !b.Disabled())
 		{
 			d.Command<Fill>(theme->Get(C::ToggleButtonH));
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.Selected())
+		if (b.Selected() && !b.Disabled())
 			d.Command<Fill>(theme->Get(C::ToggleButtonText));
 		else
 			d.Command<Fill>(theme->Get(C::TextOff));
+
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
 
@@ -750,14 +756,14 @@ public:
 
 		d.Command<Fill>(theme->Get(C::ToggleButtonB));
 		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Active())
+		if (b.Active() && !b.Disabled())
 			d.Command<Fill>(theme->Get(C::ToggleButtonV));
 		else
 			d.Command<Fill>(theme->Get(C::ToggleButton));
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Active() && b.Hovering())
+		if (!b.Disabled() && !b.Active() && b.Hovering())
 		{
 			d.Command<Fill>(theme->Get(C::ToggleButtonH));
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
@@ -765,7 +771,10 @@ public:
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 
-		d.Command<Fill>(theme->Get(C::TextSmall));		
+		if (b.Disabled())
+			d.Command<Fill>(theme->Get(C::TextOff));
+		else
+			d.Command<Fill>(theme->Get(C::TextSmall));
 
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2 });
@@ -785,14 +794,14 @@ public:
 
 		d.Command<Fill>(theme->Get(C::ToggleButtonB));
 		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Active())
+		if (b.Active() && !b.Disabled())
 			d.Command<Fill>(theme->Get(C::ToggleButtonV));
 		else
 			d.Command<Fill>(theme->Get(C::ToggleButton));
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Active() && b.Hovering())
+		if (!b.Active() && b.Hovering() && !b.Disabled())
 		{
 			d.Command<Fill>(theme->Get(C::ToggleButtonH));
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
@@ -800,7 +809,7 @@ public:
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 
-		if ((int)b.Value() != 0)
+		if ((int)b.Value() != 0 && !b.Disabled())
 			d.Command<Fill>(theme->Get(C::TextSmall));
 		else
 			d.Command<Fill>(theme->Get(C::TextOff));
@@ -812,13 +821,57 @@ public:
 
 };
 
+class DropdownButton2
+{
+public:
+
+	template<typename T>
+	static void Render(T& b, CommandCollection& d)
+	{
+		using namespace Graphics;
+		int _p = 6;
+
+		d.Command<Fill>(theme->Get(C::ToggleButtonB));
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+		if (b.Active() && !b.Disabled())
+			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		else
+			d.Command<Fill>(theme->Get(C::ToggleButton));
+
+		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+
+		if (!b.Active() && b.Hovering() && !b.Disabled())
+		{
+			d.Command<Fill>(theme->Get(C::ToggleButtonH));
+			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
+		}
+
+		d.Command<Font>(Fonts::Gidole14, 14.0f);
+
+		if ((int)b.Value() != 0 && !b.Disabled())
+			d.Command<Fill>(theme->Get(C::TextSmall));
+		else
+			d.Command<Fill>(theme->Get(C::TextOff));
+
+
+		d.Command<TextAlign>(Align::LEFT, Align::CENTER);
+		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + 4, b.Y() + b.Height() / 2 });
+		
+		int _w = 8;
+		int _padding = 4;
+		d.Command<Triangle>(Vec4<int>{b.X() + b.Width() - _w / 2 - _padding, b.Y() + b.Height() / 2, _w, _w / 2}, -90.0f);
+	}
+
+};
+
 
 
 class KnobGraphics
 {
 public:
 
-	static void Render(Parameter<KnobGraphics>& b, CommandCollection& d)
+	template<typename T>
+	static void Render(T& b, CommandCollection& d)
 	{
 		using namespace Graphics;
 		int _p = 6;

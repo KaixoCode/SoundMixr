@@ -104,7 +104,7 @@ public:
 
 		m_Listener += [this, l](Event::MousePressed& e)
 		{
-			if (e.button == Event::MouseButton::RIGHT)
+			if (e.button == Event::MouseButton::RIGHT && !RightClickMenu::Get().Opened())
 				RightClickMenu::Get().Open(&m_Menu);
 
 			if (e.button == Event::MouseButton::LEFT)
