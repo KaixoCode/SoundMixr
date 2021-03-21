@@ -8,7 +8,7 @@
 
 Controller::Controller()
 : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500, true)),
-settings(m_Gui.AddWindow<Frame>("Settings", 400, 500, true, true, false)),
+settings(m_Gui.AddWindow<Frame>("Settings", 400, 500, true, false, false)),
 soundboard(m_Gui.AddWindow<Soundboard>()),
 m_AsioDevice(soundboard)
 {}
