@@ -128,7 +128,7 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 		Color{ 0, 0, 0, 0 },		 // RButtonB,
 		Color{ 70, 70, 70, 255 },	 // RButtonH,
 		Color{ 0, 0, 0, 0 },	     // RButtonHB,
-		Color{ 100, 100, 100, 255 },	 // RButtonS,
+		Color{ 100, 100, 100, 255 }, // RButtonS,
 		Color{ 0, 0, 0, 0 },	     // RButtonSB,
 									 // 
 		Color{ 100, 100, 100, 255 }, // VSlider,
