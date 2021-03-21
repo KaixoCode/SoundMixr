@@ -147,6 +147,9 @@ ChannelPanel& ListPanel::EmplaceSpecialChannel(bool IsInput)
 
 void ListPanel::ResetGrouping()
 {
+	if (&asio.Device() == nullptr)
+		return;
+
 	for (auto& i : asio.Inputs())
 		i.Group(nullptr, -1);
 

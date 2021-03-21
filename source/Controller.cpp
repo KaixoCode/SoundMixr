@@ -165,7 +165,16 @@ void Controller::Run()
             _midiDevices.Div()[i][1].DivSize(150);
             _midiDevices.Div()[i][1].Align(Div::Alignment::Left);
             _midiDevices.Div()[i][1] = _midiDevices.Emplace<TextComponent<Align::LEFT>>(_dev[i].name);
-            auto& _b = _midiDevices.Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>("Enable");
+            auto& _b = _midiDevices.Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(
+                [i](bool& s)
+                { 
+                    if (s)
+                    {
+                        if (!Midi::Get().OpenPort(i)) s = false;
+                    }
+                    else
+                        Midi::Get().ClosePort(i);
+                }, "Enable");
             _b.Size({ 50, 18 });
             _midiDevices.Div()[i][2].Align(Div::Alignment::Right);
             _midiDevices.Div()[i][2] = _b;
@@ -389,7 +398,7 @@ void Controller::Run()
     _sp.Div()[1][0][1][1][3].DivSize(26);
     _sp.Div()[1][0][1][1][3][0].DivSize(150);
     _sp.Div()[1][0][1][1][3][0].Align(Div::Alignment::Left);
-    _sp.Div()[1][0][1][1][3][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reload Effects");
+    _sp.Div()[1][0][1][1][3][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reset Channel Grouping");
     _sp.Div()[1][0][1][1][3][1].Align(Div::Alignment::Left);
     _sp.Div()[1][0][1][1][3][1] = _resetGrouping;
     _sp.Div()[1][0][0].DivSize(20);
@@ -404,6 +413,8 @@ void Controller::Run()
         _sp.LayoutManager().DividerColor(theme->Get(C::Divider));
         _sp.Background(theme->Get(C::MainPanel));
         _scrp.Background(theme->Get(C::Channel));
+
+        Midi::Get().ReadMessages();
 
         _saveCounter--;
         if (_saveCounter <= 0)

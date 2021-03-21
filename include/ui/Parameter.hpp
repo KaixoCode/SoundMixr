@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.hpp"
 #include "Graphics.hpp"
+#include "midi/Midi.hpp"
 
 class ParameterBase : public Component
 {
@@ -62,7 +63,13 @@ protected:
 
     bool m_Hovering = false,
 		m_Dragging = false,
-		m_Shift = false;
+		m_Shift = false,
+		m_Linking = false;
+
+	int m_MidiLink = -1;
+
+	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_LinkButton;
+	Button<SoundMixrGraphics::Menu, ButtonType::Normal>* m_UnlinkButton;
 
 	std::string m_ValueText;
 };

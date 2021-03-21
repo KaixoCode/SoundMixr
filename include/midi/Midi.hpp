@@ -1,7 +1,6 @@
 #pragma once
 #include "pch.hpp"
 
-
 class MidiDevice
 {
 public:
@@ -28,6 +27,7 @@ public:
 		};
 
 		Type type;
+		unsigned int device = -1;
 
 		Event(std::vector<uint8_t>& message)
 		{
@@ -43,13 +43,13 @@ public:
 				data2 = (message[2] & 0b01111111);
 		}
 
-		class NoteOff { byte note, velocity, channel; };
-		class NoteOn { byte note, velocity, channel; };
-		class PolyAfterTouch { byte note, pressure, channel; };
-		class ControlChange { byte control, value, channel; };
-		class ProgramChange { byte program, _, channel; };
-		class ChannelAfterTouch { byte pressure, _, channel; };
-		class PitchWheel { uint16_t value, channel; };
+		struct NoteOff { byte note, velocity, channel; };
+		struct NoteOn { byte note, velocity, channel; };
+		struct PolyAfterTouch { byte note, pressure, channel; };
+		struct ControlChange { byte control, value, channel; };
+		struct ProgramChange { byte program, _, channel; };
+		struct ChannelAfterTouch { byte pressure, _, channel; };
+		struct PitchWheel { uint16_t value, channel; };
 
 		union
 		{
@@ -79,12 +79,38 @@ public:
 		LoadPorts();
 	}
 
-	void OpenPort()
+	void OpenPort(MidiDevice& m)
 	{
-		if (!m_Device)
-			return;
+		OpenPort(m.id);
+	}
 
-		m_Midi.openPort(m_Device->id);
+	bool OpenPort(int id)
+	{
+		auto& o = m_Opened.try_emplace(id);
+		if (o.second)
+			try
+			{
+				o.first->second.openPort(id);
+			}
+			catch (...)
+			{
+				m_Opened.erase(m_Opened.find(id));
+				return false;
+			}
+
+		return true;
+	}
+
+	void ClosePort(MidiDevice& m)
+	{
+		ClosePort(m.id);
+	}
+
+	void ClosePort(int id)
+	{
+		auto& i = m_Opened.find(id);
+		if (i != m_Opened.end())
+			i->second.closePort(), m_Opened.erase(i);
 	}
 
 	void LoadPorts()
@@ -97,48 +123,67 @@ public:
 
 	void ReadMessages()
 	{
-		if (!m_Midi.isPortOpen())
+		if (m_Opened.size() == 0)
 			return;
 
-		for (int i = 0; i < 50; i++)
+		// Go through all opened midi devices.
+		for (auto& midi : m_Opened)
 		{
-			m_Midi.getMessage(&m_Message);
-			if (!m_Message.size())
-				break;
-
-			Event event{ m_Message };
-			for (auto& i : m_Callbacks<Event>)
-				i(event);
-
-			switch (event.type)
+			// Read 50 messages.
+			for (int i = 0; i < 50; i++)
 			{
-			case Event::Type::NoteOff: for (auto& i : m_Callbacks<Event::NoteOff>) i(event.noteoff); break;
-			case Event::Type::NoteOn: for (auto& i : m_Callbacks<Event::NoteOn>) i(event.noteon);break;
-			case Event::Type::PolyAfterTouch: for (auto& i : m_Callbacks<Event::PolyAfterTouch>) i(event.polyaftertouch);break;
-			case Event::Type::ControlChange: for (auto& i : m_Callbacks<Event::ControlChange>) i(event.controlchange);break;
-			case Event::Type::ProgramChange: for (auto& i : m_Callbacks<Event::ProgramChange>) i(event.programchange);break;
-			case Event::Type::ChannelAfterTouch: for (auto& i : m_Callbacks<Event::ChannelAfterTouch>) i(event.channelaftertouch);break;
-			case Event::Type::PitchWheel: for (auto& i : m_Callbacks<Event::PitchWheel>) i(event.pitchwheel);break;
+				// Get the message, if no message it's empty so break.
+				midi.second.getMessage(&m_Message);
+				if (!m_Message.size())
+					break;
+
+				// Send the event to all callbacks.
+				Event event{ m_Message };
+				event.device = midi.first;
+				//LOG((int)event.type << ", " << (int)event.data1 << ", " << (int)event.data2);
+				for (auto& i : m_EventCallbacks)
+					i(event);
+
+				switch (event.type)
+				{
+				case Event::Type::NoteOff: for (auto& i : m_NoteOffCallbacks) i(event.noteoff); break;
+				case Event::Type::NoteOn: for (auto& i : m_NoteOnCallbacks) i(event.noteon);break;
+				case Event::Type::PolyAfterTouch: for (auto& i : m_PolyAfterTouchCallbacks) i(event.polyaftertouch);break;
+				case Event::Type::ControlChange: for (auto& i : m_ControlChangeCallbacks) i(event.controlchange);break;
+				case Event::Type::ProgramChange: for (auto& i : m_ProgramChangeCallbacks) i(event.programchange);break;
+				case Event::Type::ChannelAfterTouch: for (auto& i : m_ChannelAfterTouchCallbacks) i(event.channelaftertouch);break;
+				case Event::Type::PitchWheel: for (auto& i : m_PitchWheelCallbacks) i(event.pitchwheel);break;
+				}
 			}
 		};
 	}
 
 	template<typename T>
-	void operator +=(Callback<T> t)
-	{
-		m_Callbacks<T>.push_back(t);
-	}
+	void operator+=(T t) { AddCallback(t); }
+
+	void AddCallback(Callback<Event> a) { m_EventCallbacks.emplace_back(a); }
+	void AddCallback(Callback<Event::NoteOff> a) { m_NoteOffCallbacks.emplace_back(a); }
+	void AddCallback(Callback<Event::NoteOn> a) { m_NoteOnCallbacks.emplace_back(a); }
+	void AddCallback(Callback<Event::PolyAfterTouch> a) { m_PolyAfterTouchCallbacks.emplace_back(a); }
+	void AddCallback(Callback<Event::ControlChange> a) { m_ControlChangeCallbacks.emplace_back(a); }
+	void AddCallback(Callback<Event::ProgramChange> a) { m_ProgramChangeCallbacks.emplace_back(a); }
+	void AddCallback(Callback<Event::ChannelAfterTouch> a) { m_ChannelAfterTouchCallbacks.emplace_back(a); }
+	void AddCallback(Callback<Event::PitchWheel> a) { m_PitchWheelCallbacks.emplace_back(a); }
 
 	auto Devices() -> std::vector<MidiDevice>& { return m_Devices; }
-	void Device(unsigned int d) { m_Device = &m_Devices[d]; }
-	void Device(MidiDevice& d) { m_Device = &d; }
 
 private:
-	template<typename T>
-	static std::vector<Callback<T>> m_Callbacks;
+	std::vector<Callback<Event>>                    m_EventCallbacks;
+	std::vector<Callback<Event::NoteOff>>           m_NoteOffCallbacks;
+	std::vector<Callback<Event::NoteOn>>            m_NoteOnCallbacks;
+	std::vector<Callback<Event::PolyAfterTouch>>    m_PolyAfterTouchCallbacks;
+	std::vector<Callback<Event::ControlChange>>     m_ControlChangeCallbacks;
+	std::vector<Callback<Event::ProgramChange>>     m_ProgramChangeCallbacks;
+	std::vector<Callback<Event::ChannelAfterTouch>> m_ChannelAfterTouchCallbacks;
+	std::vector<Callback<Event::PitchWheel>>        m_PitchWheelCallbacks;
 
 	RtMidiIn m_Midi;
-	MidiDevice* m_Device = nullptr;
 	std::vector<MidiDevice> m_Devices;
+	std::unordered_map<int, RtMidiIn> m_Opened;
 	std::vector<uint8_t> m_Message;
 };

@@ -956,7 +956,7 @@ namespace SoundMixrGraphics
 		{
 			int _padding = 20;
 			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Active() ? theme->Get(C::ButtonS) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
-			Color _c2 = theme->Get(C::Text);
+			Color _c2 = b.Disabled() ? theme->Get(C::TextSmall) : theme->Get(C::Text);
 			Color _c3 = theme->Get(C::TextOff);
 
 			d.Command<Fill>(_c1);
@@ -1253,4 +1253,28 @@ public:
 		m_ScrollbarY = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Vertical>>();
 		return _t;
 	}
+};
+
+
+class MenuDivider : public Component
+{
+public:
+	MenuDivider(int size, int stroke, int paddingx, int paddingy)
+		: m_Size(size), m_PaddingX(paddingx), m_PaddingY(paddingy), m_Stroke(stroke), Component({ size, stroke + paddingy * 2 })
+	{}
+
+	void Render(CommandCollection& d) override 
+	{
+		using namespace Graphics;
+		d.Command<Fill>(theme->Get(C::Divider));
+		d.Command<Quad>(X() + m_PaddingX, Y() + m_PaddingY, Width() - m_PaddingX * 2, m_Stroke);
+	};
+
+	bool WithinBounds(const Vec2<int>&) const override { return false; }
+
+private:
+	int m_Size,
+		m_PaddingX,
+		m_PaddingY,
+		m_Stroke;
 };
