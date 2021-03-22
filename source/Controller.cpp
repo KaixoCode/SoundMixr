@@ -146,6 +146,7 @@ void Controller::Run()
 
             SaveRouting();
             m_AsioDevice.CloseStream();
+            m_AsioDevice.RemoveGroups();
             PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
             m_AsioDevice.OpenStream();
             m_List->Clear();
@@ -180,7 +181,7 @@ void Controller::Run()
 
             std::ofstream _of;
             _of.open("./settings/settings");
-            _of << std::setw(4) << _json;
+            _of << /*std::setw(4) <<*/ _json;
             _of.close();
         }
         catch (...)
@@ -201,6 +202,7 @@ void Controller::Run()
 
             // Close stream, set new device and open/start stream
             m_AsioDevice.CloseStream();
+            m_AsioDevice.RemoveGroups();
             m_AsioDevice.NoDevice();
 
             // Clear the channels from the ListPanel
@@ -223,8 +225,7 @@ void Controller::Run()
 
                 // Close stream, set new device and open/start stream
                 m_AsioDevice.CloseStream();
-
-                // Clear the channels from the ListPanel
+                m_AsioDevice.RemoveGroups();
                 m_List->Clear();
                 m_AsioDevice.Device(_d);
                 m_AsioDevice.OpenStream();
@@ -322,6 +323,8 @@ void Controller::Run()
         _saveSettings();
         ThemeT::ReloadThemes();
         _themeDropDown.Clear();
+        
+        loaded = false;
         for (auto& [key, val] : ThemeT::Themes())
         {
             _themeDropDown.AddOption(key, key, [&](std::string& t)
@@ -331,6 +334,7 @@ void Controller::Run()
                     _themeCallback();
                 });
         }
+        loaded = true;
         _loadSettings();
         _themeCallback();
     };
@@ -504,7 +508,7 @@ void Controller::SaveRouting()
 
     std::ofstream _out;
     _out.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
-    _out << std::setw(4) << _json;
+    _out << /*std::setw(4) <<*/ _json;
     _out.close();
 }
 

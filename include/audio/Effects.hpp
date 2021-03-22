@@ -3,6 +3,7 @@
 #include "ui/Components.hpp"
 #include "ui/Graphics.hpp"
 #include "ui/Dropdown.hpp"
+#include "EffectLoader.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
@@ -40,6 +41,9 @@ protected:
 	Button<NOTHING, ButtonType::Toggle>* m_MinimB;
 	Effects::EffectBase* m_Effect;
 	std::vector<Vec4<int>> m_Dividers;
+
+	std::unordered_map<int, int> m_RadioButtonKeys;
+	std::unordered_map<int, std::vector<Effects::RadioButton*>> m_RadioButtons;
 
 	// The code for the Layout interpretter for Effects.
 	void Init();

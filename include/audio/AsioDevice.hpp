@@ -48,6 +48,7 @@ public:
 private:
 	double m_Samplerate;
 	int m_BufferSize;
+	bool m_Opened = false;
 	
 	PaStream* stream = nullptr;
 	::Device* m_Device = nullptr;

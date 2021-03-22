@@ -12,14 +12,15 @@ namespace Effects
 	class Utility : public EffectBase
 	{
 	public:
+
 		Utility()
 			:
 			m_Low(Parameter("Low", ParameterType::Knob)),
 			m_Mid(Parameter("Mid", ParameterType::Knob)),
 			m_High(Parameter("High", ParameterType::Knob)),
 			m_Release(Parameter("Release", ParameterType::Knob)),
-			m_LowFreq(Parameter("Freq", ParameterType::Slider)),
-			m_HighFreq(Parameter("Freq", ParameterType::Slider)),
+			m_LowFreq(Parameter("Low Freq", ParameterType::Slider)),
+			m_HighFreq(Parameter("High Freq", ParameterType::Slider)),
 			m_Pan(Parameter("Pan", ParameterType::Knob)),
 			m_Gain(Parameter("Gain", ParameterType::Knob)),
 			m_Limiter(VolumeSlider()),
@@ -30,6 +31,8 @@ namespace Effects
 			EffectBase("Utility")
 		{
 			Height(145);
+
+			m_Limiter.Name("Limit Level");
 
 			m_Release.Size({ 30, 30 });
 			m_Release.Range({ 1, 5000 });
@@ -345,11 +348,7 @@ namespace Effects
 	};
 }
 
-
-extern "C"
+extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	DLLDIR void* NewInstance()
-	{
-		return new Effects::Utility();
-	}
+	return new Effects::Utility;
 }

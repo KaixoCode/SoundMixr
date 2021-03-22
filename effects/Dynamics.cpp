@@ -10,6 +10,7 @@ namespace Effects
 	class Dynamics : public EffectBase
 	{
 	public:
+
 		Dynamics()
 			: m_PreGain(Parameter("PreGain", ParameterType::Knob)),
 			m_Attack(Parameter("Attack", ParameterType::Knob)),
@@ -170,10 +171,7 @@ namespace Effects
 	};
 }
 
-extern "C"
+extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	DLLDIR void* NewInstance()
-	{
-		return new Effects::Dynamics();
-	}
-} 
+	return new Effects::Dynamics;
+}

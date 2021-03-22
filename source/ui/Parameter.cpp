@@ -12,10 +12,6 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 	{ 
 		if (m_Linking)
 		{
-			if (m_UnlinkButton)
-				m_UnlinkButton->Enable();
-			if (m_LinkButton)
-				m_LinkButton->Name(std::string("Link Midi - Linked: ") + std::to_string((int)a.control));
 			m_Parameter.MidiLink({ a.channel, a.control, a.device });
 			m_Linking = false;
 		}
@@ -28,7 +24,7 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 	m_CallbackId = (Midi::Get() += m_Callback);
 	m_Menu.Clear();
 	m_Menu.ButtonSize({ 160, 20 });
-	m_Listener += [this](Event::MousePressed& e)
+	m_Listener += [&](Event::MousePressed& e)
 	{
 		if (e.button == Event::MouseButton::LEFT)
 		{
@@ -44,10 +40,28 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 			{
 				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Parameter.Name()).Disable();
 				m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
+				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { ResetValue(); }, "Reset Value");
+				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { ResetValue(Value()); }, "Set Reset Value");
+				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { ResetValue(DefaultReset()); }, "Default Reset Value");
+				m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 				m_LinkButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Linking, "Link Midi");
-				m_UnlinkButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_MidiLink = -1; m_LinkButton->Name("Link Midi"); m_UnlinkButton->Disable(); }, "Unlink");
+				m_UnlinkButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+					[&] { 
+						m_Parameter.MidiLink({ -1, -1, -1 });
+						m_LinkButton->Name("Link Midi");
+						m_UnlinkButton->Disable(); 
+					}, "Unlink");
 				m_UnlinkButton->Disable();
 			}
+			auto& link = m_Parameter.MidiLink();
+			if (link.control != -1)
+				m_UnlinkButton->Enable();
+			if (link.control == -1)
+				m_UnlinkButton->Disable();
+			if (link.control == -1)
+				m_LinkButton->Name("Link Midi");
+			else
+				m_LinkButton->Name("Linked: " + std::to_string(link.control) + ":" + std::to_string(link.channel) + ":" + std::to_string(link.device));
 			RightClickMenu::Get().Open(&m_Menu);
 		}
 	};
@@ -109,6 +123,7 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 
 void ParameterBase::Update(const Vec4<int>& vp) 
 {
+
 	m_Size = { m_Parameter.Size().width, m_Parameter.Size().height };
 	m_Pos = { m_Parameter.Position().x, m_Parameter.Position().y };
 

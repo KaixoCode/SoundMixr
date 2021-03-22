@@ -100,11 +100,15 @@ bool AsioDevice::OpenStream()
 	for (auto& i : m_Outputs)
 		LOG(i.Name());
 
+	m_Opened = true;
 	return true;
 }
 
 void AsioDevice::CloseStream()
 {
+	if (!m_Opened)
+		return;
+	m_Opened = false;
 	LOG("Closing SAR stream...");
 	PaError err;
 	err = Pa_CloseStream(stream);
@@ -119,6 +123,9 @@ void AsioDevice::CloseStream()
 
 bool AsioDevice::StartStream()
 {
+	if (!m_Opened)
+		return false;
+
 	if (StreamRunning())
 		return false;
 

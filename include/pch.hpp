@@ -31,6 +31,7 @@
 
 #include <AudioFile.h>
 
+#define _TESTLINK
 #include "EffectBase.hpp"
 #include "resource.h"
 

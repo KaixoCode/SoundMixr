@@ -528,7 +528,7 @@ public:
 	};
 
 	template<typename Arg, typename ...Args>
-	Color GetColor(nlohmann::json json, Arg a, Args... args)
+	Color GetColor(const nlohmann::json& json, Arg a, Args... args)
 	{
 		try
 		{
@@ -542,7 +542,7 @@ public:
 	};
 
 	template<typename Arg>
-	Color GetColor(nlohmann::json json, Arg arg)
+	Color GetColor(const nlohmann::json& json, Arg arg)
 	{
 		try
 		{
@@ -555,7 +555,7 @@ public:
 		}
 	};
 
-	Color GetColor(nlohmann::json json)
+	Color GetColor(const nlohmann::json& json)
 	{
 		try
 		{

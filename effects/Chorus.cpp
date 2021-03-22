@@ -271,10 +271,8 @@ namespace Effects
 		Effects::XYController& m_Controller;
 	};
 }
-extern "C"
+
+extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	DLLDIR void* NewInstance()
-	{
-		return new Effects::Chorus();
-	}
+	return new Effects::Chorus;
 }

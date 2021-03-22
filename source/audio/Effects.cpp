@@ -1,5 +1,4 @@
 #include "audio/Effects.hpp"
-#include "EffectLoader.hpp"
 
 template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex)
 {
@@ -12,6 +11,11 @@ template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIn
 // -------------------------------------------------------------------------- \\
 // ------------------------------ Effect ------------------------------------ \\
 // -------------------------------------------------------------------------- \\
+
+Effect::~Effect()
+{
+	m_Effect->Destroy();
+}
 
 Effect::Effect(Effects::EffectBase* effect)
 	: m_Effect(effect), m_Channels(0)
@@ -74,12 +78,6 @@ Effect::Effect(Effects::EffectBase* effect)
 		if (e.x - X() >= 25 && e.x - X() <= Width() - 25 && m_Small && e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
 			e.y = Y() + 1;
 	};
-}
-
-Effect::~Effect()
-{
-	delete m_Effect;
-	m_Effect = nullptr;
 }
 
 void Effect::Update(const Vec4<int>& v) 
@@ -300,7 +298,7 @@ void Effect::SetObject(Effects::Div& div, const Vec4<int>& dim)
 	auto rb = dynamic_cast<Effects::RadioButton*>(object);
 	if (rb != nullptr)
 	{
-		Emplace<RadioButton>(*rb), rb->Position({ position.x, position.y });
+		Emplace<RadioButton>(*rb, m_RadioButtonKeys, m_RadioButtons), rb->Position({ position.x, position.y });
 		return;
 	}
 
@@ -474,8 +472,7 @@ void EffectsGroup::operator=(const nlohmann::json& json)
 		auto& _it = EffectLoader::Effects().find(type);
 		if (_it != EffectLoader::Effects().end())
 		{
-			Effects::EffectBase* inst = (*_it).second->CreateInstance();
-			auto& a = Add(inst);
+			auto& a = Add((*_it).second->CreateInstance());
 			a = effect;
 		}
 		}
@@ -515,7 +512,7 @@ Effect& EffectsGroup::Add(Effects::EffectBase* e)
 	int p = m_EffectCount;
 	m_EffectCount = 0;
 	auto& a = m_Effects.emplace_back(std::make_unique<Effect>(e));
-	e->Channels(m_Channels);
+	a->Channels(m_Channels);
 	m_EffectCount = p + 1;
 	return *a;
 }

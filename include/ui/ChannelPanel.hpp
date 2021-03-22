@@ -29,6 +29,9 @@ public:
 
 		pan(Emplace<PanSlider>())
 	{
+		pan.Name("Pan");
+		pan.DisplayName(false);
+		
 		Width(70);
 
 		pan.Position(Vec2<int>{4, 27});

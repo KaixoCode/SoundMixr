@@ -31,6 +31,7 @@ public:
 	virtual void   NormalizedValue(double v) { m_Parameter.NormalizedValue(v); }
 	virtual void   ResetValue(double v) { m_Parameter.ResetValue(v); }
 	virtual void   ResetValue() { m_Parameter.ResetValue(); }
+	virtual double DefaultReset() { return m_Parameter.DefaultReset(); }
 	virtual void   Multiplier(double v) { m_Parameter.Multiplier(v); }
 	virtual double Multiplier() { return m_Parameter.Multiplier(); }
 	virtual void   Power(double v) { m_Parameter.Power(v); }

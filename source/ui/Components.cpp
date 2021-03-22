@@ -4,7 +4,7 @@
 // ---------------------------- Radio Button -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-RadioButton::RadioButton(Effects::RadioButton& t)
+RadioButton::RadioButton(Effects::RadioButton& t, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons)
 	: m_Toggle(t), Button<RadioButtonGraphics, ButtonType::List>([&]
 		{
 			for (auto& i : m_RButtons)
@@ -13,7 +13,7 @@ RadioButton::RadioButton(Effects::RadioButton& t)
 						c->Selected(false);
 
 			m_Toggle.Selected(true);
-		}, t.Name(), GetKey(t))
+		}, t.Name(), GetKey(t, keys, buttons)), m_Keys(keys), m_RButtons(buttons)
 {}
 
 void RadioButton::Update(const Vec4<int>& v)
@@ -29,20 +29,20 @@ void RadioButton::Update(const Vec4<int>& v)
 	Button<RadioButtonGraphics, ButtonType::List>::Update(v);
 }
 
-int RadioButton::GetKey(Effects::RadioButton& k)
+int RadioButton::GetKey(Effects::RadioButton& k, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons)
 {
 	int id = 0;
-	auto& _it = m_Keys.find(k.Id());
-	if (_it == m_Keys.end())
+	auto& _it = keys.find(k.Id());
+	if (_it == keys.end())
 	{
-		id = m_Keys.emplace(k.Id(), ButtonType::List::NewKey()).first->second;
-		auto& i = m_RButtons.emplace(id, std::vector<Effects::RadioButton*>{});
+		id = keys.emplace(k.Id(), ButtonType::List::NewKey()).first->second;
+		auto& i = buttons.emplace(id, std::vector<Effects::RadioButton*>{});
 		i.first->second.push_back(&k);
 	}
 	else
 	{
 		id = _it->second;
-		m_RButtons[id].push_back(&k);
+		buttons[id].push_back(&k);
 	}
 	return id;
 }

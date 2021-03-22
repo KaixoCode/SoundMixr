@@ -13,17 +13,17 @@ using Slider = Parameter<SliderGraphics>;
 class RadioButton : public Button<RadioButtonGraphics, ButtonType::List>
 {
 public:
-	RadioButton(Effects::RadioButton& t);
+	RadioButton(Effects::RadioButton& t, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons);
 
 	void Update(const Vec4<int>& v);
 
 private:
-	static inline std::unordered_map<int, int> m_Keys;
-	static inline std::unordered_map<int, std::vector<Effects::RadioButton*>> m_RButtons;
+	std::unordered_map<int, int> &m_Keys;
+	std::unordered_map<int, std::vector<Effects::RadioButton*>>& m_RButtons;
 
 	Effects::RadioButton& m_Toggle;
 
-	static inline int GetKey(Effects::RadioButton& k);
+	static inline int GetKey(Effects::RadioButton& k, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons);
 };
 
 // -------------------------------------------------------------------------- \\

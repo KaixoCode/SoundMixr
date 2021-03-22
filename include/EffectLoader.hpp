@@ -8,7 +8,7 @@
 #define EFFECTS_DIR "./effects"
 #endif
 
-typedef void* (__stdcall* inst_func)();
+typedef void* (__cdecl* inst_func)();
 
 class DynamicEffect
 {
@@ -24,7 +24,7 @@ public:
 	DynamicEffect(const std::string& name, HMODULE h)
 		: m_Module(h), m_Name(name)
 	{
-		instfunc = (inst_func)GetProcAddress(m_Module, "NewInstance");
+		instfunc = reinterpret_cast<inst_func>(GetProcAddress(m_Module, "NewInstance"));
 	}
 
 	Effects::EffectBase* CreateInstance()
@@ -91,7 +91,7 @@ public:
 
 	static inline Effects::EffectBase* CreateInstance(const std::string& name)
 	{
-		return m_Effects[name]->CreateInstance();
+		return std::move(m_Effects[name]->CreateInstance());
 	}
 
 public:

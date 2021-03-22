@@ -146,10 +146,7 @@ namespace Effects
 	};
 }
 
-extern "C"
+extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	DLLDIR void* NewInstance()
-	{
-		return new Effects::Equalizer();
-	}
+	return new Effects::Equalizer;
 }
