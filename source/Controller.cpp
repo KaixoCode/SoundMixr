@@ -77,9 +77,9 @@ void Controller::Run()
     //
 
     auto& _menu = mainWindow.Menu();
-    auto& _file = _menu.Emplace<TitleMenuButton>("Options");
-    _file.Size({ 54, 32 });
-    _file.MenuBase().ButtonSize({ 200, 20 });
+    auto& _file = _menu.Emplace<TitleMenuButton>("File");
+    _file.Size({ 34, 32 });
+    _file.MenuBase().ButtonSize({ 150, 20 });
 
     auto& _sub = _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 
@@ -96,8 +96,9 @@ void Controller::Run()
 
     _file.Emplace<MenuButton>([&]
         {
+            LOG("WOOF");
             m_Gui.Close();
-        }, "Exit");
+        }, "Exit", Key::ALT_F4);
 
 
     //
