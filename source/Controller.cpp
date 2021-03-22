@@ -96,7 +96,6 @@ void Controller::Run()
 
     _file.Emplace<MenuButton>([&]
         {
-            LOG("WOOF");
             m_Gui.Close();
         }, "Exit", Key::ALT_F4);
 
