@@ -35,7 +35,6 @@ protected:
 	int m_Channels = -1, m_RealHeight = 0, m_Delete = false;
 	bool m_Hovering = false, m_Small = false, m_HoveringDrag = false, m_Enabled = true;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
-	MenuAccessories::Divider* m_Div, * m_Div2;
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_Minim;
 	Button<ToggleButtonGraphics, ButtonType::Toggle>* m_Enable;
 	Button<NOTHING, ButtonType::Toggle>* m_MinimB;

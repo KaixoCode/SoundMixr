@@ -87,6 +87,16 @@ XYController::XYController(Effects::XYController& c)
 		}
 	};
 
+	m_Listener += [this](Event::MouseEntered& e)
+	{
+		m_Hovering = true;
+	};
+
+	m_Listener += [this](Event::MouseExited& e)
+	{
+		m_Hovering = false;
+	};
+
 	m_Listener += [this](Event::MouseDragged& e)
 	{
 		if (m_Dragging)
@@ -109,13 +119,18 @@ void XYController::Render(CommandCollection& d)
 	using namespace Graphics;
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
-	d.Command<Fill>(theme->Get(C::Dynamics));
+	d.Command<Fill>(ThemeT::Get().xycontroller_background);
 	d.Command<Quad>(Vec4<int>{ 0, 0, Width(), Height() });
 
 	int _p = 8;
 	int _x = controller.Param1().NormalizedValue() * (Width() - 2 * _p) + _p;
 	int _y = controller.Param2().NormalizedValue() * (Height() - 2 * _p) + _p;
-	d.Command<Fill>(theme->Get(C::VSlider));
+	if (m_Dragging)
+		d.Command<Fill>(ThemeT::Get().xycontroller_active_circle);
+	else if (m_Hovering)
+		d.Command<Fill>(ThemeT::Get().xycontroller_hovering_circle);
+	else
+		d.Command<Fill>(ThemeT::Get().xycontroller_idle_circle);
 	d.Command<Graphics::Ellipse>(Vec4<int>{ _x, _y, _p * 2, _p * 2 });
 	d.Command<PopMatrix>();
 }
@@ -184,13 +199,40 @@ void VolumeSlider::Render(CommandCollection& d)
 
 		int _h1 = (std::min(_level1, 1.412536f) / 1.412536) * (_rh);
 		int _h2 = (std::min(_level2, 1.412536f) / 1.412536) * (_rh);
-		d.Command<Graphics::Fill>(theme->Get(C::VMeter));
+		
+		if (Disabled())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_meter);
+		else if (Dragging())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_meter);
+		else if (Hovering())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_meter);
+		else
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_meter);
+
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
-		d.Command<Graphics::Fill>(theme->Get(C::Channel));
+		d.Command<Graphics::Fill>(ThemeT::Get().channel_idle_background);
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
-		d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC1));
+
+		if (Disabled())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_meter_value_c1);
+		else if (Dragging())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_meter_value_c1);
+		else if (Hovering())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_meter_value_c1);
+		else
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_meter_value_c1);
+
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h1});
-		d.Command<Graphics::Fill>(theme->Get(C::VMeterFill));
+
+		if (Disabled())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_meter_value);
+		else if (Dragging())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_meter_value);
+		else if (Hovering())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_meter_value);
+		else
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_meter_value);
+
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h2});
 
 	}
@@ -224,10 +266,14 @@ void VolumeSlider::Render(CommandCollection& d)
 				_d = 24;
 		}
 
-		if (_b)
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
+		if (Disabled())
+			d.Command<Graphics::Fill>(_b ? ThemeT::Get().volume_slider_disabled_line_highlight : ThemeT::Get().volume_slider_disabled_line);
+		else if (Dragging())
+			d.Command<Graphics::Fill>(_b ? ThemeT::Get().volume_slider_active_line_highlight : ThemeT::Get().volume_slider_active_line);
+		else if (Hovering())
+			d.Command<Graphics::Fill>(_b ? ThemeT::Get().volume_slider_hovering_line_highlight : ThemeT::Get().volume_slider_hovering_line);
 		else
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndD));
+			d.Command<Graphics::Fill>(_b ? ThemeT::Get().volume_slider_idle_line_highlight : ThemeT::Get().volume_slider_idle_line);
 
 		int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 		d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
@@ -237,14 +283,41 @@ void VolumeSlider::Render(CommandCollection& d)
 			{
 				m_Numbers.emplace(i, std::to_string(std::abs(i)));
 			}
-			d.Command<Graphics::Fill>(theme->Get(C::TextOff));
+
+			if (Disabled())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_db_text);
+			else if (Dragging())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_db_text);
+			else if (Hovering())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_db_text);
+			else
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_db_text);
+
 			d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
 		}
 		_b ^= true;
 	}
-	d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
+
+	if (Disabled())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_line_highlight);
+	else if (Dragging())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_line_highlight);
+	else if (Hovering())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_line_highlight);
+	else
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_line_highlight);
+
 	d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
-	d.Command<Graphics::Fill>(theme->Get(C::TextOff));
+
+	if (Disabled())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_db_text);
+	else if (Dragging())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_db_text);
+	else if (Hovering())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_db_text);
+	else
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_db_text);
+
 	d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 	d.Command<PopMatrix>();
 	Parameter<VolumeSliderGraphics>::Render(d);
@@ -436,7 +509,7 @@ void DynamicsSlider::Render(CommandCollection& d)
 {
 	Container::Render(d);
 	using namespace Graphics;
-	d.Command<Fill>(theme->Get(C::Dynamics));
+	d.Command<Fill>(ThemeT::Get().dynamics_background);
 	d.Command<Quad>(Vec4<int>{ X() - 7, Y() - 20, Width() + 14, Height() + 20 });
 
 	d.Command<PushMatrix>();
@@ -456,9 +529,9 @@ void DynamicsSlider::Render(CommandCollection& d)
 			_d = 24;
 
 		if (_b)
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
+			d.Command<Graphics::Fill>(ThemeT::Get().dynamics_line);
 		else
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndD));
+			d.Command<Graphics::Fill>(ThemeT::Get().dynamics_line_highlight);
 
 		int _mdb = DbToPixel(i) - 1;
 		d.Command<Quad>(Vec4<int>{ _mdb, _y, 1, 5});
@@ -468,29 +541,29 @@ void DynamicsSlider::Render(CommandCollection& d)
 			{
 				m_Numbers.emplace(i, std::to_string(std::abs(i)));
 			}
-			d.Command<Graphics::Fill>(theme->Get(C::TextSmall));
+			d.Command<Graphics::Fill>(ThemeT::Get().dynamics_db_text);
 			d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_mdb, _y + 7});
 		}
 		_b ^= true;
 	}
-	d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
+	d.Command<Graphics::Fill>(ThemeT::Get().dynamics_line_highlight);
 	d.Command<Graphics::Quad>(Vec4<int>{0, _y, 1, 5});
-	d.Command<Graphics::Fill>(theme->Get(C::TextSmall));
+	d.Command<Graphics::Fill>(ThemeT::Get().dynamics_db_text);
 	d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{5, _y + 7});
 
 	int _y2 = 5;
-	d.Command<Graphics::Fill>(theme->Get(C::DynamicsL));
+	d.Command<Graphics::Fill>(ThemeT::Get().dynamics_border);
 	d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, Width(), 1 });
 	d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, 1, _y });
 	d.Command<Graphics::Quad>(Vec4<int>{ 0, _y, Width(), 1 });
 	d.Command<Graphics::Quad>(Vec4<int>{ Width() - 1, 0, 1, _y });
 	int p1 = DbToPixel(m_Object.CompressorThreshhold());
-	d.Command<Graphics::Fill>(theme->Get(C::DynamicsB));
+	d.Command<Graphics::Fill>(ThemeT::Get().dynamics_compressor);
 	d.Command<Graphics::Quad>(Vec4<int>{ p1, _y2, Width() - p1, _y - _y2 - 5 });
 	double _xp = p1;
 	for (int i = 0; i < 8; i++)
 	{
-		auto c = theme->Get(C::DynamicsL);
+		auto c = ThemeT::Get().dynamics_compressor_line;
 		c.a *= (8 - i) / 8.0f;
 		d.Command<Graphics::Fill>(c);
 		d.Command<Graphics::Quad>(Vec4<int>{ (int)_xp, _y2, 1, _y - _y2 - 5 });
@@ -500,12 +573,12 @@ void DynamicsSlider::Render(CommandCollection& d)
 	}
 
 	int p2 = DbToPixel(m_Object.ExpanderThreshhold());
-	d.Command<Graphics::Fill>(theme->Get(C::DynamicsB));
+	d.Command<Graphics::Fill>(ThemeT::Get().dynamics_compressor);
 	d.Command<Graphics::Quad>(Vec4<int>{ 0, _y2, p2, _y - _y2 - 5 });
 	_xp = p2;
 	for (int i = 0; i < 8; i++)
 	{
-		auto c = theme->Get(C::DynamicsL);
+		auto c = ThemeT::Get().dynamics_compressor_line;
 		c.a *= (8 - i) / 8.0f;
 		d.Command<Graphics::Fill>(c);
 		d.Command<Graphics::Quad>(Vec4<int>{ (int)_xp, _y2, 1, _y - _y2 - 5 });
@@ -513,7 +586,7 @@ void DynamicsSlider::Render(CommandCollection& d)
 		if (_xp < 0)
 			break;
 	}
-	d.Command<Fill>(theme->Get(C::TextSmall));
+	d.Command<Fill>(ThemeT::Get().dynamics_value_text);
 	d.Command<Font>(Fonts::Gidole14, 14.0f);
 	d.Command<TextAlign>(Align::LEFT, Align::TOP);
 	d.Command<Text>(&m_TH2Str, Vec2<int>{0, -3});
@@ -538,7 +611,7 @@ void DynamicsSlider::Render(CommandCollection& d)
 			float _level = std::powf(m_Object.Levels()[i], 0.25);
 
 			int _w = (std::min(_level, 1.0f) / 1.0f) * (_rw);
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterFill));
+			d.Command<Graphics::Fill>(ThemeT::Get().dynamics_meter_value);
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
 		}
 	}

@@ -5,6 +5,636 @@
 // -------------------------- Some Graphics --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
+class ThemeT
+{
+public:
+	Color
+		text,
+		text_small,
+		textOff;
+
+	Color // Button
+		button_disabled_background,
+		button_disabled_border,
+		button_disabled_text,
+		button_active_background,
+		button_active_border,
+		button_active_text,
+		button_hovering_background,
+		button_hovering_border,
+		button_hovering_text,
+		button_idle_background,
+		button_idle_border,
+		button_idle_text;
+
+
+	Color // Toggle button
+		toggle_button_disabled_background,
+		toggle_button_disabled_border,
+		toggle_button_disabled_text,
+		toggle_button_active_background,
+		toggle_button_active_border,
+		toggle_button_active_text,
+		toggle_button_hovering_background,
+		toggle_button_hovering_border,
+		toggle_button_hovering_text,
+		toggle_button_idle_background,
+		toggle_button_idle_border,
+		toggle_button_idle_text;
+
+
+	Color // DropDown button
+		dropdown_button_disabled_background,
+		dropdown_button_disabled_border,
+		dropdown_button_disabled_text,
+		dropdown_button_active_background,
+		dropdown_button_active_border,
+		dropdown_button_active_text,
+		dropdown_button_hovering_background,
+		dropdown_button_hovering_border,
+		dropdown_button_hovering_text,
+		dropdown_button_idle_background,
+		dropdown_button_idle_border,
+		dropdown_button_idle_text;
+
+	Color // Radio button
+		radio_button_disabled_background,
+		radio_button_disabled_border,
+		radio_button_disabled_text,
+		radio_button_active_background,
+		radio_button_active_border,
+		radio_button_active_text,
+		radio_button_hovering_background,
+		radio_button_hovering_border,
+		radio_button_hovering_text,
+		radio_button_idle_background,
+		radio_button_idle_border,
+		radio_button_idle_text;
+
+	Color // Menu button
+		menu_button_disabled_background,
+		menu_button_disabled_text,
+		menu_button_disabled_text_small,
+		menu_button_active_background,
+		menu_button_active_text,
+		menu_button_active_text_small,
+		menu_button_hovering_background,
+		menu_button_hovering_text,
+		menu_button_hovering_text_small,
+		menu_button_idle_background,
+		menu_button_idle_text,
+		menu_button_idle_text_small;
+
+	Color // Toggle menu button
+		toggle_menu_button_disabled_background,
+		toggle_menu_button_disabled_text,
+		toggle_menu_button_disabled_text_small,
+		toggle_menu_button_active_background,
+		toggle_menu_button_active_text,
+		toggle_menu_button_active_text_small,
+		toggle_menu_button_active_square,
+		toggle_menu_button_hovering_background,
+		toggle_menu_button_hovering_text,
+		toggle_menu_button_hovering_text_small,
+		toggle_menu_button_idle_background,
+		toggle_menu_button_idle_text,
+		toggle_menu_button_idle_text_small;
+
+	Color // Scrollbar
+		scrollbar_idle_handle,
+		scrollbar_idle_bar,
+		scrollbar_hovering_handle,
+		scrollbar_hovering_bar,
+		scrollbar_active_handle,
+		scrollbar_active_bar;
+
+	Color // Slider
+		slider_disabled_background,
+		slider_disabled_border,
+		slider_disabled_value,
+		slider_disabled_value_text,
+		slider_disabled_name_text,
+		slider_idle_background,
+		slider_idle_border,
+		slider_idle_value,
+		slider_idle_value_text,
+		slider_idle_name_text,
+		slider_hovering_background,
+		slider_hovering_border,
+		slider_hovering_value,
+		slider_hovering_value_text,
+		slider_hovering_name_text,
+		slider_active_background,
+		slider_active_border,
+		slider_active_value,
+		slider_active_value_text,
+		slider_active_name_text;
+
+	Color // Knob
+		knob_disabled_handle,
+		knob_disabled_border,
+		knob_disabled_value,
+		knob_disabled_name_text,
+		knob_disabled_value_text,
+		knob_idle_handle,
+		knob_idle_border,
+		knob_idle_value,
+		knob_idle_name_text,
+		knob_idle_value_text,
+		knob_hovering_handle,
+		knob_hovering_border,
+		knob_hovering_value,
+		knob_hovering_name_text,
+		knob_hovering_value_text,
+		knob_active_handle,
+		knob_active_border,
+		knob_active_value,
+		knob_active_name_text,
+		knob_active_value_text;
+
+	Color // Volume slider
+		volume_slider_disabled_handle,
+		volume_slider_disabled_db_text,
+		volume_slider_disabled_value_text,
+		volume_slider_disabled_line,
+		volume_slider_disabled_line_highlight,
+		volume_slider_disabled_meter,
+		volume_slider_disabled_meter_value,
+		volume_slider_disabled_meter_value_c1,
+		volume_slider_disabled_meter_value_c2,
+		volume_slider_disabled_meter_value_c3,
+		volume_slider_idle_handle,
+		volume_slider_idle_db_text,
+		volume_slider_idle_value_text,
+		volume_slider_idle_line,
+		volume_slider_idle_line_highlight,
+		volume_slider_idle_meter,
+		volume_slider_idle_meter_value,
+		volume_slider_idle_meter_value_c1,
+		volume_slider_idle_meter_value_c2,
+		volume_slider_idle_meter_value_c3,
+		volume_slider_hovering_handle,
+		volume_slider_hovering_db_text,
+		volume_slider_hovering_value_text,
+		volume_slider_hovering_line,
+		volume_slider_hovering_line_highlight,
+		volume_slider_hovering_meter,
+		volume_slider_hovering_meter_value,
+		volume_slider_hovering_meter_value_c1,
+		volume_slider_hovering_meter_value_c2,
+		volume_slider_hovering_meter_value_c3,
+		volume_slider_active_handle,
+		volume_slider_active_db_text,
+		volume_slider_active_value_text,
+		volume_slider_active_line,
+		volume_slider_active_line_highlight,
+		volume_slider_active_meter,
+		volume_slider_active_meter_value,
+		volume_slider_active_meter_value_c1,
+		volume_slider_active_meter_value_c2,
+		volume_slider_active_meter_value_c3;
+
+	Color // XY-Controller
+		xycontroller_background,
+		xycontroller_idle_circle,
+		xycontroller_hovering_circle,
+		xycontroller_active_circle;
+
+	Color // Dynamics
+		dynamics_background,
+		dynamics_border,
+		dynamics_line,
+		dynamics_line_highlight,
+		dynamics_compressor,
+		dynamics_compressor_line,
+		dynamics_meter_value,
+		dynamics_db_text,
+		dynamics_value_text;
+
+	Color // Route button
+		route_button_idle_background,
+		route_button_idle_triangle,
+		route_button_hovering_background,
+		route_button_hovering_triangle,
+		route_button_active_background,
+		route_button_active_triangle;
+
+	Color // Channel
+		channel_idle_name_text,
+		channel_idle_background,
+		channel_hovering_name_text,
+		channel_hovering_background,
+		channel_active_name_text,
+		channel_active_background;
+
+	Color // mute mono button
+		mute_mono_button_idle_background,
+		mute_mono_button_idle_text,
+		mute_mono_button_hovering_background,
+		mute_mono_button_hovering_text,
+		mute_mono_button_active_background,
+		mute_mono_button_active_text;
+
+	Color // Effect
+		effect_title_text,
+		effect_title_text_off,
+		effect_title_bar,
+		effect_background,
+		effect_minimize_button;
+
+	Color // Divider
+		divider;
+
+	Color // Window
+		window_border,
+		window_frame,
+		window_panel,
+		window_title_text,
+		window_menu_text,
+		window_close_button_icon,
+		window_close_button_idle_background,
+		window_close_button_hovering_background,
+		window_close_button_active_background,
+		window_button_icon,
+		window_button_idle_background,
+		window_button_hovering_background,
+		window_button_active_background;
+
+	Color // Menu
+		menu_background,
+		menu_border;
+
+	ThemeT()
+	{}
+
+	ThemeT(nlohmann::json json)
+		: m_Json(json)
+	{
+		LoadTheme();
+	}
+
+	void LoadTheme()
+	{
+		try
+		{
+			m_Name = m_Json.at("name").get<std::string>();
+			for (auto& [key, v] : m_Json.at("variables").items())
+				m_Variables.emplace(key, Color{ v.at(0), v.at(1), v.at(2), v.at(3) });
+
+			text       = GetColor("text");
+			text_small = GetColor("textsmall");
+			textOff    = GetColor("textoff");
+
+			button_disabled_background	= GetColor("button", "disabled", "background");
+			button_disabled_border		= GetColor("button", "disabled", "border");
+			button_disabled_text		= GetColor("button", "disabled", "text");
+			button_active_background	= GetColor("button", "active", "background");
+			button_active_border		= GetColor("button", "active", "border");
+			button_active_text			= GetColor("button", "active", "text");
+			button_hovering_background	= GetColor("button", "hovering", "background");
+			button_hovering_border		= GetColor("button", "hovering", "border");
+			button_hovering_text		= GetColor("button", "hovering", "text");
+			button_idle_background		= GetColor("button", "idle", "background");
+			button_idle_border			= GetColor("button", "idle", "border");
+			button_idle_text			= GetColor("button", "idle", "text");
+
+			toggle_button_disabled_background	 = GetColor("toggle-button", "disabled", "background");
+			toggle_button_disabled_border		 = GetColor("toggle-button", "disabled", "border");
+			toggle_button_disabled_text			 = GetColor("toggle-button", "disabled", "text");
+			toggle_button_active_background		 = GetColor("toggle-button", "active", "background");
+			toggle_button_active_border			 = GetColor("toggle-button", "active", "border");
+			toggle_button_active_text			 = GetColor("toggle-button", "active", "text");
+			toggle_button_hovering_background	 = GetColor("toggle-button", "hovering", "background");
+			toggle_button_hovering_border		 = GetColor("toggle-button", "hovering", "border");
+			toggle_button_hovering_text			 = GetColor("toggle-button", "hovering", "text");
+			toggle_button_idle_background		 = GetColor("toggle-button", "idle", "background");
+			toggle_button_idle_border			 = GetColor("toggle-button", "idle", "border");
+			toggle_button_idle_text				 = GetColor("toggle-button", "idle", "text");
+
+			dropdown_button_disabled_background	 = GetColor("dropdown-button", "disabled", "background");
+			dropdown_button_disabled_border		 = GetColor("dropdown-button", "disabled", "border");
+			dropdown_button_disabled_text		 = GetColor("dropdown-button", "disabled", "text");
+			dropdown_button_active_background	 = GetColor("dropdown-button", "active", "background");
+			dropdown_button_active_border		 = GetColor("dropdown-button", "active", "border");
+			dropdown_button_active_text			 = GetColor("dropdown-button", "active", "text");
+			dropdown_button_hovering_background	 = GetColor("dropdown-button", "hovering", "background");
+			dropdown_button_hovering_border		 = GetColor("dropdown-button", "hovering", "border");
+			dropdown_button_hovering_text		 = GetColor("dropdown-button", "hovering", "text");
+			dropdown_button_idle_background		 = GetColor("dropdown-button", "idle", "background");
+			dropdown_button_idle_border			 = GetColor("dropdown-button", "idle", "border");
+			dropdown_button_idle_text			 = GetColor("dropdown-button", "idle", "text");
+
+			radio_button_disabled_background	 = GetColor("radio-button", "disabled", "background");
+			radio_button_disabled_border		 = GetColor("radio-button", "disabled", "border");
+			radio_button_disabled_text			 = GetColor("radio-button", "disabled", "text");
+			radio_button_active_background		 = GetColor("radio-button", "active", "background");
+			radio_button_active_border			 = GetColor("radio-button", "active", "border");
+			radio_button_active_text			 = GetColor("radio-button", "active", "text");
+			radio_button_hovering_background	 = GetColor("radio-button", "hovering", "background");
+			radio_button_hovering_border		 = GetColor("radio-button", "hovering", "border");
+			radio_button_hovering_text			 = GetColor("radio-button", "hovering", "text");
+			radio_button_idle_background		 = GetColor("radio-button", "idle", "background");
+			radio_button_idle_border			 = GetColor("radio-button", "idle", "border");
+			radio_button_idle_text				 = GetColor("radio-button", "idle", "text");
+
+			menu_button_disabled_background		 = GetColor("menu-button", "disabled", "background");
+			menu_button_disabled_text			 = GetColor("menu-button", "disabled", "text");
+			menu_button_disabled_text_small		 = GetColor("menu-button", "disabled", "text-small");
+			menu_button_active_background		 = GetColor("menu-button", "active", "background");
+			menu_button_active_text				 = GetColor("menu-button", "active", "text");
+			menu_button_active_text_small		 = GetColor("menu-button", "active", "text-small");
+			menu_button_hovering_background		 = GetColor("menu-button", "hovering", "background");
+			menu_button_hovering_text			 = GetColor("menu-button", "hovering", "text");
+			menu_button_hovering_text_small		 = GetColor("menu-button", "hovering", "text-small");
+			menu_button_idle_background			 = GetColor("menu-button", "idle", "background");
+			menu_button_idle_text				 = GetColor("menu-button", "idle", "text");
+			menu_button_idle_text_small			 = GetColor("menu-button", "idle", "text-small");
+
+			toggle_menu_button_disabled_background = GetColor("toggle-menu-button", "disabled", "background");
+			toggle_menu_button_disabled_text	   = GetColor("toggle-menu-button", "disabled", "text");
+			toggle_menu_button_disabled_text_small = GetColor("toggle-menu-button", "disabled", "text-small");
+			toggle_menu_button_active_background   = GetColor("toggle-menu-button", "active", "background");
+			toggle_menu_button_active_text		   = GetColor("toggle-menu-button", "active", "text");
+			toggle_menu_button_active_text_small   = GetColor("toggle-menu-button", "active", "text-small");
+			toggle_menu_button_active_square       = GetColor("toggle-menu-button", "active", "square");
+			toggle_menu_button_hovering_background = GetColor("toggle-menu-button", "hovering", "background");
+			toggle_menu_button_hovering_text	   = GetColor("toggle-menu-button", "hovering", "text");
+			toggle_menu_button_hovering_text_small = GetColor("toggle-menu-button", "hovering", "text-small");
+			toggle_menu_button_idle_background	   = GetColor("toggle-menu-button", "idle", "background");
+			toggle_menu_button_idle_text		   = GetColor("toggle-menu-button", "idle", "text");
+			toggle_menu_button_idle_text_small	   = GetColor("toggle-menu-button", "idle", "text-small");
+
+			scrollbar_idle_handle	   = GetColor("scrollbar", "idle", "handle");
+			scrollbar_idle_bar		   = GetColor("scrollbar", "idle", "bar");
+			scrollbar_hovering_handle  = GetColor("scrollbar", "hovering", "handle");
+			scrollbar_hovering_bar	   = GetColor("scrollbar", "hovering", "bar");
+			scrollbar_active_handle	   = GetColor("scrollbar", "active", "handle");
+			scrollbar_active_bar	   = GetColor("scrollbar", "active", "bar");
+
+			slider_disabled_background = GetColor("slider", "disabled", "background");
+			slider_disabled_border	   = GetColor("slider", "disabled", "border");
+			slider_disabled_value	   = GetColor("slider", "disabled", "value");
+			slider_disabled_value_text = GetColor("slider", "disabled", "value-text");
+			slider_disabled_name_text  = GetColor("slider", "disabled", "name-text");
+			slider_idle_background	   = GetColor("slider", "idle", "background");
+			slider_idle_border		   = GetColor("slider", "idle", "border");
+			slider_idle_value		   = GetColor("slider", "idle", "value");			
+			slider_idle_value_text	   = GetColor("slider", "idle", "value-text");
+			slider_idle_name_text	   = GetColor("slider", "idle", "name-text");
+			slider_hovering_background = GetColor("slider", "hovering", "background");
+			slider_hovering_border	   = GetColor("slider", "hovering", "border");
+			slider_hovering_value	   = GetColor("slider", "hovering", "value");
+			slider_hovering_value_text = GetColor("slider", "hovering", "value-text");
+			slider_hovering_name_text  = GetColor("slider", "hovering", "name-text");
+			slider_active_background   = GetColor("slider", "active", "background");
+			slider_active_border	   = GetColor("slider", "active", "border");
+			slider_active_value		   = GetColor("slider", "active", "value");
+			slider_active_value_text   = GetColor("slider", "active", "value-text");
+			slider_active_name_text    = GetColor("slider", "active", "name-text");
+
+			knob_disabled_handle	  = GetColor("knob", "disabled", "handle");
+			knob_disabled_border	  = GetColor("knob", "disabled", "border");
+			knob_disabled_value		  = GetColor("knob", "disabled", "value");
+			knob_disabled_name_text	  = GetColor("knob", "disabled", "name-text");
+			knob_disabled_value_text  = GetColor("knob", "disabled", "value-text");
+			knob_idle_handle		  = GetColor("knob", "idle", "handle");
+			knob_idle_border		  = GetColor("knob", "idle", "border");
+			knob_idle_value			  = GetColor("knob", "idle", "value");
+			knob_idle_name_text		  = GetColor("knob", "idle", "name-text");
+			knob_idle_value_text	  = GetColor("knob", "idle", "value-text");
+			knob_hovering_handle	  = GetColor("knob", "hovering", "handle");
+			knob_hovering_border	  = GetColor("knob", "hovering", "border");
+			knob_hovering_value		  = GetColor("knob", "hovering", "value");
+			knob_hovering_name_text	  = GetColor("knob", "hovering", "name-text");
+			knob_hovering_value_text  = GetColor("knob", "hovering", "value-text");
+			knob_active_handle		  = GetColor("knob", "active", "handle");
+			knob_active_border		  = GetColor("knob", "active", "border");
+			knob_active_value		  = GetColor("knob", "active", "value");
+			knob_active_name_text	  = GetColor("knob", "active", "name-text");
+			knob_active_value_text	  = GetColor("knob", "active", "value-text");
+
+			volume_slider_disabled_handle		   = GetColor("volume-slider", "disabled", "handle");
+			volume_slider_disabled_db_text		   = GetColor("volume-slider", "disabled", "db-text");
+			volume_slider_disabled_value_text	   = GetColor("volume-slider", "disabled", "value-text");
+			volume_slider_disabled_line			   = GetColor("volume-slider", "disabled", "line");
+			volume_slider_disabled_line_highlight  = GetColor("volume-slider", "disabled", "line-highlight");
+			volume_slider_disabled_meter		   = GetColor("volume-slider", "disabled", "meter");
+			volume_slider_disabled_meter_value	   = GetColor("volume-slider", "disabled", "meter-value");
+			volume_slider_disabled_meter_value_c1  = GetColor("volume-slider", "disabled", "meter-value-c1");
+			volume_slider_disabled_meter_value_c2  = GetColor("volume-slider", "disabled", "meter-value-c2");
+			volume_slider_disabled_meter_value_c3  = GetColor("volume-slider", "disabled", "meter-value-c3");
+			volume_slider_idle_handle			   = GetColor("volume-slider", "idle", "handle");
+			volume_slider_idle_db_text			   = GetColor("volume-slider", "idle", "db-text");
+			volume_slider_idle_value_text		   = GetColor("volume-slider", "idle", "value-text");
+			volume_slider_idle_line				   = GetColor("volume-slider", "idle", "line");
+			volume_slider_idle_line_highlight	   = GetColor("volume-slider", "idle", "line-highlight");
+			volume_slider_idle_meter			   = GetColor("volume-slider", "idle", "meter");
+			volume_slider_idle_meter_value		   = GetColor("volume-slider", "idle", "meter-value");
+			volume_slider_idle_meter_value_c1	   = GetColor("volume-slider", "idle", "meter-value-c1");
+			volume_slider_idle_meter_value_c2	   = GetColor("volume-slider", "idle", "meter-value-c2");
+			volume_slider_idle_meter_value_c3	   = GetColor("volume-slider", "idle", "meter-value-c3");
+			volume_slider_hovering_handle		   = GetColor("volume-slider", "hovering", "handle");
+			volume_slider_hovering_db_text		   = GetColor("volume-slider", "hovering", "db-text");
+			volume_slider_hovering_value_text	   = GetColor("volume-slider", "hovering", "value-text");
+			volume_slider_hovering_line			   = GetColor("volume-slider", "hovering", "line");
+			volume_slider_hovering_line_highlight  = GetColor("volume-slider", "hovering", "line-highlight");
+			volume_slider_hovering_meter		   = GetColor("volume-slider", "hovering", "meter");
+			volume_slider_hovering_meter_value	   = GetColor("volume-slider", "hovering", "meter-value");
+			volume_slider_hovering_meter_value_c1  = GetColor("volume-slider", "hovering", "meter-value-c1");
+			volume_slider_hovering_meter_value_c2  = GetColor("volume-slider", "hovering", "meter-value-c2");
+			volume_slider_hovering_meter_value_c3  = GetColor("volume-slider", "hovering", "meter-value-c3");
+			volume_slider_active_handle			   = GetColor("volume-slider", "active", "handle");
+			volume_slider_active_db_text		   = GetColor("volume-slider", "active", "db-text");
+			volume_slider_active_value_text		   = GetColor("volume-slider", "active", "value-text");
+			volume_slider_active_line			   = GetColor("volume-slider", "active", "line");
+			volume_slider_active_line_highlight	   = GetColor("volume-slider", "active", "line-highlight");
+			volume_slider_active_meter			   = GetColor("volume-slider", "active", "meter");
+			volume_slider_active_meter_value	   = GetColor("volume-slider", "active", "meter-value");
+			volume_slider_active_meter_value_c1	   = GetColor("volume-slider", "active", "meter-value-c1");
+			volume_slider_active_meter_value_c2	   = GetColor("volume-slider", "active", "meter-value-c2");
+			volume_slider_active_meter_value_c3	   = GetColor("volume-slider", "active", "meter-value-c3");
+
+			xycontroller_background		 = GetColor("xy-controller", "background");
+			xycontroller_idle_circle	 = GetColor("xy-controller", "idle", "circle");
+			xycontroller_hovering_circle = GetColor("xy-controller", "hovering", "circle");
+			xycontroller_active_circle	 = GetColor("xy-controller", "active", "circle");
+
+			dynamics_background		   = GetColor("dynamics", "background");
+			dynamics_border			   = GetColor("dynamics", "border");
+			dynamics_line			   = GetColor("dynamics", "line");
+			dynamics_line_highlight	   = GetColor("dynamics", "line-highlight");
+			dynamics_compressor		   = GetColor("dynamics", "compressor");
+			dynamics_compressor_line   = GetColor("dynamics", "compressor-line");
+			dynamics_meter_value	   = GetColor("dynamics", "meter-value");
+			dynamics_db_text		   = GetColor("dynamics", "db-text");
+			dynamics_value_text		   = GetColor("dynamics", "value-text");
+
+			route_button_idle_background	 = GetColor("route-button", "idle", "background");
+			route_button_idle_triangle		 = GetColor("route-button", "idle", "triangle");
+			route_button_hovering_background = GetColor("route-button", "hovering", "background");
+			route_button_hovering_triangle	 = GetColor("route-button", "hovering", "triangle");
+			route_button_active_background	 = GetColor("route-button", "active", "background");
+			route_button_active_triangle	 = GetColor("route-button", "active", "triangle");
+
+			channel_idle_name_text			 = GetColor("channel", "idle", "name-text");
+			channel_idle_background			 = GetColor("channel", "idle", "background");
+			channel_hovering_name_text		 = GetColor("channel", "hovering", "name-text");
+			channel_hovering_background		 = GetColor("channel", "hovering", "background");
+			channel_active_name_text		 = GetColor("channel", "active", "name-text");
+			channel_active_background		 = GetColor("channel", "active", "background");
+
+			mute_mono_button_idle_background	 = GetColor("mute-mono-button", "idle", "background");
+			mute_mono_button_idle_text			 = GetColor("mute-mono-button", "idle", "text");
+			mute_mono_button_hovering_background = GetColor("mute-mono-button", "hovering", "background");
+			mute_mono_button_hovering_text		 = GetColor("mute-mono-button", "hovering", "text");
+			mute_mono_button_active_background	 = GetColor("mute-mono-button", "active", "background");
+			mute_mono_button_active_text		 = GetColor("mute-mono-button", "active", "text");
+
+			effect_title_text      = GetColor("effect", "title-text");
+			effect_title_text_off  = GetColor("effect", "title-text-off");
+			effect_title_bar	   = GetColor("effect", "title-bar");
+			effect_background	   = GetColor("effect", "background");
+			effect_minimize_button = GetColor("effect", "minimize-button");
+
+			divider = GetColor("divider");
+
+			window_border						    = GetColor("window", "border");
+			window_frame						    = GetColor("window", "frame");
+			window_panel						    = GetColor("window", "panel");
+			window_title_text					    = GetColor("window", "title-text");
+			window_menu_text					    = GetColor("window", "menu-text");
+			window_close_button_icon			    = GetColor("window", "close-button", "icon");
+			window_close_button_idle_background	    = GetColor("window", "close-button", "idle", "background");
+			window_close_button_hovering_background = GetColor("window", "close-button", "hovering", "background");
+			window_close_button_active_background   = GetColor("window", "close-button", "active", "background");
+			window_button_icon					    = GetColor("window", "button", "icon");
+			window_button_idle_background		    = GetColor("window", "button", "idle", "background");
+			window_button_hovering_background	    = GetColor("window", "button", "hovering", "background");
+			window_button_active_background		    = GetColor("window", "button", "active", "background");
+
+			menu_background = GetColor("menu", "background");
+			menu_border	    = GetColor("menu", "border");
+		}
+		catch (...)
+		{
+			LOG("Error loading theme");
+		}
+	}
+
+	template<typename ...Args>
+	Color GetColor(Args... args)
+	{
+		return GetColor(m_Json.at("components"), args...);
+	};
+
+	template<typename Arg, typename ...Args>
+	Color GetColor(nlohmann::json json, Arg a, Args... args)
+	{
+		try
+		{
+			return GetColor(json.at(a), args...);
+		}
+		catch (...)
+		{
+			LOG("Error loading color : " << a);
+			return Color{ 0, 0, 0, 255 };
+		}
+	};
+
+	template<typename Arg>
+	Color GetColor(nlohmann::json json, Arg arg)
+	{
+		try
+		{
+			return GetColor(json.at(arg));
+		}
+		catch (...)
+		{
+			LOG("Error loading color : " << arg);
+			return Color{ 0, 0, 0, 255 };
+		}
+	};
+
+	Color GetColor(nlohmann::json json)
+	{
+		try
+		{
+			if (json.is_string())
+				return m_Variables.at(json.get<std::string>());
+			return Color{ json.at(0), json.at(1), json.at(2), json.at(3) };
+		}
+		catch (...)
+		{
+			LOG("Error loading color : " << json);
+			return Color{ 0, 0, 0, 255 };
+		}
+	}
+
+	std::string& Name() { return m_Name; }
+
+	static inline ThemeT& Get()
+	{
+		static ThemeT theme;
+		if (m_Theme == nullptr)
+			return theme;
+		return *m_Theme;
+	}
+
+	static inline void ReloadThemes()
+	{
+		m_Theme = nullptr;
+		m_Themes.clear();
+		for (auto& p : std::filesystem::directory_iterator("./themes"))
+		{
+			if (!p.is_regular_file())
+				continue;
+
+			std::filesystem::path _path = p;
+
+			if (_path.filename().extension() != ".json")
+				continue;
+
+			try
+			{
+				std::ifstream _if{ p };
+				nlohmann::json _json;
+				_if >> _json;
+
+				auto _theme = std::make_unique<ThemeT>(_json);
+				auto _name = _theme->Name();
+				m_Themes.emplace(_name, std::move(_theme));
+				if (m_Theme == nullptr)
+					SetTheme(_name);
+
+				_if.close();
+			}
+			catch (...)
+			{
+				LOG("Failed to load theme : " << _path.filename());
+			}
+		}
+	}
+
+	static inline void SetTheme(const std::string& t)
+	{
+		m_Theme = m_Themes[t].get();
+	}
+
+	static inline std::unordered_map<std::string, std::unique_ptr<ThemeT>>& Themes()
+	{
+		return m_Themes;
+	}
+
+private:
+	nlohmann::json m_Json;
+	std::string m_Name;
+	std::unordered_map<std::string, Color> m_Variables;
+	
+	static inline std::unordered_map<std::string, std::unique_ptr<ThemeT>> m_Themes;
+	static inline ThemeT* m_Theme = nullptr;
+};
+
+
 class Themes
 {
 public:
@@ -92,7 +722,7 @@ enum class C
 	ITEMS
 };
 
-constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] = 
+static inline Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] = 
 {
 	{},
 	// DARK
@@ -354,19 +984,6 @@ constexpr Color THEMES[Themes::N::ITEMS][(int)C::ITEMS] =
 	}
 };
 
-class Theme
-{
-public:
-	Themes::N theme;
-
-	Color Get(C c) 
-	{ 
-		return THEMES[theme][(int)c];
-	};
-};
-
-extern Theme* theme;
-
 struct NOTHING
 {
 	static void Render(ButtonBase&, CommandCollection&) {}
@@ -379,8 +996,8 @@ public:
 	{
 		using namespace Graphics;
 		int _padding = 20;
-		Color _c1 = theme->Get(C::Channel);
-		Color _c2 = theme->Get(C::Text);
+		Color _c1 = ThemeT::Get().window_frame;
+		Color _c2 = ThemeT::Get().text;
 		
 		d.Command<Fill>(_c1);
 		d.Command<Quad>(b.Position(), b.Size());
@@ -397,7 +1014,7 @@ public:
 	static void Render(ButtonBase& b, CommandCollection& d)
 	{
 		using namespace Graphics;
-		Color _c2 = theme->Get(C::TextSmall);
+		Color _c2 = ThemeT::Get().text_small;
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		d.Command<Fill>(_c2);
@@ -417,7 +1034,7 @@ public:
 	void Render(CommandCollection& d) override
 	{
 		using namespace Graphics;
-		Color _c2 = theme->Get(C::TextSmall);
+		Color _c2 = ThemeT::Get().text_small;
 
 		d.Command<Font>(m_Font, m_FontSize);
 		d.Command<Fill>(_c2);
@@ -441,18 +1058,19 @@ public:
 			return;
 		using namespace Graphics;
 		double _div = 3;
-		Color _c1 = theme->Get(C::RButtonB);
-		Color _c2 = theme->Get(C::RButton);
-		if ((b.Hovering()))
-		{
-			_c1 = theme->Get(C::RButtonHB);
-			_c2 = theme->Get(C::RButtonH);
-		}
+		Color _c1 = ThemeT::Get().route_button_idle_background;
+		Color _c2 = ThemeT::Get().route_button_idle_triangle;
+
 		if (b.Active())
 		{
-			_c1 = theme->Get(C::RButtonSB);
-			_c2 = theme->Get(C::RButtonS);
+			_c1 = ThemeT::Get().route_button_active_background;
+			_c2 = ThemeT::Get().route_button_active_triangle;
 			_div = 2.7;
+		}
+		else if ((b.Hovering()))
+		{
+			_c1 = ThemeT::Get().route_button_hovering_background;
+			_c2 = ThemeT::Get().route_button_hovering_triangle;
 		}
 
 		int _w = b.Width() / _div;
@@ -472,16 +1090,18 @@ public:
 		if (b.Disabled())
 			return;
 		using namespace Graphics;
-		Color _c1 = theme->Get(C::TextOff);
-		Color _c2 = theme->Get(C::MButton);
-		if ((b.Hovering()))
-		{
-			_c2 = theme->Get(C::MButtonH);
-		}
+		Color _c1 = ThemeT::Get().mute_mono_button_idle_text;
+		Color _c2 = ThemeT::Get().mute_mono_button_idle_background;
+		
 		if (b.Active())
 		{
-			_c1 = theme->Get(C::Text);
-			_c2 = theme->Get(C::MButtonS);
+			_c1 = ThemeT::Get().mute_mono_button_active_text;
+			_c2 = ThemeT::Get().mute_mono_button_active_background;
+		}
+		else if ((b.Hovering()))
+		{
+			_c1 = ThemeT::Get().mute_mono_button_hovering_text;
+			_c2 = ThemeT::Get().mute_mono_button_hovering_background;
 		}
 
 		int _w = b.Width();
@@ -503,16 +1123,18 @@ public:
 		if (b.Disabled())
 			return;
 		using namespace Graphics;
-		Color _c1 = theme->Get(C::TextOff);
-		Color _c2 = theme->Get(C::MButton);
-		if ((b.Hovering()))
-		{
-			_c2 = theme->Get(C::MButtonH);
-		}
+		Color _c1 = ThemeT::Get().mute_mono_button_idle_text;
+		Color _c2 = ThemeT::Get().mute_mono_button_idle_background;
+
 		if (b.Active())
 		{
-			_c1 = theme->Get(C::Text);
-			_c2 = theme->Get(C::MButtonS);
+			_c1 = ThemeT::Get().mute_mono_button_active_text;
+			_c2 = ThemeT::Get().mute_mono_button_active_background;
+		}
+		else if ((b.Hovering()))
+		{
+			_c1 = ThemeT::Get().mute_mono_button_hovering_text;
+			_c2 = ThemeT::Get().mute_mono_button_hovering_background;
 		}
 
 		int _w = b.Width();
@@ -540,7 +1162,14 @@ public:
 			int _h = 25;
 			int _y = b.NormalizedValue() * b.Height() + b.Y();
 
-			d.Command<Fill>(theme->Get(C::VSlider));
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().volume_slider_disabled_handle);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().volume_slider_active_handle);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().volume_slider_hovering_handle);
+			else
+				d.Command<Fill>(ThemeT::Get().volume_slider_idle_handle);
 
 			int _w = b.Width() - _p * 2;
 			int _he = _h - _p * 2;
@@ -559,7 +1188,14 @@ public:
 			int _w = 25;
 			int _x = b.NormalizedValue() * (b.Width()) + b.X();
 
-			d.Command<Fill>(theme->Get(C::VSlider));
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().volume_slider_disabled_handle);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().volume_slider_active_handle);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().volume_slider_hovering_handle);
+			else
+				d.Command<Fill>(ThemeT::Get().volume_slider_idle_handle);
 
 			int _h = b.Height() - _p * 2;
 			int _we = _w - _p * 2;
@@ -588,31 +1224,71 @@ public:
 
 		int _h = b.Height() - _p * 2;
 		int _we = _w - _p * 2;
-		d.Command<Fill>(theme->Get(C::PSliderB));
+
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().slider_disabled_border);
+		else if (b.Dragging())
+			d.Command<Fill>(ThemeT::Get().slider_active_border);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().slider_hovering_border);
+		else
+			d.Command<Fill>(ThemeT::Get().slider_idle_border);
+
 		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		d.Command<Fill>(theme->Get(C::PSlider));
+		
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().slider_disabled_background);
+		else if (b.Dragging())
+			d.Command<Fill>(ThemeT::Get().slider_active_background);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().slider_hovering_background);
+		else
+			d.Command<Fill>(ThemeT::Get().slider_idle_background);
+
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-		d.Command<Fill>(theme->Get(C::PSliderS));
+		
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().slider_disabled_value);
+		else if (b.Dragging())
+			d.Command<Fill>(ThemeT::Get().slider_active_value);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().slider_hovering_value);
+		else
+			d.Command<Fill>(ThemeT::Get().slider_idle_value);
+
 		d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2, b.Y() + 1, _w, b.Height() - 2});
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);		
-		if (b.Disabled())
-			d.Command<Fill>(theme->Get(C::TextOff));
-		else
-			d.Command<Fill>(theme->Get(C::TextSmall));
 		if (b.DisplayValue())
 		{
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_value_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
+
 			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 			d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
 		}
 		if (b.DisplayName())
 		{
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_name_text);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_name_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_name_text);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_name_text);
+
 			d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
 			d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
 		}
 	}
 };
-
 
 class SliderGraphics
 {
@@ -629,11 +1305,37 @@ public:
 			int _p = 6;
 			int _h = b.NormalizedValue() * (b.Height() - 2);
 
-			d.Command<Fill>(theme->Get(C::SliderB));
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_border);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_border);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_border);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_border);
+
 			d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-			d.Command<Fill>(theme->Get(C::Slider));
+
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_background);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_background);
+
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-			d.Command<Fill>(theme->Get(C::SliderV));
+
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_value);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_value);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_value);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_value);
+
 			d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y() + 1, b.Width() - 2, _h});
 		}
 		else
@@ -641,33 +1343,72 @@ public:
 			int _p = 6;
 			int _w = b.NormalizedValue() * (b.Width() - 2);
 
-			d.Command<Fill>(theme->Get(C::SliderB));
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_border);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_border);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_border);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_border);
+
 			d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-			d.Command<Fill>(theme->Get(C::Slider));
+
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_background);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_background);
+
 			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-			d.Command<Fill>(theme->Get(C::SliderV));
+
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_value);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_value);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_value);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_value);
+
 			d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y() + 1, _w, b.Height() - 2});
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.Disabled())
-			d.Command<Fill>(theme->Get(C::TextOff));
-		else
-			d.Command<Fill>(theme->Get(C::TextSmall));
 		if (b.DisplayValue())
 		{
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_value_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
+
 			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 			d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + b.Height() / 2});
 		}
 		if (b.DisplayName())
 		{
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().slider_disabled_name_text);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().slider_active_name_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().slider_hovering_name_text);
+			else
+				d.Command<Fill>(ThemeT::Get().slider_idle_name_text);
+
 			d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
 			d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
 		}
 	}
 
 };
-
 
 class ToggleButtonGraphics
 {
@@ -678,34 +1419,42 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-		d.Command<Fill>(theme->Get(C::ToggleButtonB));
-		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Active() && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().toggle_button_disabled_border);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().toggle_button_active_border);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().toggle_button_hovering_border);
 		else
-			d.Command<Fill>(theme->Get(C::ToggleButton));
+			d.Command<Fill>(ThemeT::Get().toggle_button_idle_border);
+
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().toggle_button_disabled_background);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().toggle_button_active_background);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().toggle_button_hovering_background);
+		else
+			d.Command<Fill>(ThemeT::Get().toggle_button_idle_background);
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Active() && b.Hovering() && !b.Disabled())
-		{
-			d.Command<Fill>(theme->Get(C::ToggleButtonH));
-			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-		}
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().toggle_button_disabled_text);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().toggle_button_active_text);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().toggle_button_hovering_text);
+		else
+			d.Command<Fill>(ThemeT::Get().toggle_button_idle_text);
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.Active() && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::ToggleButtonText));
-		else 
-			d.Command<Fill>(theme->Get(C::TextOff));
-
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
-		
 	}
-
 };
-
 
 class RadioButtonGraphics
 {
@@ -716,30 +1465,40 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-		d.Command<Fill>(theme->Get(C::ToggleButtonB));
-		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Selected() && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().radio_button_disabled_border);
+		else if (b.Selected())
+			d.Command<Fill>(ThemeT::Get().radio_button_active_border);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().radio_button_hovering_border);
 		else
-			d.Command<Fill>(theme->Get(C::ToggleButton));
+			d.Command<Fill>(ThemeT::Get().radio_button_idle_border);
+
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().radio_button_disabled_background);
+		else if (b.Selected())
+			d.Command<Fill>(ThemeT::Get().radio_button_active_background);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().radio_button_hovering_background);
+		else
+			d.Command<Fill>(ThemeT::Get().radio_button_idle_background);
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Selected() && (b.Hovering() || b.Active()) && !b.Disabled())
-		{
-			d.Command<Fill>(theme->Get(C::ToggleButtonH));
-			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-		}
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().radio_button_disabled_text);
+		else if (b.Selected())
+			d.Command<Fill>(ThemeT::Get().radio_button_active_text);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().radio_button_hovering_text);
+		else
+			d.Command<Fill>(ThemeT::Get().radio_button_idle_text);
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.Selected() && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::ToggleButtonText));
-		else
-			d.Command<Fill>(theme->Get(C::TextOff));
-
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
-
 	}
 
 };
@@ -754,30 +1513,40 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-		d.Command<Fill>(theme->Get(C::ToggleButtonB));
-		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Active() && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().button_disabled_border);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().button_active_border);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().button_hovering_border);
 		else
-			d.Command<Fill>(theme->Get(C::ToggleButton));
+			d.Command<Fill>(ThemeT::Get().button_idle_border);
+
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().button_disabled_background);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().button_active_background);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().button_hovering_background);
+		else
+			d.Command<Fill>(ThemeT::Get().button_idle_background);
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Disabled() && !b.Active() && b.Hovering())
-		{
-			d.Command<Fill>(theme->Get(C::ToggleButtonH));
-			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-		}
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().button_disabled_text);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().button_active_text);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().button_hovering_text);
+		else
+			d.Command<Fill>(ThemeT::Get().button_idle_text);
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-
-		if (b.Disabled())
-			d.Command<Fill>(theme->Get(C::TextOff));
-		else
-			d.Command<Fill>(theme->Get(C::TextSmall));
-
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2 });
+		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
 	}
 
 };
@@ -792,29 +1561,38 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-		d.Command<Fill>(theme->Get(C::ToggleButtonB));
-		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Active() && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_disabled_border);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_active_border);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_hovering_border);
 		else
-			d.Command<Fill>(theme->Get(C::ToggleButton));
+			d.Command<Fill>(ThemeT::Get().dropdown_button_idle_border);
+
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_disabled_background);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_active_background);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_hovering_background);
+		else
+			d.Command<Fill>(ThemeT::Get().dropdown_button_idle_background);
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Active() && b.Hovering() && !b.Disabled())
-		{
-			d.Command<Fill>(theme->Get(C::ToggleButtonH));
-			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-		}
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_disabled_text);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_active_text);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_hovering_text);
+		else
+			d.Command<Fill>(ThemeT::Get().dropdown_button_idle_text);
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-
-		if ((int)b.Value() != 0 && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::TextSmall));
-		else
-			d.Command<Fill>(theme->Get(C::TextOff));
-
-
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2 });
 	}
@@ -831,29 +1609,38 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-		d.Command<Fill>(theme->Get(C::ToggleButtonB));
-		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
-		if (b.Active() && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::ToggleButtonV));
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_disabled_border);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_active_border);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_hovering_border);
 		else
-			d.Command<Fill>(theme->Get(C::ToggleButton));
+			d.Command<Fill>(ThemeT::Get().dropdown_button_idle_border);
+
+		d.Command<Quad>(Vec4<int>{b.Position(), b.Size()});
+
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_disabled_background);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_active_background);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_hovering_background);
+		else
+			d.Command<Fill>(ThemeT::Get().dropdown_button_idle_background);
 
 		d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
 
-		if (!b.Active() && b.Hovering() && !b.Disabled())
-		{
-			d.Command<Fill>(theme->Get(C::ToggleButtonH));
-			d.Command<Quad>(Vec4<int>{b.Position() + 1, b.Size() - 2});
-		}
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_disabled_text);
+		else if (b.Active())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_active_text);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().dropdown_button_hovering_text);
+		else
+			d.Command<Fill>(ThemeT::Get().dropdown_button_idle_text);
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-
-		if ((int)b.Value() != 0 && !b.Disabled())
-			d.Command<Fill>(theme->Get(C::TextSmall));
-		else
-			d.Command<Fill>(theme->Get(C::TextOff));
-
-
 		d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + 4, b.Y() + b.Height() / 2 });
 		
@@ -861,10 +1648,7 @@ public:
 		int _padding = 4;
 		d.Command<Triangle>(Vec4<int>{b.X() + b.Width() - _w / 2 - _padding, b.Y() + b.Height() / 2, _w, _w / 2}, -90.0f);
 	}
-
 };
-
-
 
 class KnobGraphics
 {
@@ -876,7 +1660,6 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-
 		bool _double = b.Range().x < 0 && b.Range().y > 0;
 
 		double _v = 1.0 - b.NormalizedValue();
@@ -886,43 +1669,77 @@ public:
 
 		int _h = b.Height() - _p * 2;
 		int _we = _w - _p * 2;
-		d.Command<Fill>(theme->Get(C::KnobSliderB));
-		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()});
-		d.Command<Fill>(theme->Get(C::KnobSliderS));
+
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().knob_disabled_border);
+		else if (b.Dragging())
+			d.Command<Fill>(ThemeT::Get().knob_active_border);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().knob_hovering_border);
+		else
+			d.Command<Fill>(ThemeT::Get().knob_idle_border);
+
+		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()}, Vec2<double>{ M_PI * 1.75 - M_PI / 2.0, M_PI * 0.25 - M_PI / 2.0 });
+
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().knob_disabled_value);
+		else if (b.Dragging())
+			d.Command<Fill>(ThemeT::Get().knob_active_value);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().knob_hovering_value);
+		else
+			d.Command<Fill>(ThemeT::Get().knob_idle_value);
+
 		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()}, Vec2<double>{_double ? _a > M_PI / 2 ? _a : M_PI / 2 : -M_PI * 0.75f, _double ? _a > M_PI / 2 ? M_PI / 2 : _a : _a});
-		d.Command<Fill>(theme->Get(C::KnobSlider));
-		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 4});
-		d.Command<Fill>(theme->Get(C::KnobSlider));
+		
+		d.Command<Fill>(ThemeT::Get().effect_background);
+		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 4}, Vec2<double>{ M_PI * 1.75 - M_PI / 2.0, M_PI * 0.25 - M_PI / 2.0 });
 
-		int _x1 = std::cos(M_PI * 0.25 - M_PI / 2.0) * b.Width() / 2;
-		int _x2 = std::cos(M_PI * 1.75 - M_PI / 2.0) * b.Width() / 2;
+		if (b.Disabled())
+			d.Command<Fill>(ThemeT::Get().knob_disabled_handle);
+		else if (b.Dragging())
+			d.Command<Fill>(ThemeT::Get().knob_active_handle);
+		else if (b.Hovering())
+			d.Command<Fill>(ThemeT::Get().knob_hovering_handle);
+		else
+			d.Command<Fill>(ThemeT::Get().knob_idle_handle);
 
-		d.Command<Graphics::Quad>(Vec4<int>{ b.X() + b.Width() / 2 + _x2, b.Y(), _x1 - _x2, b.Height() / 4});
-		d.Command<Fill>(theme->Get(C::KnobSliderV));
 		double _x = std::cos(_a) * b.Width() / 2.0;
 		double _y = std::sin(_a) * b.Height() / 2.0;
-		//d.Command<Graphics::Ellipse>(Vec4<int>{ (int)(b.X() + b.Width() / 2.0 + _x), (int)(b.Y() + b.Height() / 2.0 + _y + 1), b.Width() / 4, b.Height() / 4 }, _v * 360);
 		d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 4.0 + (_x + 1) / 2.0), (int)(b.Y() + b.Height() / 2.0 + (_y) / 2.0), b.Width() / 2, 2 }, 360 * _a / (2 * M_PI));
 
-
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.Disabled())
-			d.Command<Fill>(theme->Get(C::TextOff));
-		else
-			d.Command<Fill>(theme->Get(C::TextSmall));
-
 		if (b.DisplayValue())
 		{
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().knob_disabled_value_text);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().knob_active_value_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().knob_hovering_value_text);
+			else
+				d.Command<Fill>(ThemeT::Get().knob_idle_value_text);
+
 			d.Command<TextAlign>(Align::CENTER, Align::TOP);
 			d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + 3});
 		}		
 		if (b.DisplayName())
 		{
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().knob_disabled_name_text);
+			else if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().knob_active_name_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().knob_hovering_name_text);
+			else
+				d.Command<Fill>(ThemeT::Get().knob_idle_name_text);
+
 			d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
 			d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
 		}
 	}
 };
+
 namespace SoundMixrGraphics
 {
 	using namespace Graphics;
@@ -933,11 +1750,27 @@ namespace SoundMixrGraphics
 		static void Render(ButtonBase& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Active() ? theme->Get(C::ButtonS) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
+			
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().menu_button_disabled_background);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().menu_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().menu_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().menu_button_idle_background);
 
-			d.Command<Fill>(_c1);
 			d.Command<Quad>(b.Position(), b.Size());
-			d.Command<Fill>(theme->Get(C::Text));
+
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().menu_button_disabled_text);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().menu_button_active_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().menu_button_hovering_text);
+			else
+				d.Command<Fill>(ThemeT::Get().menu_button_idle_text);
+
 			d.Command<Font>(Fonts::Gidole14, 14.0f);
 			d.Command<TextAlign>(Hori, Vert);
 			if (Hori == Align::CENTER)
@@ -955,104 +1788,197 @@ namespace SoundMixrGraphics
 		static void Render(This& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Active() ? theme->Get(C::ButtonS) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
-			Color _c2 = b.Disabled() ? theme->Get(C::TextSmall) : theme->Get(C::Text);
-			Color _c3 = theme->Get(C::TextOff);
 
-			d.Command<Fill>(_c1);
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().menu_button_disabled_background);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().menu_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().menu_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().menu_button_idle_background);
+
 			d.Command<Quad>(b.Position(), b.Size());
+			
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().menu_button_disabled_text);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().menu_button_active_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().menu_button_hovering_text);
+			else
+				d.Command<Fill>(ThemeT::Get().menu_button_idle_text);
+
 			d.Command<Font>(Fonts::Gidole14, 14.0f);
-			d.Command<Fill>(_c2);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
-			d.Command<Fill>(_c3);
-			d.Command<TextAlign>(Align::RIGHT, Align::CENTER);
+
 			if (b.KeyCombo() != Key::NONE)
+			{
+				if (b.Disabled())
+					d.Command<Fill>(ThemeT::Get().menu_button_disabled_text_small);
+				else if (b.Active())
+					d.Command<Fill>(ThemeT::Get().menu_button_active_text_small);
+				else if (b.Hovering())
+					d.Command<Fill>(ThemeT::Get().menu_button_hovering_text_small);
+				else
+					d.Command<Fill>(ThemeT::Get().menu_button_idle_text_small);
+				
+				d.Command<TextAlign>(Align::RIGHT, Align::CENTER);
 				d.Command<Text>(&b.KeyCombo().ToString(), b.X() + b.Width() - 6, b.Y() + b.Height() / 2);
+			}
 		};
 
 		template<>
 		static void Render<Button<Menu, ButtonType::List>>(Button<Menu, ButtonType::List>& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Active() ? theme->Get(C::ButtonS) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
-			Color _c2 = theme->Get(C::Text);
-			Color _c3 = theme->Get(C::TextOff);
 
-			d.Command<Fill>(_c1);
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_background);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_background);
+
 			d.Command<Quad>(b.Position(), b.Size());
 
 			if (b.Selected())
 			{
-				d.Command<Fill>(theme->Get(C::ButtonS));
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_square);
 				int _p = 2;
 				d.Command<Quad>(b.Position() + Vec2<int>{ _p, _p }, Vec2<int>{ b.Size().y - _p * 2, b.Size().y - _p * 2 });
 			}
+
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text);
+			else
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
+
 			d.Command<Font>(Fonts::Gidole14, 14.0f);
-			d.Command<Fill>(_c2);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
-			d.Command<Fill>(_c3);
-			d.Command<TextAlign>(Align::RIGHT, Align::CENTER);
+
 			if (b.KeyCombo() != Key::NONE)
+			{
+				if (b.Disabled())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text_small);
+				else if (b.Active())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
+				else if (b.Hovering())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text_small);
+				else
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text_small);
+
+				d.Command<TextAlign>(Align::RIGHT, Align::CENTER);
 				d.Command<Text>(&b.KeyCombo().ToString(), b.X() + b.Width() - 6, b.Y() + b.Height() / 2);
+			}
 		};
 
 		template<>
 		static void Render<Button<Menu, ButtonType::Toggle>>(Button<Menu, ButtonType::Toggle>& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
-			Color _c2 = theme->Get(C::Text);
-			Color _c3 = theme->Get(C::TextOff);
 
-			d.Command<Fill>(_c1);
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_background);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_background);
+
 			d.Command<Quad>(b.Position(), b.Size());
 
 			if (b.Active())
 			{
-				d.Command<Fill>(theme->Get(C::ButtonS));
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_square);
 				int _p = 2;
 				d.Command<Quad>(b.Position() + Vec2<int>{ _p, _p }, Vec2<int>{ b.Size().y - _p * 2, b.Size().y - _p * 2 });
 			}
+
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text);
+			else
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
+
 			d.Command<Font>(Fonts::Gidole14, 14.0f);
-			d.Command<Fill>(_c2);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
-			d.Command<Fill>(_c3);
-			d.Command<TextAlign>(Align::RIGHT, Align::CENTER);
+
 			if (b.KeyCombo() != Key::NONE)
+			{
+				if (b.Disabled())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text_small);
+				else if (b.Active())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
+				else if (b.Hovering())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text_small);
+				else
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text_small);
+
+				d.Command<TextAlign>(Align::RIGHT, Align::CENTER);
 				d.Command<Text>(&b.KeyCombo().ToString(), b.X() + b.Width() - 6, b.Y() + b.Height() / 2);
+			}
 		};
 
 		template<>
 		static void Render<Button<Menu, ButtonType::Hover>>(Button<Menu, ButtonType::Hover>& b, CommandCollection& d)
 		{
 			int _padding = 20;
-			Color _c1 = b.Disabled() ? theme->Get(C::ButtonD) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
-			Color _c2 = theme->Get(C::Text);
-			Color _c3 = theme->Get(C::TextOff);
 
-			d.Command<Fill>(_c1);
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_background);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_background);
+
 			d.Command<Quad>(b.Position(), b.Size());
-			d.Command<Font>(Fonts::Gidole14, 14);
-			d.Command<Fill>(_c2);
+
+			if (b.Disabled())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text);
+			else
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
+
+			d.Command<Font>(Fonts::Gidole14, 14.0f);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
-			d.Command<Fill>(_c3);
-			d.Command<TextAlign>(Align::RIGHT, Align::CENTER);
+
 			if (b.KeyCombo() != Key::NONE)
+			{
+				if (b.Disabled())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text_small);
+				else if (b.Active())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
+				else if (b.Hovering())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text_small);
+				else
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text_small);
+
+				d.Command<TextAlign>(Align::RIGHT, Align::CENTER);
 				d.Command<Text>(&b.KeyCombo().ToString(), b.X() + b.Width() - 6, b.Y() + b.Height() / 2);
+			}
 		};
 	};
 
-	// --------------------------------------------------------------------------
-	// ------------------------------ Sub Menu ----------------------------------
-	// --------------------------------------------------------------------------
-
-	/**
-	 * Button graphics for a submenu, which is a button that, when hovered over, opens a menu.
-	 */
 	struct SubMenu
 	{
 		/**
@@ -1070,13 +1996,6 @@ namespace SoundMixrGraphics
 		}
 	};
 
-	// --------------------------------------------------------------------------
-	// ----------------------------- Title Menu ---------------------------------
-	// --------------------------------------------------------------------------
-
-	/**
-	 * Button graphics used for the buttons in the title bar menu.
-	 */
 	struct TitleMenu
 	{
 		/**
@@ -1086,13 +2005,13 @@ namespace SoundMixrGraphics
 		 */    
 		static void TitleMenu::Render(ButtonBase& b, CommandCollection& d)
 		 {
-			 Color _c1 = b.Active() ? theme->Get(C::Menu) : b.Hovering() ? theme->Get(C::ButtonH) : theme->Get(C::Button);
-			 Color _c2 = theme->Get(C::Text);
+			 Color _c1 = b.Active() ? ThemeT::Get().menu_background : b.Hovering() ? ThemeT::Get().menu_button_hovering_background : Color{ 0, 0, 0, 0 };
+			 Color _c2 = ThemeT::Get().window_menu_text;
 
 			 int _padding = 20;
 			 if (b.Active())
 			 {
-				 d.Command<Fill>(theme->Get(C::MenuB));
+				 d.Command<Fill>(ThemeT::Get().menu_border);
 				 d.Command<Quad>(b.X() - 1, b.Y(), b.Width() + 2, b.Height());
 			 }
 			 d.Command<Fill>(_c1);
@@ -1104,9 +2023,6 @@ namespace SoundMixrGraphics
 		 }
 	}; 
 
-	/**
-	 * Horizontal menu.
-	 */
 	struct Horizontal
 	{
 		static void Render(MenuBase& b, CommandCollection& d) 
@@ -1133,13 +2049,6 @@ namespace SoundMixrGraphics
 		}
 	};
 
-	// --------------------------------------------------------------------------
-	// ------------------------------ Vertical ----------------------------------
-	// --------------------------------------------------------------------------
-
-	/**
-	 * Vertical menu.
-	 */
 	struct Vertical
 	{
 		static void Render(MenuBase& b, CommandCollection& d) 
@@ -1152,10 +2061,10 @@ namespace SoundMixrGraphics
 			int _iy = _y;
 			int _mw = 0;
 
-			d.Command<Fill>(theme->Get(C::MenuB));
+			d.Command<Fill>(ThemeT::Get().menu_border);
 			d.Command<Quad>(b.X() - 1, b.Y() - 1, b.Width() + 2, b.Height() + 2);
 
-			d.Command<Fill>(theme->Get(C::Menu));
+			d.Command<Fill>(ThemeT::Get().menu_background);
 			d.Command<Quad>(b.X(), b.Y(), b.Width(), b.Height());
 
 			for (auto& _item : _menuItems)
@@ -1173,9 +2082,6 @@ namespace SoundMixrGraphics
 		}
 	};
 
-	/**
-	 * Simple normal scrollbar graphics.
-	 */
 	struct ScrollbarNormal
 	{
 		/**
@@ -1194,15 +2100,24 @@ namespace SoundMixrGraphics
 			int _w = std::max((b.VisibleRange() - b.Range().start) / (float)(b.Range().end - b.Range().start) * b.Width(), (float)b.MinBarSize());
 			int _x = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start - b.VisibleRange()) * (b.Width() - _w) + b.X();
 
-			if (b.Hovering() && b.Mouse() >= _x && b.Mouse() <= _x + _w)
-			{
-				d.Command<Fill>(theme->Get(C::Scrollbar));
-				d.Command<Quad>(b.Position().x, b.Position().y + b.Size().height / 2 - 1, b.Size().width, 2);
-				d.Command<Fill>(theme->Get(C::ScrollbarH));
+			if (b.Dragging() || b.Hovering())
 				_p = 4;
-			}
+
+			if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().scrollbar_active_bar);
+			else if (b.Hovering() && b.Mouse() >= _x && b.Mouse() <= _x + _w)
+				d.Command<Fill>(ThemeT::Get().scrollbar_hovering_bar);
 			else
-				d.Command<Fill>(theme->Get(C::Scrollbar));
+				d.Command<Fill>(ThemeT::Get().scrollbar_idle_bar);
+
+			d.Command<Quad>(b.Position().x, b.Position().y + b.Size().height / 2 - 1, b.Size().width, 2);
+
+			if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().scrollbar_active_handle);
+			else if (b.Hovering() && b.Mouse() >= _x && b.Mouse() <= _x + _w)
+				d.Command<Fill>(ThemeT::Get().scrollbar_hovering_handle);
+			else
+				d.Command<Fill>(ThemeT::Get().scrollbar_idle_handle);
 
 			d.Command<Quad>(_x + _p, b.Position().y + _p, _w - _p * 2, b.Size().height - _p * 2);
 		}
@@ -1214,18 +2129,26 @@ namespace SoundMixrGraphics
 			int _h = std::max((b.VisibleRange() - b.Range().start) / (float)(b.Range().end - b.Range().start) * b.Height(), (float)b.MinBarSize());
 			int _y = (b.Value() - b.Range().start) / (float)(b.Range().end - b.Range().start - b.VisibleRange()) * -(b.Height() - _h) + b.Y() + b.Height() - _h;
 
-			if (b.Hovering() && b.Mouse() >= _y && b.Mouse() <= _y + _h)
-			{
-				d.Command<Fill>(theme->Get(C::Scrollbar));
-				d.Command<Quad>(b.Position().x + b.Size().width / 2 - 1, b.Position().y, 2, b.Size().height);
-				d.Command<Fill>(theme->Get(C::ScrollbarH));
+			if (b.Dragging() || b.Hovering())
 				_p = 4;
-			}
+
+			if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().scrollbar_active_bar);
+			else if (b.Hovering() && b.Mouse() >= _y && b.Mouse() <= _y + _h)
+				d.Command<Fill>(ThemeT::Get().scrollbar_hovering_bar);
 			else
-				d.Command<Fill>(theme->Get(C::Scrollbar));
+				d.Command<Fill>(ThemeT::Get().scrollbar_idle_bar);
+
+			d.Command<Quad>(b.Position().x + b.Size().width / 2 - 1, b.Position().y, 2, b.Size().height);
+
+			if (b.Dragging())
+				d.Command<Fill>(ThemeT::Get().scrollbar_active_handle);
+			else if (b.Hovering() && b.Mouse() >= _y && b.Mouse() <= _y + _h)
+				d.Command<Fill>(ThemeT::Get().scrollbar_hovering_handle);
+			else
+				d.Command<Fill>(ThemeT::Get().scrollbar_idle_handle);
 
 			d.Command<Quad>(b.Position().x + _p, _y + _p, b.Size().width - _p * 2, _h - _p * 2);
-
 		}
 	};
 }
@@ -1255,7 +2178,6 @@ public:
 	}
 };
 
-
 class MenuDivider : public Component
 {
 public:
@@ -1266,8 +2188,31 @@ public:
 	void Render(CommandCollection& d) override 
 	{
 		using namespace Graphics;
-		d.Command<Fill>(theme->Get(C::Divider));
+		d.Command<Fill>(ThemeT::Get().divider);
 		d.Command<Quad>(X() + m_PaddingX, Y() + m_PaddingY, Width() - m_PaddingX * 2, m_Stroke);
+	};
+
+	bool WithinBounds(const Vec2<int>&) const override { return false; }
+
+private:
+	int m_Size,
+		m_PaddingX,
+		m_PaddingY,
+		m_Stroke;
+};
+
+class VerticalMenuDivider : public Component
+{
+public:
+	VerticalMenuDivider(int size, int stroke, int paddingx, int paddingy)
+		: m_Size(size), m_PaddingX(paddingx), m_PaddingY(paddingy), m_Stroke(stroke), Component({ stroke + paddingx * 2, size })
+	{}
+
+	void Render(CommandCollection& d) override
+	{
+		using namespace Graphics;
+		d.Command<Fill>(ThemeT::Get().divider);
+		d.Command<Quad>(X() + m_PaddingX, Y() + m_PaddingY, m_Stroke, Height() - m_PaddingY * 2);
 	};
 
 	bool WithinBounds(const Vec2<int>&) const override { return false; }

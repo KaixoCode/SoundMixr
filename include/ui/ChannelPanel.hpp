@@ -49,13 +49,13 @@ public:
 		m_MenuTitle = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(m_ChannelGroup.Name());
 		m_MenuTitle->Disable();
 		
-		m_Div4 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
+		m_Div4 = &m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {
 				l->ShowEffectsPanel(ChannelGroup().EffectsGroup());
 			}, "Show Effects");
 		
-		m_Div3 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
+		m_Div3 = &m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 		m_Connect = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
 			[&, l] {
 				if (auto ss = m_SelectedSame)
@@ -91,7 +91,7 @@ public:
 
 			}, "Split");
 
-		m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(180, 1, 0, 2);
+		m_Div2 = &m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 		m_MenuMuted = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(
 			[&](bool s) {
 				m_ChannelGroup.Mute(s);
@@ -183,7 +183,7 @@ private:
 
 	int m_Counter = 0;
 
-	MenuAccessories::Divider
+	MenuDivider
 		*m_Div1, 
 		*m_Div2, 
 		*m_Div3,

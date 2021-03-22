@@ -25,7 +25,7 @@ Effect::Effect(Effects::EffectBase* effect)
 
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Effect->Name()).Disable();
-	m_Div = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
+	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
 	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s)
 		{
@@ -44,7 +44,7 @@ Effect::Effect(Effects::EffectBase* effect)
 				m_Small = false;
 			}
 		}, "Minimize");
-	m_Div2 = &m_Menu.Emplace<MenuAccessories::Divider>(160, 1, 0, 2);
+	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_Delete = true; }, "Remove");
 	m_Listener += [this](Event::MousePressed& e)
 	{
@@ -88,7 +88,7 @@ void Effect::Update(const Vec4<int>& v)
 	m_Enable->Position({ 3, Height() - 22 });
 	m_MinimB->Position({ Width() - 25, Height() - 25 });
 	m_Effect->Update();
-	Background(theme->Get(C::Channel));
+	Background(ThemeT::Get().effect_background);
 	Panel::Update(v);
 }
 
@@ -100,19 +100,19 @@ void Effect::Render(CommandCollection& d)
 
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
-	d.Command<Fill>(theme->Get(C::ChannelSelected));
+	d.Command<Fill>(ThemeT::Get().effect_title_bar);
 	d.Command<Quad>(Vec4<int>{ 0, Height() - 25, Width(), 25 });
 	d.Command<Font>(Fonts::Gidole16, 16.0f);
 
 	if (m_Enabled)
-		d.Command<Fill>(theme->Get(C::TextSmall));
+		d.Command<Fill>(ThemeT::Get().effect_title_text);
 	else
-		d.Command<Fill>(theme->Get(C::TextOff));
+		d.Command<Fill>(ThemeT::Get().effect_title_text_off);
 
 	d.Command<TextAlign>(Align::LEFT, Align::TOP);
 	d.Command<Text>(&m_Effect->Name(), Vec2<int>{ 30, Height() - 2});
 	
-	d.Command<Fill>(theme->Get(C::TextOff));
+	d.Command<Fill>(ThemeT::Get().effect_minimize_button);
 	if (!m_Small)
 		d.Command<Quad>(Vec4<int>{Width() - 17, Height() - 13, 10, 2});
 	else
@@ -129,15 +129,12 @@ void Effect::Render(CommandCollection& d)
 
 	if (!m_Small)
 	{
-		d.Command<Fill>(theme->Get(C::Divider));
+		d.Command<Fill>(ThemeT::Get().divider);
 		for (auto& i : m_Dividers)
 			d.Command<Quad>(i);
 	}
 
 	d.Command<PopMatrix>();
-
-	m_Div->Color(theme->Get(C::Divider));
-	m_Div2->Color(theme->Get(C::Divider));
 }
 
 Effect::operator nlohmann::json()
@@ -583,7 +580,7 @@ void EffectsGroup::Render(CommandCollection& d)
 	{
 		if (m_InsertIndex == _index)
 		{
-			d.Command<Fill>(theme->Get(C::TextOff));
+			d.Command<Fill>(ThemeT::Get().divider);
 			d.Command<Quad>(Vec4<int>{_c->X(), _c->Y() + (_past ? -5 : _c->Height() + 3), _c->Width(), 2});
 		}
 	

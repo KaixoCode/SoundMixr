@@ -34,9 +34,9 @@ private:
 	::SMXRScrollPanel& m_ChannelsPanel;
 	::EffectScrollPanel& m_Effect;
 	::Panel& m_Inputs;
-	MenuAccessories::VerticalDivider* m_Divider = nullptr;
+	VerticalMenuDivider* m_Divider = nullptr;
 	::Panel& m_Outputs;
-	MenuAccessories::VerticalDivider* m_Divider2 = nullptr;
+	VerticalMenuDivider* m_Divider2 = nullptr;
 	::Panel& m_Specials;
 	std::vector<ChannelPanel*> m_Channels;
 };

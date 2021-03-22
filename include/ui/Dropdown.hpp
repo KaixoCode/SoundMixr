@@ -11,21 +11,27 @@ template<typename Enum>
 class DropDownOption : public Button<SoundMixrGraphics::Menu, ButtonType::List>
 {
 public:
-	template<typename T, typename E>
-	DropDownOption(const std::string& name, Enum value, int key, T* parent, E e = [](Enum v) {})
+	using Callback = std::function<void(Enum)>;
+
+	template<typename T>
+	DropDownOption(const std::string& name, Enum value, int key, T* parent, Callback e = [](Enum v) {})
 		: Button<SoundMixrGraphics::Menu, ButtonType::List>([parent, name, value, e] { parent->SelectP(value); parent->Name(name); e(value); }, name, key),
-		m_Value(value)
+		m_Value(value), m_Callback(e)
 	{}
 
-	template<typename T, typename E>
-	DropDownOption(Effects::DropDown& d, Effects::DropDown::Option& i, int key, T* parent, E e = [](Enum v) {})
+	template<typename T>
+	DropDownOption(Effects::DropDown& d, Effects::DropDown::Option& i, int key, T* parent, Callback e = [](Enum v) {})
 		: Button<SoundMixrGraphics::Menu, ButtonType::List>([parent, &i, &d, e] { d.Select(i.id); parent->SelectP(i.id); parent->Name(i.name); e(i.id); }, i.name, key),
-		m_Value(i.id)
+		m_Value(i.id), m_Callback(e)
 	{}
 
 	Enum Value() { return m_Value; }
 
+	void Selected(bool v) { if (v && !m_Selected) m_Callback(m_Value); m_Selected = v; }
+	bool Selected() { return m_Selected; }
+
 private:
+	Callback m_Callback;
 	Enum m_Value;
 };
 
@@ -92,6 +98,8 @@ public:
 		for (auto& i : m_Menu.Components())
 		{
 			auto _b = dynamic_cast<DropDownOption<Enum>*>(i.get());
+			if (_b)
+				_b->Selected(false);
 			if (_b && _b->Value() == v)
 				_b->Selected(true), m_Value = v, Name(_b->Name());
 		}
@@ -101,13 +109,16 @@ public:
 
 	void Update(const Vec4<int>& v) override
 	{
-		if (m_DropDown)
+		if constexpr (std::is_same_v<Enum, int>)
 		{
-			m_Pos = { m_DropDown->Position().x, m_DropDown->Position().y };
-			m_Size = { m_DropDown->Size().width, m_DropDown->Size().height };
+			if (m_DropDown)
+			{
+				m_Pos = { m_DropDown->Position().x, m_DropDown->Position().y };
+				m_Size = { m_DropDown->Size().width, m_DropDown->Size().height };
 
-			if (m_DropDown->Selected() != m_Value)
-				Select((Enum)m_DropDown->Selected());
+				if (m_DropDown->Selected() != m_Value)
+					Select((Enum)m_DropDown->Selected());
+			}
 		}
 		ButtonType::Normal::Update(v);
 	}
@@ -123,6 +134,12 @@ public:
 	void ButtonWidth(int w) { m_Menu.ButtonWidth(w); }
 
 	void ButtonHeight(int h) { m_Menu.ButtonHeight(h); }
+
+	void Clear()
+	{
+		m_Menu.Clear();
+		ButtonType::Normal::Clear();
+	}
 
 private:
 

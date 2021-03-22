@@ -148,44 +148,6 @@ namespace Effects
 			m_Compressor.mix = m_Mix.Value() * 0.01;
 		}
 
-		operator nlohmann::json() override
-		{
-			nlohmann::json _json = nlohmann::json::object();
-			_json["expt"] = m_Slider.ExpanderThreshhold();
-			_json["comt"] = m_Slider.CompressorThreshhold();
-			_json["expr"] = m_Slider.ExpanderRatio();
-			_json["comr"] = m_Slider.CompressorRatio();
-			_json["att"] = m_Attack.Value();
-			_json["ret"] = m_Release.Value();
-			_json["prg"] = m_PreGain.Value();
-			_json["pog"] = m_PostGain.Value();
-			_json["mix"] = m_Mix.Value();
-			return _json;
-		}
-
-		void operator=(const nlohmann::json& json) override
-		{
-			double p1 = json.at("expt").get<double>();
-			double p2 = json.at("comt").get<double>();
-			double p3 = json.at("expr").get<double>();
-			double p4 = json.at("comr").get<double>();
-			double p5 = json.at("att").get<double>();
-			double p6 = json.at("ret").get<double>();
-			double p7 = json.at("prg").get<double>();
-			double p8 = json.at("pog").get<double>();
-			double p9 = json.at("mix").get<double>();
-			m_Slider.ExpanderThreshhold(p1);
-			m_Slider.CompressorThreshhold(p2);
-			m_Slider.ExpanderRatio(p3);
-			m_Slider.CompressorRatio(p4);
-			m_Attack.Value(p5);
-			m_Release.Value(p6);
-			m_PreGain.Value(p7);
-			m_PostGain.Value(p8);
-			m_Mix.Value(p9);
-			UpdateParams();
-		}
-
 	private:
 		static inline const double DC_OFFSET = 1.0E-25;
 	

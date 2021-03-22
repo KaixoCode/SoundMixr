@@ -246,45 +246,6 @@ namespace Effects
 			m_Parameters[0].RecalculateParameters();
 		}
 
-		operator nlohmann::json()
-		{
-			nlohmann::json _json = nlohmann::json::object();
-			_json["del1"] = m_Delay1Knob.Value();
-			_json["del2"] = m_Delay2Knob.Value();
-			_json["highp"] = m_Highpass.Value();
-			_json["del2t"] = m_Delay2Type;
-			_json["mamt"] = m_AmountKnob.Value();
-			_json["mrte"] = m_RateKnob.Value();
-			_json["pola"] = m_Polarity;
-			_json["fdbc"] = m_FeedbackKnob.Value();
-			_json["mix"] = m_MixKnob.Value();
-			return _json;
-		}
-
-		void operator=(const nlohmann::json& json)
-		{
-			m_Delay1Knob.Value(json.at("del1").get<double>());
-			m_Delay2Knob.Value(json.at("del2").get<double>());
-			m_Highpass.Value(json.at("highp").get<double>());
-			m_AmountKnob.Value(json.at("mamt").get<double>());
-			m_RateKnob.Value(json.at("mrte").get<double>());
-			m_FeedbackKnob.Value(json.at("fdbc").get<double>());
-			m_MixKnob.Value(json.at("mix").get<double>());
-			int type = json.at("del2t").get<int>();
-			if (type == 0)
-				m_Delay2Type1.Selected(true);
-			else if (type == 1)
-				m_Delay2Type2.Selected(true);
-			else if (type == 2)
-				m_Delay2Type3.Selected(true);
-			int pola = json.at("pola").get<int>();
-			if (pola == 0)
-				m_PolarityP.Selected(true);
-			else if (pola == 1)
-				m_PolarityM.Selected(true);
-			UpdateParams();
-		}
-
 	private:
 		static inline constexpr int BUFFER_SIZE = 2048;
 		std::vector<std::vector<float>> m_Buffers;

@@ -7,6 +7,7 @@ class ParameterBase : public Component
 {
 public:
 	ParameterBase(Effects::Parameter& param);
+	~ParameterBase();
 
 	virtual void   X(int x) override { m_Parameter.Position({ x, m_Parameter.Position().y }); }
 	virtual int    X() const override { return m_Parameter.Position().x; }
@@ -48,7 +49,11 @@ public:
 	virtual bool   Disabled() { return m_Parameter.Disabled(); }
 	virtual void   Disable() { m_Parameter.Disable(); }
 	virtual void   Enable() { m_Parameter.Enable(); }
-    virtual bool   Hovering() const { return m_Hovering; }
+	virtual bool   Hovering() const { return m_Hovering; }
+	virtual bool   Dragging() const { return m_Dragging; }
+
+	virtual operator nlohmann::json() { return m_Parameter.operator nlohmann::json(); };
+	virtual void operator=(const nlohmann::json& json) { m_Parameter = json; };
 
 	void Update(const Vec4<int>& vp) override;
 	void Render(CommandCollection& d) override;
@@ -70,6 +75,9 @@ protected:
 
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_LinkButton;
 	Button<SoundMixrGraphics::Menu, ButtonType::Normal>* m_UnlinkButton;
+
+	std::function<void(Midi::Event::ControlChange&)> m_Callback;
+	int m_CallbackId = -1;
 
 	std::string m_ValueText;
 };

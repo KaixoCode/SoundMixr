@@ -27,7 +27,6 @@ public:
 		};
 
 		Type type;
-		unsigned int device = -1;
 
 		Event(std::vector<uint8_t>& message)
 		{
@@ -43,17 +42,17 @@ public:
 				data2 = (message[2] & 0b01111111);
 		}
 
-		struct NoteOff { byte note, velocity, channel; };
-		struct NoteOn { byte note, velocity, channel; };
-		struct PolyAfterTouch { byte note, pressure, channel; };
-		struct ControlChange { byte control, value, channel; };
-		struct ProgramChange { byte program, _, channel; };
-		struct ChannelAfterTouch { byte pressure, _, channel; };
-		struct PitchWheel { uint16_t value, channel; };
+		struct NoteOff { byte note, velocity, channel, device; };
+		struct NoteOn { byte note, velocity, channel, device; };
+		struct PolyAfterTouch { byte note, pressure, channel, device; };
+		struct ControlChange { byte control, value, channel, device; };
+		struct ProgramChange { byte program, _, channel, device; };
+		struct ChannelAfterTouch { byte pressure, _, channel, device; };
+		struct PitchWheel { uint16_t value; byte channel, device; };
 
 		union
 		{
-			struct { byte data1, data2, channel; };
+			struct { byte data1, data2, channel, device; };
 
 			NoteOff noteoff;
 			NoteOn noteon;
@@ -141,49 +140,64 @@ public:
 				Event event{ m_Message };
 				event.device = midi.first;
 				//LOG((int)event.type << ", " << (int)event.data1 << ", " << (int)event.data2);
-				for (auto& i : m_EventCallbacks)
+				for (auto& [j, i] : m_EventCallbacks)
 					i(event);
 
 				switch (event.type)
 				{
-				case Event::Type::NoteOff: for (auto& i : m_NoteOffCallbacks) i(event.noteoff); break;
-				case Event::Type::NoteOn: for (auto& i : m_NoteOnCallbacks) i(event.noteon);break;
-				case Event::Type::PolyAfterTouch: for (auto& i : m_PolyAfterTouchCallbacks) i(event.polyaftertouch);break;
-				case Event::Type::ControlChange: for (auto& i : m_ControlChangeCallbacks) i(event.controlchange);break;
-				case Event::Type::ProgramChange: for (auto& i : m_ProgramChangeCallbacks) i(event.programchange);break;
-				case Event::Type::ChannelAfterTouch: for (auto& i : m_ChannelAfterTouchCallbacks) i(event.channelaftertouch);break;
-				case Event::Type::PitchWheel: for (auto& i : m_PitchWheelCallbacks) i(event.pitchwheel);break;
+				case Event::Type::NoteOff: for (auto& [j, i] : m_NoteOffCallbacks) i(event.noteoff); break;
+				case Event::Type::NoteOn: for (auto& [j, i] : m_NoteOnCallbacks) i(event.noteon);break;
+				case Event::Type::PolyAfterTouch: for (auto& [j, i] : m_PolyAfterTouchCallbacks) i(event.polyaftertouch);break;
+				case Event::Type::ControlChange: for (auto& [j, i] : m_ControlChangeCallbacks) i(event.controlchange);break;
+				case Event::Type::ProgramChange: for (auto& [j, i] : m_ProgramChangeCallbacks) i(event.programchange);break;
+				case Event::Type::ChannelAfterTouch: for (auto& [j, i] : m_ChannelAfterTouchCallbacks) i(event.channelaftertouch);break;
+				case Event::Type::PitchWheel: for (auto& [j, i] : m_PitchWheelCallbacks) i(event.pitchwheel);break;
 				}
 			}
 		};
 	}
 
-	template<typename T>
-	void operator+=(T t) { AddCallback(t); }
+	std::unordered_map<int, RtMidiIn>& Opened() { return m_Opened; }
 
-	void AddCallback(Callback<Event> a) { m_EventCallbacks.emplace_back(a); }
-	void AddCallback(Callback<Event::NoteOff> a) { m_NoteOffCallbacks.emplace_back(a); }
-	void AddCallback(Callback<Event::NoteOn> a) { m_NoteOnCallbacks.emplace_back(a); }
-	void AddCallback(Callback<Event::PolyAfterTouch> a) { m_PolyAfterTouchCallbacks.emplace_back(a); }
-	void AddCallback(Callback<Event::ControlChange> a) { m_ControlChangeCallbacks.emplace_back(a); }
-	void AddCallback(Callback<Event::ProgramChange> a) { m_ProgramChangeCallbacks.emplace_back(a); }
-	void AddCallback(Callback<Event::ChannelAfterTouch> a) { m_ChannelAfterTouchCallbacks.emplace_back(a); }
-	void AddCallback(Callback<Event::PitchWheel> a) { m_PitchWheelCallbacks.emplace_back(a); }
+	template<typename T>
+	int operator+=(T t) { return AddCallback(t); }
+
+	template<typename T>
+	void Remove(T t, int id) { RemoveCallback(t, id); }
+
+	int AddCallback(Callback<Event> a) { m_EventCallbacks.emplace(m_Counter++, a); return m_Counter-1; }
+	int AddCallback(Callback<Event::NoteOff> a) { m_NoteOffCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
+	int AddCallback(Callback<Event::NoteOn> a) { m_NoteOnCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
+	int AddCallback(Callback<Event::PolyAfterTouch> a) { m_PolyAfterTouchCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
+	int AddCallback(Callback<Event::ControlChange> a) { m_ControlChangeCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
+	int AddCallback(Callback<Event::ProgramChange> a) { m_ProgramChangeCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
+	int AddCallback(Callback<Event::ChannelAfterTouch> a) { m_ChannelAfterTouchCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
+	int AddCallback(Callback<Event::PitchWheel> a) { m_PitchWheelCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
+
+	void RemoveCallback(Callback<Event> a, int id) { m_EventCallbacks.erase(m_EventCallbacks.find(id)); }
+	void RemoveCallback(Callback<Event::NoteOff> a, int id) { m_NoteOffCallbacks.erase(m_NoteOffCallbacks.find(id)); }
+	void RemoveCallback(Callback<Event::NoteOn> a, int id) { m_NoteOnCallbacks.erase(m_NoteOnCallbacks.find(id)); }
+	void RemoveCallback(Callback<Event::PolyAfterTouch> a, int id) { m_PolyAfterTouchCallbacks.erase(m_PolyAfterTouchCallbacks.find(id)); }
+	void RemoveCallback(Callback<Event::ControlChange> a, int id) { m_ControlChangeCallbacks.erase(m_ControlChangeCallbacks.find(id)); }
+	void RemoveCallback(Callback<Event::ProgramChange> a, int id) { m_ProgramChangeCallbacks.erase(m_ProgramChangeCallbacks.find(id)); }
+	void RemoveCallback(Callback<Event::ChannelAfterTouch> a, int id) { m_ChannelAfterTouchCallbacks.erase(m_ChannelAfterTouchCallbacks.find(id)); }
+	void RemoveCallback(Callback<Event::PitchWheel> a, int id) { m_PitchWheelCallbacks.erase(m_PitchWheelCallbacks.find(id)); }
 
 	auto Devices() -> std::vector<MidiDevice>& { return m_Devices; }
 
 private:
-	std::vector<Callback<Event>>                    m_EventCallbacks;
-	std::vector<Callback<Event::NoteOff>>           m_NoteOffCallbacks;
-	std::vector<Callback<Event::NoteOn>>            m_NoteOnCallbacks;
-	std::vector<Callback<Event::PolyAfterTouch>>    m_PolyAfterTouchCallbacks;
-	std::vector<Callback<Event::ControlChange>>     m_ControlChangeCallbacks;
-	std::vector<Callback<Event::ProgramChange>>     m_ProgramChangeCallbacks;
-	std::vector<Callback<Event::ChannelAfterTouch>> m_ChannelAfterTouchCallbacks;
-	std::vector<Callback<Event::PitchWheel>>        m_PitchWheelCallbacks;
+	std::unordered_map<int, Callback<Event>>                    m_EventCallbacks;
+	std::unordered_map<int, Callback<Event::NoteOff>>           m_NoteOffCallbacks;
+	std::unordered_map<int, Callback<Event::NoteOn>>            m_NoteOnCallbacks;
+	std::unordered_map<int, Callback<Event::PolyAfterTouch>>    m_PolyAfterTouchCallbacks;
+	std::unordered_map<int, Callback<Event::ControlChange>>     m_ControlChangeCallbacks;
+	std::unordered_map<int, Callback<Event::ProgramChange>>     m_ProgramChangeCallbacks;
+	std::unordered_map<int, Callback<Event::ChannelAfterTouch>> m_ChannelAfterTouchCallbacks;
+	std::unordered_map<int, Callback<Event::PitchWheel>>        m_PitchWheelCallbacks;
 
 	RtMidiIn m_Midi;
 	std::vector<MidiDevice> m_Devices;
 	std::unordered_map<int, RtMidiIn> m_Opened;
 	std::vector<uint8_t> m_Message;
+	int m_Counter = 0;
 };

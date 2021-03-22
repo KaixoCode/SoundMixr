@@ -65,16 +65,15 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 
 	Color c;
 	if (Selected())
-		c = theme->Get(C::ChannelSelected);
+		c = ThemeT::Get().channel_active_background;
+	else if (Hovering())
+		c = ThemeT::Get().channel_hovering_background;
 	else
-		c = theme->Get(C::Channel);
+		c = ThemeT::Get().channel_idle_background;
+
 	c.a = m_Transparency ? 245.0f : 255.0f;
 	Background(c);
 
-	//m_Div1->Color(theme->Get(C::Divider));
-	m_Div2->Color(theme->Get(C::Divider));
-	m_Div3->Color(theme->Get(C::Divider));
-	m_Div4->Color(theme->Get(C::Divider));
 	m_Div3->Visible(m_Connect->Visible() || m_Split->Visible());
 	m_Split->Visible(m_ChannelGroup.Channels().size() > 1 && !m_IsSpecial);
 	
@@ -117,25 +116,67 @@ void ChannelPanel::Render(CommandCollection& d)
 		float _level = std::powf(m_ChannelGroup.Channels()[i]->Peak(), 0.25);
 
 		int _h = (std::min(_level, 1.412536f) / 1.412536) * (_rh);
-		d.Command<Graphics::Fill>(theme->Get(C::VMeter));
+
+		if (volume.Disabled())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_meter);
+		else if (volume.Dragging())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_meter);
+		else if (volume.Hovering())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_meter);
+		else
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_meter);
+
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _rh});
-		d.Command<Graphics::Fill>(theme->Get(C::Channel));
+		d.Command<Graphics::Fill>(ThemeT::Get().channel_idle_background);
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, 1});
-		d.Command<Graphics::Fill>(theme->Get(C::VMeterFill));
+
+		if (volume.Disabled())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_meter_value);
+		else if (volume.Dragging())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_meter_value);
+		else if (volume.Hovering())
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_meter_value);
+		else
+			d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_meter_value);
+
 		d.Command<Graphics::Quad>(Vec4<int>{_x, _y, _w, _h});
 		if (_level > 1.0)
 		{
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC1));
+			if (volume.Disabled())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_meter_value_c1);
+			else if (volume.Dragging())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_meter_value_c1);
+			else if (volume.Hovering())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_meter_value_c1);
+			else
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_meter_value_c1);
+
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _0db, _w, _h - _0db + _y});
 		}
 		if (_level > std::powf(std::powf(10, 3 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC2));
+			if (volume.Disabled())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_meter_value_c2);
+			else if (volume.Dragging())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_meter_value_c2);
+			else if (volume.Hovering())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_meter_value_c2);
+			else
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_meter_value_c2);
+
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _3db, _w, _h - _3db + _y});
 		}
 		if (_level > std::powf(std::powf(10, 6 / 20.0), 0.25))
 		{
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterFillC3));
+			if (volume.Disabled())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_meter_value_c3);
+			else if (volume.Dragging())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_meter_value_c3);
+			else if (volume.Hovering())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_meter_value_c3);
+			else
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_meter_value_c3);
+
 			d.Command<Graphics::Quad>(Vec4<int>{_x, _6db, _w, _h - _6db + _y});
 		}
 	}
@@ -149,13 +190,29 @@ void ChannelPanel::Render(CommandCollection& d)
 
 	// Volume level
 	d.Command<Font>(Fonts::Gidole14, 14.0f);
-	d.Command<Fill>(theme->Get(C::TextSmall));
+	
+	if (volume.Disabled())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_value_text);
+	else if (volume.Dragging())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_value_text);
+	else if (volume.Hovering())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_value_text);
+	else
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_value_text);
+
 	d.Command<TextAlign>(Align::CENTER, Align::TOP);
 	d.Command<Text>(&volume.ValueText(), Vec2<int>{volume.X() + 6 + (volume.Width() - 6 * 2) / 2, volume.Y()});
 
 	// Channel name
 	d.Command<Font>(Fonts::Gidole14, 14.0f);
-	d.Command<Fill>(theme->Get(C::TextSmall));
+
+	if (Selected())
+		d.Command<Graphics::Fill>(ThemeT::Get().channel_active_name_text);
+	else if (Hovering())
+		d.Command<Graphics::Fill>(ThemeT::Get().channel_hovering_name_text);
+	else
+		d.Command<Graphics::Fill>(ThemeT::Get().channel_idle_name_text);
+
 	d.Command<TextAlign>(Align::CENTER, Align::TOP);
 	d.Command<Text>(&m_ChannelGroup.Name(), Vec2<int>{ Width() / 2, Height() - 4 });
 
@@ -174,10 +231,14 @@ void ChannelPanel::Render(CommandCollection& d)
 		if (i < -71)
 			_d = 24;
 
-		if (_b)
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
+		if (volume.Disabled())
+			d.Command<Graphics::Fill>(_b ? ThemeT::Get().volume_slider_disabled_line_highlight : ThemeT::Get().volume_slider_disabled_line);
+		else if (volume.Dragging())
+			d.Command<Graphics::Fill>(_b ? ThemeT::Get().volume_slider_active_line_highlight : ThemeT::Get().volume_slider_active_line);
+		else if (volume.Hovering())
+			d.Command<Graphics::Fill>(_b ? ThemeT::Get().volume_slider_hovering_line_highlight : ThemeT::Get().volume_slider_hovering_line);
 		else
-			d.Command<Graphics::Fill>(theme->Get(C::VMeterIndD));
+			d.Command<Graphics::Fill>(_b ? ThemeT::Get().volume_slider_idle_line_highlight : ThemeT::Get().volume_slider_idle_line);
 
 		int _mdb = ((std::powf(std::powf(10, i / 20.0), 0.25) / 1.412536) * (_rh)) + _y;
 		d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _mdb, 5, 1});
@@ -187,14 +248,41 @@ void ChannelPanel::Render(CommandCollection& d)
 			{
 				m_Numbers.emplace(i, std::to_string(std::abs(i)));
 			}
-			d.Command<Graphics::Fill>(theme->Get(C::TextOff));
+
+			if (volume.Disabled())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_db_text);
+			else if (volume.Dragging())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_db_text);
+			else if (volume.Hovering())
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_db_text);
+			else
+				d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_db_text);
+
 			d.Command<Graphics::Text>(&m_Numbers[i], Vec2<int>{_x + _w + 25, _mdb});
 		}
 		_b ^= true;
 	}
-	d.Command<Graphics::Fill>(theme->Get(C::VMeterIndB));
+
+	if (volume.Disabled())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_line_highlight);
+	else if (volume.Dragging())														  
+		d.Command<Graphics::Fill>( ThemeT::Get().volume_slider_active_line_highlight);
+	else if (volume.Hovering())														  
+		d.Command<Graphics::Fill>( ThemeT::Get().volume_slider_hovering_line_highlight);
+	else																			  
+		d.Command<Graphics::Fill>( ThemeT::Get().volume_slider_idle_line_highlight);
+
 	d.Command<Graphics::Quad>(Vec4<int>{_x + _w, _y, 5, 1});
-	d.Command<Graphics::Fill>(theme->Get(C::TextOff));
+
+	if (volume.Disabled())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_disabled_db_text);
+	else if (volume.Dragging())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_active_db_text);
+	else if (volume.Hovering())
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_hovering_db_text);
+	else
+		d.Command<Graphics::Fill>(ThemeT::Get().volume_slider_idle_db_text);
+
 	d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 
 	Container::Render(d);
@@ -204,6 +292,8 @@ void ChannelPanel::Render(CommandCollection& d)
 ChannelPanel::operator nlohmann::json()
 {
 	nlohmann::json _json = m_ChannelGroup;
+	_json["volumelink"] = volume;
+	_json["panlink"] = pan;
 	return _json;
 }
 
@@ -211,8 +301,8 @@ void ChannelPanel::operator=(const nlohmann::json& json)
 {
 	try
 	{
-		volume.Value(json.at("volume").get<double>());
-		pan.Value(json.at("pan").get<double>());
+		volume = json.at("volumelink");
+		pan = json.at("panlink");
 		m_ChannelGroup = json;
 	}
 	catch (...)

@@ -46,7 +46,6 @@ public:
 
 private:
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
-	MenuAccessories::Divider* m_Div = nullptr, * m_Div2 = nullptr;
 	EffectPanel& m_EffectPanel;
 	double m_MouseY = 0;
 };

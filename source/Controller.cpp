@@ -15,21 +15,7 @@ m_AsioDevice(soundboard)
 
 void Controller::Run()
 {
-
     EffectLoader::LoadEffects();
-
-    // 
-    // Loading Theme
-    //
-
-    LOG("Selecting default theme");
-    std::ifstream _in;
-    _in.open("./settings/theme");
-    std::string _line;
-    std::getline(_in, _line);
-    int _themeId = std::atoi(_line.c_str());
-    theme->theme = (Themes::N) _themeId;
-    _in.close();
 
     //
     // Some namespaces
@@ -41,9 +27,10 @@ void Controller::Run()
     using TitleMenuButton = Button<G::TitleMenu, BT::Menu<G::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
     using SubMenuButton = Button<G::SubMenu, BT::Menu<G::Vertical, MT::Normal, BT::Hover, Align::RIGHT>>;
 
-    mainWindow.Color(theme->Get(C::WindowBorder));
-    soundboard.Color(theme->Get(C::WindowBorder));
+    mainWindow.Color(ThemeT::Get().window_border);
+    soundboard.Color(ThemeT::Get().window_border);
     mainWindow.Icon(IDI_ICON1);
+    settings.Icon(IDI_ICON1);
 
     //
     // Set shell icon
@@ -71,7 +58,7 @@ void Controller::Run()
 
     auto& _panel = mainWindow.Panel();
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
-    _panel.Background(theme->Get(C::WindowBorder));
+    _panel.Background(ThemeT::Get().window_border);
     _panel.SmartPanel(false);
 
     auto& _p3 = _panel.Emplace<Panel>();
@@ -96,25 +83,6 @@ void Controller::Run()
 
     auto& _sub = _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 
-
-    //
-    // Load default device
-    //
-
-    LOG("Selecting default device");
-    _in.open("./settings/device");
-    std::getline(_in, _line);
-    int _deviceId = std::atoi(_line.c_str());
-    if (!_line.empty() && _deviceId != -1)
-    {
-        auto _it = std::find_if(m_AsioDevice.Devices().begin(), m_AsioDevice.Devices().end(), [=](const Device& obj) {return obj.id == _deviceId; });
-        m_AsioDevice.Device(*_it);
-        m_AsioDevice.OpenStream();
-        LoadRouting();
-        m_AsioDevice.StartStream();
-        _titleButton.Name(m_AsioDevice.Device().info.name);
-    }
-    _in.close();
 
     //
     // Soundboard button
@@ -145,76 +113,31 @@ void Controller::Run()
     auto& _midiDevices = _scrp.Panel<Panel>();
     _midiDevices.Layout<Layout::Divs>();
 
-    auto& _refreshMidi = [&] {
-        Midi::Get().LoadPorts();
-        auto& _dev = Midi::Get().Devices();
-        int _devs = _dev.size();
-        _midiDevices.Div().Clear();
-        _midiDevices.Clear();
-        _midiDevices.Width(384);
-        _midiDevices.Height(_devs * 24);
-        _midiDevices.Div().Align(Div::Alignment::Vertical);
-        _midiDevices.Div().Divs(_devs);
-        _midiDevices.Div().DivSize(_devs * 24);
-        for (int i = 0; i < _devs; i++)
-        {
-            _midiDevices.Div()[i].Align(Div::Alignment::Horizontal);
-            _midiDevices.Div()[i].Divs(4);
-            _midiDevices.Div()[i].DivSize(24);
-            _midiDevices.Div()[i][0].DivSize(8);
-            _midiDevices.Div()[i][1].DivSize(150);
-            _midiDevices.Div()[i][1].Align(Div::Alignment::Left);
-            _midiDevices.Div()[i][1] = _midiDevices.Emplace<TextComponent<Align::LEFT>>(_dev[i].name);
-            auto& _b = _midiDevices.Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(
-                [i](bool& s)
-                { 
-                    if (s)
-                    {
-                        if (!Midi::Get().OpenPort(i)) s = false;
-                    }
-                    else
-                        Midi::Get().ClosePort(i);
-                }, "Enable");
-            _b.Size({ 50, 18 });
-            _midiDevices.Div()[i][2].Align(Div::Alignment::Right);
-            _midiDevices.Div()[i][2] = _b;
-            _midiDevices.Div()[i][3].DivSize(8);
-        }
-        _midiDevices.LayoutManager().m_PrevDim = { 0 ,0, 0, 0 };
-    };
-
     auto& _themeCallback = [&]
     {
-        _panel.Background(theme->Get(C::WindowBorder));
-        mainWindow.Color(theme->Get(C::WindowBorder));
-        soundboard.Color(theme->Get(C::WindowBorder));
-        settings.Color(theme->Get(C::WindowBorder));
-        m_List->Panel().Background(theme->Get(C::MainPanel));
-        m_List->Background(theme->Get(C::MainPanel));
-        _div.Color(theme->Get(C::Divider));
-
-        std::ofstream _out;
-        _out.open("./settings/theme");
-        _out << std::to_string((int)theme->theme);
-        _out.close();
+        _panel.Background(ThemeT::Get().window_border);
+        mainWindow.Color(ThemeT::Get().window_border);
+        soundboard.Color(ThemeT::Get().window_border);
+        settings.Color(ThemeT::Get().window_border);
+        m_List->Panel().Background(ThemeT::Get().window_panel);
+        m_List->Background(ThemeT::Get().window_panel);
+        _div.Color(ThemeT::Get().divider);
+        _sp.LayoutManager().DividerColor(ThemeT::Get().divider);
+        _sp.Background(ThemeT::Get().window_panel);
+        _scrp.Background(ThemeT::Get().window_frame);
     };
 
     auto& _refreshEffect = [&]
     {
-        // First save the routing
         SaveRouting();
-        //m_AsioDevice.StopStream();
         m_AsioDevice.RemoveGroups();
         m_List->Clear();
         EffectLoader::LoadEffects();
         m_List->ReloadEffects();
         LoadRouting();
-        //m_AsioDevice.StartStream();
     };
 
-    auto& _resetGroup = [&] {m_List->ResetGrouping();};
-
-    _refreshMidi();
+    auto& _resetGroup = [&] { m_List->ResetGrouping(); };
 
     auto& _asioControlPanel = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([&]
         {
@@ -231,14 +154,40 @@ void Controller::Run()
         }, "Control Panel...");
     _asioControlPanel.Size({ 110, 18 });
 
-    auto& _refreshMidiDevices = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_refreshMidi, "Refresh List");
-    _refreshMidiDevices.Size({ 110, 18 });
-
     auto& _refreshEffects = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_refreshEffect, "Reload");
     _refreshEffects.Size({ 110, 18 });
 
     auto& _resetGrouping = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_resetGroup, "Reset");
     _resetGrouping.Size({ 110, 18 });
+
+    auto& _themeDropDown = _sp.Emplace<DropDown<std::string, DropdownButton2>>();
+    _themeDropDown.Size({ 110, 18 });
+    _themeDropDown.ButtonSize({ 110, 20 });
+
+    bool loaded = false;
+    auto& _saveSettings = [&]
+    {
+        if (!loaded)
+            return;
+        try
+        {
+            nlohmann::json _json = nlohmann::json::object();
+            _json["device"] = (&m_AsioDevice.Device() != nullptr ? m_AsioDevice.Device().id : -1);
+            _json["theme"] = ThemeT::Get().Name();
+            _json["midi-enabled"] = nlohmann::json::array();
+            for (auto& [key, val] : Midi::Get().Opened())
+                _json["midi-enabled"] += key;
+
+            std::ofstream _of;
+            _of.open("./settings/settings");
+            _of << std::setw(4) << _json;
+            _of.close();
+        }
+        catch (...)
+        {
+            LOG("Failed to save settings.");
+        }
+    };
 
     auto& _asioDropDown = _sp.Emplace<DropDown<int, DropdownButton2>>();
     _asioDropDown.Size({ 220, 18 });
@@ -259,10 +208,7 @@ void Controller::Run()
             _titleButton.Name("No Device");
 
             // Save the current device 
-            std::ofstream _out;
-            _out.open("./settings/device");
-            _out << std::to_string(-1);
-            _out.close();
+            _saveSettings();
         });
     for (auto& _d : m_AsioDevice.Devices())
     {
@@ -282,38 +228,119 @@ void Controller::Run()
                 m_List->Clear();
                 m_AsioDevice.Device(_d);
                 m_AsioDevice.OpenStream();
+
                 // Set title to ASIO device name
                 _titleButton.Name(_d.info.name);
 
                 // Save the current device 
-                std::ofstream _out;
-                _out.open("./settings/device");
-                _out << std::to_string(_d.id);
-                _out.close();
+                _saveSettings();
 
                 // Load the routing for this new device.
                 LoadRouting();
                 m_AsioDevice.StartStream();
             });
-        if (_deviceId == _d.id)
-            _asioDropDown.Select(_d.id + 1);
     }
 
-    auto& _themeDropDown = _sp.Emplace<DropDown<Themes::N, DropdownButton2>>();
-    _themeDropDown.Size({ 110, 18 });
-    _themeDropDown.ButtonSize({ 110, 20 });
+    std::vector<Button<ToggleButtonGraphics, ButtonType::Toggle>*> m_MidiButtons;
 
-    _themeDropDown.AddOption("Dark", Themes::DARK, [&](Themes::N t)
+    auto& _loadSettings = [&]
+    {
+        try
         {
-            theme->theme = t;
-            _themeCallback();
-        });
-    _themeDropDown.AddOption("Blue", Themes::BLUE, [&](Themes::N t)
+            std::ifstream _if;
+            _if.open("./settings/settings");
+            nlohmann::json _json;
+            _json << _if;
+            _if.close();
+
+            auto& theme = _json.at("theme").get<std::string>();
+            auto device = _json.at("device").get<int>() + 1;
+            
+            for (auto& i : _json.at("midi-enabled"))
+                m_MidiButtons[i.get<int>()]->Active(true);
+
+            _asioDropDown.Select(device);
+            _themeDropDown.Select(theme);
+
+            _saveSettings();
+        }
+        catch (...)
         {
-            theme->theme = t;
-            _themeCallback();
-        });
-    _themeDropDown.Select(theme->theme);
+            LOG("Failed to load settings.");
+        }
+    };
+
+    auto& _refreshMidi = [&] 
+    {
+        Midi::Get().LoadPorts();
+        auto& _dev = Midi::Get().Devices();
+        int _devs = _dev.size();
+        _midiDevices.Div().Clear();
+        _midiDevices.Clear();
+        _midiDevices.Width(384);
+        _midiDevices.Height(_devs * 24);
+        _midiDevices.Div().Align(Div::Alignment::Vertical);
+        _midiDevices.Div().Divs(_devs);
+        _midiDevices.Div().DivSize(_devs * 24);
+        m_MidiButtons.clear();
+        for (int i = 0; i < _devs; i++)
+        {
+            _midiDevices.Div()[i].Align(Div::Alignment::Horizontal);
+            _midiDevices.Div()[i].Divs(4);
+            _midiDevices.Div()[i].DivSize(24);
+            _midiDevices.Div()[i][0].DivSize(8);
+            _midiDevices.Div()[i][1].DivSize(150);
+            _midiDevices.Div()[i][1].Align(Div::Alignment::Left);
+            _midiDevices.Div()[i][1] = _midiDevices.Emplace<TextComponent<Align::LEFT>>(_dev[i].name);
+            auto& _b = _midiDevices.Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(
+                [i, _saveSettings](bool& s)
+                {
+                    if (s)
+                    {
+                        if (!Midi::Get().OpenPort(i)) s = false;
+                    }
+                    else
+                        Midi::Get().ClosePort(i);
+                }, "Enable");
+            m_MidiButtons.push_back(&_b);
+            if (Midi::Get().Opened().find(i) != Midi::Get().Opened().end())
+                _b.Active(true);
+
+            _b.Size({ 50, 18 });
+            _midiDevices.Div()[i][2].Align(Div::Alignment::Right);
+            _midiDevices.Div()[i][2] = _b;
+            _midiDevices.Div()[i][3].DivSize(8);
+        }
+        _midiDevices.LayoutManager().m_PrevDim = { 0 ,0, 0, 0 };
+    };
+
+    auto& _refreshMidiDevices = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_refreshMidi, "Refresh List");
+    _refreshMidiDevices.Size({ 110, 18 });
+
+    auto& _themeLoader = [&, _themeCallback, _saveSettings, _loadSettings]
+    {
+        _saveSettings();
+        ThemeT::ReloadThemes();
+        _themeDropDown.Clear();
+        for (auto& [key, val] : ThemeT::Themes())
+        {
+            _themeDropDown.AddOption(key, key, [&](std::string& t)
+                {
+                    ThemeT::SetTheme(t);
+                    _saveSettings();
+                    _themeCallback();
+                });
+        }
+        _loadSettings();
+        _themeCallback();
+    };
+    
+    _refreshMidi();
+    _themeLoader();
+    loaded = true;
+
+    auto& _reloadThemes = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_themeLoader, "Reload");
+    _reloadThemes.Size({ 110, 18 });
 
     _sp.Layout<Layout::Divs>();
     _sp.Div().Align(Div::Alignment::Vertical);
@@ -366,7 +393,7 @@ void Controller::Run()
     _sp.Div()[1].Align(Div::Alignment::Vertical);
     _sp.Div()[1].Dividers(true);
     _sp.Div()[1].Divs(2);
-    _sp.Div()[1].DivSize(150);
+    _sp.Div()[1].DivSize(176);
     _sp.Div()[1][1].DivSize(36);
     _sp.Div()[1][1] = _sp.Emplace<TextComponent<>>("General Settings", Graphics::Fonts::Gidole, 24.0f);
     _sp.Div()[1][0].Divs(3);
@@ -377,6 +404,14 @@ void Controller::Run()
     _sp.Div()[1][0][1][0].DivSize(10);
     _sp.Div()[1][0][1][1].Align(Div::Alignment::Vertical);
     _sp.Div()[1][0][1][1].Divs(4);
+    _sp.Div()[1][0][1][1][0].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][0].Divs(2);
+    _sp.Div()[1][0][1][1][0].DivSize(26);
+    _sp.Div()[1][0][1][1][0][0].DivSize(150);
+    _sp.Div()[1][0][1][1][0][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][0][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reload Themes");
+    _sp.Div()[1][0][1][1][0][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][0][1] = _reloadThemes;
     _sp.Div()[1][0][1][1][1].Align(Div::Alignment::Horizontal);
     _sp.Div()[1][0][1][1][1].Divs(2);
     _sp.Div()[1][0][1][1][1].DivSize(26);
@@ -410,21 +445,19 @@ void Controller::Run()
     int _saveCounter = 5 * 60 * 60;
     while (m_Gui.Loop())
     {
-        _sp.LayoutManager().DividerColor(theme->Get(C::Divider));
-        _sp.Background(theme->Get(C::MainPanel));
-        _scrp.Background(theme->Get(C::Channel));
-
         Midi::Get().ReadMessages();
 
         _saveCounter--;
         if (_saveCounter <= 0)
         {
             _saveCounter = 5 * 60 * 60;
+            _saveSettings();
             SaveRouting();
         }
     }
 
     // Final save to make sure it is saved when exited.
+    _saveSettings();
     SaveRouting();
 }
 

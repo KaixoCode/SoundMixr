@@ -303,41 +303,9 @@ namespace Effects
 			}
 		}
 
-		operator nlohmann::json()
-		{
-			nlohmann::json _json = nlohmann::json::object();
-			_json["type"] = "Utility";
-			_json["eqlow"] = m_Low.Value();
-			_json["eqmid"] = m_Mid.Value();
-			_json["eqhigh"] = m_High.Value();
-			_json["eqon"] = m_EnableEq.State();
-			_json["eqlowf"] = m_LowFreq.Value();
-			_json["eqhighf"] = m_HighFreq.Value();
-			_json["limgain"] = m_Gain.Value();
-			_json["limrel"] = m_Release.Value();
-			_json["limth"] = m_Limiter.Value();
-			_json["pan"] = m_Pan.Value();
-			_json["phase"] = m_PhaseInvert.State();
-			_json["mono"] = m_Mono.State();
-			_json["mute"] = m_Mute.State();
-			return _json;
-		}
-
 		void operator=(const nlohmann::json& json) override
 		{
-			m_Low.Value(json.at("eqlow").get<double>());
-			m_Mid.Value(json.at("eqmid").get<double>());
-			m_High.Value(json.at("eqhigh").get<double>());
-			m_EnableEq.State(json.at("eqon").get<bool>());
-			m_LowFreq.Value(json.at("eqlowf").get<double>());
-			m_HighFreq.Value(json.at("eqhighf").get<double>());
-			m_Gain.Value(json.at("limgain").get<double>());
-			m_Release.Value(json.at("limrel").get<double>());
-			m_Limiter.Value(json.at("limth").get<double>());
-			m_Pan.Value(json.at("pan").get<double>());
-			m_PhaseInvert.State(json.at("phase").get<bool>());
-			m_Mono.State(json.at("mono").get<bool>());
-			m_Mute.State(json.at("mute").get<bool>());
+			EffectBase::operator=(json);
 			UpdateParams();
 		}
 

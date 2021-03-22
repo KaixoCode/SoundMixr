@@ -1,24 +1,32 @@
 #include "ui/Parameter.hpp"
 
+ParameterBase::~ParameterBase()
+{
+	Midi::Get().Remove(m_Callback, m_CallbackId);
+}
+
 ParameterBase::ParameterBase(Effects::Parameter& param)
 	: m_Parameter(param)
 {
-	Midi::Get() += [this](Midi::Event::ControlChange& a) 
+	m_Callback = [this](Midi::Event::ControlChange& a)
 	{ 
 		if (m_Linking)
 		{
-			m_UnlinkButton->Enable();
-			m_LinkButton->Name(std::string("Link Midi - Linked: ") + std::to_string((int)a.control));
-			m_MidiLink = a.control;
+			if (m_UnlinkButton)
+				m_UnlinkButton->Enable();
+			if (m_LinkButton)
+				m_LinkButton->Name(std::string("Link Midi - Linked: ") + std::to_string((int)a.control));
+			m_Parameter.MidiLink({ a.channel, a.control, a.device });
 			m_Linking = false;
 		}
 
-		if (m_MidiLink == a.control)
+		if (m_Parameter.MidiLink() == Effects::MidiCCLink{ a.channel, a.control, a.device })
 		{
 			NormalizedValue(a.value / 127.0);
 		}
 	};
-
+	m_CallbackId = (Midi::Get() += m_Callback);
+	m_Menu.Clear();
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Listener += [this](Event::MousePressed& e)
 	{
@@ -38,6 +46,7 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 				m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 				m_LinkButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Linking, "Link Midi");
 				m_UnlinkButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_MidiLink = -1; m_LinkButton->Name("Link Midi"); m_UnlinkButton->Disable(); }, "Unlink");
+				m_UnlinkButton->Disable();
 			}
 			RightClickMenu::Get().Open(&m_Menu);
 		}

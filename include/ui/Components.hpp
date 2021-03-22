@@ -55,7 +55,8 @@ public:
 
 private:
 	int m_Click = 0;
-	bool m_Dragging = false;
+	bool m_Dragging = false,
+		m_Hovering = false;
 	Effects::XYController& controller;
 };
 
@@ -95,6 +96,9 @@ public:
 
 	void Update(const Vec4<int>& v);
 
+	virtual operator nlohmann::json() { return m_Parameter.operator nlohmann::json(); };
+	virtual void operator=(const nlohmann::json& json) { m_Parameter = json; };
+
 private:
 	Effects::Parameter m_Parameter{ "Volume", Effects::ParameterType::Slider };
 };
@@ -107,6 +111,9 @@ class PanSlider : public Parameter<PanSliderGraphics>
 {
 public:
 	PanSlider();
+
+	virtual operator nlohmann::json() { return m_Parameter.operator nlohmann::json(); };
+	virtual void operator=(const nlohmann::json& json) { m_Parameter = json; };
 
 private:
 	Effects::Parameter m_Parameter{ "Pan", Effects::ParameterType::Slider };

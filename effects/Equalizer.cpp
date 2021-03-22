@@ -135,36 +135,6 @@ namespace Effects
 
 		}
 
-		operator nlohmann::json() override
-		{
-			nlohmann::json _json = nlohmann::json::object();
-			_json["filters"] = nlohmann::json::array();
-			for (int i = 0; i < N; i++)
-			{
-				nlohmann::json _filter = nlohmann::json::object();
-				_filter["filter"] = i;
-				_filter["type"] = m_Dropdown[i]->Selected();
-				_filter["freq"] = m_Knob1[i]->Value();
-				_filter["gain"] = m_Knob2[i]->Value();
-				_filter["q"] = m_Knob3[i]->Value();
-				_json["filters"].push_back(_filter);
-			}
-			return _json;
-		}
-
-		void operator=(const nlohmann::json& json)
-		{
-			for (auto& i : json.at("filters"))
-			{
-				int index = i.at("filter").get<int>();
-				m_Dropdown[index]->Select((int)i.at("type").get<FilterType>());
-				m_Knob1[index]->Value(i.at("freq").get<double>());
-				m_Knob2[index]->Value(i.at("gain").get<double>());
-				m_Knob3[index]->Value(i.at("q").get<double>());
-			}
-			UpdateParams();
-		}
-
 	private:
 		static inline constexpr int N = 5;
 

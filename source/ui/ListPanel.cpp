@@ -9,9 +9,9 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_ChannelsPanel(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
 	m_Effect(Panel().Emplace<::EffectScrollPanel>(Layout::Hint::East)),
 	m_Inputs(m_ChannelsPanel.Panel<::Panel>().Emplace<::Panel>()),
-	m_Divider(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	m_Divider(&m_ChannelsPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
 	m_Outputs(m_ChannelsPanel.Panel().Emplace<::Panel>()),
-	m_Divider2(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	m_Divider2(&m_ChannelsPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
 	m_Specials(m_ChannelsPanel.Panel().Emplace<::Panel>())
 {
 	m_Effect.Width(332);
@@ -22,9 +22,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_ChannelsPanel.Panel().AutoResize(true, false);
 	m_ChannelsPanel.MinWidth(200);
 	m_ChannelsPanel.EnableScrollbars(true, false);
-	Background(theme->Get(C::MainPanel));
-
-	Panel().Background(theme->Get(C::MainPanel));
+	
 	Panel().Layout<Layout::Border>(0, 8, false, false, false, false);
 	Panel().AutoResize(false, false);
 
@@ -257,12 +255,6 @@ void ListPanel::Update(const Vec4<int>& s)
 			break;
 		}
 	}
-
-	if (m_Divider)
-		m_Divider->Color(theme->Get(C::Divider));
-
-	if (m_Divider2)
-		m_Divider2->Color(theme->Get(C::Divider));
 
 	ScrollPanel::Update(s);
 }
