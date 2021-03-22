@@ -507,7 +507,7 @@ void Controller::SaveRouting()
     }
 
     std::ofstream _out;
-    _out.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
+    _out.open("./settings/routing" + std::to_string(m_AsioDevice.Device().id));
     _out << /*std::setw(4) <<*/ _json;
     _out.close();
 }
@@ -529,7 +529,7 @@ void Controller::LoadRouting()
     // Open the routing file for the current device.
     LOG("Loading Routing");
     std::ifstream _in;
-    _in.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
+    _in.open("./settings/routing" + std::to_string(m_AsioDevice.Device().id));
 
     bool _error = true;
     if (!_in.fail())
