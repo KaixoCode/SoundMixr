@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#include "ui/Graphics.hpp"
 
 namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 
@@ -10,7 +11,9 @@ public:
 
 	float GetLevel(int channel);
 	void LoadFile(const std::string& path, const std::string& filename);
-	void PlayFile();
+	void PlayFile(bool forceOpen = false);
+	void ShowMenu();
+	void Rename();
 
 	operator nlohmann::json()
 	{
@@ -34,6 +37,7 @@ private:
 	AudioFile<double> m_File;
 	int m_SampleNum = -1;
 	float m_MultiplicationFactor = 1.0F;
+	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 };
 
 class Soundboard : public Frame

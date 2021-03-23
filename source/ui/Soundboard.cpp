@@ -1,8 +1,33 @@
 #include "ui/Soundboard.hpp"
 
 SoundboardButton::SoundboardButton()
-    : Button<G::Menu, BT::Normal>([&] { PlayFile(); }, "")
-{ };
+    : Button<G::Menu, BT::Normal>([&] {  }, "")
+{
+	// Initialise the right click menu
+	m_Menu.ButtonSize({ 180, 20 });
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Rename(); }, "Rename");
+
+	// Add an event listener for mouse click events
+	m_Listener += [this](Event::MousePressed& e)
+	{
+		if (e.button == Event::MouseButton::LEFT)
+			PlayFile();
+		else if (e.button == Event::MouseButton::MIDDLE)
+			PlayFile(true);		// Force selecting a new file
+		else if (e.button == Event::MouseButton::RIGHT)
+			ShowMenu();
+	};
+};
+
+void SoundboardButton::ShowMenu()
+{
+	RightClickMenu::Get().Open(&m_Menu);
+}
+
+void SoundboardButton::Rename()
+{
+
+}
 
 float SoundboardButton::GetLevel(int channel)
 {
@@ -42,9 +67,9 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 	m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
 }
 
-void SoundboardButton::PlayFile()
+void SoundboardButton::PlayFile(bool forceOpen)
 {
-	if (m_File.getNumSamplesPerChannel() > 0)
+	if (m_File.getNumSamplesPerChannel() > 0 && !forceOpen)
 	{
 		// A file is already loaded, play it if it isn't playing
 		if (m_SampleNum < 0)
