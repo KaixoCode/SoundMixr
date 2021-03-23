@@ -258,7 +258,8 @@ void Controller::Run()
             auto device = _json.at("device").get<int>() + 1;
             
             for (auto& i : _json.at("midi-enabled"))
-                m_MidiButtons[i.get<int>()]->Active(true);
+                if (i >= 0 && i < m_MidiButtons.size())
+                    m_MidiButtons[i.get<int>()]->Active(true);
 
             _asioDropDown.Select(device);
             _themeDropDown.Select(theme);
