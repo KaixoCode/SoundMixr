@@ -192,10 +192,10 @@ void Controller::Run()
             SaveRouting();
         }, "Save Routing", Key::CTRL_S);*/
 
-    /*_file.Emplace<MenuButton>([&]
+    _file.Emplace<MenuButton>([&]
         {
             soundboard.Save();
-        }, "Save Soundboard", Key::CTRL_S);*/
+        }, "Save Soundboard", Key::CTRL_S);
 
     //
     // Themes

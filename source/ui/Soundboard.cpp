@@ -73,16 +73,22 @@ void SoundboardButton::PlayFile()
 Soundboard::Soundboard()
     : Frame("Soundboard", 1000, 500, true, false, false)
 {
-    namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
+	Init();
+}
 
-    auto& _panel = this->Panel();
-    this->Icon(IDI_ICON1);
+void Soundboard::Init() {
 
-    _panel.Layout<Layout::Grid>(4, 4, 8, 8);
+	namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 
-    for (int i = 0; i < 16; i++) {        
-        m_Buttons.push_back(&_panel.Emplace<SoundboardButton>());
-    }
+	auto& _panel = this->Panel();
+	this->Icon(IDI_ICON1);
+	_panel.Clear();
+
+	_panel.Layout<Layout::Grid>(4, 4, 8, 8);
+
+	for (int i = 0; i < 16; i++) {
+		m_Buttons.push_back(&_panel.Emplace<SoundboardButton>());
+	}
 }
 
 float Soundboard::GetLevel(int channel)
@@ -108,12 +114,43 @@ void Soundboard::Save()
 
 	// Save the soundboard data
 	std::ofstream _out;
-	_out.open("./settings/soundboarddata.json");
+	_out.open("./settings/soundboarddata-1.json");
 	_out << std::setw(4) << _json;
 	_out.close();
 }
 
 void Soundboard::Load()
 {
-	// TODO: implement json loading
+	LOG("Loading Soundboard");
+	std::ifstream _in;
+	_in.open("./settings/soundboarddata.json");
+
+	bool _error = _in.fail();
+	if (!_error) {
+		try {
+			json _json;
+			_in >> _json;
+
+			// Clear the screen
+			m_Buttons.clear();
+			auto& _panel = this->Panel();
+			_panel.Clear();
+
+			// Load all the buttons
+			auto _data = _json.at("data");
+			for (auto& cur : _data) {
+				auto& curBtn = _panel.Emplace<SoundboardButton>();
+				curBtn = cur;
+				m_Buttons.push_back(&curBtn);
+			}
+		}
+		catch (std::exception& e) { _error = true;  }
+
+		if (_error) {
+			LOG("Failed loading soundboard");
+			Init();
+		}
+
+		_in.close();
+	}
 }

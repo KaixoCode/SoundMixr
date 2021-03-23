@@ -21,6 +21,11 @@ public:
 		return _json;
 	}
 
+	void operator = (const json& json)
+	{
+		this->LoadFile(json.at("filepath"), json.at("filename"));
+	}
+
 private:
 	std::string m_Filepath;
 	std::string m_Filename;
@@ -37,6 +42,7 @@ public:
 	float GetLevel(int);
 	void Save();
 	void Load();
+	void Init();
 	
 private:
 	std::map<int, AudioFile<double>> m_files;
