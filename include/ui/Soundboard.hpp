@@ -26,6 +26,8 @@ public:
 		this->LoadFile(json.at("filepath"), json.at("filename"));
 	}
 
+	void Close() { }
+
 private:
 	std::string m_Filepath;
 	std::string m_Filename;

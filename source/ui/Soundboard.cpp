@@ -43,30 +43,35 @@ void SoundboardButton::PlayFile()
 	{
 		// Load a file
 		OPENFILENAME ofn;
-		char fileName[MAX_PATH] = "";
-		ZeroMemory(&ofn, sizeof(ofn));
+		char fileName[MAX_PATH];
+		SecureZeroMemory(&ofn, sizeof(ofn));
+		SecureZeroMemory(&fileName, sizeof(fileName));
+		fileName[0] = '\0';
 
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hwndOwner = nullptr;
-		ofn.lpstrFilter = "WAV Files (*.wav)\0*.wav\0";
+		ofn.lpstrFilter = "WAV Files (*.wav)\0*.wav\0\0";
 		ofn.lpstrFile = fileName;
 		ofn.nMaxFile = MAX_PATH;
-		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-		ofn.lpstrDefExt = "";
+		ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
 		std::string fileNameStr;
 
-		if (GetOpenFileName(&ofn))
+		if (GetOpenFileNameA(&ofn))
+		{
 			fileNameStr = fileName;
 
-		// Set the name of the button to the filename
-		std::filesystem::directory_entry loadedFile{ fileNameStr };
-		ButtonBase::Name(loadedFile.path().filename().string());
+			// Set the name of the button to the filename
+			std::filesystem::directory_entry loadedFile{ fileNameStr };
+			ButtonBase::Name(loadedFile.path().filename().string());
 
-		m_Filepath = fileNameStr;
-		m_Filename = loadedFile.path().filename().string();
-		m_File.load(fileNameStr);
-		m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
+			m_Filepath = fileNameStr;
+			m_Filename = loadedFile.path().filename().string();
+			m_File.load(fileNameStr);
+			m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
+		}
+		else
+			LOG(CommDlgExtendedError());
 	}
 };
 
@@ -109,62 +114,60 @@ void Soundboard::Save()
 		_json["data"] = nlohmann::json::array();
 
 		// Soundboard sounds
-		for (auto& _btn : m_Buttons) {
-			_json["data"].push_back(*_btn);
-		}
-
-		nlohmann::json _andereJson;
-		_andereJson["data"] = nlohmann::json::array();
-		_andereJson["data"].push_back("Jeroen");
-		_andereJson["data"].push_back("is");
-		_andereJson["data"].push_back("vet");
-		_andereJson["data"].push_back("dun");
+		for (auto& _btn : m_Buttons)
+			_json["data"] += *_btn;
 
 		// Save the soundboard data
 		std::ofstream _out;
-		_out.open("./settings/soundboarddata.json");
-		//_out << "test";
-		_out << _json;
-		//_out << jsonContent;
-		std::cout << _json;
-		_out.close();
+		
+		LOG(std::filesystem::current_path().string());
+		_out.open("C:\\Users\\Jeroen\\source\\repos\\SoundMixr\\bin\\settings\\soundboarddata.json", std::ios::out);
+		if (_out.is_open())
+		{
+			_out << /*std::setw(4) << */_json;
+			_out.close();
+		}
+		else
+		{
+			LOG("COULDNT OPEN FILE");
+		}
 	} catch (const std::exception& ex) {
-		std::cout << ex.what();
+		LOG("Failed to save SoundBoard.");
 	}
 }
 
-//void Soundboard::Load()
-//{
-//	LOG("Loading Soundboard");
-//	std::ifstream _in;
-//	_in.open("./settings/soundboarddata");
-//
-//	bool _error = _in.fail();
-//	if (!_error) {
-//		try {
-//			nlohmann::json _json;
-//			_in >> _json;
-//
-//			// Clear the screen
-//			m_Buttons.clear();
-//			auto& _panel = this->Panel();
-//			_panel.Clear();
-//
-//			// Load all the buttons
-//			auto _data = _json.at("data");
-//			for (auto& cur : _data) {
-//				auto& curBtn = _panel.Emplace<SoundboardButton>();
-//				curBtn = cur;
-//				m_Buttons.push_back(&curBtn);
-//			}
-//		}
-//		catch (std::exception& e) { _error = true;  }
-//
-//		if (_error) {
-//			LOG("Failed loading soundboard");
-//			Init();
-//		}
-//
-//		_in.close();
-//	}
-//}
+void Soundboard::Load()
+{
+	LOG("Loading Soundboard");
+	std::ifstream _in;
+	_in.open("./settings/soundboarddata");
+
+	bool _error = _in.fail();
+	if (!_error) {
+		try {
+			nlohmann::json _json;
+			_in >> _json;
+
+			// Clear the screen
+			m_Buttons.clear();
+			auto& _panel = this->Panel();
+			_panel.Clear();
+
+			// Load all the buttons
+			auto _data = _json.at("data");
+			for (auto& cur : _data) {
+				auto& curBtn = _panel.Emplace<SoundboardButton>();
+				curBtn = cur;
+				m_Buttons.push_back(&curBtn);
+			}
+		}
+		catch (std::exception& e) { _error = true;  }
+
+		if (_error) {
+			LOG("Failed loading soundboard");
+			Init();
+		}
+
+		_in.close();
+	}
+}
