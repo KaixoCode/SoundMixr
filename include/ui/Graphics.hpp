@@ -584,6 +584,10 @@ public:
 	{
 		m_Theme = nullptr;
 		m_Themes.clear();
+
+		if (!std::filesystem::exists("./themes"))
+			return;
+
 		for (auto& p : std::filesystem::directory_iterator("./themes"))
 		{
 			if (!p.is_regular_file())
