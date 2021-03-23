@@ -25,8 +25,13 @@ float SoundboardButton::GetLevel(int channel)
 
 void SoundboardButton::LoadFile(const std::string& path, const std::string& filename) 
 { 
-    m_Filepath = path;
-    m_Filename = filename;
+	// Set the name of the button to the filename
+	ButtonBase::Name(filename);
+
+	m_Filepath = path;
+	m_Filename = filename;
+	m_File.load(path);
+	m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
 }
 
 void SoundboardButton::PlayFile()
@@ -60,15 +65,8 @@ void SoundboardButton::PlayFile()
 		if (GetOpenFileNameA(&ofn))
 		{
 			fileNameStr = fileName;
-
-			// Set the name of the button to the filename
 			std::filesystem::directory_entry loadedFile{ fileNameStr };
-			ButtonBase::Name(loadedFile.path().filename().string());
-
-			m_Filepath = fileNameStr;
-			m_Filename = loadedFile.path().filename().string();
-			m_File.load(fileNameStr);
-			m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
+			LoadFile(fileNameStr, loadedFile.path().filename().string());
 		}
 		else
 			LOG(CommDlgExtendedError());
@@ -99,7 +97,7 @@ void Soundboard::Init() {
 float Soundboard::GetLevel(int channel)
 {
     float totalLevel = 0;
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < m_Buttons.size(); i++) {
         totalLevel += m_Buttons[i]->GetLevel(channel);
     }
 
@@ -121,16 +119,14 @@ void Soundboard::Save()
 		std::ofstream _out;
 		
 		LOG(std::filesystem::current_path().string());
-		_out.open("C:\\Users\\Jeroen\\source\\repos\\SoundMixr\\bin\\settings\\soundboarddata.json", std::ios::out);
+		_out.open("./settings/soundboarddata.json", std::ios::out);
 		if (_out.is_open())
 		{
-			_out << /*std::setw(4) << */_json;
+			_out << std::setw(4) << _json;
 			_out.close();
 		}
 		else
-		{
 			LOG("COULDNT OPEN FILE");
-		}
 	} catch (const std::exception& ex) {
 		LOG("Failed to save SoundBoard.");
 	}
@@ -140,7 +136,7 @@ void Soundboard::Load()
 {
 	LOG("Loading Soundboard");
 	std::ifstream _in;
-	_in.open("./settings/soundboarddata");
+	_in.open("./settings/soundboarddata.json");
 
 	bool _error = _in.fail();
 	if (!_error) {

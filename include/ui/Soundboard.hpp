@@ -23,6 +23,8 @@ public:
 
 	void operator = (const nlohmann::json& json)
 	{
+		//std::cout << "PATH: " << json.at("filepath");
+		//std::cout << "NAME: " << json.at("filename");
 		this->LoadFile(json.at("filepath"), json.at("filename"));
 	}
 

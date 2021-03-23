@@ -444,6 +444,8 @@ void Controller::Run()
     _sp.Div()[1][0][1][1][3][1] = _resetGrouping;
     _sp.Div()[1][0][0].DivSize(20);
 
+    soundboard.Load();
+
     //
     // Main loop
     //
