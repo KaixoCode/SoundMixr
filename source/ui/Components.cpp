@@ -559,7 +559,7 @@ void DynamicsSlider::Render(CommandCollection& d)
 	d.Command<Graphics::Quad>(Vec4<int>{ Width() - 1, 0, 1, _y });
 	int p1 = DbToPixel(m_Object.CompressorThreshhold());
 	d.Command<Graphics::Fill>(ThemeT::Get().dynamics_compressor);
-	d.Command<Graphics::Quad>(Vec4<int>{ p1, _y2, Width() - p1, _y - _y2 - 5 });
+	d.Command<Graphics::Quad>(Vec4<int>{ p1, _y2, Width() - p1 - 1, _y - _y2 - 5 });
 	double _xp = p1;
 	for (int i = 0; i < 8; i++)
 	{
@@ -574,7 +574,7 @@ void DynamicsSlider::Render(CommandCollection& d)
 
 	int p2 = DbToPixel(m_Object.ExpanderThreshhold());
 	d.Command<Graphics::Fill>(ThemeT::Get().dynamics_compressor);
-	d.Command<Graphics::Quad>(Vec4<int>{ 0, _y2, p2, _y - _y2 - 5 });
+	d.Command<Graphics::Quad>(Vec4<int>{ 1, _y2, p2 - 1, _y - _y2 - 5 });
 	_xp = p2;
 	for (int i = 0; i < 8; i++)
 	{
@@ -621,7 +621,7 @@ void DynamicsSlider::Render(CommandCollection& d)
 double DynamicsSlider::PixelToDb(int p)
 {
 	double v = ((double)p) / (double)(Width());
-	return 20 * std::log10(std::powf(v, 4));
+	return 20 * std::log10(std::max((double)std::powf(v, 4), 0.000001));
 }
 
 int DynamicsSlider::DbToPixel(double p)

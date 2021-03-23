@@ -127,7 +127,7 @@ void Effect::Render(CommandCollection& d)
 
 	if (!m_Small)
 	{
-		d.Command<Fill>(ThemeT::Get().divider);
+		d.Command<Fill>(ThemeT::Get().effect_divider);
 		for (auto& i : m_Dividers)
 			d.Command<Quad>(i);
 	}
@@ -577,7 +577,7 @@ void EffectsGroup::Render(CommandCollection& d)
 	{
 		if (m_InsertIndex == _index)
 		{
-			d.Command<Fill>(ThemeT::Get().divider);
+			d.Command<Fill>(ThemeT::Get().effect_drag_divider);
 			d.Command<Quad>(Vec4<int>{_c->X(), _c->Y() + (_past ? -5 : _c->Height() + 3), _c->Width(), 2});
 		}
 	

@@ -240,7 +240,9 @@ public:
 		effect_title_text_off,
 		effect_title_bar,
 		effect_background,
-		effect_minimize_button;
+		effect_minimize_button,
+		effect_divider,
+		effect_drag_divider;
 
 	Color // Divider
 		divider;
@@ -262,7 +264,8 @@ public:
 
 	Color // Menu
 		menu_background,
-		menu_border;
+		menu_border,
+		menu_divider;
 
 	ThemeT()
 	{}
@@ -495,6 +498,8 @@ public:
 			effect_title_bar	   = GetColor("effect", "title-bar");
 			effect_background	   = GetColor("effect", "background");
 			effect_minimize_button = GetColor("effect", "minimize-button");
+			effect_divider		   = GetColor("effect", "divider");
+			effect_drag_divider	   = GetColor("effect", "drag-divider");
 
 			divider = GetColor("divider");
 
@@ -513,7 +518,8 @@ public:
 			window_button_active_background		    = GetColor("window", "button", "active", "background");
 
 			menu_background = GetColor("menu", "background");
-			menu_border	    = GetColor("menu", "border");
+			menu_border = GetColor("menu", "border");
+			menu_divider = GetColor("menu", "divider");
 		}
 		catch (...)
 		{
@@ -1704,9 +1710,10 @@ public:
 		else
 			d.Command<Fill>(ThemeT::Get().knob_idle_handle);
 
-		double _x = std::cos(_a) * b.Width() / 2.0;
-		double _y = std::sin(_a) * b.Height() / 2.0;
-		d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 4.0 + (_x + 1) / 2.0), (int)(b.Y() + b.Height() / 2.0 + (_y) / 2.0), b.Width() / 2, 2 }, 360 * _a / (2 * M_PI));
+		double _x = std::cos(_a) * (b.Width() / 2.0); 
+		double _y = std::sin(_a) * (b.Height() / 2.0) - 2;
+		d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 4.0 + (_x) / 2.0), (int)(b.Y() + b.Height() / 2.0 + (_y) / 2.0), b.Width() / 2, 2 }, 360 * _a / (2 * M_PI));
+		d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 2) - 1, (int)(b.Y() + b.Height() / 2.0) - 1, 2, 2 }, 45.0f);
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		if (b.DisplayValue())
@@ -1836,10 +1843,10 @@ namespace SoundMixrGraphics
 
 			if (b.Disabled())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_background);
-			else if (b.Active())
-				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
 			else if (b.Hovering())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_background);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_background);
 
@@ -1854,10 +1861,10 @@ namespace SoundMixrGraphics
 
 			if (b.Disabled())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text);
-			else if (b.Active())
-				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
 			else if (b.Hovering())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
 
@@ -1869,10 +1876,10 @@ namespace SoundMixrGraphics
 			{
 				if (b.Disabled())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text_small);
-				else if (b.Active())
-					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
 				else if (b.Hovering())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text_small);
+				else if (b.Active())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
 				else
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text_small);
 
@@ -1888,10 +1895,10 @@ namespace SoundMixrGraphics
 
 			if (b.Disabled())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_background);
-			else if (b.Active())
-				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
 			else if (b.Hovering())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_background);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_background);
 
@@ -1906,10 +1913,10 @@ namespace SoundMixrGraphics
 
 			if (b.Disabled())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text);
-			else if (b.Active())
-				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
 			else if (b.Hovering())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text);
+			else if (b.Active())
+				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
 
@@ -1921,10 +1928,10 @@ namespace SoundMixrGraphics
 			{
 				if (b.Disabled())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text_small);
-				else if (b.Active())
-					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
 				else if (b.Hovering())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text_small);
+				else if (b.Active())
+					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
 				else
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text_small);
 
@@ -2188,7 +2195,7 @@ public:
 	void Render(CommandCollection& d) override 
 	{
 		using namespace Graphics;
-		d.Command<Fill>(ThemeT::Get().divider);
+		d.Command<Fill>(ThemeT::Get().menu_divider);
 		d.Command<Quad>(X() + m_PaddingX, Y() + m_PaddingY, Width() - m_PaddingX * 2, m_Stroke);
 	};
 

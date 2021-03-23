@@ -52,7 +52,7 @@ namespace Effects
 			m_Highpass.ResetValue();
 			m_Highpass.Unit(" Hz");
 			m_Highpass.Unit(" kHz", 3);
-			m_Highpass.Size({ 30, 30 });
+			m_Highpass.Size({ 29, 29 });
 			m_Highpass.Decimals(2);
 			m_Highpass.Multiplier(0.4);
 
@@ -61,7 +61,7 @@ namespace Effects
 			m_Delay1Knob.ResetValue(3);
 			m_Delay1Knob.ResetValue();
 			m_Delay1Knob.Unit(" ms");
-			m_Delay1Knob.Size({ 30, 30 });
+			m_Delay1Knob.Size({ 29, 29 });
 			m_Delay1Knob.Decimals(2);
 			m_Delay1Knob.Multiplier(0.4);
 
@@ -70,7 +70,7 @@ namespace Effects
 			m_Delay2Knob.ResetValue(3);
 			m_Delay2Knob.ResetValue();
 			m_Delay2Knob.Unit(" ms");
-			m_Delay2Knob.Size({ 30, 30 });
+			m_Delay2Knob.Size({ 29, 29 });
 			m_Delay2Knob.Decimals(2);
 			m_Delay2Knob.Multiplier(0.4);
 
@@ -79,7 +79,7 @@ namespace Effects
 			m_MixKnob.ResetValue(50);
 			m_MixKnob.ResetValue();
 			m_MixKnob.Unit(" %");
-			m_MixKnob.Size({ 30, 30 });
+			m_MixKnob.Size({ 29, 29 });
 			m_MixKnob.Decimals(1);
 			m_MixKnob.Multiplier(0.4);
 

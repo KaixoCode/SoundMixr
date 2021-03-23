@@ -25,7 +25,7 @@ namespace Effects
 				m_Knob1[i]->ResetValue();
 				m_Knob1[i]->Unit("Hz");
 				m_Knob1[i]->Unit("kHz", 3);
-				m_Knob1[i]->Size({ 30, 30 });
+				m_Knob1[i]->Size({ 29, 29 });
 				m_Knob1[i]->Multiplier(0.4);
 
 				m_Knob2[i] = &Parameter("Gain", ParameterType::Knob);
@@ -33,7 +33,7 @@ namespace Effects
 				m_Knob2[i]->ResetValue(0);
 				m_Knob2[i]->ResetValue();
 				m_Knob2[i]->Unit("dB");
-				m_Knob2[i]->Size({ 30, 30 });
+				m_Knob2[i]->Size({ 29, 29 });
 				m_Knob2[i]->Multiplier(0.4);
 				m_Knob2[i]->Decimals(2);
 
@@ -43,7 +43,7 @@ namespace Effects
 				m_Knob3[i]->ResetValue(1);
 				m_Knob3[i]->ResetValue();
 				m_Knob3[i]->Unit("");
-				m_Knob3[i]->Size({ 30, 30 });
+				m_Knob3[i]->Size({ 29, 29 });
 				m_Knob3[i]->Multiplier(0.4);
 				m_Knob3[i]->Decimals(2);
 
