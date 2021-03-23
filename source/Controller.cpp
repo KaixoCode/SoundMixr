@@ -89,10 +89,10 @@ void Controller::Run()
     //
 
 
-    /*_file.Emplace<MenuToggleButton>([&](bool s)
+    _file.Emplace<MenuToggleButton>([&](bool s)
         {
             if (s) soundboard.Show(); else soundboard.Hide();
-        }, "Soundboard", Key::CTRL_SHIFT_S);*/
+        }, "Soundboard", Key::CTRL_SHIFT_S);
 
 
     _file.Emplace<MenuButton>([&]

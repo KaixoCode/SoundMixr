@@ -103,54 +103,68 @@ float Soundboard::GetLevel(int channel)
 
 void Soundboard::Save()
 {
-	LOG("Saving Soundboard");
-	nlohmann::json _json;
-	_json["data"] = nlohmann::json::array();
+	try {
+		LOG("Saving Soundboard");
+		nlohmann::json _json;
+		_json["data"] = nlohmann::json::array();
 
-	// Soundboard sounds
-	for (auto& _btn : m_Buttons) {
-		_json["data"].push_back(*_btn);
-	}
-
-	// Save the soundboard data
-	std::ofstream _out;
-	_out.open("./settings/soundboarddata-1.json");
-	_out << std::setw(4) << _json;
-	_out.close();
-}
-
-void Soundboard::Load()
-{
-	LOG("Loading Soundboard");
-	std::ifstream _in;
-	_in.open("./settings/soundboarddata.json");
-
-	bool _error = _in.fail();
-	if (!_error) {
-		try {
-			nlohmann::json _json;
-			_in >> _json;
-
-			// Clear the screen
-			m_Buttons.clear();
-			auto& _panel = this->Panel();
-			_panel.Clear();
-
-			// Load all the buttons
-			auto _data = _json.at("data");
-			for (auto& cur : _data) {
-				auto& curBtn = _panel.Emplace<SoundboardButton>();
-				curBtn = cur;
-				m_Buttons.push_back(&curBtn);
-			}
-		}
-		catch (std::exception& e) { _error = true;  }
-
-		if (_error) {
-			LOG("Failed loading soundboard");
-			Init();
+		// Soundboard sounds
+		for (auto& _btn : m_Buttons) {
+			_json["data"].push_back(*_btn);
 		}
 
-		_in.close();
+		nlohmann::json _andereJson;
+		_andereJson["data"] = nlohmann::json::array();
+		_andereJson["data"].push_back("Jeroen");
+		_andereJson["data"].push_back("is");
+		_andereJson["data"].push_back("vet");
+		_andereJson["data"].push_back("dun");
+
+		// Save the soundboard data
+		std::ofstream _out;
+		_out.open("./settings/soundboarddata.json");
+		//_out << "test";
+		_out << _json;
+		//_out << jsonContent;
+		std::cout << _json;
+		_out.close();
+	} catch (const std::exception& ex) {
+		std::cout << ex.what();
 	}
 }
+
+//void Soundboard::Load()
+//{
+//	LOG("Loading Soundboard");
+//	std::ifstream _in;
+//	_in.open("./settings/soundboarddata");
+//
+//	bool _error = _in.fail();
+//	if (!_error) {
+//		try {
+//			nlohmann::json _json;
+//			_in >> _json;
+//
+//			// Clear the screen
+//			m_Buttons.clear();
+//			auto& _panel = this->Panel();
+//			_panel.Clear();
+//
+//			// Load all the buttons
+//			auto _data = _json.at("data");
+//			for (auto& cur : _data) {
+//				auto& curBtn = _panel.Emplace<SoundboardButton>();
+//				curBtn = cur;
+//				m_Buttons.push_back(&curBtn);
+//			}
+//		}
+//		catch (std::exception& e) { _error = true;  }
+//
+//		if (_error) {
+//			LOG("Failed loading soundboard");
+//			Init();
+//		}
+//
+//		_in.close();
+//	}
+//}
