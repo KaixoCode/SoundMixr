@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.hpp"
-#include "audio/Audio.hpp"
+#include "audio/AsioDevice.hpp"
 #include "audio/Effects.hpp"
 
 // -------------------------------------------------------------------------- \\
@@ -18,7 +18,7 @@ public:
 	void EffectsGroup(EffectsGroup* e) { m_EffectsGroup = e; }
 	auto EffectsGroup() -> ::EffectsGroup* { return m_EffectsGroup; }
 
-	void AddEffect(EffectBase* effect)
+	void AddEffect(Effects::EffectBase* effect)
 	{
 		if (m_EffectsGroup && effect)
 			m_EffectsGroup->Add(effect);
@@ -46,7 +46,6 @@ public:
 
 private:
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
-	MenuAccessories::Divider* m_Div = nullptr, * m_Div2 = nullptr;
 	EffectPanel& m_EffectPanel;
 	double m_MouseY = 0;
 };

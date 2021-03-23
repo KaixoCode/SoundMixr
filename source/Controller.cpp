@@ -1,5 +1,6 @@
 #include "Controller.hpp"
 #include "EffectLoader.hpp"
+#include <midi\Midi.hpp>
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
@@ -7,27 +8,14 @@
 
 Controller::Controller()
 : mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500, true)),
+settings(m_Gui.AddWindow<Frame>("Settings", 400, 500, true, false, false)),
 soundboard(m_Gui.AddWindow<Soundboard>()),
 m_AsioDevice(soundboard)
 {}
 
 void Controller::Run()
 {
-
     EffectLoader::LoadEffects();
-
-    // 
-    // Loading Theme
-    //
-
-    LOG("Selecting default theme");
-    std::ifstream _in;
-    _in.open("./settings/theme");
-    std::string _line;
-    std::getline(_in, _line);
-    int _themeId = std::atoi(_line.c_str());
-    theme->theme = (Themes::N) _themeId;
-    _in.close();
 
     //
     // Some namespaces
@@ -39,9 +27,10 @@ void Controller::Run()
     using TitleMenuButton = Button<G::TitleMenu, BT::Menu<G::Vertical, MT::Normal, BT::FocusToggle, Align::BOTTOM>>;
     using SubMenuButton = Button<G::SubMenu, BT::Menu<G::Vertical, MT::Normal, BT::Hover, Align::RIGHT>>;
 
-    mainWindow.Color(theme->Get(C::WindowBorder));
-    soundboard.Color(theme->Get(C::WindowBorder));
+    mainWindow.Color(ThemeT::Get().window_border);
+    soundboard.Color(ThemeT::Get().window_border);
     mainWindow.Icon(IDI_ICON1);
+    settings.Icon(IDI_ICON1);
 
     //
     // Set shell icon
@@ -54,8 +43,8 @@ void Controller::Run()
     _closeMenu.Emplace<MenuButton>([&] { mainWindow.Show(); }, "Open GUI");
     _closeMenu.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit");
 
-    Frame::AddShellIcon(IDI_ICON1, "SoundMixr", [&] (Event& e)
-        { 
+    Frame::AddShellIcon(IDI_ICON1, "SoundMixr", [&](Event& e)
+        {
             if (e.button == Event::MouseButton::LEFT && e.mod)
                 mainWindow.Show();
 
@@ -69,7 +58,7 @@ void Controller::Run()
 
     auto& _panel = mainWindow.Panel();
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
-    _panel.Background(theme->Get(C::WindowBorder));
+    _panel.Background(ThemeT::Get().window_border);
     _panel.SmartPanel(false);
 
     auto& _p3 = _panel.Emplace<Panel>();
@@ -88,196 +77,372 @@ void Controller::Run()
     //
 
     auto& _menu = mainWindow.Menu();
-    auto& _file = _menu.Emplace<TitleMenuButton>("Options");
-    _file.Size({ 54, 32 });
-    _file.MenuBase().ButtonSize({ 200, 20 });
+    auto& _file = _menu.Emplace<TitleMenuButton>("File");
+    _file.Size({ 34, 32 });
+    _file.MenuBase().ButtonSize({ 150, 20 });
 
-    auto& _sub = _file.Emplace<SubMenuButton>("Select ASIO Device");
-    _sub.MenuBase().ButtonSize({ 210, 20 });
-    int _key = BT::List::NewKey();
+    auto& _sub = _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 
 
     //
-    // Load default device
+    // Soundboard button
     //
 
-    LOG("Selecting default device");
-    _in.open("./settings/device");
-    std::getline(_in, _line);
-    int _deviceId = std::atoi(_line.c_str());
-    if (!_line.empty())
-    {
-        auto _it = std::find_if(m_AsioDevice.Devices().begin(), m_AsioDevice.Devices().end(), [=](const Device& obj) {return obj.id == _deviceId; });
-        if (_it != m_AsioDevice.Devices().end()) {
-            m_AsioDevice.Device(*_it);
-            m_AsioDevice.OpenStream();
-            m_AsioDevice.StartStream();
-            LoadRouting();
-            _titleButton.Name(m_AsioDevice.Device().info.name);
-        }
-    }
-    _in.close();
 
-    //
-    // Load selection menu for ASIO devices
-    //
+    /*_file.Emplace<MenuToggleButton>([&](bool s)
+        {
+            if (s) soundboard.Show(); else soundboard.Hide();
+        }, "Soundboard", Key::CTRL_SHIFT_S);*/
 
-    for (auto& _d : m_AsioDevice.Devices())
-    {
-        auto& _button = _sub.Emplace<Button<G::Menu, BT::List>>([&]
-            {
-                if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
-                    return;
-
-                // First save the routing
-                SaveRouting();
-
-                // Close stream, set new device and open/start stream
-                m_AsioDevice.CloseStream();
-
-                // Clear the channels from the ListPanel
-                m_List->Clear();
-                m_AsioDevice.Device(_d);
-                m_AsioDevice.OpenStream();
-                // Set title to ASIO device name
-                _titleButton.Name(_d.info.name);
-
-                // Save the current device 
-                std::ofstream _out;
-                _out.open("./settings/device");
-                _out << std::to_string(_d.id);
-                _out.close();
-
-                // Load the routing for this new device.
-                LoadRouting();
-                m_AsioDevice.StartStream();
-            }, _d.info.name, _key);
-
-        // Make sure the correct initial button in the List Group is set to 'Selected'
-        if (_d.id == _deviceId)
-            _button.Selected(true);
-    }
-
-    //
-    // ASIO Control Panel button in Frame menu
-    //
 
     _file.Emplace<MenuButton>([&]
+        {
+            m_Gui.Close();
+        }, "Exit", Key::ALT_F4);
+
+
+    //
+    // Settings
+    //
+
+    auto& _ppp = settings.Panel();
+    _ppp.Layout<Layout::Grid>(1, 1, 8, 8);
+    auto& _sp = _ppp.Emplace<Panel>();
+    auto& _scrp = _sp.Emplace<SMXRScrollPanel>();
+    _scrp.Size({ 384, 100 });
+    _scrp.EnableScrollbars(false, true);
+    auto& _midiDevices = _scrp.Panel<Panel>();
+    _midiDevices.Layout<Layout::Divs>();
+
+    auto& _themeCallback = [&]
+    {
+        _panel.Background(ThemeT::Get().window_border);
+        mainWindow.Color(ThemeT::Get().window_border);
+        soundboard.Color(ThemeT::Get().window_border);
+        settings.Color(ThemeT::Get().window_border);
+        m_List->Panel().Background(ThemeT::Get().window_panel);
+        m_List->Background(ThemeT::Get().window_panel);
+        _div.Color(ThemeT::Get().divider);
+        _sp.LayoutManager().DividerColor(ThemeT::Get().divider);
+        _sp.Background(ThemeT::Get().window_panel);
+        _scrp.Background(ThemeT::Get().window_frame);
+    };
+
+    auto& _refreshEffect = [&]
+    {
+        SaveRouting();
+        m_AsioDevice.RemoveGroups();
+        m_List->Clear();
+        EffectLoader::LoadEffects();
+        m_List->ReloadEffects();
+        LoadRouting();
+    };
+
+    auto& _resetGroup = [&] { m_List->ResetGrouping(); };
+
+    auto& _asioControlPanel = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([&]
         {
             if (!&m_AsioDevice.Device())
                 return;
 
             SaveRouting();
             m_AsioDevice.CloseStream();
+            m_AsioDevice.RemoveGroups();
             PaAsio_ShowControlPanel(m_AsioDevice.Device().id, mainWindow.GetWin32Handle());
             m_AsioDevice.OpenStream();
             m_List->Clear();
             LoadRouting();
             m_AsioDevice.StartStream();
-        }, "ASIO Control Panel", Key::CTRL_O);
+        }, "Control Panel...");
+    _asioControlPanel.Size({ 110, 18 });
 
-    //
-    // The Windows Aero Effect button in the Frame menu
-    //
+    auto& _refreshEffects = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_refreshEffect, "Reload");
+    _refreshEffects.Size({ 110, 18 });
 
-    _file.Emplace<MenuToggleButton>([&](bool a)
+    auto& _resetGrouping = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_resetGroup, "Reset");
+    _resetGrouping.Size({ 110, 18 });
+
+    auto& _themeDropDown = _sp.Emplace<DropDown<std::string, DropdownButton2>>();
+    _themeDropDown.Size({ 110, 18 });
+    _themeDropDown.ButtonSize({ 110, 20 });
+
+    bool loaded = false;
+    auto& _saveSettings = [&]
+    {
+        if (!loaded)
+            return;
+        try
         {
-            m_List->Transparency(a);
-            mainWindow.Aero(a);
-        }, "Windows Aero Effect", Key::CTRL_T);
+            nlohmann::json _json = nlohmann::json::object();
+            _json["device"] = (&m_AsioDevice.Device() != nullptr ? m_AsioDevice.Device().id : -1);
+            _json["theme"] = ThemeT::Get().Name();
+            _json["midi-enabled"] = nlohmann::json::array();
+            for (auto& [key, val] : Midi::Get().Opened())
+                _json["midi-enabled"] += key;
 
-
-    /*_file.Emplace<MenuButton>([&]
+            std::ofstream _of;
+            _of.open("./settings/settings");
+            _of << /*std::setw(4) <<*/ _json;
+            _of.close();
+        }
+        catch (...)
         {
-            SaveRouting();
-        }, "Save Routing", Key::CTRL_S);*/
-
-    /*_file.Emplace<MenuButton>([&]
-        {
-            soundboard.Save();
-        }, "Save Soundboard", Key::CTRL_S);*/
-
-    //
-    // Themes
-    //
-
-    // Callback that sets colors of staticly colored gui 
-    // components, and saves the theme.
-    auto& _themeCallback = [&] 
-    {            
-        _panel.Background(theme->Get(C::WindowBorder));
-        mainWindow.Color(theme->Get(C::WindowBorder));
-        soundboard.Color(theme->Get(C::WindowBorder));
-        m_List->Panel().Background(theme->Get(C::MainPanel));
-        m_List->Background(theme->Get(C::MainPanel));
-        _div.Color(theme->Get(C::Divider));
-
-        std::ofstream _out;
-        _out.open("./settings/theme");
-        _out << std::to_string((int)theme->theme);
-        _out.close();
+            LOG("Failed to save settings.");
+        }
     };
 
-    auto& _sub2 = _file.Emplace<SubMenuButton>("Theme");
-    _sub2.MenuBase().ButtonSize({ 120, 20 });
-    _key = BT::List::NewKey();
-    auto& _theme1 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
+    auto& _asioDropDown = _sp.Emplace<DropDown<int, DropdownButton2>>();
+    _asioDropDown.Size({ 220, 18 });
+    _asioDropDown.ButtonSize({ 220, 20 });
+    _asioDropDown.AddOption("No Device", 0, [&](int i)
         {
-            theme->theme = Themes::DARK;
-            _themeCallback();
-        }, "Dark", _key);
-    if (theme->theme == Themes::DARK) _theme1.Selected(true);
+            _asioControlPanel.Disable();
 
-    /*auto& _theme2 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
-        {
-            Themes::Theme = Themes::LIGHT;
-            _themeCallback();
-        }, "Light", _key);
-    if (Themes::Theme == Themes::LIGHT) _theme2.Selected(true);*/
-
-    auto& _theme3 = _sub2.Emplace<Button<G::Menu, BT::List>>([&]
-        {
-            theme->theme = Themes::BLUE;
-            _themeCallback();
-        }, "Blue", _key);
-    if (theme->theme == Themes::BLUE) _theme3.Selected(true);
-
-    //
-    // Reset channel grouping button.
-    //
-
-    _file.Emplace<MenuButton>([&]
-        {
-            m_List->ResetGrouping();
-        }, "Reset Grouping");
-
-    _file.Emplace<MenuButton>([&]
-        {                
             // First save the routing
             SaveRouting();
-            m_AsioDevice.StopStream();
+
+            // Close stream, set new device and open/start stream
+            m_AsioDevice.CloseStream();
             m_AsioDevice.RemoveGroups();
+            m_AsioDevice.NoDevice();
+
+            // Clear the channels from the ListPanel
             m_List->Clear();
-            EffectLoader::LoadEffects();
-            m_List->ReloadEffects();
-            LoadRouting();
-            m_AsioDevice.StartStream();
-        }, "Refresh Effects");
+            _titleButton.Name("No Device");
 
-    //
-    // Soundboard button
-    //
+            // Save the current device 
+            _saveSettings();
+        });
+    for (auto& _d : m_AsioDevice.Devices())
+    {
+        _asioDropDown.AddOption(_d.info.name, _d.id + 1, [&](int i)
+            {
+                if (&m_AsioDevice.Device() != nullptr && m_AsioDevice.Device().id == _d.id)
+                    return;
+                _asioControlPanel.Enable();
 
-    _file.Emplace<MenuToggleButton>([&](bool s)
+                // First save the routing
+                SaveRouting();
+
+                // Close stream, set new device and open/start stream
+                m_AsioDevice.CloseStream();
+                m_AsioDevice.RemoveGroups();
+                m_List->Clear();
+                m_AsioDevice.Device(_d);
+                m_AsioDevice.OpenStream();
+
+                // Set title to ASIO device name
+                _titleButton.Name(_d.info.name);
+
+                // Save the current device 
+                _saveSettings();
+
+                // Load the routing for this new device.
+                LoadRouting();
+                m_AsioDevice.StartStream();
+            });
+    }
+
+    std::vector<Button<ToggleButtonGraphics, ButtonType::Toggle>*> m_MidiButtons;
+
+    auto& _loadSettings = [&]
+    {
+        try
         {
-            if (s) soundboard.Show(); else soundboard.Hide();
-        }, "Soundboard", Key::CTRL_SHIFT_S);
+            std::ifstream _if;
+            _if.open("./settings/settings");
+            nlohmann::json _json;
+            _json << _if;
+            _if.close();
 
+            auto& theme = _json.at("theme").get<std::string>();
+            auto device = _json.at("device").get<int>() + 1;
+            
+            for (auto& i : _json.at("midi-enabled"))
+                if (i >= 0 && i < m_MidiButtons.size())
+                    m_MidiButtons[i.get<int>()]->Active(true);
 
-    _file.Emplace<MenuButton>([&]
+            _asioDropDown.Select(device);
+            _themeDropDown.Select(theme);
+
+            _saveSettings();
+        }
+        catch (...)
         {
-            m_Gui.Close();
-        }, "Exit");
+            LOG("Failed to load settings.");
+        }
+    };
+
+    auto& _refreshMidi = [&] 
+    {
+        Midi::Get().LoadPorts();
+        auto& _dev = Midi::Get().Devices();
+        int _devs = _dev.size();
+        _midiDevices.Div().Clear();
+        _midiDevices.Clear();
+        _midiDevices.Width(384);
+        _midiDevices.Height(_devs * 24);
+        _midiDevices.Div().Align(Div::Alignment::Vertical);
+        _midiDevices.Div().Divs(_devs);
+        _midiDevices.Div().DivSize(_devs * 24);
+        m_MidiButtons.clear();
+        for (int i = 0; i < _devs; i++)
+        {
+            _midiDevices.Div()[i].Align(Div::Alignment::Horizontal);
+            _midiDevices.Div()[i].Divs(4);
+            _midiDevices.Div()[i].DivSize(24);
+            _midiDevices.Div()[i][0].DivSize(8);
+            _midiDevices.Div()[i][1].DivSize(150);
+            _midiDevices.Div()[i][1].Align(Div::Alignment::Left);
+            _midiDevices.Div()[i][1] = _midiDevices.Emplace<TextComponent<Align::LEFT>>(_dev[i].name);
+            auto& _b = _midiDevices.Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(
+                [i, _saveSettings](bool& s)
+                {
+                    if (s)
+                    {
+                        if (!Midi::Get().OpenPort(i)) s = false;
+                    }
+                    else
+                        Midi::Get().ClosePort(i);
+                }, "Enable");
+            m_MidiButtons.push_back(&_b);
+            if (Midi::Get().Opened().find(i) != Midi::Get().Opened().end())
+                _b.Active(true);
+
+            _b.Size({ 50, 18 });
+            _midiDevices.Div()[i][2].Align(Div::Alignment::Right);
+            _midiDevices.Div()[i][2] = _b;
+            _midiDevices.Div()[i][3].DivSize(8);
+        }
+        _midiDevices.LayoutManager().m_PrevDim = { 0 ,0, 0, 0 };
+    };
+
+    auto& _refreshMidiDevices = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_refreshMidi, "Refresh List");
+    _refreshMidiDevices.Size({ 110, 18 });
+
+    auto& _themeLoader = [&, _themeCallback, _saveSettings, _loadSettings]
+    {
+        _saveSettings();
+        ThemeT::ReloadThemes();
+        _themeDropDown.Clear();
+        
+        loaded = false;
+        for (auto& [key, val] : ThemeT::Themes())
+        {
+            _themeDropDown.AddOption(key, key, [&](std::string& t)
+                {
+                    ThemeT::SetTheme(t);
+                    _saveSettings();
+                    _themeCallback();
+                });
+        }
+        loaded = true;
+        _loadSettings();
+        _themeCallback();
+    };
+    
+    _refreshMidi();
+    _themeLoader();
+    loaded = true;
+
+    auto& _reloadThemes = _sp.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(_themeLoader, "Reload");
+    _reloadThemes.Size({ 110, 18 });
+
+    _sp.Layout<Layout::Divs>();
+    _sp.Div().Align(Div::Alignment::Vertical);
+    _sp.Div().Divs(4);
+    _sp.Div()[3].Align(Div::Alignment::Vertical);
+    _sp.Div()[3].Dividers(true);
+    _sp.Div()[3].Divs(2);
+    _sp.Div()[3].DivSize(120);
+    _sp.Div()[3][1].DivSize(36);
+    _sp.Div()[3][1] = _sp.Emplace<TextComponent<>>("Asio Settings", Graphics::Fonts::Gidole, 24.0f);;
+    _sp.Div()[3][0].Align(Div::Alignment::Vertical);
+    _sp.Div()[3][0].Divs(3);
+    _sp.Div()[3][0][2].DivSize(4);
+    _sp.Div()[3][0][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1].Divs(2);
+    _sp.Div()[3][0][1][0].DivSize(10);
+    _sp.Div()[3][0][1][1].Align(Div::Alignment::Vertical);
+    _sp.Div()[3][0][1][1].Divs(3);
+    _sp.Div()[3][0][1][1][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1][1][1].Divs(2);
+    _sp.Div()[3][0][1][1][1].DivSize(24);
+    _sp.Div()[3][0][1][1][1][0].DivSize(150);
+    _sp.Div()[3][0][1][1][1][0].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][1][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Asio Device");
+    _sp.Div()[3][0][1][1][1][1].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][1][1] = _asioDropDown;
+    _sp.Div()[3][0][1][1][2].Align(Div::Alignment::Horizontal);
+    _sp.Div()[3][0][1][1][2].Divs(2);
+    _sp.Div()[3][0][1][1][2].DivSize(24);
+    _sp.Div()[3][0][1][1][2][0].DivSize(150);
+    _sp.Div()[3][0][1][1][2][0].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][2][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Control Panel");
+    _sp.Div()[3][0][1][1][2][1].Align(Div::Alignment::Left);
+    _sp.Div()[3][0][1][1][2][1] = _asioControlPanel;
+    _sp.Div()[3][0][0].DivSize(20);
+    _sp.Div()[2].Align(Div::Alignment::Vertical);
+    _sp.Div()[2].Dividers(true);
+    _sp.Div()[2].Divs(2);
+    _sp.Div()[2].DivSize(190);
+    _sp.Div()[2][1].DivSize(36);
+    _sp.Div()[2][1] = _sp.Emplace<TextComponent<>>("Midi Settings", Graphics::Fonts::Gidole, 24.0f);
+    _sp.Div()[2][0].DivSize(158);
+    _sp.Div()[2][0].Divs(3);
+    _sp.Div()[2][0].Align(Div::Alignment::Vertical);
+    _sp.Div()[2][0][2].DivSize(108);
+    _sp.Div()[2][0][2] = _scrp;
+    _sp.Div()[2][0][1].DivSize(30);
+    _sp.Div()[2][0][1] = _refreshMidiDevices;
+    _sp.Div()[2][0][0].DivSize(20);
+    _sp.Div()[1].Align(Div::Alignment::Vertical);
+    _sp.Div()[1].Dividers(true);
+    _sp.Div()[1].Divs(2);
+    _sp.Div()[1].DivSize(176);
+    _sp.Div()[1][1].DivSize(36);
+    _sp.Div()[1][1] = _sp.Emplace<TextComponent<>>("General Settings", Graphics::Fonts::Gidole, 24.0f);
+    _sp.Div()[1][0].Divs(3);
+    _sp.Div()[1][0].Align(Div::Alignment::Vertical);
+    _sp.Div()[1][0][2].DivSize(4);
+    _sp.Div()[1][0][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1].Divs(2);
+    _sp.Div()[1][0][1][0].DivSize(10);
+    _sp.Div()[1][0][1][1].Align(Div::Alignment::Vertical);
+    _sp.Div()[1][0][1][1].Divs(4);
+    _sp.Div()[1][0][1][1][0].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][0].Divs(2);
+    _sp.Div()[1][0][1][1][0].DivSize(26);
+    _sp.Div()[1][0][1][1][0][0].DivSize(150);
+    _sp.Div()[1][0][1][1][0][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][0][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reload Themes");
+    _sp.Div()[1][0][1][1][0][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][0][1] = _reloadThemes;
+    _sp.Div()[1][0][1][1][1].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][1].Divs(2);
+    _sp.Div()[1][0][1][1][1].DivSize(26);
+    _sp.Div()[1][0][1][1][1][0].DivSize(150);
+    _sp.Div()[1][0][1][1][1][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][1][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Theme");
+    _sp.Div()[1][0][1][1][1][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][1][1] = _themeDropDown;
+    _sp.Div()[1][0][1][1][2].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][2].Divs(2);
+    _sp.Div()[1][0][1][1][2].DivSize(26);
+    _sp.Div()[1][0][1][1][2][0].DivSize(150);
+    _sp.Div()[1][0][1][1][2][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][2][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reload Effects");
+    _sp.Div()[1][0][1][1][2][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][2][1] = _refreshEffects;
+    _sp.Div()[1][0][1][1][3].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][3].Divs(2);
+    _sp.Div()[1][0][1][1][3].DivSize(26);
+    _sp.Div()[1][0][1][1][3][0].DivSize(150);
+    _sp.Div()[1][0][1][1][3][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][3][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reset Channel Grouping");
+    _sp.Div()[1][0][1][1][3][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][3][1] = _resetGrouping;
+    _sp.Div()[1][0][0].DivSize(20);
 
     //
     // Main loop
@@ -286,16 +451,20 @@ void Controller::Run()
     int _saveCounter = 5 * 60 * 60;
     while (m_Gui.Loop())
     {
+        Midi::Get().ReadMessages();
+
         _saveCounter--;
         if (_saveCounter <= 0)
         {
             _saveCounter = 5 * 60 * 60;
+            _saveSettings();
             SaveRouting();
             soundboard.Save();
         }
     }
 
     // Final save to make sure it is saved when exited.
+    _saveSettings();
     SaveRouting();
     soundboard.Save();
 }
@@ -307,8 +476,8 @@ void Controller::SaveRouting()
 
     LOG("Saving Routing");
 
-    json _json;
-    _json["input_channels"] = json::array();
+    nlohmann::json _json;
+    _json["input_channels"] = nlohmann::json::array();
 
     // Inputs
     for (auto& _ch : m_List->Channels())
@@ -319,7 +488,7 @@ void Controller::SaveRouting()
         _json["input_channels"].push_back(*_ch);
     }
 
-    _json["output_channels"] = json::array();
+    _json["output_channels"] = nlohmann::json::array();
 
     // Outputs
     for (auto& _ch : m_List->Channels())
@@ -330,7 +499,7 @@ void Controller::SaveRouting()
         _json["output_channels"].push_back(*_ch);
     }
 
-    _json["special_channels"] = json::array();
+    _json["special_channels"] = nlohmann::json::array();
 
     // Special channels
     for (auto& _ch : m_List->Channels())
@@ -342,8 +511,8 @@ void Controller::SaveRouting()
     }
 
     std::ofstream _out;
-    _out.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
-    _out << std::setw(4) << _json;
+    _out.open("./settings/routing" + std::to_string(m_AsioDevice.Device().id));
+    _out << /*std::setw(4) <<*/ _json;
     _out.close();
 }
 
@@ -364,7 +533,7 @@ void Controller::LoadRouting()
     // Open the routing file for the current device.
     LOG("Loading Routing");
     std::ifstream _in;
-    _in.open("./settings/testrouting" + std::to_string(m_AsioDevice.Device().id));
+    _in.open("./settings/routing" + std::to_string(m_AsioDevice.Device().id));
 
     bool _error = true;
     if (!_in.fail())
@@ -372,7 +541,7 @@ void Controller::LoadRouting()
         _error = false;
         try 
         {
-            json _json;
+            nlohmann::json _json;
             _in >> _json;
 
             // First load all the output channels
@@ -383,7 +552,7 @@ void Controller::LoadRouting()
                 auto& _c = m_List->EmplaceChannel(false);
            
                 // Add all channels that are in this channelgroup
-                json _channels = i.at("channels");
+                nlohmann::json _channels = i.at("channels");
                 for (int i : _channels)
                 {
                     _outputIdsLoaded[i] = true;
@@ -402,7 +571,7 @@ void Controller::LoadRouting()
                 auto& _c = m_List->EmplaceChannel(true);
 
                 // Add all channels that are in this channelgroup
-                json _channels = i.at("channels");
+                nlohmann::json _channels = i.at("channels");
                 for (int i : _channels)
                 {
                     _inputIdsLoaded[i] = true;
@@ -410,7 +579,7 @@ void Controller::LoadRouting()
                 }
 
                 // Then add all the connections of this channelgroup
-                json _connections = i.at("connections");
+                nlohmann::json _connections = i.at("connections");
                 for (int i : _connections)
                 {
                     // Find the output channelgroup by id.
@@ -431,7 +600,7 @@ void Controller::LoadRouting()
                 _soundboardChannel.AddChannel(&a);
 
             // Then add all the connections of this channelgroup
-            json _connections = _json.at("special_channels")[0].at("connections");
+            nlohmann::json _connections = _json.at("special_channels")[0].at("connections");
             for (int i : _connections)
             {
                 // Find the output channelgroup by id.
@@ -449,19 +618,7 @@ void Controller::LoadRouting()
     
         // If error occured (either file didn't exist or was parced incorrectly
         // load all the channels as stereo channels.
-        catch (json::parse_error err)
-        {
-            _error = true;
-        }
-        catch (json::other_error err)
-        {
-            _error = true;
-        }
-        catch (json::type_error err)
-        {
-            _error = true;
-        }
-        catch (std::exception& e)
+        catch (...)
         {
             _error = true;
         }

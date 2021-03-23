@@ -14,19 +14,6 @@ file(GLOB_RECURSE SOURCE
   "${SRC}resources/*.rc"
 )
 
-file(GLOB_RECURSE EFFECTBASE_SOURCE
-  "${SRC}effects/*.hpp"
-)
-
-add_library(EffectBase STATIC
-  ${EFFECTBASE_SOURCE}
-)
-
-target_include_directories(EffectBase PUBLIC
-  libs/json/include
-  effects/
-)
-
 add_executable(SoundMixr
   ${SOURCE}
 )
@@ -35,11 +22,12 @@ target_include_directories(SoundMixr PUBLIC
   libs/GuiCode/include
   libs/GuiCode/libs
   libs/portaudio/include
+  libs/rtmidi
   libs/AudioFile
-  libs/json/include
   include/
   resources/
-  effects/
+  libs/EffectBase/include
+  libs/EffectBase/libs/json/include
 )
 
 set_target_properties(EffectBase PROPERTIES LINKER_LANGUAGE CXX)
@@ -53,6 +41,7 @@ target_precompile_headers(SoundMixr PUBLIC
 target_link_libraries(SoundMixr
   GuiCode
   portaudio
+  rtmidi
 )
 
 file(GLOB files "effects/*.cpp")
@@ -63,8 +52,8 @@ foreach(file ${files})
   )
   
   target_include_directories(${effectname} PUBLIC
-    effects/
-    libs/json/include
+    libs/EffectBase/include
+    libs/EffectBase/libs/json/include
   )
   
   set_target_properties(${effectname} PROPERTIES FOLDER "Effects")

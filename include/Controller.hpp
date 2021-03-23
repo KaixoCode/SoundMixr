@@ -1,21 +1,11 @@
 #pragma once
 #include "pch.hpp"
-#include "audio/Audio.hpp"
+#include "audio/AsioDevice.hpp"
 #include "ui/ChannelPanel.hpp"
 #include "ui/ListPanel.hpp"
 #include "ui/Soundboard.hpp"
 #include "ui/Graphics.hpp"
-
-/*
- * TODO:
- *  - Add sound visuals
- *  - Option to make GUI vertical
- *  - Individual routing volume
- *  - Option to disable clipping
- *  - Audio limiter to prevent clipping
- *  - 'audio test' mode, notify when input hasn't received audio in a while.
- *  x Fix laggy text rendering
- */
+#include "ui/SettingsPanel.hpp"
 
  // -------------------------------------------------------------------------- \\
  // ---------------------------- Controller ---------------------------------- \\
@@ -31,7 +21,7 @@ public:
 
 private:
     Gui m_Gui;
-    Frame& mainWindow;
+    Frame& mainWindow, &settings;
     Soundboard& soundboard;
 
     ListPanel* m_List = nullptr;

@@ -12,57 +12,31 @@ class ListPanel : public SMXRScrollPanel
 public:
 	ListPanel(AsioDevice& sarasio);
 
-	void ReloadEffects()
-	{
-		m_Effect.SetupMenu();
-	}
-
+	void ReloadEffects() { m_Effect.SetupMenu(); }
 	void SortChannels();
 
-	ChannelPanel& EmplaceChannel(bool IsInput)
-	{
-		if (IsInput)
-			return *m_Channels.emplace_back(&m_Inputs.Emplace<ChannelPanel>(this, true));
-		else
-			return *m_Channels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this, false));
-	}
-
-	ChannelPanel& EmplaceSpecialChannel(bool IsInput = true)
-	{
-		return *m_Channels.emplace_back(&m_Specials.Emplace<ChannelPanel>(this, IsInput, true));
-	}
+	ChannelPanel& EmplaceChannel(bool IsInput);
+	ChannelPanel& EmplaceSpecialChannel(bool IsInput = true);
 
 	void ResetGrouping();
 	void Transparency(bool d) { for (auto& _c : m_Channels) _c->Transparency(d); };
 
 	std::vector<ChannelPanel*>& Channels() { return m_Channels; }
 
-	void Clear() 
-	{  
-		m_Effect.EffectsGroup(nullptr); 
-		m_Effect.Visible(false); 
-		m_Channels.clear();
-		m_Inputs.Clear(); 
-		m_Outputs.Clear();
-		m_Specials.Clear(); 
-	};
+	void Clear();
 
 	void Update(const Vec4<int>& s) override;
 
-	void ShowEffectsPanel(EffectsGroup& effects)
-	{
-		m_Effect.EffectsGroup(&effects);
-		m_Effect.Visible(true);
-	}
+	void ShowEffectsPanel(EffectsGroup& effects);
 
 private:
 	AsioDevice& asio;
 	::SMXRScrollPanel& m_ChannelsPanel;
 	::EffectScrollPanel& m_Effect;
 	::Panel& m_Inputs;
-	MenuAccessories::VerticalDivider* m_Divider = nullptr;
+	VerticalMenuDivider* m_Divider = nullptr;
 	::Panel& m_Outputs;
-	MenuAccessories::VerticalDivider* m_Divider2 = nullptr;
+	VerticalMenuDivider* m_Divider2 = nullptr;
 	::Panel& m_Specials;
 	std::vector<ChannelPanel*> m_Channels;
 };

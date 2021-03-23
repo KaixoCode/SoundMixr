@@ -9,9 +9,9 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_ChannelsPanel(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
 	m_Effect(Panel().Emplace<::EffectScrollPanel>(Layout::Hint::East)),
 	m_Inputs(m_ChannelsPanel.Panel<::Panel>().Emplace<::Panel>()),
-	m_Divider(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	m_Divider(&m_ChannelsPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
 	m_Outputs(m_ChannelsPanel.Panel().Emplace<::Panel>()),
-	m_Divider2(&m_ChannelsPanel.Panel().Emplace<MenuAccessories::VerticalDivider>(1, 2, 4, 0)),
+	m_Divider2(&m_ChannelsPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
 	m_Specials(m_ChannelsPanel.Panel().Emplace<::Panel>())
 {
 	m_Effect.Width(332);
@@ -22,9 +22,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 	m_ChannelsPanel.Panel().AutoResize(true, false);
 	m_ChannelsPanel.MinWidth(200);
 	m_ChannelsPanel.EnableScrollbars(true, false);
-	Background(theme->Get(C::MainPanel));
-
-	Panel().Background(theme->Get(C::MainPanel));
+	
 	Panel().Layout<Layout::Border>(0, 8, false, false, false, false);
 	Panel().AutoResize(false, false);
 
@@ -132,8 +130,24 @@ void ListPanel::SortChannels()
 		});
 }
 
+ChannelPanel& ListPanel::EmplaceChannel(bool IsInput)
+{
+	if (IsInput)
+		return *m_Channels.emplace_back(&m_Inputs.Emplace<ChannelPanel>(this, true));
+	else
+		return *m_Channels.emplace_back(&m_Outputs.Emplace<ChannelPanel>(this, false));
+}
+
+ChannelPanel& ListPanel::EmplaceSpecialChannel(bool IsInput)
+{
+	return *m_Channels.emplace_back(&m_Specials.Emplace<ChannelPanel>(this, IsInput, true));
+}
+
 void ListPanel::ResetGrouping()
 {
+	if (&asio.Device() == nullptr)
+		return;
+
 	for (auto& i : asio.Inputs())
 		i.Group(nullptr, -1);
 
@@ -206,6 +220,16 @@ void ListPanel::ResetGrouping()
 		_soundboardChannel.AddChannel(&a);
 }
 
+void ListPanel::Clear()
+{
+	m_Effect.EffectsGroup(nullptr);
+	m_Effect.Visible(false);
+	m_Channels.clear();
+	m_Inputs.Clear();
+	m_Outputs.Clear();
+	m_Specials.Clear();
+};
+
 void ListPanel::Update(const Vec4<int>& s)
 {
 	for (auto& c = m_Channels.begin(); c != m_Channels.end(); ++c)
@@ -232,11 +256,11 @@ void ListPanel::Update(const Vec4<int>& s)
 		}
 	}
 
-	if (m_Divider)
-		m_Divider->Color(theme->Get(C::Divider));
-
-	if (m_Divider2)
-		m_Divider2->Color(theme->Get(C::Divider));
-
 	ScrollPanel::Update(s);
+}
+
+void ListPanel::ShowEffectsPanel(EffectsGroup& effects)
+{
+	m_Effect.EffectsGroup(&effects);
+	m_Effect.Visible(true);
 }
