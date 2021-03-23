@@ -26,7 +26,15 @@ void SoundboardButton::ShowMenu()
 
 void SoundboardButton::Rename()
 {
+	std::string name; 
+	std::cout << "Please enter a new name for this button, or type cancel to cancel] ";
+	std::getline(std::cin, name, '\n');
 
+	if (name != "cancel")
+	{
+		m_Filename = name;
+		ButtonBase::Name(name);
+	}
 }
 
 float SoundboardButton::GetLevel(int channel)
