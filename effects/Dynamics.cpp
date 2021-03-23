@@ -25,7 +25,7 @@ namespace Effects
 			m_PreGain.ResetValue(0);
 			m_PreGain.ResetValue();
 			m_PreGain.Unit("dB");
-			m_PreGain.Size({ 29, 29 });
+			m_PreGain.Size({ 30, 30 });
 			m_PreGain.Multiplier(0.4);
 			m_PreGain.Decimals(2);
 
@@ -35,7 +35,7 @@ namespace Effects
 			m_Attack.ResetValue(3);
 			m_Attack.ResetValue();
 			m_Attack.Unit(" ms");
-			m_Attack.Size({ 29, 29 });
+			m_Attack.Size({ 30, 30 });
 
 			m_Release.Range({ 1, 300 });
 			m_Release.Power(2);
@@ -43,13 +43,13 @@ namespace Effects
 			m_Release.ResetValue();
 			m_Release.Multiplier(0.4);
 			m_Release.Unit(" ms");
-			m_Release.Size({ 29, 29 });
+			m_Release.Size({ 30, 30 });
 
 			m_PostGain.Range({ -24, 24 });
 			m_PostGain.Unit("dB");
 			m_PostGain.ResetValue(0);
 			m_PostGain.ResetValue();
-			m_PostGain.Size({ 29, 29 });
+			m_PostGain.Size({ 30, 30 });
 			m_PostGain.Multiplier(0.4);
 			m_PostGain.Decimals(2);
 
@@ -58,7 +58,7 @@ namespace Effects
 			m_Mix.ResetValue(100);
 			m_Mix.ResetValue();
 			m_Mix.Unit(" %");
-			m_Mix.Size({ 29, 29 });
+			m_Mix.Size({ 30, 30 });
 			m_Mix.Decimals(0);
 
 			m_Slider.Size({ (Width() - 24), 77 });

@@ -1699,7 +1699,11 @@ public:
 		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size()}, Vec2<double>{_double ? _a > M_PI / 2 ? _a : M_PI / 2 : -M_PI * 0.75f, _double ? _a > M_PI / 2 ? M_PI / 2 : _a : _a});
 		
 		d.Command<Fill>(ThemeT::Get().effect_background);
-		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 4}, Vec2<double>{ M_PI * 1.75 - M_PI / 2.0, M_PI * 0.25 - M_PI / 2.0 });
+		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 5}, Vec2<double>{ M_PI * 1.75 - M_PI / 2.0, M_PI * 0.25 - M_PI / 2.0 });
+
+		double _x = std::cos(_a) * (b.Width() / 2.0); 
+		double _y = std::sin(_a) * (b.Height() / 2.0);
+		d.Command<Graphics::Line>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2, b.X() + b.Width() / 2 + (int)_x, b.Y() + b.Height() / 2 + (int)_y}, 4.5f);
 
 		if (b.Disabled())
 			d.Command<Fill>(ThemeT::Get().knob_disabled_handle);
@@ -1709,11 +1713,7 @@ public:
 			d.Command<Fill>(ThemeT::Get().knob_hovering_handle);
 		else
 			d.Command<Fill>(ThemeT::Get().knob_idle_handle);
-
-		double _x = std::cos(_a) * (b.Width() / 2.0); 
-		double _y = std::sin(_a) * (b.Height() / 2.0) - 2;
-		d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 4.0 + (_x) / 2.0), (int)(b.Y() + b.Height() / 2.0 + (_y) / 2.0), b.Width() / 2, 2 }, 360 * _a / (2 * M_PI));
-		d.Command<Graphics::Quad>(Vec4<int>{ (int)(b.X() + b.Width() / 2) - 1, (int)(b.Y() + b.Height() / 2.0) - 1, 2, 2 }, 45.0f);
+		d.Command<Graphics::Line>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2, b.X() + b.Width() / 2 + (int)_x, b.Y() + b.Height() / 2 + (int)_y}, 3.0f);
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		if (b.DisplayValue())

@@ -24,7 +24,7 @@ public:
 		m_DelayKnob.ResetValue();
 		m_DelayKnob.Unit(" ms");
 		m_DelayKnob.Unit(" s", 3);
-		m_DelayKnob.Size({ 29, 29 });
+		m_DelayKnob.Size({ 30, 30 });
 		m_DelayKnob.Decimals(2);
 		m_DelayKnob.Multiplier(0.4);
 
@@ -33,7 +33,7 @@ public:
 		m_FeedbackKnob.ResetValue();
 		m_FeedbackKnob.Unit("%");
 		m_FeedbackKnob.Decimals(1);
-		m_FeedbackKnob.Size({ 29, 29 });
+		m_FeedbackKnob.Size({ 30, 30 });
 		m_FeedbackKnob.Multiplier(0.4);
 
 		m_MixKnob.Range({ 0, 100 });
@@ -41,7 +41,7 @@ public:
 		m_MixKnob.ResetValue();
 		m_MixKnob.Unit("%");
 		m_MixKnob.Decimals(1);
-		m_MixKnob.Size({ 29, 29 });
+		m_MixKnob.Size({ 30, 30 });
 		m_MixKnob.Multiplier(0.4);
 	}
 

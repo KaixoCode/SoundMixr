@@ -34,7 +34,7 @@ namespace Effects
 
 			m_Limiter.Name("Limit Level");
 
-			m_Release.Size({ 29, 29 });
+			m_Release.Size({ 30, 30 });
 			m_Release.Range({ 1, 5000 });
 			m_Release.Power(3);
 			m_Release.ResetValue(300);
@@ -43,7 +43,7 @@ namespace Effects
 			m_Release.Unit(" ms");
 			m_Release.Unit(" s", 3);
 
-			m_Low.Size({ 29, 29 });
+			m_Low.Size({ 30, 30 });
 			m_Low.Range({ -12, 12 });
 			m_Low.Power(1);
 			m_Low.ResetValue(0);
@@ -51,7 +51,7 @@ namespace Effects
 			m_Low.Unit("dB");
 			m_Low.Multiplier(0.4);
 
-			m_Mid.Size({ 29, 29 });
+			m_Mid.Size({ 30, 30 });
 			m_Mid.Range({ -12, 12 });
 			m_Mid.Power(1);
 			m_Mid.ResetValue(0);
@@ -59,7 +59,7 @@ namespace Effects
 			m_Mid.Unit("dB");
 			m_Mid.Multiplier(0.4);
 
-			m_High.Size({ 29, 29 });
+			m_High.Size({ 30, 30 });
 			m_High.Range({ -12, 12 });
 			m_High.Power(1);
 			m_High.ResetValue(0);
@@ -67,7 +67,7 @@ namespace Effects
 			m_High.Unit("dB");
 			m_High.Multiplier(0.4);
 
-			m_Pan.Size({ 29, 29 });
+			m_Pan.Size({ 30, 30 });
 			m_Pan.Range({ -50, 50 });
 			m_Pan.Power(1);
 			m_Pan.Decimals(-1);
@@ -78,7 +78,7 @@ namespace Effects
 			m_Pan.Unit("R", 0);
 			m_Pan.Multiplier(0.4);
 
-			m_Gain.Size({ 29, 29 });
+			m_Gain.Size({ 30, 30 });
 			m_Gain.Range({ -24, 24 });
 			m_Gain.Power(1);
 			m_Gain.ResetValue(0);

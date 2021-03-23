@@ -180,6 +180,8 @@ void Controller::Run()
                 _json["midi-enabled"] += key;
 
             std::ofstream _of;
+            std::filesystem::path dir("./settings");
+            std::filesystem::create_directories(dir);
             _of.open("./settings/settings");
             _of << /*std::setw(4) <<*/ _json;
             _of.close();
@@ -250,6 +252,9 @@ void Controller::Run()
         {
             std::ifstream _if;
             _if.open("./settings/settings");
+            if (!_if.is_open())
+                return;
+
             nlohmann::json _json;
             _json << _if;
             _if.close();
