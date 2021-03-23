@@ -104,8 +104,8 @@ float Soundboard::GetLevel(int channel)
 void Soundboard::Save()
 {
 	LOG("Saving Soundboard");
-	json _json;
-	_json["data"] = json::array();
+	nlohmann::json _json;
+	_json["data"] = nlohmann::json::array();
 
 	// Soundboard sounds
 	for (auto& _btn : m_Buttons) {
@@ -128,7 +128,7 @@ void Soundboard::Load()
 	bool _error = _in.fail();
 	if (!_error) {
 		try {
-			json _json;
+			nlohmann::json _json;
 			_in >> _json;
 
 			// Clear the screen

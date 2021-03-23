@@ -12,16 +12,16 @@ public:
 	void LoadFile(const std::string& path, const std::string& filename);
 	void PlayFile();
 
-	operator json()
+	operator nlohmann::json()
 	{
-		json _json = json::object();
+		nlohmann::json _json = nlohmann::json::object();
 		_json["filepath"] = m_Filepath;
 		_json["filename"] = m_Filename;
 
 		return _json;
 	}
 
-	void operator = (const json& json)
+	void operator = (const nlohmann::json& json)
 	{
 		this->LoadFile(json.at("filepath"), json.at("filename"));
 	}
