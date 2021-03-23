@@ -39,12 +39,12 @@ void SoundboardButton::Rename()
 
 float SoundboardButton::GetLevel(int channel)
 {
-	if (m_SampleNum < 0)
+	if (m_SampleNum < 0 || m_MaxSamples < 0)
 		return 0;
 
 	int curSample = std::floor(m_SampleNum * m_MultiplicationFactor);
 
-	if (curSample == m_File.getNumSamplesPerChannel())
+	if (curSample == m_MaxSamples)
 	{
 		m_SampleNum = -1;
 		return 0;
@@ -71,16 +71,22 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 
 	m_Filepath = path;
 	m_Filename = filename;
-	m_File.load(path);
-	m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
+
+	// Create a new thread as not to delay the main thread
+	std::thread([&] {
+		m_MaxSamples = 0;
+		m_File.load(m_Filepath);
+		m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
+		m_MaxSamples = m_File.getNumSamplesPerChannel();
+	}).detach();
 }
 
 void SoundboardButton::PlayFile(bool forceOpen)
 {
-	if (m_File.getNumSamplesPerChannel() > 0 && !forceOpen)
+	if (m_MaxSamples >= 0 && !forceOpen)
 	{
 		// A file is already loaded, play it if it isn't playing
-		if (m_SampleNum < 0)
+		if (m_SampleNum < 0 && m_MaxSamples > 0)
 			m_SampleNum = 0;
 		else
 			m_SampleNum = -1;

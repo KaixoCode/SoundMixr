@@ -36,6 +36,7 @@ private:
 	std::string m_Filename;
 	AudioFile<double> m_File;
 	int m_SampleNum = -1;
+	int m_MaxSamples = -1;
 	float m_MultiplicationFactor = 1.0F;
 	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 };
