@@ -1666,7 +1666,7 @@ public:
 		using namespace Graphics;
 		int _p = 6;
 
-		bool _double = b.Range().x < 0 && b.Range().y > 0;
+		bool _double = b.Range().start < 0 && b.Range().end > 0 && b.Range().start == - b.Range().end;
 
 		double _v = 1.0 - b.NormalizedValue();
 		double _a = _v * M_PI * 1.5 + M_PI * 0.25 - M_PI / 2.0;
@@ -1703,7 +1703,7 @@ public:
 
 		double _x = std::cos(_a) * (b.Width() / 2.0); 
 		double _y = std::sin(_a) * (b.Height() / 2.0);
-		d.Command<Graphics::Line>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2, b.X() + b.Width() / 2 + (int)_x, b.Y() + b.Height() / 2 + (int)_y}, 4.5f);
+		d.Command<Graphics::Line>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2, b.X() + b.Width() / 2 + (int)_x, b.Y() + b.Height() / 2 + (int)_y}, 6.0f);
 
 		if (b.Disabled())
 			d.Command<Fill>(ThemeT::Get().knob_disabled_handle);
@@ -1714,6 +1714,33 @@ public:
 		else
 			d.Command<Fill>(ThemeT::Get().knob_idle_handle);
 		d.Command<Graphics::Line>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2, b.X() + b.Width() / 2 + (int)_x, b.Y() + b.Height() / 2 + (int)_y}, 3.0f);
+
+		if (_double)
+		{
+			if (b.Value() == 0)
+			{
+				if (b.Disabled())
+					d.Command<Fill>(ThemeT::Get().knob_disabled_border);
+				else if (b.Dragging())
+					d.Command<Fill>(ThemeT::Get().knob_active_border);
+				else if (b.Hovering())
+					d.Command<Fill>(ThemeT::Get().knob_hovering_border);
+				else
+					d.Command<Fill>(ThemeT::Get().knob_idle_border);
+			}
+			else
+			{
+				if (b.Disabled())
+					d.Command<Fill>(ThemeT::Get().knob_disabled_value);
+				else if (b.Dragging())
+					d.Command<Fill>(ThemeT::Get().knob_active_value);
+				else if (b.Hovering())
+					d.Command<Fill>(ThemeT::Get().knob_hovering_value);
+				else
+					d.Command<Fill>(ThemeT::Get().knob_idle_value);
+			}
+			d.Command<Graphics::Triangle>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() + 2, 7, 4 }, -90.0f);
+		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
 		if (b.DisplayValue())
@@ -1742,7 +1769,7 @@ public:
 				d.Command<Fill>(ThemeT::Get().knob_idle_name_text);
 
 			d.Command<TextAlign>(Align::CENTER, Align::BOTTOM);
-			d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + 5 });
+			d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() + (_double ? 8 : 5) });
 		}
 	}
 };
