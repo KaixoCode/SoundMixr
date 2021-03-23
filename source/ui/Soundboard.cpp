@@ -134,7 +134,7 @@ void Soundboard::Save()
 			_out.close();
 		}
 		else
-			LOG("COULDNT OPEN FILE");
+			LOG("Couldn't open the soundboard save file.");
 	} catch (const std::exception& ex) {
 		LOG("Failed to save SoundBoard.");
 	}
@@ -168,7 +168,9 @@ void Soundboard::Load()
 		catch (std::exception& e) { _error = true;  }
 
 		if (_error) {
-			LOG("Failed loading soundboard");
+			LOG("Failed to load the soundboard");
+
+			// Initialise an empty soundboard
 			Init();
 		}
 
