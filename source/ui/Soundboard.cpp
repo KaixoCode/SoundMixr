@@ -24,7 +24,15 @@ float SoundboardButton::GetLevel(int channel)
 }
 
 void SoundboardButton::LoadFile(const std::string& path, const std::string& filename) 
-{ 
+{
+	// Check if the file exists
+	if (!std::filesystem::exists(path))
+	{
+		if (path != "")
+			LOG("File doesn't exist anymore, skipping file: " + path);
+		return;
+	}
+
 	// Set the name of the button to the filename
 	ButtonBase::Name(filename);
 
