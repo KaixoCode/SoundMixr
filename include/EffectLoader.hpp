@@ -50,9 +50,14 @@ class EffectLoader
 public:
 	static inline void LoadEffects()
 	{
+		try
+		{
 		m_Effects.clear();
 
 		std::string path = EFFECTS_DIR;
+
+		std::filesystem::create_directory(path);
+
 		std::filesystem::path temp = std::filesystem::absolute(std::filesystem::path(path + "/temp"));
 		if (std::filesystem::exists(temp))
 			std::filesystem::remove_all(temp);
@@ -88,7 +93,12 @@ public:
 						m_Effects.emplace(name, std::make_unique<DynamicEffect>(name, module));
 				}
 			}
-
+		}
+		catch (std::exception e)
+		{
+			LOG(e.what());
+			LOG("Something went wrong during Effect loading.");
+		}
 		for (auto& i : m_Effects)
 			LOG(i.first);
 	}

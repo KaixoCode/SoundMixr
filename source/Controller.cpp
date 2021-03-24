@@ -165,6 +165,18 @@ void Controller::Run()
     _themeDropDown.Size({ 110, 18 });
     _themeDropDown.ButtonSize({ 110, 20 });
 
+    Effects::Parameter _scaleParam{ "Zoom Display", Effects::ParameterType::Slider };
+    auto& _scalingSlider = _sp.Emplace<Parameter<SliderGraphics>>(_scaleParam);
+    _scalingSlider.Size({ 110, 18 });
+    _scalingSlider.Unit("%");
+    _scalingSlider.Range({ 50, 200 });
+    _scalingSlider.ResetValue(100);
+    _scalingSlider.ResetValue();
+    _scalingSlider.Decimals(0);
+    _scalingSlider.Multiplier(1);
+    _scalingSlider.Vertical(false);
+    _scalingSlider.DisplayName(false);
+
     bool loaded = false;
     auto& _saveSettings = [&]
     {
@@ -174,6 +186,7 @@ void Controller::Run()
         {
             nlohmann::json _json = nlohmann::json::object();
             _json["device"] = (&m_AsioDevice.Device() != nullptr ? m_AsioDevice.Device().id : -1);
+            _json["zoom"] = _scalingSlider.Value();
             _json["theme"] = ThemeT::Get().Name();
             _json["midi-enabled"] = nlohmann::json::array();
             for (auto& [key, val] : Midi::Get().Opened())
@@ -261,11 +274,13 @@ void Controller::Run()
 
             auto& theme = _json.at("theme").get<std::string>();
             auto device = _json.at("device").get<int>() + 1;
-            
+            auto zoom = _json.at("zoom").get<double>();
+
             for (auto& i : _json.at("midi-enabled"))
                 if (i >= 0 && i < m_MidiButtons.size())
                     m_MidiButtons[i.get<int>()]->Active(true);
 
+            _scalingSlider.Value(zoom);
             _asioDropDown.Select(device);
             _themeDropDown.Select(theme);
 
@@ -344,18 +359,6 @@ void Controller::Run()
         _loadSettings();
         _themeCallback();
     };
-
-    Effects::Parameter _scaleParam{ "Zoom Display", Effects::ParameterType::Slider };
-    auto& _scalingSlider = _sp.Emplace<Parameter<SliderGraphics>>(_scaleParam);
-    _scalingSlider.Size({ 110, 18 });
-    _scalingSlider.Unit("%");
-    _scalingSlider.Range({ 50, 200 });
-    _scalingSlider.ResetValue(100);
-    _scalingSlider.ResetValue();
-    _scalingSlider.Decimals(0);
-    _scalingSlider.Multiplier(1);
-    _scalingSlider.Vertical(false);
-    _scalingSlider.DisplayName(false);
 
     _refreshMidi();
     _themeLoader();
@@ -472,7 +475,7 @@ void Controller::Run()
     // Main loop
     //
 
-    double pscale = _scalingSlider.Value();
+    double pscale = 0;
     int _saveCounter = 5 * 60 * 60;
     while (m_Gui.Loop())
     {
@@ -484,8 +487,6 @@ void Controller::Run()
         {
             pscale = _scalingSlider.Value();
             mainWindow.Scale(1.0 / (pscale * 0.01));
-            //settings.Scale(pscale * 0.01);
-            //settings.Size({ (int)(400 / (pscale * 0.01)), (int)(526 / (pscale * 0.01)) });
             RightClickMenu::Get().Scale(1.0 / (pscale * 0.01));
         }
         _saveCounter--;
