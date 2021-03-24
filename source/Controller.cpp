@@ -39,7 +39,7 @@ void Controller::Run()
     Menu<G::Vertical, MT::Normal> _closeMenu;
     _closeMenu.ButtonSize({ 150, 20 });
     _closeMenu.Emplace<MenuButton>([] {}, "SoundMixr").Disable();
-    auto& _div = _closeMenu.Emplace<MenuAccessories::Divider>(150, 1, 0, 4);
+    auto& _div = _closeMenu.Emplace<MenuDivider>(150, 1, 0, 4);
     _closeMenu.Emplace<MenuButton>([&] { mainWindow.Show(); }, "Open GUI");
     _closeMenu.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit");
 
@@ -121,7 +121,6 @@ void Controller::Run()
         settings.Color(ThemeT::Get().window_border);
         m_List->Panel().Background(ThemeT::Get().window_panel);
         m_List->Background(ThemeT::Get().window_panel);
-        _div.Color(ThemeT::Get().divider);
         _sp.LayoutManager().DividerColor(ThemeT::Get().divider);
         _sp.Background(ThemeT::Get().window_panel);
         _scrp.Background(ThemeT::Get().window_frame);

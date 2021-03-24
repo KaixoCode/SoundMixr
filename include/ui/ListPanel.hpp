@@ -27,7 +27,7 @@ public:
 
 	void Update(const Vec4<int>& s) override;
 
-	void UpdateEffects() { m_Effect.UpdateEffects(); };
+	void UpdateEffects() { m_Effect.UpdateEffects(); for (auto& i : Channels()) i->UpdateMidiParameters(); };
 
 	void ShowEffectsPanel(EffectsGroup& effects);
 

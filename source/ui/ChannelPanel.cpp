@@ -84,9 +84,6 @@ void ChannelPanel::Update(const Vec4<int>& viewport)
 	mono.Active(m_ChannelGroup.Mono());
 	muted.Active(m_ChannelGroup.Muted());
 
-	m_ChannelGroup.Volume(volume.Value());
-	m_ChannelGroup.Pan(pan.Value());
-
 	Panel::Update(viewport);
 }
 

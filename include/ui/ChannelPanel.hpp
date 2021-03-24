@@ -134,6 +134,11 @@ public:
 	void Update(const Vec4<int>& viewport) override;
 	void Render(CommandCollection& d) override;
 
+	void UpdateMidiParameters() {
+		m_ChannelGroup.Volume(volume.Value());
+		m_ChannelGroup.Pan(pan.Value());
+	}
+
 	void Select(ChannelPanel* s);
 	void AddChannel(Channel* s);
 	void Selected(bool v) { m_Selected = v; }
