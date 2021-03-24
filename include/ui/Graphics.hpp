@@ -2015,11 +2015,6 @@ namespace SoundMixrGraphics
 
 	struct SubMenu
 	{
-		/**
-		 * Render
-		 * @param b the <code>Button</code>
-		 * @param d the <code>CommandCollection</code>
-		 */
 		template<typename This = ButtonBase>
 		static void Render(This& b, CommandCollection& d)
 		{
@@ -2031,16 +2026,11 @@ namespace SoundMixrGraphics
 	};
 
 	struct TitleMenu
-	{
-		/**
-		 * Render
-		 * @param b the <code>Button</code>
-		 * @param d the <code>CommandCollection</code>
-		 */    
+	{ 
 		static void TitleMenu::Render(ButtonBase& b, CommandCollection& d)
 		 {
 			 Color _c1 = b.Active() ? ThemeT::Get().menu_background : b.Hovering() ? ThemeT::Get().menu_button_hovering_background : Color{ 0, 0, 0, 0 };
-			 Color _c2 = ThemeT::Get().window_menu_text;
+			 Color _c2 = b.Active() ? ThemeT::Get().window_menu_text : b.Hovering() ? ThemeT::Get().menu_button_hovering_text : ThemeT::Get().window_menu_text;
 
 			 int _padding = 20;
 			 if (b.Active())
@@ -2118,11 +2108,6 @@ namespace SoundMixrGraphics
 
 	struct ScrollbarNormal
 	{
-		/**
-		 * Render
-		 * @param b the <code>Scrollbar</code>
-		 * @param d the <code>CommandCollection</code>
-		 */
 		template<typename ScrollbarType>
 		static void Render(Scrollbar<ScrollbarNormal, ScrollbarType>& b, CommandCollection& d)
 		{}
