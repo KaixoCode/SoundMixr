@@ -34,7 +34,7 @@ public:
 private:
 	AsioDevice& asio;
 	::SMXRScrollPanel& m_ChannelsPanel;
-	::EffectScrollPanel& m_Effect;
+	::EffectFramePanel& m_Effect;
 	::Panel& m_Inputs;
 	VerticalMenuDivider* m_Divider = nullptr;
 	::Panel& m_Outputs;

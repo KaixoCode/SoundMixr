@@ -8,7 +8,7 @@
 
 Controller::Controller()
 : mainWindow(m_Gui.AddWindow<SoundMixrFrame>("SoundMixr", 728, 500, true)),
-settings(m_Gui.AddWindow<SoundMixrFrame>("Settings", 400, 500, true, false, false)),
+settings(m_Gui.AddWindow<SoundMixrFrame>("Settings", 400, 526, true, false, false)),
 soundboard(m_Gui.AddWindow<Soundboard>()),
 m_AsioDevice(soundboard)
 {}
@@ -344,7 +344,19 @@ void Controller::Run()
         _loadSettings();
         _themeCallback();
     };
-    
+
+    Effects::Parameter _scaleParam{ "Zoom Display", Effects::ParameterType::Slider };
+    auto& _scalingSlider = _sp.Emplace<Parameter<SliderGraphics>>(_scaleParam);
+    _scalingSlider.Size({ 110, 18 });
+    _scalingSlider.Unit("%");
+    _scalingSlider.Range({ 50, 200 });
+    _scalingSlider.ResetValue(100);
+    _scalingSlider.ResetValue();
+    _scalingSlider.Decimals(0);
+    _scalingSlider.Multiplier(1);
+    _scalingSlider.Vertical(false);
+    _scalingSlider.DisplayName(false);
+
     _refreshMidi();
     _themeLoader();
     loaded = true;
@@ -403,7 +415,7 @@ void Controller::Run()
     _sp.Div()[1].Align(Div::Alignment::Vertical);
     _sp.Div()[1].Dividers(true);
     _sp.Div()[1].Divs(2);
-    _sp.Div()[1].DivSize(176);
+    _sp.Div()[1].DivSize(202);
     _sp.Div()[1][1].DivSize(36);
     _sp.Div()[1][1] = _sp.Emplace<TextComponent<>>("General Settings", Graphics::Fonts::Gidole, 24.0f);
     _sp.Div()[1][0].Divs(3);
@@ -413,7 +425,7 @@ void Controller::Run()
     _sp.Div()[1][0][1].Divs(2);
     _sp.Div()[1][0][1][0].DivSize(10);
     _sp.Div()[1][0][1][1].Align(Div::Alignment::Vertical);
-    _sp.Div()[1][0][1][1].Divs(4);
+    _sp.Div()[1][0][1][1].Divs(5);
     _sp.Div()[1][0][1][1][0].Align(Div::Alignment::Horizontal);
     _sp.Div()[1][0][1][1][0].Divs(2);
     _sp.Div()[1][0][1][1][0].DivSize(26);
@@ -446,12 +458,21 @@ void Controller::Run()
     _sp.Div()[1][0][1][1][3][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reset Channel Grouping");
     _sp.Div()[1][0][1][1][3][1].Align(Div::Alignment::Left);
     _sp.Div()[1][0][1][1][3][1] = _resetGrouping;
+    _sp.Div()[1][0][1][1][4].Align(Div::Alignment::Horizontal);
+    _sp.Div()[1][0][1][1][4].Divs(2);
+    _sp.Div()[1][0][1][1][4].DivSize(26);
+    _sp.Div()[1][0][1][1][4][0].DivSize(150);
+    _sp.Div()[1][0][1][1][4][0].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][4][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Zoom Display");
+    _sp.Div()[1][0][1][1][4][1].Align(Div::Alignment::Left);
+    _sp.Div()[1][0][1][1][4][1] = _scalingSlider;
     _sp.Div()[1][0][0].DivSize(20);
 
     //
     // Main loop
     //
 
+    double pscale = _scalingSlider.Value();
     int _saveCounter = 5 * 60 * 60;
     while (m_Gui.Loop())
     {
@@ -459,6 +480,14 @@ void Controller::Run()
 
         m_List->UpdateEffects();
 
+        if (_scalingSlider.Value() != pscale)
+        {
+            pscale = _scalingSlider.Value();
+            mainWindow.Scale(1.0 / (pscale * 0.01));
+            //settings.Scale(pscale * 0.01);
+            //settings.Size({ (int)(400 / (pscale * 0.01)), (int)(526 / (pscale * 0.01)) });
+            RightClickMenu::Get().Scale(1.0 / (pscale * 0.01));
+        }
         _saveCounter--;
         if (_saveCounter <= 0)
         {

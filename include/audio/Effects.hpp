@@ -20,14 +20,42 @@ public:
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
 
-	void UpdateEffect() { if (m_Enabled) m_Effect->Update(); }
+	void UpdateEffect() { if (m_Enabled && !m_Bypass) m_Effect->Update(); }
 	
 	auto Name() -> const std::string& { return m_Effect->Name(); }
-	float NextSample(float s, int c) { return m_Enabled ? m_Effect->NextSample(s, c) : s; };
+	float NextSample(float s, int c) { return !m_Bypass && m_Enabled ? m_Effect->NextSample(s, c) : s; };
 	void Channels(int c) { m_Effect->Channels(c); m_Channels = c; }
 
 	bool Hovering() { return m_Hovering; }
 	bool HoveringDrag() { return m_HoveringDrag; }
+
+	void Bypass(bool b) 
+	{
+		m_Bypass = b;
+		if (!m_Bypass)
+		{
+			m_Enable->Enable();
+			if (!m_Enabled)
+				return;
+
+			for (auto& i : Components())
+				if (auto p = dynamic_cast<ParameterBase*>(i.get()))
+					p->Enable();
+				else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
+					p->Enable();
+			m_Effect->Update();
+		}
+		else
+		{
+			for (auto& i : Components())
+				if (i.get() == m_MinimB)
+					continue;
+				else if (auto p = dynamic_cast<ParameterBase*>(i.get()))
+					p->Disable();
+				else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
+					p->Disable();
+		}
+	}
 
 	operator nlohmann::json();
 	void operator=(const nlohmann::json& json);
@@ -35,8 +63,18 @@ public:
 	bool Delete() { return m_Delete; }
 
 protected:
-	int m_Channels = -1, m_RealHeight = 0, m_Delete = false;
-	bool m_Hovering = false, m_PSmall = false, m_Small = false, m_HoveringDrag = false, m_PEnabled = true, m_Enabled = true;
+	int m_Channels = -1, 
+		m_RealHeight = 0, 
+		m_Delete = false;
+	
+	bool m_Hovering = false, 
+		m_PSmall = false, 
+		m_Small = false, 
+		m_HoveringDrag = false,
+		m_PEnabled = true,
+		m_Enabled = true,
+		m_Bypass = false;
+
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_Minim;
 	Button<ToggleButtonGraphics, ButtonType::Toggle>* m_Enable;
@@ -79,17 +117,26 @@ public:
 
 	int GetIndex(int y);
 
+	void Enable() { m_Enabled = true; for (auto& _c : m_Effects) _c->Bypass(false); }
+	void Disable() { m_Enabled = false; for (auto& _c : m_Effects) _c->Bypass(true); }
+	bool Enabled() { return m_Enabled; }
+
+	std::string& Name() { return m_Name; }
+	void Name(const std::string& n) { m_Name = n; }
+
 	operator nlohmann::json();
 	void operator=(const nlohmann::json& json);
 
 private:
+	std::string m_Name;
 	std::vector<std::unique_ptr<Effect>> m_Effects;
 	int m_Channels = 0, m_EffectCount = 0;
 
 	Effect* m_Hovering;
 	Effect* m_Focussed;
 
-	bool m_Dead = false;
+	bool m_Dead = false,
+		m_Enabled = true;
 
 	mutable std::mutex m_Mutex;
 

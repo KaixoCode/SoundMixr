@@ -68,12 +68,6 @@ EffectScrollPanel::EffectScrollPanel()
 	: m_EffectPanel(Panel<EffectPanel>())
 {
 	EnableScrollbars(true, true);
-	SetupMenu();
-	m_Listener += [this](Event::MousePressed& e)
-	{
-		if (e.button == Event::MouseButton::RIGHT && !(m_EffectPanel.EffectsGroup() && m_EffectPanel.EffectsGroup()->Hovering()))
-			RightClickMenu::Get().Open(&m_Menu);
-	};
 
 	m_Listener += [this](Event::MousePressed& e)
 	{
@@ -85,33 +79,6 @@ EffectScrollPanel::EffectScrollPanel()
 		m_MouseY = e.y;
 	};
 }
-
-void EffectScrollPanel::SetupMenu()
-{
-	m_Menu.Clear();
-	m_Menu.ButtonSize({ 160, 20 });
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Effect Panel").Disable();
-	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Visible(false); }, "Hide Effects Panel");
-	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
-
-	for (auto& i : EffectLoader::Effects())
-	{
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
-			{
-				m_EffectPanel.AddEffect(i.second->CreateInstance());
-			}, "+ " + i.first);
-	}
-}
-
-void EffectScrollPanel::Render(CommandCollection& d)
-{
-	d.Command<Graphics::Fill>(ThemeT::Get().window_frame);
-	d.Command<Graphics::Quad>(Vec4<int>{X() - 8, Y(), 8, Height()});
-
-	SMXRScrollPanel::Render(d);
-}
-
 
 void EffectScrollPanel::Update(const Vec4<int>& v)
 {

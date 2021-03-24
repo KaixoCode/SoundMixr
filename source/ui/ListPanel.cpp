@@ -7,7 +7,7 @@
 ListPanel::ListPanel(AsioDevice& sarasio)
 	: asio(sarasio),
 	m_ChannelsPanel(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
-	m_Effect(Panel().Emplace<::EffectScrollPanel>(Layout::Hint::East)),
+	m_Effect(Panel().Emplace<::EffectFramePanel>(Layout::Hint::East)),
 	m_Inputs(m_ChannelsPanel.Panel<::Panel>().Emplace<::Panel>()),
 	m_Divider(&m_ChannelsPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
 	m_Outputs(m_ChannelsPanel.Panel().Emplace<::Panel>()),

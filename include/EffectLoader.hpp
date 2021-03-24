@@ -9,6 +9,7 @@
 #endif
 
 typedef void* (__cdecl* inst_func)();
+typedef int (__cdecl* vers_func)();
 
 class DynamicEffect
 {
@@ -74,9 +75,17 @@ public:
 
 					std::string loadpath = std::filesystem::absolute(newp).string();
 					HMODULE module = LoadLibrary((LPCTSTR)loadpath.c_str());
+
+					vers_func versfunc = reinterpret_cast<vers_func>(GetProcAddress(module, "Version"));
+					int version = -1;
+					if (versfunc)
+						version = versfunc();
+					
 					LOG(loadpath);
 					LOG(module);
-					m_Effects.emplace(name, std::make_unique<DynamicEffect>(name, module));
+
+					if (version == VERSION)
+						m_Effects.emplace(name, std::make_unique<DynamicEffect>(name, module));
 				}
 			}
 

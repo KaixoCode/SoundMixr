@@ -101,7 +101,7 @@ void ChannelGroup::AddChannel(Channel* c)
 		{
 			m_Mono = false;
 			m_Muted = false;
-			m_Name = c->Name();
+			Name(c->Name());
 			m_Id = c->ID();
 			m_IsInput = c->IsInput();
 			c->Mono(false);

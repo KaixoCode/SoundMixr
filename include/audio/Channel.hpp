@@ -78,6 +78,7 @@ public:
 	int   ChannelAmount()                 const { return m_ChannelAmount; }
 	auto  EffectsGroup() -> EffectsGroup& const { return m_EffectsGroup; }
 	auto  Name()          -> std::string& const { return m_Name; }
+	void  Name(const std::string& n) { m_Name = n; m_EffectsGroup.Name(n); }
 
 	int   ID()      const { return m_Id; }
 	float Volume()  const { return m_Volume; }

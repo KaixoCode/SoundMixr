@@ -66,7 +66,7 @@ Effect::Effect(Effects::EffectBase* effect)
 
 void Effect::Update(const Vec4<int>& v) 
 {
-	if (m_Enabled && !m_PEnabled)
+	if (m_Enabled && !m_PEnabled && !m_Bypass)
 	{
 		m_PEnabled = true;
 		for (auto& i : Components())
@@ -76,7 +76,7 @@ void Effect::Update(const Vec4<int>& v)
 				p->Enable();
 		m_Effect->Update();
 	}
-	else if (!m_Enabled && m_PEnabled)
+	else if (!m_Enabled && m_PEnabled && !m_Bypass)
 	{
 		m_PEnabled = false;
 		for (auto& i : Components())
@@ -493,8 +493,12 @@ void EffectsGroup::operator=(const nlohmann::json& json)
 		auto& _it = EffectLoader::Effects().find(type);
 		if (_it != EffectLoader::Effects().end())
 		{
-			auto& a = Add((*_it).second->CreateInstance());
-			a = effect;
+			Effects::EffectBase* e = (*_it).second->CreateInstance();
+			if (e != nullptr)
+			{
+				auto& a = Add(e);
+				a = effect;
+			}
 		}
 		}
 		catch(...)
