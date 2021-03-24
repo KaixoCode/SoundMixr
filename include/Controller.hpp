@@ -5,7 +5,6 @@
 #include "ui/ListPanel.hpp"
 #include "ui/Soundboard.hpp"
 #include "ui/Graphics.hpp"
-#include "ui/SettingsPanel.hpp"
 #include "ui/Frame.hpp"
 
  // -------------------------------------------------------------------------- \\
