@@ -22,7 +22,7 @@ Effect::Effect(Effects::EffectBase* effect)
 {
 	Init();
 	m_RealHeight = -1;
-	m_MinimB = &Emplace<Button<NOTHING, ButtonType::Toggle>>([&](bool s) { m_Minim->Active(s); }, "");
+	m_MinimB = &Emplace<Button<NOTHING, ButtonType::Toggle>>(&m_Small, "");
 	m_Enable = &Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(&m_Enabled, "");
 	m_Enable->Size({ 18, 18 });
 	m_MinimB->Size({ 25, 25 });
@@ -31,23 +31,7 @@ Effect::Effect(Effects::EffectBase* effect)
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Effect->Name()).Disable();
 	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
-	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>([&](bool s)
-		{
-			if (s)
-			{
-				m_RealHeight = Height();
-				Height(25);
-				m_Small = true;
-			}
-			else
-			{
-				if (m_RealHeight == -1)
-					m_RealHeight = Height();
-
-				Height(m_RealHeight);
-				m_Small = false;
-			}
-		}, "Minimize");
+	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Small, "Minimize");
 	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { m_Delete = true; }, "Remove");
 	m_Listener += [this](Event::MousePressed& e)
@@ -82,10 +66,47 @@ Effect::Effect(Effects::EffectBase* effect)
 
 void Effect::Update(const Vec4<int>& v) 
 {
+	if (m_Enabled && !m_PEnabled)
+	{
+		m_PEnabled = true;
+		for (auto& i : Components())
+			if (auto p = dynamic_cast<ParameterBase*>(i.get()))
+				p->Enable();
+			else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
+				p->Enable();
+		m_Effect->Update();
+	}
+	else if (!m_Enabled && m_PEnabled)
+	{
+		m_PEnabled = false;
+		for (auto& i : Components())
+			if (i.get() == m_Enable || i.get() == m_MinimB)
+				continue;
+			else if (auto p = dynamic_cast<ParameterBase*>(i.get()))
+				p->Disable();
+			else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
+				p->Disable();
+	}
+
+	if (m_Small && !m_PSmall)
+	{
+		m_PSmall = true;
+		m_RealHeight = Height();
+		Height(25);
+	}
+	else if (!m_Small && m_PSmall)
+	{
+		m_PSmall = false;
+		if (m_RealHeight == -1)
+			m_RealHeight = Height();
+
+		Height(m_RealHeight);
+	}
+	
+
 	m_Size.height = m_Small ? 25 : m_Effect->Height() + 25;
 	m_Enable->Position({ 3, Height() - 22 });
 	m_MinimB->Position({ Width() - 25, Height() - 25 });
-	m_Effect->Update();
 	Background(ThemeT::Get().effect_background);
 	Panel::Update(v);
 }
@@ -119,11 +140,11 @@ void Effect::Render(CommandCollection& d)
 	m_Enable->Render(d);
 	m_MinimB->Render(d);
 
-	if (!m_Enabled)
+	/*if (!m_Enabled)
 	{
 		d.Command<Fill>(Color{ 0, 0, 0, 50 });
 		d.Command<Quad>(Vec4<int>{ 0, 0, Width(), Height() - 25 });
-	}
+	}*/
 
 	if (!m_Small)
 	{
@@ -553,6 +574,9 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 
 	// Update all the components that lie within the viewport and are visible.
 	for (auto& _c : m_Effects)
+		if (_c->Visible() &&
+			_c->X() + _c->Width() >= m_Viewport.x && _c->Y() + _c->Height() >= m_Viewport.y &&
+			_c->X() <= m_Viewport.x + m_Viewport.width && _c->Y() <= m_Viewport.y + m_Viewport.height)
 		_c->Update(viewport);
 }
 

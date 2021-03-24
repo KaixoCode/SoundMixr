@@ -27,6 +27,8 @@ public:
 
 	void Update(const Vec4<int>& s) override;
 
+	void UpdateEffects() { m_Effect.UpdateEffects(); };
+
 	void ShowEffectsPanel(EffectsGroup& effects);
 
 private:

@@ -2185,6 +2185,85 @@ namespace SoundMixrGraphics
 			d.Command<Quad>(b.Position().x + _p, _y + _p, b.Size().width - _p * 2, _h - _p * 2);
 		}
 	};
+
+	struct CloseButton
+	{
+		static void Render(ButtonBase& b, CommandCollection& d)
+		{
+			if (b.Active())
+				d.Command<Fill>(ThemeT::Get().window_close_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().window_close_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().window_close_button_idle_background);
+			d.Command<Quad>(b.Position(), b.Size());
+			d.Command<Fill>(ThemeT::Get().window_close_button_icon);
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 7, b.Y() + b.Height() / 2, 14, 1}, 45.0f);
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 7, b.Y() + b.Height() / 2, 14, 1}, -45.0f);
+
+		}
+	};
+
+	struct Maxi1Button
+	{
+		static void Render(ButtonBase& b, CommandCollection& d)
+		{
+			if (b.Active())
+				d.Command<Fill>(ThemeT::Get().window_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().window_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().window_button_idle_background);
+			d.Command<Quad>(b.Position(), b.Size());
+			d.Command<Fill>(ThemeT::Get().window_button_icon);
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 5, b.Y() + b.Height() / 2 + 2, 8, 1});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 + 2, b.Y() + b.Height() / 2 - 5, 1, 8});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 5, b.Y() + b.Height() / 2 - 5, 8, 1});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 5, b.Y() + b.Height() / 2 - 5, 1, 8});
+
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 3, b.Y() + b.Height() / 2 + 3, 1, 2});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 3, b.Y() + b.Height() / 2 + 4, 8, 1});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 + 3, b.Y() + b.Height() / 2 - 3, 2, 1});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 + 4, b.Y() + b.Height() / 2 - 3, 1, 8});
+
+		}
+	};
+
+	struct Maxi2Button
+	{
+		static void Render(ButtonBase& b, CommandCollection& d)
+		{
+			if (b.Active())
+				d.Command<Fill>(ThemeT::Get().window_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().window_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().window_button_idle_background);
+			d.Command<Quad>(b.Position(), b.Size());
+			d.Command<Fill>(ThemeT::Get().window_button_icon);
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 5, b.Y() + b.Height() / 2 + 4, 10, 1});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 + 4, b.Y() + b.Height() / 2 - 5, 1, 10});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 5, b.Y() + b.Height() / 2 - 5, 10, 1});
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 5, b.Y() + b.Height() / 2 - 5, 1, 10});
+		}
+	};
+
+	struct MiniButton
+	{
+		static void Render(ButtonBase& b, CommandCollection& d)
+		{
+			if (b.Active())
+				d.Command<Fill>(ThemeT::Get().window_button_active_background);
+			else if (b.Hovering())
+				d.Command<Fill>(ThemeT::Get().window_button_hovering_background);
+			else
+				d.Command<Fill>(ThemeT::Get().window_button_idle_background);
+			d.Command<Quad>(b.Position(), b.Size());
+			d.Command<Fill>(ThemeT::Get().window_button_icon);
+			d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2 - 5, b.Y() + b.Height() / 2, 10, 1});
+
+		}
+	};
 }
 
 class SMXRScrollPanel : public ScrollPanel

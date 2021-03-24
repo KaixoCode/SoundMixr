@@ -7,8 +7,8 @@
 // -------------------------------------------------------------------------- \\
 
 Controller::Controller()
-: mainWindow(m_Gui.AddWindow<Frame>("SoundMixr", 728, 500, true)),
-settings(m_Gui.AddWindow<Frame>("Settings", 400, 500, true, false, false)),
+: mainWindow(m_Gui.AddWindow<SoundMixrFrame>("SoundMixr", 728, 500, true)),
+settings(m_Gui.AddWindow<SoundMixrFrame>("Settings", 400, 500, true, false, false)),
 soundboard(m_Gui.AddWindow<Soundboard>()),
 m_AsioDevice(soundboard)
 {}
@@ -456,6 +456,8 @@ void Controller::Run()
     while (m_Gui.Loop())
     {
         Midi::Get().ReadMessages();
+
+        m_List->UpdateEffects();
 
         _saveCounter--;
         if (_saveCounter <= 0)

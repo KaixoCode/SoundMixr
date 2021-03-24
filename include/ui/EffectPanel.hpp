@@ -24,6 +24,8 @@ public:
 			m_EffectsGroup->Add(effect);
 	}
 
+	void UpdateEffects() { if (m_EffectsGroup) m_EffectsGroup->UpdateEffects(); };
+
 private:
 	::EffectsGroup* m_EffectsGroup = nullptr;
 };
@@ -43,6 +45,8 @@ public:
 	void Update(const Vec4<int>& v) override;
 
 	void EffectsGroup(EffectsGroup* e) { m_EffectPanel.EffectsGroup(e); }
+
+	void UpdateEffects() { m_EffectPanel.UpdateEffects(); };
 
 private:
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;

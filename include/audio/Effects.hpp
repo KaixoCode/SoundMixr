@@ -19,6 +19,8 @@ public:
 
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
+
+	void UpdateEffect() { if (m_Enabled) m_Effect->Update(); }
 	
 	auto Name() -> const std::string& { return m_Effect->Name(); }
 	float NextSample(float s, int c) { return m_Enabled ? m_Effect->NextSample(s, c) : s; };
@@ -34,7 +36,7 @@ public:
 
 protected:
 	int m_Channels = -1, m_RealHeight = 0, m_Delete = false;
-	bool m_Hovering = false, m_Small = false, m_HoveringDrag = false, m_Enabled = true;
+	bool m_Hovering = false, m_PSmall = false, m_Small = false, m_HoveringDrag = false, m_PEnabled = true, m_Enabled = true;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_Minim;
 	Button<ToggleButtonGraphics, ButtonType::Toggle>* m_Enable;
@@ -72,6 +74,8 @@ public:
 
 	void Update(const Vec4<int>& viewport) override;
 	void Render(CommandCollection& d) override;
+
+	void UpdateEffects() { for (auto& _c : m_Effects) _c->UpdateEffect(); };
 
 	int GetIndex(int y);
 
