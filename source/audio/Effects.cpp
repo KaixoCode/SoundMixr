@@ -25,7 +25,7 @@ Effect::Effect(Effects::EffectBase* effect)
 	m_MinimB = &Emplace<Button<NOTHING, ButtonType::Toggle>>(&m_Small, "");
 	m_Enable = &Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(&m_Enabled, "");
 	m_Enable->Size({ 18, 18 });
-	m_MinimB->Size({ 25, 25 });
+	m_MinimB->Size({ 24, 24 });
 
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Effect->Name()).Disable();
@@ -53,13 +53,13 @@ Effect::Effect(Effects::EffectBase* effect)
 	m_Listener += [this](Event::MouseMoved& e)
 	{
 		m_HoveringDrag = false;
-		if (e.x > 25 && e.y > Height() - 25 && e.x < Width() - 25)
+		if (e.x > 24 && e.y > Height() - 24 && e.x < Width() - 24)
 			m_HoveringDrag = true;
 	};
 
 	m_Listener += [this](Event& e)
 	{
-		if (e.x - X() >= 25 && e.x - X() <= Width() - 25 && m_Small && e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
+		if (e.x - X() >= 24 && e.x - X() <= Width() - 24 && m_Small && e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
 			e.y = Y() + 1;
 	};
 }
@@ -92,7 +92,7 @@ void Effect::Update(const Vec4<int>& v)
 	{
 		m_PSmall = true;
 		m_RealHeight = Height();
-		Height(25);
+		Height(24);
 	}
 	else if (!m_Small && m_PSmall)
 	{
@@ -104,9 +104,9 @@ void Effect::Update(const Vec4<int>& v)
 	}
 	
 
-	m_Size.height = m_Small ? 25 : m_Effect->Height() + 25;
-	m_Enable->Position({ 3, Height() - 22 });
-	m_MinimB->Position({ Width() - 25, Height() - 25 });
+	m_Size.height = m_Small ? 24 : m_Effect->Height() + 24;
+	m_Enable->Position({ 3, Height() - 21 });
+	m_MinimB->Position({ Width() - 24, Height() - 24 });
 	Background(ThemeT::Get().effect_background);
 	Panel::Update(v);
 }
@@ -120,7 +120,7 @@ void Effect::Render(CommandCollection& d)
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
 	d.Command<Fill>(ThemeT::Get().effect_title_bar);
-	d.Command<Quad>(Vec4<int>{ 0, Height() - 25, Width(), 25 });
+	d.Command<Quad>(Vec4<int>{ 0, Height() - 24, Width(), 24 });
 	d.Command<Font>(Fonts::Gidole16, 16.0f);
 
 	if (m_Enabled)
@@ -128,8 +128,8 @@ void Effect::Render(CommandCollection& d)
 	else
 		d.Command<Fill>(ThemeT::Get().effect_title_text_off);
 
-	d.Command<TextAlign>(Align::LEFT, Align::TOP);
-	d.Command<Text>(&m_Effect->Name(), Vec2<int>{ 30, Height() - 2});
+	d.Command<TextAlign>(Align::LEFT, Align::CENTER);
+	d.Command<Text>(&m_Effect->Name(), Vec2<int>{ 30, Height() - 12});
 	
 	d.Command<Fill>(ThemeT::Get().effect_minimize_button);
 	if (!m_Small)
@@ -139,12 +139,6 @@ void Effect::Render(CommandCollection& d)
 
 	m_Enable->Render(d);
 	m_MinimB->Render(d);
-
-	/*if (!m_Enabled)
-	{
-		d.Command<Fill>(Color{ 0, 0, 0, 50 });
-		d.Command<Quad>(Vec4<int>{ 0, 0, Width(), Height() - 25 });
-	}*/
 
 	if (!m_Small)
 	{

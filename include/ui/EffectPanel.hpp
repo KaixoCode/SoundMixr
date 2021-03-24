@@ -60,7 +60,7 @@ public:
 					a ? m_EffectGroup->Enable() : m_EffectGroup->Disable(); 
 			}
 		, "");
-		m_Toggle->Size({ 20, 20 });
+		m_Toggle->Size({ 18, 18 });
 		m_Toggle->Visible(true);
 
 		m_Listener += [this](Event::MousePressed& e)
@@ -98,7 +98,7 @@ public:
 	void Update(const Vec4<int>& v)
 	{
 		Panel::Update(v);
-		m_Toggle->Position({ 10, Height() - 32 + 2 });
+		m_Toggle->Position({ 8 + 3, Height() - 32 + 3 });
 	}
 
 	void Render(CommandCollection& d) override 

@@ -1117,7 +1117,7 @@ public:
 		d.Command<Font>(Fonts::Gidole16, 11.0f);
 		d.Command<Fill>(_c1);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2 + 2, b.Y() + b.Height() / 2);
+		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
 	}
 };
 
@@ -1150,7 +1150,7 @@ public:
 		d.Command<Font>(Fonts::Gidole16, 11.0f);
 		d.Command<Fill>(_c1);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2 + 2, b.Y() + b.Height() / 2);
+		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
 	}
 };
 

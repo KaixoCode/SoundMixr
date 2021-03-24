@@ -53,6 +53,13 @@ public:
             m_MaxiButton2->Visible(false);
         }
         m_MinimButton->Position({ _x -= 46, Height() - 32 + _offset });
+
+        _x = -_offset + 45;
+        int _y = Height() - 32 + _offset;
+        if (m_Menu->Components().size() != 0)
+            m_Menu->Position({ _x + 6, _y });
+        
+
         Window::Update(viewport);
     }
 
@@ -74,7 +81,6 @@ public:
 
         if (m_Menu->Components().size() != 0)
         {
-            m_Menu->Position({ _x + 6, _y });
             _x += m_Menu->Width() + 6;
             d.Command<TextAlign>(Align::CENTER, Align::CENTER);
             d.Command<Text>(&_line, _x += 6, _y + 16);
