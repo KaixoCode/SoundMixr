@@ -6,7 +6,7 @@
 
 void Channel::Group(::ChannelGroup* p, int index)
 {
-	if (!m_Group)
+	if (m_Group == nullptr)
 	{
 		m_Group = p;
 		m_GroupIndex = index;

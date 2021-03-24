@@ -2,13 +2,13 @@
 
 ParameterBase::~ParameterBase()
 {
-	Midi::Get().Remove(m_Callback, m_CallbackId);
+	Midi::Get().Remove<Midi::Event::ControlChange>(m_CallbackId);
 }
 
 ParameterBase::ParameterBase(Effects::Parameter& param)
 	: m_Parameter(param)
 {
-	m_Callback = [this](Midi::Event::ControlChange& a)
+	m_CallbackId = Midi::Get() += [this](Midi::Event::ControlChange& a)
 	{ 
 		if (m_Linking)
 		{
@@ -21,7 +21,6 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 			NormalizedValue(a.value / 127.0);
 		}
 	};
-	m_CallbackId = (Midi::Get() += m_Callback);
 	m_Menu.Clear();
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Listener += [&](Event::MousePressed& e)

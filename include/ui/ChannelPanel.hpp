@@ -131,19 +131,23 @@ public:
 		};
 	}
 
+	void Update(const Vec4<int>& viewport) override;
+	void Render(CommandCollection& d) override;
+
 	void Select(ChannelPanel* s);
 	void AddChannel(Channel* s);
 	void Selected(bool v) { m_Selected = v; }
-	bool Selected() { return m_Selected; }
 	void Unselect() { m_HasSelect = false; routed.Disable(); m_Connect->Visible(false); }
 	void Routed(bool v) { m_Routed = v; }
-	bool Routed() { return m_Routed; }
 	auto ChannelGroup() -> ::ChannelGroup& { return m_ChannelGroup; }
-	bool IsInput() { return m_IsInput; }
 	void Transparency(bool t) { m_Transparency = t; }
-	bool Delete() { return m_Delete; }
-	bool Hovering() { return m_Hovering; }
-	bool IsSpecial() { return m_IsSpecial; }
+	
+	bool Selected()  const { return m_Selected; }
+	bool Routed()    const { return m_Routed; }
+	bool IsInput()   const { return m_IsInput; }
+	bool Delete()    const { return m_Delete; }
+	bool Hovering()  const { return m_Hovering; }
+	bool IsSpecial() const { return m_IsSpecial; }
 
 	operator nlohmann::json();
 	void operator=(const nlohmann::json& json);
@@ -195,7 +199,4 @@ private:
 	::ChannelGroup
 		*m_SelectedChannels,
 		*m_SelectedSame;
-
-	void Update(const Vec4<int>& viewport) override;
-	void Render(CommandCollection& d) override;
 };

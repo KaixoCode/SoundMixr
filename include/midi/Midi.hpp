@@ -73,15 +73,9 @@ public:
 		return instance;
 	}
 
-	Midi()
-	{
-		LoadPorts();
-	}
+	Midi() { LoadPorts(); }
 
-	void OpenPort(MidiDevice& m)
-	{
-		OpenPort(m.id);
-	}
+	void OpenPort(MidiDevice& m) { OpenPort(m.id); }
 
 	bool OpenPort(int id)
 	{
@@ -100,10 +94,7 @@ public:
 		return true;
 	}
 
-	void ClosePort(MidiDevice& m)
-	{
-		ClosePort(m.id);
-	}
+	void ClosePort(MidiDevice& m) { ClosePort(m.id); }
 
 	void ClosePort(int id)
 	{
@@ -162,9 +153,6 @@ public:
 	template<typename T>
 	int operator+=(T t) { return AddCallback(t); }
 
-	template<typename T>
-	void Remove(T t, int id) { RemoveCallback(t, id); }
-
 	int AddCallback(Callback<Event> a) { m_EventCallbacks.emplace(m_Counter++, a); return m_Counter-1; }
 	int AddCallback(Callback<Event::NoteOff> a) { m_NoteOffCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
 	int AddCallback(Callback<Event::NoteOn> a) { m_NoteOnCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
@@ -174,14 +162,16 @@ public:
 	int AddCallback(Callback<Event::ChannelAfterTouch> a) { m_ChannelAfterTouchCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
 	int AddCallback(Callback<Event::PitchWheel> a) { m_PitchWheelCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
 
-	void RemoveCallback(Callback<Event> a, int id) { m_EventCallbacks.erase(m_EventCallbacks.find(id)); }
-	void RemoveCallback(Callback<Event::NoteOff> a, int id) { m_NoteOffCallbacks.erase(m_NoteOffCallbacks.find(id)); }
-	void RemoveCallback(Callback<Event::NoteOn> a, int id) { m_NoteOnCallbacks.erase(m_NoteOnCallbacks.find(id)); }
-	void RemoveCallback(Callback<Event::PolyAfterTouch> a, int id) { m_PolyAfterTouchCallbacks.erase(m_PolyAfterTouchCallbacks.find(id)); }
-	void RemoveCallback(Callback<Event::ControlChange> a, int id) { m_ControlChangeCallbacks.erase(m_ControlChangeCallbacks.find(id)); }
-	void RemoveCallback(Callback<Event::ProgramChange> a, int id) { m_ProgramChangeCallbacks.erase(m_ProgramChangeCallbacks.find(id)); }
-	void RemoveCallback(Callback<Event::ChannelAfterTouch> a, int id) { m_ChannelAfterTouchCallbacks.erase(m_ChannelAfterTouchCallbacks.find(id)); }
-	void RemoveCallback(Callback<Event::PitchWheel> a, int id) { m_PitchWheelCallbacks.erase(m_PitchWheelCallbacks.find(id)); }
+	template<typename T>
+	void Remove(int id) { RemoveCallback(id); }
+	template<> void Remove<Event>(int id) { m_EventCallbacks.erase(m_EventCallbacks.find(id)); }
+	template<> void Remove<Event::NoteOff>(int id) { m_NoteOffCallbacks.erase(m_NoteOffCallbacks.find(id)); }
+	template<> void Remove<Event::NoteOn>(int id) { m_NoteOnCallbacks.erase(m_NoteOnCallbacks.find(id)); }
+	template<> void Remove<Event::PolyAfterTouch>(int id) { m_PolyAfterTouchCallbacks.erase(m_PolyAfterTouchCallbacks.find(id)); }
+	template<> void Remove<Event::ControlChange>(int id) { m_ControlChangeCallbacks.erase(m_ControlChangeCallbacks.find(id)); }
+	template<> void Remove<Event::ProgramChange>(int id) { m_ProgramChangeCallbacks.erase(m_ProgramChangeCallbacks.find(id)); }
+	template<> void Remove<Event::ChannelAfterTouch>(int id) { m_ChannelAfterTouchCallbacks.erase(m_ChannelAfterTouchCallbacks.find(id)); }
+	template<> void Remove<Event::PitchWheel>(int id) { m_PitchWheelCallbacks.erase(m_PitchWheelCallbacks.find(id)); }
 
 	auto Devices() -> std::vector<MidiDevice>& { return m_Devices; }
 

@@ -16,7 +16,7 @@ public:
 		: m_Id(id), m_Name(name), m_IsInput(IsInput)
 	{}
 
-	auto Name() -> std::string& { return m_Name; }
+	auto Name() -> std::string& const { return m_Name; }
 	void Volume(float v) { m_Volume = v; }
 	void Pan(float p) { m_Pan = p; }
 	void MonoLevel(float l) { m_MonoLevel = l; }
@@ -113,6 +113,8 @@ public:
 	void operator=(const nlohmann::json& json);
 
 private:
+	mutable std::mutex m_Mutex;
+
 	float m_Pan = 0,
 		m_MonoLevel = 0,
 		m_Volume = 1;
@@ -125,8 +127,6 @@ private:
 		m_Muted = false,
 		m_IsInput = false,
 		m_Dead = false;
-
-	mutable std::mutex m_Mutex;
 
 	::EffectsGroup m_EffectsGroup;
 	std::string m_Name = "";

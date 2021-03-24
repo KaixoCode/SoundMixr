@@ -77,7 +77,6 @@ protected:
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_LinkButton;
 	Button<SoundMixrGraphics::Menu, ButtonType::Normal>* m_UnlinkButton;
 
-	std::function<void(Midi::Event::ControlChange&)> m_Callback;
 	int m_CallbackId = -1;
 
 	std::string m_ValueText;

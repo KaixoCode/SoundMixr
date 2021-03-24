@@ -17,50 +17,21 @@ public:
 	Effect(Effects::EffectBase*);
 	~Effect();
 
-	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
+	void Render(CommandCollection& d) override;
 
 	void UpdateEffect() { if (m_Enabled && !m_Bypass) m_Effect->Update(); }
 	
-	auto Name() -> const std::string& { return m_Effect->Name(); }
+	auto  Name() -> const std::string& { return m_Effect->Name(); }
 	float NextSample(float s, int c) { return !m_Bypass && m_Enabled ? m_Effect->NextSample(s, c) : s; };
-	void Channels(int c) { m_Effect->Channels(c); m_Channels = c; }
-
-	bool Hovering() { return m_Hovering; }
-	bool HoveringDrag() { return m_HoveringDrag; }
-
-	void Bypass(bool b) 
-	{
-		m_Bypass = b;
-		if (!m_Bypass)
-		{
-			m_Enable->Enable();
-			if (!m_Enabled)
-				return;
-
-			for (auto& i : Components())
-				if (auto p = dynamic_cast<ParameterBase*>(i.get()))
-					p->Enable();
-				else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
-					p->Enable();
-			m_Effect->Update();
-		}
-		else
-		{
-			for (auto& i : Components())
-				if (i.get() == m_MinimB)
-					continue;
-				else if (auto p = dynamic_cast<ParameterBase*>(i.get()))
-					p->Disable();
-				else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
-					p->Disable();
-		}
-	}
+	void  Channels(int c) { m_Effect->Channels(c); m_Channels = c; }
+	bool  Hovering() { return m_Hovering; }
+	bool  HoveringDrag() { return m_HoveringDrag; }
+	void  Bypass(bool b);
+	bool  Delete() { return m_Delete; }
 
 	operator nlohmann::json();
 	void operator=(const nlohmann::json& json);
-
-	bool Delete() { return m_Delete; }
 
 protected:
 	int m_Channels = -1, 
@@ -101,49 +72,47 @@ public:
 	EffectsGroup();
 	~EffectsGroup();
 
-	bool  Lock()	const { if (!m_Dead) m_Mutex.lock(); return !m_Dead; }
-	void  Unlock()	const { m_Mutex.unlock(); }
-	float NextSample(float a, int ch);
-	void  Channels(int channels);
-	bool  Hovering();
-	bool  Dragging() { return m_Dragging != nullptr; }
-
-	Effect& Add(Effects::EffectBase* e);
-
 	void Update(const Vec4<int>& viewport) override;
 	void Render(CommandCollection& d) override;
 
 	void UpdateEffects() { for (auto& _c : m_Effects) _c->UpdateEffect(); };
 
-	int GetIndex(int y);
+	bool  Lock()	const { if (!m_Dead) m_Mutex.lock(); return !m_Dead; }
+	void  Unlock()	const { m_Mutex.unlock(); }
 
-	void Enable() { m_Enabled = true; for (auto& _c : m_Effects) _c->Bypass(false); }
-	void Disable() { m_Enabled = false; for (auto& _c : m_Effects) _c->Bypass(true); }
-	bool Enabled() { return m_Enabled; }
-
-	std::string& Name() { return m_Name; }
-	void Name(const std::string& n) { m_Name = n; }
+	float NextSample(float a, int ch);
+	void  Channels(int channels);
+	bool  Hovering();
+	bool  Dragging() { return m_Dragging != nullptr; }
+	void  Enable() { m_Enabled = true; for (auto& _c : m_Effects) _c->Bypass(false); }
+	void  Disable() { m_Enabled = false; for (auto& _c : m_Effects) _c->Bypass(true); }
+	bool  Enabled() const { return m_Enabled; }
+	auto  Add(Effects::EffectBase* e) -> Effect&;
+	int   GetIndex(int y) const;
+	auto  Name() -> std::string& const{ return m_Name; }
+	void  Name(const std::string& n) { m_Name = n; }
 
 	operator nlohmann::json();
 	void operator=(const nlohmann::json& json);
 
 private:
-	std::string m_Name;
-	std::vector<std::unique_ptr<Effect>> m_Effects;
-	int m_Channels = 0, m_EffectCount = 0;
+	mutable std::mutex m_Mutex;
 
-	Effect* m_Hovering;
-	Effect* m_Focussed;
+	int m_Channels = 0, 
+		m_EffectCount = 0,
+		m_InsertIndex = -1;
 
 	bool m_Dead = false,
 		m_Enabled = true;
 
-	mutable std::mutex m_Mutex;
-
-	Effect* m_Dragging = nullptr;
-	int m_InsertIndex = -1;
-
 	double m_MouseY = 0;
+	
+	Effect* m_Hovering = nullptr,
+		* m_Focussed = nullptr,
+		* m_Dragging = nullptr;
+
+	std::string m_Name;
+	std::vector<std::unique_ptr<Effect>> m_Effects;
 
 	void Determine(Event& e);
 };

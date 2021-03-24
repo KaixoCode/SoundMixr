@@ -64,6 +64,34 @@ Effect::Effect(Effects::EffectBase* effect)
 	};
 }
 
+void Effect::Bypass(bool b)
+{
+	m_Bypass = b;
+	if (!m_Bypass)
+	{
+		m_Enable->Enable();
+		if (!m_Enabled)
+			return;
+
+		for (auto& i : Components())
+			if (auto p = dynamic_cast<ParameterBase*>(i.get()))
+				p->Enable();
+			else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
+				p->Enable();
+		m_Effect->Update();
+	}
+	else
+	{
+		for (auto& i : Components())
+			if (i.get() == m_MinimB)
+				continue;
+			else if (auto p = dynamic_cast<ParameterBase*>(i.get()))
+				p->Disable();
+			else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
+				p->Disable();
+	}
+}
+
 void Effect::Update(const Vec4<int>& v) 
 {
 	if (m_Enabled && !m_PEnabled && !m_Bypass)
@@ -617,7 +645,7 @@ void EffectsGroup::Render(CommandCollection& d)
 	d.Command<PopMatrix>();
 }
 
-int EffectsGroup::GetIndex(int y)
+int EffectsGroup::GetIndex(int y) const
 {
 	int index = 0;
 	int _ri = 0;
