@@ -14,13 +14,15 @@ namespace Effects
 		using Filter = BiquadFilter<>;
 
 		Equalizer()
-			: EffectBase("Equalizer"), m_Parameters{ }
+			: EffectBase("Equalizer")
 		{
 			for (int i = 0; i < N; i++)
 			{
+				m_Parameters.emplace_back();
+
 				m_Knob1[i] = &Parameter("Freq", ParameterType::Knob);
 				m_Knob1[i]->Range({ 10, 22000 });
-				m_Knob1[i]->Power(3);
+				m_Knob1[i]->Log(2000);
 				m_Knob1[i]->ResetValue(22000);
 				m_Knob1[i]->ResetValue();
 				m_Knob1[i]->Unit("Hz");
@@ -141,7 +143,7 @@ namespace Effects
 		Effects::Parameter * m_Knob1[N], * m_Knob2[N], * m_Knob3[N];
 		Effects::DropDown * m_Dropdown[N];
 
-		Params m_Parameters[N];
+		std::vector<Params> m_Parameters;
 		std::vector<ChannelEqualizer<N, Filter, Params>> m_Equalizers;
 	};
 }

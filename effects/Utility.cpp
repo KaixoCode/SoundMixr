@@ -32,6 +32,9 @@ namespace Effects
 		{
 			Height(145);
 
+			for (int i = 0; i < 3; i++)
+				m_Params.emplace_back();
+
 			m_Limiter.Name("Limit Level");
 
 			m_Release.Size({ 30, 30 });
@@ -342,7 +345,7 @@ namespace Effects
 
 		int m_PreDC = 0;
 
-		BiquadParameters m_Params[3];
+		std::vector<BiquadParameters> m_Params;
 		std::vector<std::vector<float>> m_PreDelay;
 		std::vector<ChannelEqualizer<3, BiquadFilter<>>> m_Equalizers;
 	};

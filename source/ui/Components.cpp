@@ -669,3 +669,45 @@ void DynamicsSlider::UpdateStrings()
 		m_RT2Str += s;
 	}
 }
+
+
+float FilterCurve::Magnitude(float freq)
+{
+	float wf = /*6.28318530718*/ 3.1415926 * (freq / 22000);
+	float avg = 0;
+
+	float e0jw = std::exp(0 * wf);
+	float e1jw = std::exp(-1 * wf);
+	float e2jw = std::exp(-2 * wf);
+
+	int amount = 0;
+
+	for (auto& p : m_Curve.Parameters())
+	{
+		if (p.type == FilterType::Off)
+			continue;
+
+		amount++;
+
+		// Transfer function:
+
+		float c1 = p.a0 * e0jw;
+		float c2 = p.a1 * e1jw;
+		float c3 = p.a2 * e2jw;
+
+		float d1 = p.b0 * e0jw;
+		float d2 = p.b1 * e1jw;
+		float d3 = p.b2 * e2jw;
+
+		float Hw = (c1 + c2 + c3) / (d1 + d2 + d3);
+		float mag = std::abs(Hw);
+
+		if (mag == 0)
+			mag = 0.00000000001;
+
+		avg += 20 * std::log10(mag);
+	}
+	if (amount)
+		return avg / amount;
+	return 0;
+}

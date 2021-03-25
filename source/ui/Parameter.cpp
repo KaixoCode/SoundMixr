@@ -18,7 +18,10 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 
 		if (m_Parameter.MidiLink() == Effects::MidiCCLink{ a.channel, a.control, a.device })
 		{
-			NormalizedValue(a.value / 127.0);
+			float v = a.value / 127.0;
+			if (std::abs(v - 0.5) < 1 / 127.0)
+				v = 0.5;
+			NormalizedValue(v);
 		}
 	};
 	m_Menu.Clear();

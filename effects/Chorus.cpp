@@ -23,6 +23,8 @@ namespace Effects
 			m_Controller(XYController(m_AmountKnob, m_RateKnob)),
 			EffectBase("Chorus")
 		{
+			m_Parameters.emplace_back();
+
 			Height(145);
 			m_AmountKnob.Range({ 0, 5 });
 			m_AmountKnob.Power(2);
@@ -36,7 +38,7 @@ namespace Effects
 			m_AmountKnob.DisplayName(false);
 
 			m_RateKnob.Range({ 0.1, 15 });
-			m_RateKnob.Power(2);
+			m_RateKnob.Log(2);
 			m_RateKnob.ResetValue(3);
 			m_RateKnob.ResetValue();
 			m_RateKnob.Unit(" Hz");
@@ -47,7 +49,7 @@ namespace Effects
 			m_RateKnob.DisplayName(false);
 
 			m_Highpass.Range({ 10, 22000 });
-			m_Highpass.Power(3);
+			m_Highpass.Log(2000);
 			m_Highpass.ResetValue(100);
 			m_Highpass.ResetValue();
 			m_Highpass.Unit(" Hz");
@@ -259,7 +261,7 @@ namespace Effects
 		double m_Mix = 0.5;
 		Oscillator m_Oscillator;
 
-		BiquadParameters m_Parameters[1];
+		std::vector<BiquadParameters> m_Parameters;
 		std::vector<ChannelEqualizer<1, BiquadFilter<>>> m_Equalizers;
 
 		bool m_Dragging = false;

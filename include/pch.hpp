@@ -33,6 +33,9 @@
 
 #define _TESTLINK
 #include "EffectBase.hpp"
+#include "Filters.hpp"
+#include "Compressor.hpp"
+#include "Oscillator.hpp"
 #include "resource.h"
 
 #define db2lin(db) std::powf(10.0f, 0.05 * (db))

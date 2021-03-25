@@ -161,3 +161,104 @@ private:
 
 	void UpdateStrings();
 };
+
+
+// -------------------------------------------------------------------------- \\
+// ---------------------------- Filter Curve -------------------------------- \\
+// -------------------------------------------------------------------------- \\
+
+class FilterCurve : public Component
+{
+public:
+
+	FilterCurve(Effects::FilterCurve& params)
+		: m_Curve(params)
+	{}
+
+
+	void Update(const Vec4<int>& v)
+	{
+		m_Size = { m_Curve.Size().width, m_Curve.Size().height };
+		m_Pos = { m_Curve.Position().width, m_Curve.Position().height };
+		UpdateMags();
+		Component::Update(v);
+	}
+
+	void Render(CommandCollection& d)
+	{
+		Component::Render(d);
+
+		int size = Width() / m_Scale;
+		d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
+		for (int i = 0; i < size-1; i++)
+		{
+			int y1 = DbToY(m_Mags[i]);
+			int y2 = DbToY(m_Mags[i + 1]);
+			int x1 = X() + i * m_Scale;
+			int x2 = X() + (i + 1) * m_Scale;
+			d.Command<Graphics::Line>(Vec4<int>{ x1, y1, x2, y2 }, 3.0f);
+		}
+
+	}
+
+
+private:
+
+	void UpdateMags()
+	{
+		int size = Width() / m_Scale;
+		while (m_Mags.size() < size)
+			m_Mags.push_back(0);
+
+		for (int i = 0; i < size; i++)
+		{
+			float freq = PosToFreq(i * m_Scale);
+			float nfreq = PosToFreq((i+1) * m_Scale);
+			
+			float min = 24;
+			int count = 0;
+			for (float j = freq; j < nfreq; j += (nfreq - freq) * 0.1)
+			{
+				count++;
+				float ma = Magnitude(j);
+				if (ma < min) min = ma;
+			}
+			m_Mags[i] = min;
+		}
+	}
+
+	float PosToFreq(int x)
+	{
+		if (x <= 0)
+			return 0;
+
+		return (x / (float)Width()) * 22000;
+
+		return std::pow(10, (x / (float)Width()) * LOG1022) + 10;
+	}
+
+	int DbToY(float db)
+	{
+		if (db < -12)
+			return Y() + Height();
+		if (db > 12)
+			return Y();
+
+		return Y() + Height() - ((db + 12) / 24.0) * Height();
+	}
+
+	float FreqToPos(float freq)
+	{
+		return std::log10((freq / 22000)) * Width() - 1.0f;
+	}
+
+	float Magnitude(float freq);
+
+	static inline const float LOG1022 = std::log10(21990);
+
+	int m_Scale = 1;
+
+	std::vector<float> m_Mags;
+
+	Effects::FilterCurve& m_Curve;
+};

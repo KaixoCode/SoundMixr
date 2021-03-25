@@ -338,6 +338,13 @@ void Effect::SetObject(Effects::Div& div, const Vec4<int>& dim)
 		return;
 	}
 
+	auto fc = dynamic_cast<Effects::FilterCurve*>(object);
+	if (fc != nullptr)
+	{
+		Emplace<FilterCurve>(*fc), fc->Position({ position.x, position.y });
+		return;
+	}
+
 	auto rb = dynamic_cast<Effects::RadioButton*>(object);
 	if (rb != nullptr)
 	{
