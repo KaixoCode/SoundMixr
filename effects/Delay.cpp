@@ -27,7 +27,7 @@ namespace Effects
 
 			Height(155);
 			m_ModAmountKnob.Range({ 0, 100 });
-			m_ModAmountKnob.Log(100);
+			m_ModAmountKnob.Power(2);
 			m_ModAmountKnob.ResetValue(0.3);
 			m_ModAmountKnob.ResetValue();
 			m_ModAmountKnob.Unit(" %");
@@ -37,7 +37,7 @@ namespace Effects
 			m_ModAmountKnob.Vertical(false);
 
 			m_ModRateKnob.Range({ 0.1, 15 });
-			m_ModRateKnob.Log(100);
+			m_ModRateKnob.Log(10);
 			m_ModRateKnob.ResetValue(3);
 			m_ModRateKnob.ResetValue();
 			m_ModRateKnob.Unit(" Hz");
@@ -48,7 +48,7 @@ namespace Effects
 			m_ModRateKnob.DisplayName(false);
 
 			m_Freq.Range({ 10, 22000 });
-			m_Freq.Log(2000);
+			m_Freq.Log(10);
 			m_Freq.ResetValue(1000);
 			m_Freq.ResetValue();
 			m_Freq.Unit(" Hz");
@@ -69,7 +69,7 @@ namespace Effects
 			m_Width.DisplayName(false);
 
 			m_DelayKnob.Range({ 1, 5000 });
-			m_DelayKnob.Log(2000);
+			m_DelayKnob.Log(10);
 			m_DelayKnob.ResetValue(300);
 			m_DelayKnob.ResetValue();
 			m_DelayKnob.Unit(" ms");
@@ -110,6 +110,7 @@ namespace Effects
 			m_Mode = 0;
 
 			m_EnableFilter.Size({ 18, 18 });
+			m_EnableFilter.State(true);
 
 			m_Curve.Size({ 175, 80 });
 

@@ -329,27 +329,29 @@ private:
 
 	void UpdateMags()
 	{
-		bool update = false;
+		if (m_Dragging) m_Update = true;
 
-		if (m_PrevFreq != m_Curve.freq.Value())
-			m_PrevFreq = m_Curve.freq.Value(), update = true;
-
-		if (m_PrevWidth != m_Curve.width.Value())
-			m_PrevWidth = m_Curve.width.Value(), update = true;
 
 		int size = std::ceil(Width() / m_Scale) + m_Scale;
 		while (m_Mags.size() < size)
-			m_Mags.push_back(0), update = true;
+			m_Mags.push_back(0), m_Update = true;
 
-		if (!update)
-			return;
-
-		for (int i = 0; i < size; i++)
+		if (m_Update)
 		{
-			float ma = Magnitude(i * m_Scale);
+			for (int i = 0; i < size; i++)
+			{
+				float ma = Magnitude(i * m_Scale);
 
-			m_Mags[i] = ma;
+				m_Mags[i] = ma;
+			}
+			m_Update = false;
 		}
+
+		if (m_PrevFreq != m_Curve.freq.Value())
+			m_PrevFreq = m_Curve.freq.Value(), m_Update = true;
+
+		if (m_PrevWidth != m_Curve.width.Value())
+			m_PrevWidth = m_Curve.width.Value(), m_Update = true;
 	}
 
 	float PosToFreq(int x)
@@ -380,7 +382,7 @@ private:
 	const double m_Logg = std::log(m_Log);
 
 	int m_Click = 0;
-	bool m_Dragging = false, m_Hovering = false;
+	bool m_Dragging = false, m_Hovering = false, m_Update = false;
 
 	double m_PrevWidth = 0, m_PrevFreq = 0;
 

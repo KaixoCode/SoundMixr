@@ -48,10 +48,14 @@ protected:
 
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_Minim;
+	Button<SoundMixrGraphics::Menu, ButtonType::Normal>* m_SavePreset;
 	Button<ToggleButtonGraphics, ButtonType::Toggle>* m_Enable;
 	Button<NOTHING, ButtonType::Toggle>* m_MinimB;
 	Effects::EffectBase* m_Effect;
 	std::vector<Vec4<int>> m_Dividers;
+
+	std::filesystem::path m_Preset{""};
+	std::string m_Name;
 
 	std::unordered_map<int, int> m_RadioButtonKeys;
 	std::unordered_map<int, std::vector<Effects::RadioButton*>> m_RadioButtons;

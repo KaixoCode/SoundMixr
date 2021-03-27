@@ -22,7 +22,7 @@ namespace Effects
 
 				m_Knob1[i] = &Parameter("Freq", ParameterType::Knob);
 				m_Knob1[i]->Range({ 10, 22000 });
-				m_Knob1[i]->Log(2000);
+				m_Knob1[i]->Log(10);
 				m_Knob1[i]->ResetValue(22000);
 				m_Knob1[i]->ResetValue();
 				m_Knob1[i]->Unit("Hz");
@@ -41,7 +41,7 @@ namespace Effects
 
 				m_Knob3[i] = &Parameter("Q", ParameterType::Knob);
 				m_Knob3[i]->Range({ 0.10, 6 });
-				m_Knob3[i]->Power(2);
+				m_Knob3[i]->Log(2);
 				m_Knob3[i]->ResetValue(1);
 				m_Knob3[i]->ResetValue();
 				m_Knob3[i]->Unit("");

@@ -125,7 +125,9 @@ void XYController::Render(CommandCollection& d)
 	int _p = 8;
 	int _x = controller.Param1().NormalizedValue() * (Width() - 2 * _p) + _p;
 	int _y = controller.Param2().NormalizedValue() * (Height() - 2 * _p) + _p;
-	if (m_Dragging)
+	if (controller.Param1().Disabled() && controller.Param2().Disabled())
+		d.Command<Fill>(ThemeT::Get().effect_graph_disabled_circle);
+	else if (m_Dragging)
 		d.Command<Fill>(ThemeT::Get().effect_graph_active_circle);
 	else if (m_Hovering)
 		d.Command<Fill>(ThemeT::Get().effect_graph_hovering_circle);
@@ -715,6 +717,7 @@ float FilterCurve::Magnitude(float freq)
 
 void SimpleFilterCurve::Update(const Vec4<int>& v)
 {
+	m_Click--;
 	m_Size = { m_Curve.Size().width, m_Curve.Size().height };
 	m_Pos = { m_Curve.Position().width, m_Curve.Position().height };
 	UpdateMags();

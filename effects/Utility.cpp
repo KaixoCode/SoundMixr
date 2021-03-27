@@ -39,7 +39,7 @@ namespace Effects
 
 			m_Release.Size({ 30, 30 });
 			m_Release.Range({ 1, 5000 });
-			m_Release.Power(3);
+			m_Release.Log(10);
 			m_Release.ResetValue(300);
 			m_Release.ResetValue();
 			m_Release.Multiplier(0.4);
@@ -48,7 +48,6 @@ namespace Effects
 
 			m_Low.Size({ 30, 30 });
 			m_Low.Range({ -12, 12 });
-			m_Low.Power(1);
 			m_Low.ResetValue(0);
 			m_Low.ResetValue();
 			m_Low.Unit("dB");
@@ -56,7 +55,6 @@ namespace Effects
 
 			m_Mid.Size({ 30, 30 });
 			m_Mid.Range({ -12, 12 });
-			m_Mid.Power(1);
 			m_Mid.ResetValue(0);
 			m_Mid.ResetValue();
 			m_Mid.Unit("dB");
@@ -64,7 +62,6 @@ namespace Effects
 
 			m_High.Size({ 30, 30 });
 			m_High.Range({ -12, 12 });
-			m_High.Power(1);
 			m_High.ResetValue(0);
 			m_High.ResetValue();
 			m_High.Unit("dB");
@@ -72,7 +69,6 @@ namespace Effects
 
 			m_Pan.Size({ 30, 30 });
 			m_Pan.Range({ -50, 50 });
-			m_Pan.Power(1);
 			m_Pan.Decimals(-1);
 			m_Pan.ResetValue(0);
 			m_Pan.ResetValue();
@@ -83,7 +79,6 @@ namespace Effects
 
 			m_Gain.Size({ 30, 30 });
 			m_Gain.Range({ -24, 24 });
-			m_Gain.Power(1);
 			m_Gain.ResetValue(0);
 			m_Gain.ResetValue();
 			m_Gain.Unit("dB");
@@ -96,7 +91,7 @@ namespace Effects
 
 			m_LowFreq.Size({ 58, 18 });
 			m_LowFreq.Range({ 10, 6000 });
-			m_LowFreq.Power(3);
+			m_LowFreq.Log(10);
 			m_LowFreq.ResetValue(600);
 			m_LowFreq.ResetValue();
 			m_LowFreq.Unit("Hz");
@@ -108,7 +103,7 @@ namespace Effects
 
 			m_HighFreq.Size({ 58, 18 });
 			m_HighFreq.Range({ 2000, 22000 });
-			m_HighFreq.Power(3);
+			m_HighFreq.Log(10);
 			m_HighFreq.ResetValue(7000);
 			m_HighFreq.ResetValue();
 			m_HighFreq.Unit("Hz");

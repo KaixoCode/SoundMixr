@@ -29,20 +29,21 @@ namespace Effects
 			m_PreGain.Multiplier(0.4);
 			m_PreGain.Decimals(2);
 
-			m_Attack.Range({ .1f, 30 });
-			m_Attack.Power(2);
+			m_Attack.Range({ .1f, 300 });
+			m_Attack.Log(10);
 			m_Attack.Multiplier(0.4);
 			m_Attack.ResetValue(3);
 			m_Attack.ResetValue();
 			m_Attack.Unit(" ms");
 			m_Attack.Size({ 30, 30 });
 
-			m_Release.Range({ 1, 300 });
-			m_Release.Power(2);
+			m_Release.Range({ 1, 5000 });
+			m_Release.Log(10);
 			m_Release.ResetValue(30);
 			m_Release.ResetValue();
 			m_Release.Multiplier(0.4);
 			m_Release.Unit(" ms");
+			m_Release.Unit(" s", 3);
 			m_Release.Size({ 30, 30 });
 
 			m_PostGain.Range({ -24, 24 });
@@ -59,7 +60,7 @@ namespace Effects
 			m_Mix.ResetValue();
 			m_Mix.Unit(" %");
 			m_Mix.Size({ 30, 30 });
-			m_Mix.Decimals(0);
+			m_Mix.Decimals(1);
 
 			m_Slider.Size({ (Width() - 24), 77 });
 

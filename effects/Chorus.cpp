@@ -49,7 +49,7 @@ namespace Effects
 			m_RateKnob.DisplayName(false);
 
 			m_Highpass.Range({ 10, 22000 });
-			m_Highpass.Log(2000);
+			m_Highpass.Log(10);
 			m_Highpass.ResetValue(100);
 			m_Highpass.ResetValue();
 			m_Highpass.Unit(" Hz");
