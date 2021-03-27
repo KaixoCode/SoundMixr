@@ -182,15 +182,14 @@ Effect::operator nlohmann::json()
 {
 	nlohmann::json _json = *m_Effect;
 	_json["enabled"] = m_Enable->Active();
-	_json["small"] = m_Minim->Active();
+	_json["small"] = m_Small;
 	return _json;
 }
 
 void Effect::operator=(const nlohmann::json& json)
 {
 	m_Enable->Active(json.at("enabled").get<bool>());
-	m_Minim->Active(json.at("small").get<bool>());
-	m_MinimB->Active(m_Small);
+	m_Small = json.at("small").get<bool>();
 	*m_Effect = json;
 }
 
@@ -342,6 +341,13 @@ void Effect::SetObject(Effects::Div& div, const Vec4<int>& dim)
 	if (fc != nullptr)
 	{
 		Emplace<FilterCurve>(*fc), fc->Position({ position.x, position.y });
+		return;
+	}
+
+	auto sc = dynamic_cast<Effects::SimpleFilterCurve*>(object);
+	if (sc != nullptr)
+	{
+		Emplace<SimpleFilterCurve>(*sc), sc->Position({ position.x, position.y });
 		return;
 	}
 

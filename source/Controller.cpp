@@ -176,6 +176,8 @@ void Controller::Run()
     _scalingSlider.Vertical(false);
     _scalingSlider.DisplayName(false);
 
+    std::vector<std::string> _midiEnabled;
+
     bool loaded = false;
     auto& _saveSettings = [&]
     {
@@ -188,8 +190,11 @@ void Controller::Run()
             _json["zoom"] = _scalingSlider.Value();
             _json["theme"] = ThemeT::Get().Name();
             _json["midi-enabled"] = nlohmann::json::array();
-            for (auto& [key, val] : Midi::Get().Opened())
-                _json["midi-enabled"] += key;
+            for (auto& m : _midiEnabled)
+                _json["midi-enabled"] += m;
+
+            //for (auto& [key, val] : Midi::Get().Opened())
+            //    _json["midi-enabled"] += val.getPortName(key);
 
             std::ofstream _of;
             std::filesystem::path dir("./settings");
@@ -276,8 +281,13 @@ void Controller::Run()
             auto zoom = _json.at("zoom").get<double>();
 
             for (auto& i : _json.at("midi-enabled"))
-                if (i >= 0 && i < m_MidiButtons.size())
-                    m_MidiButtons[i.get<int>()]->Active(true);
+            {
+                _midiEnabled.push_back(i.get<std::string>());
+                for (auto & dev : Midi::Get().Devices())
+                    if (dev.name == i.get<std::string>())
+                        if (dev.id >= 0 && dev.id < m_MidiButtons.size())
+                            m_MidiButtons[dev.id]->Active(true);
+            }
 
             _scalingSlider.Value(zoom);
             _asioDropDown.Select(device);
@@ -306,6 +316,8 @@ void Controller::Run()
         m_MidiButtons.clear();
         for (int i = 0; i < _devs; i++)
         {
+            Midi::Get().ClosePort(i);
+
             _midiDevices.Div()[i].Align(Div::Alignment::Horizontal);
             _midiDevices.Div()[i].Divs(4);
             _midiDevices.Div()[i].DivSize(24);
@@ -314,16 +326,31 @@ void Controller::Run()
             _midiDevices.Div()[i][1].Align(Div::Alignment::Left);
             _midiDevices.Div()[i][1] = _midiDevices.Emplace<TextComponent<Align::LEFT>>(_dev[i].name);
             auto& _b = _midiDevices.Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(
-                [i, _saveSettings](bool& s)
+                [&, i, _saveSettings](bool& s)
                 {
                     if (s)
                     {
                         if (!Midi::Get().OpenPort(i)) s = false;
+                        else
+                        {
+                            auto& a = std::find(_midiEnabled.begin(), _midiEnabled.end(), _dev[i].name);
+                            if (a == _midiEnabled.end())
+                                _midiEnabled.push_back(_dev[i].name);
+                        }
                     }
                     else
+                    {
+                        auto& a = std::remove_if(_midiEnabled.begin(), _midiEnabled.end(), [&, i](auto& a) { return a == _dev[i].name; });
+                        _midiEnabled.erase(a);
                         Midi::Get().ClosePort(i);
+                    }
                 }, "Enable");
             m_MidiButtons.push_back(&_b);
+
+            auto& a = std::find(_midiEnabled.begin(), _midiEnabled.end(), _dev[i].name);
+            if (a != _midiEnabled.end())
+                Midi::Get().OpenPort(i);
+            
             if (Midi::Get().Opened().find(i) != Midi::Get().Opened().end())
                 _b.Active(true);
 
@@ -476,11 +503,25 @@ void Controller::Run()
 
     double pscale = 0;
     int _saveCounter = 5 * 60 * 60;
+    int _midiReloadCounter = 5 * 60;
+    int _midiDeviceCount = Midi::Get().DeviceCount();
     while (m_Gui.Loop())
     {
         Midi::Get().ReadMessages();
 
         m_List->UpdateEffects();
+
+        _midiReloadCounter--;
+        if (_midiReloadCounter <= 0)
+        {
+            if (Midi::Get().DeviceCount() != _midiDeviceCount)
+            {
+                _midiDeviceCount = Midi::Get().DeviceCount();
+                Midi::Get().LoadPorts();
+
+                _refreshMidi();
+            }
+        }
 
         if (_scalingSlider.Value() != pscale)
         {

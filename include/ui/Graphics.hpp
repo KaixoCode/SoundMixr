@@ -195,10 +195,17 @@ public:
 		volume_slider_active_meter_value_c3;
 
 	Color // XY-Controller
-		xycontroller_background,
-		xycontroller_idle_circle,
-		xycontroller_hovering_circle,
-		xycontroller_active_circle;
+		effect_graph_background,
+		effect_graph_graph_lines,
+		effect_graph_graph_lines_highlight,
+		effect_graph_disabled_circle,
+		effect_graph_disabled_line,
+		effect_graph_idle_circle,
+		effect_graph_idle_line,
+		effect_graph_hovering_circle,
+		effect_graph_hovering_line,
+		effect_graph_active_circle,
+		effect_graph_active_line;
 
 	Color // Dynamics
 		dynamics_background,
@@ -457,10 +464,17 @@ public:
 			volume_slider_active_meter_value_c2	   = GetColor("volume-slider", "active", "meter-value-c2");
 			volume_slider_active_meter_value_c3	   = GetColor("volume-slider", "active", "meter-value-c3");
 
-			xycontroller_background		 = GetColor("xy-controller", "background");
-			xycontroller_idle_circle	 = GetColor("xy-controller", "idle", "circle");
-			xycontroller_hovering_circle = GetColor("xy-controller", "hovering", "circle");
-			xycontroller_active_circle	 = GetColor("xy-controller", "active", "circle");
+			effect_graph_background			   = GetColor("effect-graph", "background");
+			effect_graph_graph_lines		   = GetColor("effect-graph", "graph-lines");
+			effect_graph_graph_lines_highlight = GetColor("effect-graph", "graph-lines-highlight");
+			effect_graph_disabled_circle	   = GetColor("effect-graph", "disabled", "circle");
+			effect_graph_disabled_line		   = GetColor("effect-graph", "disabled", "line");
+			effect_graph_idle_circle		   = GetColor("effect-graph", "idle", "circle");
+			effect_graph_idle_line   		   = GetColor("effect-graph", "idle", "line");
+			effect_graph_hovering_circle	   = GetColor("effect-graph", "hovering", "circle");
+			effect_graph_hovering_line		   = GetColor("effect-graph", "hovering", "line");
+			effect_graph_active_circle		   = GetColor("effect-graph", "active", "circle");
+			effect_graph_active_line		   = GetColor("effect-graph", "active", "line");
 
 			dynamics_background		   = GetColor("dynamics", "background");
 			dynamics_border			   = GetColor("dynamics", "border");
@@ -604,7 +618,10 @@ public:
 			{
 				std::ifstream _if{ p };
 				nlohmann::json _json;
-				_if >> _json;
+				_json = nlohmann::json::parse(_if, nullptr, false);
+
+				if (_json.is_discarded())
+					throw(nullptr);
 
 				auto _theme = std::make_unique<ThemeT>(_json);
 				auto _name = _theme->Name();
@@ -1701,9 +1718,9 @@ public:
 		d.Command<Fill>(ThemeT::Get().effect_background);
 		d.Command<Graphics::Ellipse>(Vec4<int>{b.Position() + b.Size() / 2, b.Size() - 5}, Vec2<double>{ M_PI * 1.75 - M_PI / 2.0, M_PI * 0.25 - M_PI / 2.0 });
 
-		double _x = std::cos(_a) * (b.Width() / 2.0); 
-		double _y = std::sin(_a) * (b.Height() / 2.0);
-		d.Command<Graphics::Line>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2, b.X() + b.Width() / 2 + (int)_x, b.Y() + b.Height() / 2 + (int)_y}, 6.0f);
+		float _x = std::cos(_a) * (b.Width() / 2.0); 
+		float _y = std::sin(_a) * (b.Height() / 2.0);
+		d.Command<Graphics::Line>(Vec4<float>{ b.X() + b.Width() / 2.0f, b.Y() + b.Height() / 2.0f, b.X() + b.Width() / 2.0f + _x, b.Y() + b.Height() / 2.0f + _y}, 6.0f);
 
 		if (b.Disabled())
 			d.Command<Fill>(ThemeT::Get().knob_disabled_handle);
@@ -1713,7 +1730,7 @@ public:
 			d.Command<Fill>(ThemeT::Get().knob_hovering_handle);
 		else
 			d.Command<Fill>(ThemeT::Get().knob_idle_handle);
-		d.Command<Graphics::Line>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2, b.X() + b.Width() / 2 + (int)_x, b.Y() + b.Height() / 2 + (int)_y}, 3.0f);
+		d.Command<Graphics::Line>(Vec4<float>{ b.X() + b.Width() / 2.0f, b.Y() + b.Height() / 2.0f, b.X() + b.Width() / 2.0f + _x, b.Y() + b.Height() / 2.0f + _y}, 3.0f);
 
 		if (_double)
 		{

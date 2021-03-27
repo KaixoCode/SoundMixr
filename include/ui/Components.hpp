@@ -192,11 +192,11 @@ public:
 		d.Command<Graphics::Fill>(Color{ 255, 255, 0, 255 });
 		for (int i = 0; i < size-1; i++)
 		{
-			int y1 = DbToY(m_Mags[i]);
-			int y2 = DbToY(m_Mags[i + 1]);
-			int x1 = X() + i * m_Scale;
-			int x2 = X() + (i + 1) * m_Scale;
-			d.Command<Graphics::Line>(Vec4<int>{ x1, y1, x2, y2 }, 3.0f);
+			float y1 = DbToY(m_Mags[i]);
+			float y2 = DbToY(m_Mags[i + 1]);
+			float x1 = X() + i * m_Scale;
+			float x2 = X() + (i + 1) * m_Scale;
+			d.Command<Graphics::Line>(Vec4<float>{ x1, y1, x2, y2 }, 3.0f);
 		}
 
 	}
@@ -237,7 +237,7 @@ private:
 		return std::pow(10, (x / (float)Width()) * LOG1022) + 10;
 	}
 
-	int DbToY(float db)
+	float DbToY(float db)
 	{
 		if (db < -12)
 			return Y() + Height();
@@ -261,4 +261,130 @@ private:
 	std::vector<float> m_Mags;
 
 	Effects::FilterCurve& m_Curve;
+};
+
+
+// -------------------------------------------------------------------------- \\
+// ---------------------------- Filter Curve -------------------------------- \\
+// -------------------------------------------------------------------------- \\
+
+class SimpleFilterCurve : public Component
+{
+public:
+
+	SimpleFilterCurve(Effects::SimpleFilterCurve& params)
+		: m_Curve(params)
+	{
+		m_Listener += [this](Event::MousePressed& e)
+		{
+			if (e.button == Event::MouseButton::LEFT && e.x > X() && e.x < X() + Width() && e.y > Y() && e.y < Y() + Height())
+				m_Dragging = true;
+
+		};
+
+		m_Listener += [this](Event::MouseClicked& e)
+		{
+			if (e.button == Event::MouseButton::LEFT)
+			{
+				if (m_Click > 0)
+					m_Curve.freq.ResetValue(), m_Curve.width.ResetValue();
+				m_Click = 20;
+			}
+		};
+
+		m_Listener += [this](Event::MouseEntered& e)
+		{
+			m_Hovering = true;
+		};
+
+		m_Listener += [this](Event::MouseExited& e)
+		{
+			m_Hovering = false;
+		};
+
+		m_Listener += [this](Event::MouseDragged& e)
+		{
+			if (m_Dragging)
+			{
+				double _x = constrain((e.x - X() - 8) / (Width() - 8 * 2.0), 0, 1);
+				double _y = constrain((e.y - Y() - 8) / (Height() - 8 * 2.0), 0, 1);
+				if (!m_Curve.freq.Disabled()) 
+					m_Curve.freq.NormalizedValue(_x);
+				if (!m_Curve.width.Disabled())
+					m_Curve.width.NormalizedValue(_y);
+			}
+		};
+
+		m_Listener += [this](Event::MouseReleased& e)
+		{
+			m_Dragging = false;
+		};
+	}
+
+
+	void Update(const Vec4<int>& v) override;
+	void Render(CommandCollection& d) override;
+
+private:
+
+	void UpdateMags()
+	{
+		bool update = false;
+
+		if (m_PrevFreq != m_Curve.freq.Value())
+			m_PrevFreq = m_Curve.freq.Value(), update = true;
+
+		if (m_PrevWidth != m_Curve.width.Value())
+			m_PrevWidth = m_Curve.width.Value(), update = true;
+
+		int size = std::ceil(Width() / m_Scale) + m_Scale;
+		while (m_Mags.size() < size)
+			m_Mags.push_back(0), update = true;
+
+		if (!update)
+			return;
+
+		for (int i = 0; i < size; i++)
+		{
+			float ma = Magnitude(i * m_Scale);
+
+			m_Mags[i] = ma;
+		}
+	}
+
+	float PosToFreq(int x)
+	{
+		if (x <= 0)
+			return 0;
+
+		return ((std::powf(m_Log, x / (float)Width()) - 1.0) / (m_Log - 1.0)) * (21990) + 10;
+	}
+
+	int DbToY(float db)
+	{
+		if (db < -12)
+			return Y() + Height();
+		if (db > 12)
+			return Y();
+
+		return Y() + Height() - db * Height();
+	}
+
+	float FreqToPos(float freq);
+
+	float Magnitude(float freq);
+
+	int m_Scale = 8;
+
+	const int m_Log = 10;
+	const double m_Logg = std::log(m_Log);
+
+	int m_Click = 0;
+	bool m_Dragging = false, m_Hovering = false;
+
+	double m_PrevWidth = 0, m_PrevFreq = 0;
+
+	std::vector<float> m_Mags;
+
+	Effects::SimpleFilterCurve& m_Curve;
 };

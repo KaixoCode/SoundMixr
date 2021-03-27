@@ -119,18 +119,18 @@ void XYController::Render(CommandCollection& d)
 	using namespace Graphics;
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());
-	d.Command<Fill>(ThemeT::Get().xycontroller_background);
+	d.Command<Fill>(ThemeT::Get().effect_graph_background);
 	d.Command<Quad>(Vec4<int>{ 0, 0, Width(), Height() });
 
 	int _p = 8;
 	int _x = controller.Param1().NormalizedValue() * (Width() - 2 * _p) + _p;
 	int _y = controller.Param2().NormalizedValue() * (Height() - 2 * _p) + _p;
 	if (m_Dragging)
-		d.Command<Fill>(ThemeT::Get().xycontroller_active_circle);
+		d.Command<Fill>(ThemeT::Get().effect_graph_active_circle);
 	else if (m_Hovering)
-		d.Command<Fill>(ThemeT::Get().xycontroller_hovering_circle);
+		d.Command<Fill>(ThemeT::Get().effect_graph_hovering_circle);
 	else
-		d.Command<Fill>(ThemeT::Get().xycontroller_idle_circle);
+		d.Command<Fill>(ThemeT::Get().effect_graph_idle_circle);
 	d.Command<Graphics::Ellipse>(Vec4<int>{ _x, _y, _p * 2, _p * 2 });
 	d.Command<PopMatrix>();
 }
@@ -710,4 +710,100 @@ float FilterCurve::Magnitude(float freq)
 	if (amount)
 		return avg / amount;
 	return 0;
+}
+
+
+void SimpleFilterCurve::Update(const Vec4<int>& v)
+{
+	m_Size = { m_Curve.Size().width, m_Curve.Size().height };
+	m_Pos = { m_Curve.Position().width, m_Curve.Position().height };
+	UpdateMags();
+	Component::Update(v);
+}
+
+void SimpleFilterCurve::Render(CommandCollection& d)
+{
+	Component::Render(d);
+
+	d.Command<Graphics::Clip>(Vec4<int>{ Position(), Size() });
+	d.Command<Graphics::Fill>(ThemeT::Get().effect_graph_background);
+	d.Command<Graphics::Quad>(Vec4<int>{ Position(), Size() });
+
+
+	for (int j = 1; j < 5; j++)
+	{
+		d.Command<Graphics::Fill>(ThemeT::Get().effect_graph_graph_lines_highlight);
+		for (int i = 0; i < 10; i++)
+		{
+			double f = std::pow(10, j) * i;
+			int x = 8 + X() + (Width() - 8 * 2) * FreqToPos(f);
+			if (x < X() || x > X() + Width())
+				continue;
+
+			d.Command<Graphics::Quad>(Vec4<int>{ x, Y(), 1, Height() });
+			d.Command<Graphics::Fill>(ThemeT::Get().effect_graph_graph_lines);
+		}
+	}
+	int size = std::ceil(Width() / m_Scale) + m_Scale;
+	if (m_Curve.width.Disabled())
+		d.Command<Graphics::Fill>(ThemeT::Get().effect_graph_disabled_line);
+	else
+		d.Command<Graphics::Fill>(ThemeT::Get().effect_graph_active_line);
+
+	for (int i = 0; i < size - 1; i++)
+	{
+		float y1 = Y() + m_Mags[i] * (Height() * 0.66);
+		float y2 = Y() + m_Mags[i + 1] * (Height() * 0.66);
+		float x1 = X() + i * m_Scale;
+		float x2 = X() + (i + 1) * m_Scale;
+		d.Command<Graphics::Line>(Vec4<float>{ x1, y1, x2, y2 }, 2.0f);
+	}
+
+	if (m_Curve.width.Disabled())
+		d.Command<Graphics::Fill>(ThemeT::Get().effect_graph_disabled_circle);
+	else
+		d.Command<Graphics::Fill>(ThemeT::Get().effect_graph_active_circle);
+
+	int p = 8;
+	int x = p + X() + (Width() - p * 2) * FreqToPos(m_Curve.freq.Value());
+	int y = p + Y() + m_Curve.width.Value() * (Height() - 2 * p);
+	d.Command<Graphics::Ellipse>(Vec4<int>{ x, y, p * 2, p * 2 });
+	d.Command<Graphics::PopClip>();
+}
+
+
+float SimpleFilterCurve::Magnitude(float a)
+{
+	auto& hp = m_Curve.Parameters()[0];
+	auto& lp = m_Curve.Parameters()[1];
+
+	auto fx = 8 + (Width() - 16) * FreqToPos(m_Curve.m_Parameters.freq);
+	auto width = m_Curve.m_Parameters.width + 0.02;
+	auto width2 = std::pow(m_Curve.m_Parameters.width + 0.02, 0.25);
+	auto hpfx = 8 + (Width() - 16) * FreqToPos(hp.f0) - Width() * 0.1;
+	auto lpfx = 8 + (Width() - 16) * FreqToPos(lp.f0) + Width() * 0.1;
+
+	double m = 1 - (std::max((1 - width) * 4, 2.0) - 2);
+	double m2 = 1.5 - (std::max((1 - width) * 4, 3.0) - 3);
+
+	static auto myf2 = [](double a) { return a / std::sqrt(1.0 + a * a); };
+	static auto myf = [](double a) { return std::tanh(a); };
+
+	if (a < fx)
+		return std::pow((-myf((hpfx - a - m2 * 20) * 0.05) * 0.5 + 0.5), 1) * (0.8 + 0.2 * (m));
+
+	else
+		return std::pow((myf((lpfx - a + m2 * 20) * 0.05) * 0.5 + 0.5), 1)* (0.8 + 0.2 * (m));
+
+}
+
+float SimpleFilterCurve::FreqToPos(float freq)
+{
+
+	static const auto mylog = [](double v, double b) { return std::log(v) / b; };
+
+	auto log = freq > 0 ? mylog(freq, m_Logg) : mylog(-freq, m_Logg);
+
+	auto norm1 = (log - mylog(10, m_Logg)) / (mylog(22000, m_Logg) - mylog(10, m_Logg));
+	return freq > 0 ? norm1 : -norm1;
 }

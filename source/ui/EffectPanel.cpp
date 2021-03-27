@@ -165,8 +165,8 @@ void EffectFramePanel::Render(CommandCollection& d)
 	d.Command<Graphics::Text>(&m_Name, Vec2<int>{ X() + 38, Y() + Height() - 20 });
 
 	d.Command<Graphics::Fill>(ThemeT::Get().effect_minimize_button);
-	d.Command<Graphics::Line>(Vec4<int>{ X() + Width() - 42, Y() + Height() - 26, X() + Width() - 30, Y() + Height() - 14 }, 3.0f);
-	d.Command<Graphics::Line>(Vec4<int>{ X() + Width() - 42, Y() + Height() - 14, X() + Width() - 30, Y() + Height() - 26}, 3.0f);
+	d.Command<Graphics::Line>(Vec4<float>{ X() + Width() - 42.f, Y() + Height() - 26.f, X() + Width() - 30.f, Y() + Height() - 14.f }, 3.0f);
+	d.Command<Graphics::Line>(Vec4<float>{ X() + Width() - 42.f, Y() + Height() - 14.f, X() + Width() - 30.f, Y() + Height() - 26.f }, 3.0f);
 	Panel::Render(d);
 };
 

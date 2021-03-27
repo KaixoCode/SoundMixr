@@ -175,6 +175,8 @@ public:
 
 	auto Devices() -> std::vector<MidiDevice>& { return m_Devices; }
 
+	int DeviceCount() { return m_Midi.getPortCount(); }
+
 private:
 	std::unordered_map<int, Callback<Event>>                    m_EventCallbacks;
 	std::unordered_map<int, Callback<Event::NoteOff>>           m_NoteOffCallbacks;
