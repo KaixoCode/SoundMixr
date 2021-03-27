@@ -60,7 +60,7 @@ namespace Effects
 			m_Freq.DisplayName(true);
 
 			m_Width.Range({ 0, 1 });
-			m_Width.ResetValue(0.7);
+			m_Width.ResetValue(0.3);
 			m_Width.ResetValue();
 			m_Width.Size({ 29, 18 });
 			m_Width.Decimals(2);

@@ -66,6 +66,7 @@ public:
     void Render(CommandCollection& d) override
     {
         using namespace Graphics;
+        d.Command<Clip>(Vec4<int>{ 0, 0, Width(), Height() });
         Window::Render(d);
         bool _maxi = IsMaximized(GetWin32Handle());
         int _offset = _maxi ? -8 : 0;
@@ -89,6 +90,7 @@ public:
         d.Command<Fill>(ThemeT::Get().window_title_text);
         d.Command<TextAlign>(Align::LEFT, Align::CENTER);
         d.Command<Text>(&m_Name, Vec2<int>{_x + 9, _y + 16});
+        d.Command<PopClip>();
     }
 
     /**
