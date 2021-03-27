@@ -149,13 +149,13 @@ void ParameterBase::Update(const Vec4<int>& vp)
 		if (i.first < 0)
 		{
 			int _p = std::pow(10, -i.first - 1);
-			if (_v < 0 && std::abs(_v) >= _p && _unit <= 0)
+			if (_v < 0 && std::abs(std::round(_v)) >= _p && _unit <= 0)
 				_unit = i.first;
 		}
 		else
 		{
 			int _p = std::pow(10, i.first);
-			if (_v >= 0 && std::abs(_v) >= _p && _unit >= 0)
+			if (_v >= 0 && std::abs(std::round(_v)) >= _p && _unit >= 0)
 				_unit = i.first;
 		}
 	}

@@ -125,8 +125,24 @@ public:
 
 	void Render(CommandCollection& d) override
 	{
+
 		ButtonType::Normal::Render(d);
 		Graphics::Render(*this, d);
+
+		if (m_DropDown)
+		{
+			if (Disabled())
+				d.Command<::Graphics::Fill>(ThemeT::Get().dropdown_button_disabled_text);
+			else if (Active())
+				d.Command<::Graphics::Fill>(ThemeT::Get().dropdown_button_active_text);
+			else if (Hovering())
+				d.Command<::Graphics::Fill>(ThemeT::Get().dropdown_button_hovering_text);
+			else
+				d.Command<::Graphics::Fill>(ThemeT::Get().dropdown_button_idle_text);
+		
+			d.Command<::Graphics::TextAlign>(Align::CENTER, Align::BOTTOM);
+			d.Command<::Graphics::Text>(&m_DropDown->Name(), Position() + Vec2<int>{ Width() / 2, Height() + 5 });
+		}
 	};
 
 	void ButtonSize(const Vec2<int>& s) { m_Menu.ButtonSize(s); }

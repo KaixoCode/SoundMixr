@@ -376,7 +376,7 @@ private:
 
 	float Magnitude(float freq);
 
-	int m_Scale = 8;
+	int m_Scale = 4;
 
 	const int m_Log = 10;
 	const double m_Logg = std::log(m_Log);

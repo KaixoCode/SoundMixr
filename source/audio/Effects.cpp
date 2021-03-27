@@ -88,6 +88,9 @@ Effect::Effect(Effects::EffectBase* effect)
 				_json << _in;
 				_in.close();
 
+				if (_json.at("type") != Name())
+					return;
+
 				*this = _json;
 				m_SavePreset->Enable();
 				m_Preset = path;
@@ -266,6 +269,7 @@ Effect::operator nlohmann::json()
 	_json["enabled"] = m_Enable->Active();
 	_json["small"] = m_Small;
 	_json["preset"] = m_Preset.string();
+	_json["type"] = Name();
 	return _json;
 }
 
@@ -599,37 +603,48 @@ EffectsGroup::~EffectsGroup()
 
 EffectsGroup::operator nlohmann::json()
 {
-	nlohmann::json _json = nlohmann::json::array();
+	nlohmann::json _json = nlohmann::json::object();
+	_json["enabled"] = m_Enabled;
+	_json["effects"] = nlohmann::json::array();
 	for (auto& i : m_Effects)
 	{
 		nlohmann::json _j = *i;
-		_j["type"] = i->Name();
-		_json.push_back(_j);
+		_json["effects"].push_back(_j);
 	}
 	return _json;
 }
 
 void EffectsGroup::operator=(const nlohmann::json& json)
 {
-	for (auto effect : json)
+	try
 	{
-		try
+		m_Enabled = json.at("enabled").get<bool>();
+	
+		for (auto effect : json.at("effects"))
 		{
-		auto& type = effect.at("type").get<std::string>();
-
-		auto& _it = EffectLoader::Effects().find(type);
-		if (_it != EffectLoader::Effects().end())
-		{
-			Effects::EffectBase* e = (*_it).second->CreateInstance();
-			if (e != nullptr)
+			try
 			{
-				auto& a = Add(e);
-				a = effect;
+			auto& type = effect.at("type").get<std::string>();
+
+			auto& _it = EffectLoader::Effects().find(type);
+			if (_it != EffectLoader::Effects().end())
+			{
+				Effects::EffectBase* e = (*_it).second->CreateInstance();
+				if (e != nullptr)
+				{
+					auto& a = Add(e);
+					a = effect;
+					if (!m_Enabled)
+						a.Bypass(true);
+				}
 			}
+			}
+			catch(...)
+			{ }
 		}
-		}
-		catch(...)
-		{ }
+	}
+	catch (...)
+	{
 	}
 }
 

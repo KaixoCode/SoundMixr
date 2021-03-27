@@ -194,7 +194,7 @@ float ChannelGroup::GetMonoLevel()
 
 ChannelGroup::operator nlohmann::json()
 {
-	nlohmann::json _json = nlohmann::json::object();
+	nlohmann::json _json = m_EffectsGroup;
 	_json["id"] = ID();
 	_json["volume"] = Volume();
 	_json["muted"] = Muted();
@@ -216,7 +216,6 @@ ChannelGroup::operator nlohmann::json()
 
 	_json["channels"] = _channels;
 
-	_json["effects"] = m_EffectsGroup;
 	return _json;
 }
 
@@ -226,7 +225,7 @@ void ChannelGroup::operator=(const nlohmann::json& json)
 	Mute(json.at("muted").get<bool>());
 	Pan(json.at("pan").get<double>());
 	Volume(json.at("volume").get<double>());
-	m_EffectsGroup = json.at("effects");
+	m_EffectsGroup = json;
 }
 
 // -------------------------------------------------------------------------- \\

@@ -787,16 +787,16 @@ float SimpleFilterCurve::Magnitude(float a)
 	auto lpfx = 8 + (Width() - 16) * FreqToPos(lp.f0) + Width() * 0.1;
 
 	double m = 1 - (std::max((1 - width) * 4, 2.0) - 2);
-	double m2 = 1.5 - (std::max((1 - width) * 4, 3.0) - 3);
+	double m2 = 2 - (std::max((1 - width) * 4, 3.0) - 3);
 
 	static auto myf2 = [](double a) { return a / std::sqrt(1.0 + a * a); };
 	static auto myf = [](double a) { return std::tanh(a); };
 
 	if (a < fx)
-		return std::pow((-myf((hpfx - a - m2 * 20) * 0.05) * 0.5 + 0.5), 1) * (0.8 + 0.2 * (m));
+		return (std::pow(10, (-myf((hpfx - a - m2 * 30) * 0.05 + 0.9) * 0.5 + 0.5) - 1) - 0.1) * (0.9 + 0.1 * (m));
 
 	else
-		return std::pow((myf((lpfx - a + m2 * 20) * 0.05) * 0.5 + 0.5), 1)* (0.8 + 0.2 * (m));
+		return (std::pow(10, (myf((lpfx - a + m2 * 30) * 0.05 - 0.9) * 0.5 + 0.5) - 1) - 0.1) * (0.9 + 0.1 * (m));
 
 }
 

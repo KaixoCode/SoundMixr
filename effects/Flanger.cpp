@@ -8,48 +8,48 @@ namespace Effects
 	{
 	public:
 		Flanger()
-			: m_AmountKnob(Parameter("Amount", ParameterType::Slider)),
-			m_RateKnob(Parameter("Rate", ParameterType::Slider)),
-			m_Delay1Knob(Parameter("Delay 1", ParameterType::Knob)),
-			m_Delay2Knob(Parameter("Delay 2", ParameterType::Knob)),
-			m_MixKnob(Parameter("Mix", ParameterType::Knob)),
-			m_Highpass(Parameter("Highpass", ParameterType::Knob)),
+			: m_DelayKnob(Parameter("Time", ParameterType::Slider)),
 			m_FeedbackKnob(Parameter("Feedback", ParameterType::Slider)),
-			m_Delay2Type1(RadioButton("Off", 2, [&] { m_Delay2Type = 0; })),
-			m_Delay2Type2(RadioButton("Fix", 2, [&] { m_Delay2Type = 1; })),
-			m_Delay2Type3(RadioButton("Mod", 2, [&] { m_Delay2Type = 2; })),
+			m_MixKnob(Parameter("Mix", ParameterType::Knob)),
+			m_Highpass(Parameter("Hi Pass", ParameterType::Knob)),
+			m_AmountKnob(Parameter("LFO", ParameterType::Knob)),
+			m_RateKnob(Parameter("Rate", ParameterType::Knob)),
+			m_PhaseKnob(Parameter("Phase", ParameterType::Knob)),
 			m_PolarityP(RadioButton("+", 1, [&] { m_Polarity = 1; })),
 			m_PolarityM(RadioButton("-", 1, [&] { m_Polarity = -1; })),
-			m_Controller(XYController(m_AmountKnob, m_RateKnob)),
+			m_Controller(XYController(m_DelayKnob, m_FeedbackKnob)),
+			m_Wavetable(DropDown("Shape")),
 			EffectBase("Flanger")
 		{
 			m_Parameters.emplace_back();
 
 			Height(145);
-			m_AmountKnob.Range({ 0, 5 });
-			m_AmountKnob.Power(2);
-			m_AmountKnob.ResetValue(3);
+			m_AmountKnob.Range({ 0, 100 });
+			m_AmountKnob.ResetValue(100);
 			m_AmountKnob.ResetValue();
-			m_AmountKnob.Unit(" ms");
-			m_AmountKnob.Size({ 48, 18 });
-			m_AmountKnob.Decimals(2);
-			m_AmountKnob.Multiplier(1);
-			m_AmountKnob.Vertical(false);
-			m_AmountKnob.DisplayName(false);
+			m_AmountKnob.Unit(" %");
+			m_AmountKnob.Size({ 30, 30 });
+			m_AmountKnob.Decimals(1);
+			m_AmountKnob.Multiplier(0.4);
 
-			m_RateKnob.Range({ 0.1, 15 });
+			m_RateKnob.Range({ 0.01, 5 });
 			m_RateKnob.Log(2);
-			m_RateKnob.ResetValue(3);
+			m_RateKnob.ResetValue(0.1);
 			m_RateKnob.ResetValue();
 			m_RateKnob.Unit(" Hz");
-			m_RateKnob.Size({ 47, 18 });
+			m_RateKnob.Size({ 30, 30 });
 			m_RateKnob.Decimals(2);
-			m_RateKnob.Multiplier(1);
-			m_RateKnob.Vertical(false);
-			m_RateKnob.DisplayName(false);
+			m_RateKnob.Multiplier(0.4);
+
+			m_PhaseKnob.Range({ 0, 360 });
+			m_PhaseKnob.ResetValue(180);
+			m_PhaseKnob.ResetValue();
+			m_PhaseKnob.Size({ 30, 30 });
+			m_PhaseKnob.Decimals(0);
+			m_PhaseKnob.Multiplier(0.4);
 
 			m_Highpass.Range({ 10, 22000 });
-			m_Highpass.Log(2000);
+			m_Highpass.Log(10);
 			m_Highpass.ResetValue(100);
 			m_Highpass.ResetValue();
 			m_Highpass.Unit(" Hz");
@@ -58,23 +58,16 @@ namespace Effects
 			m_Highpass.Decimals(2);
 			m_Highpass.Multiplier(0.4);
 
-			m_Delay1Knob.Range({ 0.5, 20 });
-			m_Delay1Knob.Power(1);
-			m_Delay1Knob.ResetValue(3);
-			m_Delay1Knob.ResetValue();
-			m_Delay1Knob.Unit(" ms");
-			m_Delay1Knob.Size({ 30, 30 });
-			m_Delay1Knob.Decimals(2);
-			m_Delay1Knob.Multiplier(0.4);
-
-			m_Delay2Knob.Range({ 0.5, 20 });
-			m_Delay2Knob.Power(1);
-			m_Delay2Knob.ResetValue(3);
-			m_Delay2Knob.ResetValue();
-			m_Delay2Knob.Unit(" ms");
-			m_Delay2Knob.Size({ 30, 30 });
-			m_Delay2Knob.Decimals(2);
-			m_Delay2Knob.Multiplier(0.4);
+			m_DelayKnob.Range({ 0.1, 50 });
+			m_DelayKnob.Log(2);
+			m_DelayKnob.ResetValue(0.6);
+			m_DelayKnob.ResetValue();
+			m_DelayKnob.Unit(" ms");
+			m_DelayKnob.Size({ 55, 18 });
+			m_DelayKnob.Decimals(2);
+			m_DelayKnob.Multiplier(1);
+			m_DelayKnob.Vertical(false);
+			m_DelayKnob.DisplayName(false);
 
 			m_MixKnob.Range({ 0, 100 });
 			m_MixKnob.Power(1);
@@ -90,23 +83,25 @@ namespace Effects
 			m_FeedbackKnob.ResetValue(10);
 			m_FeedbackKnob.ResetValue();
 			m_FeedbackKnob.Unit(" %");
-			m_FeedbackKnob.Size({ 48, 18 });
+			m_FeedbackKnob.Size({ 42, 18 });
 			m_FeedbackKnob.Decimals(1);
 			m_FeedbackKnob.Multiplier(1);
 			m_FeedbackKnob.Vertical(false);
-
-			m_Delay2Type3.Size({ 40, 18 });
-			m_Delay2Type2.Size({ 40, 18 });
-			m_Delay2Type1.Size({ 40, 18 });
-			m_Delay2Type2.Selected(true);
-			m_Delay2Type = 1;
+			m_FeedbackKnob.DisplayName(false);
 
 			m_PolarityP.Selected(true);
 			m_PolarityP.Size({ 21, 18 });
 			m_PolarityM.Size({ 21, 18 });
 			m_Polarity = 1;
 
-			m_Controller.Size({ 102, 102 });
+			m_Wavetable.Size({ 48, 18 });
+			m_Wavetable.AddOption("Sine", 1);
+			m_Wavetable.AddOption("Square", 2);
+			m_Wavetable.AddOption("Triangle", 3);
+			m_Wavetable.AddOption("Saw", 4);
+			m_Wavetable.Select(1);
+
+			m_Controller.Size({ 103, 103 });
 
 			Div().Align(Div::Alignment::Horizontal);
 			Div().Divs(4);
@@ -114,34 +109,26 @@ namespace Effects
 			Div()[0].Align(Div::Alignment::Vertical);
 			Div()[0].DivSize(60);
 			Div()[0].Divs(2);
-			Div()[0][1] = m_Delay1Knob;
-			Div()[0][0] = m_Highpass;
+			Div()[0][1] = m_Highpass;
+			Div()[0][0] = m_MixKnob;
 			Div()[1].Align(Div::Alignment::Vertical);
-			Div()[1].DivSize(60);
-			Div()[1].Divs(2);
-			Div()[1][1] = m_Delay2Knob;
-			Div()[1][0].Align(Div::Alignment::Vertical);
-			Div()[1][0].DivSize(71);
-			Div()[1][0].Divs(4);
-			Div()[1][0][3].Align(Div::Alignment::Top);
-			Div()[1][0][3] = m_Delay2Type1;
-			Div()[1][0][2].Align(Div::Alignment::Top);
-			Div()[1][0][2] = m_Delay2Type2;
-			Div()[1][0][1].Align(Div::Alignment::Top);
-			Div()[1][0][1] = m_Delay2Type3;
-			Div()[1][0][0].DivSize(4);
+			Div()[1].DivSize(118);
+			Div()[1].Padding(4);
+			Div()[1].Divs(3);
+			Div()[1][0].DivSize(4);
+			Div()[1][1].Align(Div::Alignment::Horizontal);
+			Div()[1][1].DivSize(26);
+			Div()[1][1].Divs(2);
+			Div()[1][1][0].DivSize(62);
+			Div()[1][1][0] = m_DelayKnob;
+			Div()[1][1][1] = m_FeedbackKnob;
+			Div()[1][2].Align(Effects::Div::Alignment::Bottom);
+			Div()[1][2] = m_Controller;
 			Div()[2].Align(Div::Alignment::Vertical);
-			Div()[2].DivSize(118);
-			Div()[2].Padding(4);
-			Div()[2].Divs(3);
-			Div()[2][0].DivSize(4);
-			Div()[2][1].Align(Div::Alignment::Horizontal);
-			Div()[2][1].DivSize(27);
-			Div()[2][1].Divs(2);
-			Div()[2][1][0] = m_AmountKnob;
-			Div()[2][1][1] = m_RateKnob;
-			Div()[2][2].Align(Effects::Div::Alignment::Bottom);
-			Div()[2][2] = m_Controller;
+			Div()[2].DivSize(60);
+			Div()[2].Divs(2);
+			Div()[2][1] = m_AmountKnob;
+			Div()[2][0] = m_RateKnob;
 			Div()[3].Align(Div::Alignment::Vertical);
 			Div()[3].Divs(2);
 			Div()[3].Padding(4);
@@ -153,19 +140,27 @@ namespace Effects
 			Div()[3][0].Align(Div::Alignment::Vertical);
 			Div()[3][0].Divs(3);
 			Div()[3][0][0].DivSize(4);
-			Div()[3][0][1] = m_MixKnob;
-			Div()[3][0][2] = m_FeedbackKnob;
+			Div()[3][0][1] = m_PhaseKnob;
+			Div()[3][0][2] = m_Wavetable;
 
-			m_Oscillator.wavetable = [](double p) { return std::sin(p * 3.14159265359 * 2); };
+			m_Oscillator.wavetable = Wavetables::Sine;
 		}
 
+		int prev = 0;
 		void Update() override
 		{
-			if (m_Delay2Type == 0)
-				m_Delay2Knob.Disable();
-			else
-				m_Delay2Knob.Enable();
-
+			if (prev != m_Wavetable.Selected())
+			{
+				prev = m_Wavetable.Selected();
+				if (prev == 1)
+					m_Oscillator.wavetable = Wavetables::Sine;
+				else if (prev == 2)
+					m_Oscillator.wavetable = Wavetables::Square;
+				else if (prev == 3)
+					m_Oscillator.wavetable = Wavetables::Triangle;
+				else if (prev == 4)
+					m_Oscillator.wavetable = Wavetables::Saw;
+			}
 			UpdateParams();
 		}
 
@@ -192,55 +187,30 @@ namespace Effects
 				m_Oscillator.NextSample();
 			}
 
-			m_Delay1t = ((m_Delay1 + m_Oscillator.Sample((c % 2) * 0.5) * m_Amount) / 1000.0) * m_SampleRate;
-
-			if (m_Delay2Type == 2)
-				m_Delay2t = ((m_Delay2) / 1000.0) * m_SampleRate;
-			else
-				m_Delay2t = ((m_Delay2 + m_Oscillator.Sample((c % 2) * 0.5) * m_Amount) / 1000.0) * m_SampleRate;
-
-			m_Delay1t = (std::max(m_Delay1t, 1)) % BUFFER_SIZE;
-			m_Delay2t = (std::max(m_Delay2t, 1)) % BUFFER_SIZE;
-
+			int delayt = ((m_Delay + m_Delay * m_Oscillator.Sample(c * m_Phase) * m_Amount * 0.01 * 0.9) / 1000.0) * m_SampleRate;
+			delayt = (std::max(delayt, 1)) % BUFFER_SIZE;
 
 			auto& _buffer = m_Buffers[c];
 
-			if (m_Delay2Type == 0)
-			{
-				int i1 = (m_Position - m_Delay1t + BUFFER_SIZE) % BUFFER_SIZE;
+			int i1 = (m_Position - delayt + BUFFER_SIZE) % BUFFER_SIZE;
 
-				float del1s = _buffer[i1];
+			float del1s = _buffer[i1];
 
-				float now = del1s;
+			float now = del1s;
 
-				_buffer[m_Position] = sin + m_Polarity * now * m_Feedback;
+			_buffer[m_Position] = sin + m_Polarity * now * m_Feedback;
 
-				return sin * (1.0 - m_Mix) + m_Equalizers[c].Apply(now * m_Mix);
-			}
-			else
-			{
-				int i1 = (m_Position - m_Delay1t + BUFFER_SIZE) % BUFFER_SIZE;
-				int i2 = (m_Position - m_Delay2t + BUFFER_SIZE) % BUFFER_SIZE;
-
-				float del1s = _buffer[i1];
-				float del2s = _buffer[i2];
-
-				float now = (del1s + del2s) / 2.0;
-
-				_buffer[m_Position] = sin + m_Polarity * now * m_Feedback;
-
-				return sin * (1.0 - m_Mix) + m_Equalizers[c].Apply(now * m_Mix);
-			}
+			return sin * (1.0 - m_Mix) + m_Equalizers[c].Apply(now * m_Mix);
 		}
 
 		void UpdateParams()
 		{
-			m_Delay1 = m_Delay1Knob.Value();
-			m_Delay2 = m_Delay2Knob.Value();
+			m_Delay = m_DelayKnob.Value();
 			m_Amount = m_AmountKnob.Value();
 			m_Oscillator.frequency = m_RateKnob.Value();
 			m_Feedback = m_FeedbackKnob.Value() * 0.01;
 			m_Mix = m_MixKnob.Value() * 0.01;
+			m_Phase = m_PhaseKnob.NormalizedValue();
 			m_Parameters[0].type = FilterType::HighPass;
 			m_Parameters[0].Q = 1;
 			m_Parameters[0].f0 = m_Highpass.Value();
@@ -249,27 +219,24 @@ namespace Effects
 		}
 
 	private:
-		static inline constexpr int BUFFER_SIZE = 2048;
+		static inline constexpr int BUFFER_SIZE = 4096;
 		std::vector<std::vector<float>> m_Buffers;
 		int m_Position = 0;
-		double m_Delay1 = 5;
-		int m_Delay1t = 5;
-		double m_Delay2 = 5;
-		int m_Delay2t = 5;
+		double m_Delay = 5;
 		double m_Amount = 3;
 		double m_Feedback = 0.3;
+		double m_Phase = 0.3;
 		double m_Mix = 0.5;
 		Oscillator m_Oscillator;
 
 		std::vector<BiquadParameters> m_Parameters;
 		std::vector<ChannelEqualizer<1, BiquadFilter<>>> m_Equalizers;
 
-		bool m_Dragging = false;
-		int m_Key1, m_Key2;
-		int m_Delay2Type = 0, m_Polarity = 1;
-		Effects::Parameter& m_Delay1Knob, & m_Delay2Knob, & m_MixKnob, & m_Highpass;
-		Effects::Parameter& m_AmountKnob, & m_RateKnob, & m_FeedbackKnob;
-		Effects::RadioButton& m_Delay2Type1, & m_Delay2Type2, & m_Delay2Type3, & m_PolarityP, & m_PolarityM;
+		int m_Polarity = 1;
+		Effects::Parameter& m_DelayKnob, & m_FeedbackKnob, & m_MixKnob, & m_Highpass;
+		Effects::Parameter& m_AmountKnob, & m_RateKnob, & m_PhaseKnob;
+		Effects::DropDown& m_Wavetable;
+		Effects::RadioButton& m_PolarityP, & m_PolarityM;
 		Effects::XYController& m_Controller;
 	};
 }

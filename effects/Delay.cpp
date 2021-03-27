@@ -53,7 +53,7 @@ namespace Effects
 			m_Freq.ResetValue();
 			m_Freq.Unit(" Hz");
 			m_Freq.Unit(" kHz", 3);
-			m_Freq.Size({ 69, 18 });
+			m_Freq.Size({ 51, 18 });
 			m_Freq.Decimals(1);
 			m_Freq.Multiplier(1);
 			m_Freq.Vertical(false);
@@ -62,7 +62,7 @@ namespace Effects
 			m_Width.Range({ 0, 1 });
 			m_Width.ResetValue(0.7);
 			m_Width.ResetValue();
-			m_Width.Size({ 49, 18 });
+			m_Width.Size({ 29, 18 });
 			m_Width.Decimals(2);
 			m_Width.Multiplier(1);
 			m_Width.Vertical(false);
@@ -112,7 +112,7 @@ namespace Effects
 			m_EnableFilter.Size({ 18, 18 });
 			m_EnableFilter.State(true);
 
-			m_Curve.Size({ 175, 80 });
+			m_Curve.Size({ 169, 77 });
 
 			Div().Align(Div::Alignment::Horizontal);
 			Div().Divs(3);
@@ -131,17 +131,21 @@ namespace Effects
 			Div()[1][2].DivSize(71);
 			Div()[1][2][0].Align(Div::Alignment::Horizontal);
 			Div()[1][2][0].Divs(2);
-			Div()[1][2][0].DivSize(78);
-			Div()[1][2][0][0].DivSize(4);
+			Div()[1][2][0].DivSize(66);
+			Div()[1][2][0][0].DivSize(6);
 			Div()[1][2][0][1].Align(Div::Alignment::Vertical);
 			Div()[1][2][0][1].Divs(4);
-			Div()[1][2][0][1].DivSize(72);
+			Div()[1][2][0][1].DivSize(58);
 			Div()[1][2][0][1][0].DivSize(6);
 			Div()[1][2][0][1][1].Align(Div::Alignment::Horizontal);
 			Div()[1][2][0][1][1].DivSize(22);
-			Div()[1][2][0][1][1].Divs(2);
-			Div()[1][2][0][1][1][0] = m_EnableFilter;
-			Div()[1][2][0][1][1][1] = m_Width;
+			Div()[1][2][0][1][1].Divs(3);
+			Div()[1][2][0][1][1][0].DivSize(2);
+			Div()[1][2][0][1][1][1].DivSize(22);
+			Div()[1][2][0][1][1][1].Align(Div::Alignment::Left);
+			Div()[1][2][0][1][1][1] = m_EnableFilter;
+			Div()[1][2][0][1][1][2].Align(Div::Alignment::Left);
+			Div()[1][2][0][1][1][2] = m_Width;
 			Div()[1][2][0][1][2].Align(Div::Alignment::Horizontal);
 			Div()[1][2][0][1][2].DivSize(22);
 			Div()[1][2][0][1][2].Divs(3);
@@ -151,7 +155,7 @@ namespace Effects
 			Div()[1][2][0][1][3].DivSize(17);
 			Div()[1][2][1].Align(Div::Alignment::Vertical);
 			Div()[1][2][1].Divs(4);
-			Div()[1][2][1].DivSize(56);
+			Div()[1][2][1].DivSize(62);
 			Div()[1][2][1][0].DivSize(6);
 			Div()[1][2][1][1].DivSize(22);
 			Div()[1][2][1][1] = m_ModRateKnob;
@@ -160,16 +164,18 @@ namespace Effects
 			Div()[1][2][1][3].DivSize(17);
 			Div()[1][2][2].Align(Div::Alignment::Vertical);
 			Div()[1][2][2].Divs(4);
-			Div()[1][2][2].DivSize(50);
+			Div()[1][2][2].DivSize(49);
 			Div()[1][2][2][0].DivSize(6);
 			Div()[1][2][2][1].DivSize(22);
+			Div()[1][2][2][1].Align(Div::Alignment::Right);
 			Div()[1][2][2][1] = m_PingPong;
 			Div()[1][2][2][2].DivSize(22);
+			Div()[1][2][2][2].Align(Div::Alignment::Right);
 			Div()[1][2][2][2] = m_Normal;
 			Div()[1][2][2][3].DivSize(17);
-			Div()[1][1].DivSize(71);
+			Div()[1][1].DivSize(75);
 			Div()[1][1] = m_Curve;
-			Div()[1][0].DivSize(13);
+			Div()[1][0].DivSize(9);
 			Div()[2].Align(Div::Alignment::Vertical);
 			Div()[2].Divs(2);
 			Div()[2].DivSize(58);
@@ -210,7 +216,7 @@ namespace Effects
 			}
 
 			int s = m_Mode == 0 ? 0 : ((c % 2) * 0.5);
-			int delayt = ((m_Delay + m_Delay * m_Oscillator.Sample(s) * m_ModAmount * 0.01 * 0.9) / 1000.0) * m_SampleRate;
+			int delayt = ((m_Delay + m_Delay * m_Oscillator.Sample() * m_ModAmount * 0.01 * 0.9) / 1000.0) * m_SampleRate;
 			delayt = (std::max(delayt, 1)) % BUFFER_SIZE;
 
 			auto& _buffer = m_Buffers[c];

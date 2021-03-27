@@ -13,7 +13,7 @@ namespace Effects
 			m_Delay1Knob(Parameter("Delay 1", ParameterType::Knob)),
 			m_Delay2Knob(Parameter("Delay 2", ParameterType::Knob)),
 			m_MixKnob(Parameter("Mix", ParameterType::Knob)),
-			m_Highpass(Parameter("Highpass", ParameterType::Knob)),
+			m_Highpass(Parameter("Hi Pass", ParameterType::Knob)),
 			m_FeedbackKnob(Parameter("Feedback", ParameterType::Slider)),
 			m_Delay2Type1(RadioButton("Off", 2, [&] { m_Delay2Type = 0; })),
 			m_Delay2Type2(RadioButton("Fix", 2, [&] { m_Delay2Type = 1; })),
@@ -31,7 +31,7 @@ namespace Effects
 			m_AmountKnob.ResetValue(3);
 			m_AmountKnob.ResetValue();
 			m_AmountKnob.Unit(" ms");
-			m_AmountKnob.Size({ 48, 18 });
+			m_AmountKnob.Size({ 49, 18 });
 			m_AmountKnob.Decimals(2);
 			m_AmountKnob.Multiplier(1);
 			m_AmountKnob.Vertical(false);
@@ -42,7 +42,7 @@ namespace Effects
 			m_RateKnob.ResetValue(3);
 			m_RateKnob.ResetValue();
 			m_RateKnob.Unit(" Hz");
-			m_RateKnob.Size({ 47, 18 });
+			m_RateKnob.Size({ 48, 18 });
 			m_RateKnob.Decimals(2);
 			m_RateKnob.Multiplier(1);
 			m_RateKnob.Vertical(false);
@@ -106,7 +106,7 @@ namespace Effects
 			m_PolarityM.Size({ 21, 18 });
 			m_Polarity = 1;
 
-			m_Controller.Size({ 102, 102 });
+			m_Controller.Size({ 103, 103 });
 
 			Div().Align(Div::Alignment::Horizontal);
 			Div().Divs(4);
@@ -136,8 +136,9 @@ namespace Effects
 			Div()[2].Divs(3);
 			Div()[2][0].DivSize(4);
 			Div()[2][1].Align(Div::Alignment::Horizontal);
-			Div()[2][1].DivSize(27);
+			Div()[2][1].DivSize(26);
 			Div()[2][1].Divs(2);
+			Div()[2][1][0].DivSize(56);
 			Div()[2][1][0] = m_AmountKnob;
 			Div()[2][1][1] = m_RateKnob;
 			Div()[2][2].Align(Effects::Div::Alignment::Bottom);
@@ -156,7 +157,7 @@ namespace Effects
 			Div()[3][0][1] = m_MixKnob;
 			Div()[3][0][2] = m_FeedbackKnob;
 
-			m_Oscillator.wavetable = [](double p) { return std::sin(p * 3.14159265359 * 2); };
+			m_Oscillator.wavetable = Wavetables::Sine;
 		}
 
 		void Update() override
