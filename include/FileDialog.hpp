@@ -40,7 +40,7 @@ public:
 		ofn.lpstrFilter = "JSON Files (*.json)\0*.json\0";
 		ofn.lpstrFile = fileName;
 		ofn.nMaxFile = MAX_PATH;
-		ofn.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR;
+		ofn.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR | OFN_OVERWRITEPROMPT;
 		ofn.lpstrDefExt = "";
 
 		std::string fileNameStr;

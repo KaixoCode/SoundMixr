@@ -1,5 +1,6 @@
 #include "ui/EffectPanel.hpp"
 #include "EffectLoader.hpp"
+#include <FileDialog.hpp>
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Effect Panel -------------------------------- \\
@@ -131,6 +132,65 @@ void EffectFramePanel::SetupMenu()
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Effect Panel").Disable();
 	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Visible(false); }, "Hide Effects Panel");
+	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+		{
+			if (!m_EffectGroup)
+				return;
+
+			RightClickMenu::Get().Close();
+			std::string path = FileDialog::SaveFile();
+			if (path.empty())
+				return;
+			try
+			{
+				std::ofstream _of{ path };
+				nlohmann::json _json = *m_EffectGroup;
+				_of << _json;
+				_of.close();
+			}
+			catch (...)
+			{
+				LOG("Failed to save effect chain");
+			}
+		}, "Save Effect Chain...");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+		{
+			if (!m_EffectGroup)
+				return;
+
+			RightClickMenu::Get().Close();
+			std::string path = FileDialog::OpenFile();
+			if (path.empty())
+				return;
+
+			try
+			{
+				std::ifstream _in{ path };
+				nlohmann::json _json;
+				_json << _in;
+				_in.close();
+				m_EffectGroup->Clear();
+				*m_EffectGroup = _json;
+			}
+			catch (...)
+			{
+				LOG("Failed to load effect chain");
+			}
+		}, "Load Effect Chain...");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+		{
+			if (!m_EffectGroup)
+				return;
+			try
+			{
+				m_EffectGroup->Clear();
+			}
+			catch (...)
+			{
+				LOG("Failed to remove all effects");
+			}
+		}, "Remove All Effects");
 	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 
 	for (auto& i : EffectLoader::Effects())

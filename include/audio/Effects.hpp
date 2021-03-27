@@ -29,6 +29,7 @@ public:
 	bool  HoveringDrag() { return m_HoveringDrag; }
 	void  Bypass(bool b);
 	bool  Delete() { return m_Delete; }
+	void  Delete(bool b) { m_Delete = b; }
 
 	operator nlohmann::json();
 	void operator=(const nlohmann::json& json);
@@ -95,6 +96,8 @@ public:
 	int   GetIndex(int y) const;
 	auto  Name() -> std::string& const{ return m_Name; }
 	void  Name(const std::string& n) { m_Name = n; }
+
+	void Clear() { for (auto& _c : m_Effects) _c->Delete(true); }
 
 	operator nlohmann::json();
 	void operator=(const nlohmann::json& json);

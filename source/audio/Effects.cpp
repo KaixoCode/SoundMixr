@@ -37,10 +37,25 @@ Effect::Effect(Effects::EffectBase* effect)
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
 	m_Minim = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Small, "Minimize");
 	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
+	m_SavePreset = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+		{
+			try
+			{
+				std::ofstream _of{ m_Preset };
+				nlohmann::json _json = operator nlohmann::json();
+				_of << _json;
+				_of.close();
+			}
+			catch (...)
+			{
+				LOG("Failed to save preset");
+			}
+		}, "Save Preset");
+	m_SavePreset->Disable();
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] 
 		{ 
 			RightClickMenu::Get().Close();
-			std::string path = FileDialog::SaveFile(); 
+			std::string path = FileDialog::SaveFile();
 			if (path.empty())
 				return;
 			try
@@ -58,22 +73,7 @@ Effect::Effect(Effects::EffectBase* effect)
 			{
 				LOG("Failed to save preset");
 			}
-		}, "Save As Preset...");
-	m_SavePreset = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
-		{
-			try
-			{
-				std::ofstream _of{ m_Preset };
-				nlohmann::json _json = operator nlohmann::json();
-				_of << _json;
-				_of.close();
-			}
-			catch (...)
-			{
-				LOG("Failed to save preset");
-			}
-		}, "Save Preset");
-	m_SavePreset->Disable();
+		}, "Save Preset As...");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
 		{
 			RightClickMenu::Get().Close();
@@ -98,9 +98,9 @@ Effect::Effect(Effects::EffectBase* effect)
 			}
 			catch (...)
 			{
-				LOG("Failed to open preset");
+				LOG("Failed to load preset");
 			}
-		}, "Open Preset...");
+		}, "Load Preset...");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
 		{
 			try
@@ -114,7 +114,7 @@ Effect::Effect(Effects::EffectBase* effect)
 			}
 			catch (...)
 			{
-				LOG("Failed to open preset");
+				LOG("Failed to set to default");
 			}
 		}, "Default Preset");
 	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
