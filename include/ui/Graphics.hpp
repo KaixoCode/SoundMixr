@@ -1050,7 +1050,7 @@ template<Align Xa = Align::CENTER, Align Ya = Align::CENTER>
 class TextComponent : public Component
 {
 public:
-	TextComponent(const std::string& t, Graphics::Fonts f = Graphics::Fonts::Gidole14, float fsize = 14)
+	TextComponent(const std::string& t, int f = Graphics::Fonts::Gidole14, float fsize = 14)
 		: m_Text(t), m_Font(f), m_FontSize(fsize)
 	{}
 
@@ -1069,7 +1069,7 @@ public:
 private:
 	std::string m_Text;
 	float m_FontSize;
-	Graphics::Fonts m_Font;
+	int m_Font;
 };
 
 class RouteButton
