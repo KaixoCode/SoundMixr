@@ -13,6 +13,9 @@
 #include "GuiCode/ui/window/MenuFrame.hpp"
 #include "GuiCode/ui/window/SmallFrame.hpp"
 #include "GuiCode/ui/window/Window.hpp"
+#include "GuiCode/ui/components/text/TextComponent.hpp"
+#include "GuiCode/ui/components/text/TextBox.hpp"
+#include "GuiCode/ui/components/text/TextArea.hpp"
 
 #define JSON_TRY_USER if(true)
 #define JSON_CATCH_USER(exception) if(false)

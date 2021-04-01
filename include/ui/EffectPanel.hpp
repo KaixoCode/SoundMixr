@@ -18,6 +18,11 @@ public:
 	void EffectsGroup(EffectsGroup* e) { m_EffectsGroup = e; }
 	auto EffectsGroup() -> ::EffectsGroup* { return m_EffectsGroup; }
 
+	virtual void Focused(bool v) override { Panel::Focused(v); if (m_EffectsGroup) m_EffectsGroup->Focused(v); };
+	virtual bool Focused() const override { return m_Focused; }
+	virtual void Hovering(bool v) override { Panel::Hovering(v); if (m_EffectsGroup) m_EffectsGroup->Hovering(v); };
+	virtual bool Hovering() const override { return m_Hovering; }
+
 private:
 	::EffectsGroup* m_EffectsGroup = nullptr;
 };

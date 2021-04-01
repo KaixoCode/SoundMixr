@@ -46,14 +46,14 @@ public:
 	using Callback = std::function<void(Enum)>;
 
 	DropDown()
-		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); } }, 
+		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); m_Active = false; } },
 		m_Key(ButtonType::List::NewKey())
 	{
 		m_Menu.ButtonSize({ 140, 20 });
 	}
 
 	DropDown(Effects::DropDown& d)
-		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); } },
+		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); m_Active = false; } },
 		m_DropDown(&d),
 		m_Key(ButtonType::List::NewKey())
 	{

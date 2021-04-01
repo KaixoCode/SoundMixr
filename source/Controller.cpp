@@ -1,6 +1,6 @@
 #include "Controller.hpp"
 #include "EffectLoader.hpp"
-#include <midi\Midi.hpp>
+#include "midi/Midi.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
@@ -79,7 +79,7 @@ void Controller::Run()
     auto& _menu = mainWindow.Menu();
     auto& _file = _menu.Emplace<TitleMenuButton>("File");
     _file.Size({ 34, 32 });
-    _file.MenuBase().ButtonSize({ 150, 20 });
+    _file.MenuBase().ButtonSize({ 170, 20 });
 
     auto& _sub = _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 
@@ -93,6 +93,12 @@ void Controller::Run()
             if (s) soundboard.Show(); else soundboard.Hide();
         }, "Soundboard", Key::CTRL_SHIFT_S);*/
 
+
+
+    _file.Emplace<MenuToggleButton>([&](bool c)
+        {
+            Graphics::DebugOverlay(c);
+        }, "Debug Overlay", Key::CTRL_D);
 
     _file.Emplace<MenuButton>([&]
         {
@@ -324,7 +330,7 @@ void Controller::Run()
             _midiDevices.Div()[i][0].DivSize(8);
             _midiDevices.Div()[i][1].DivSize(150);
             _midiDevices.Div()[i][1].Align(Div::Alignment::Left);
-            _midiDevices.Div()[i][1] = _midiDevices.Emplace<TextComponent<Align::LEFT>>(_dev[i].name);
+            _midiDevices.Div()[i][1] = _midiDevices.Emplace<TextComponent>(_dev[i].name);
             auto& _b = _midiDevices.Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(
                 [&, i, _saveSettings](bool& s)
                 {
@@ -401,7 +407,9 @@ void Controller::Run()
     _sp.Div()[3].Divs(2);
     _sp.Div()[3].DivSize(120);
     _sp.Div()[3][1].DivSize(36);
-    _sp.Div()[3][1] = _sp.Emplace<TextComponent<>>("Asio Settings", Graphics::Fonts::Gidole, 24.0f);;
+    auto& _asiotext = _sp.Emplace<TextComponent>("Asio Settings", Graphics::Fonts::Gidole, 24.0f);
+    _asiotext.AlignLines(Align::CENTER);
+    _sp.Div()[3][1] = _asiotext;
     _sp.Div()[3][0].Align(Div::Alignment::Vertical);
     _sp.Div()[3][0].Divs(3);
     _sp.Div()[3][0][2].DivSize(4);
@@ -415,7 +423,7 @@ void Controller::Run()
     _sp.Div()[3][0][1][1][1].DivSize(24);
     _sp.Div()[3][0][1][1][1][0].DivSize(150);
     _sp.Div()[3][0][1][1][1][0].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][1][1][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Asio Device");
+    _sp.Div()[3][0][1][1][1][0] = _sp.Emplace<TextComponent>("Asio Device");
     _sp.Div()[3][0][1][1][1][1].Align(Div::Alignment::Left);
     _sp.Div()[3][0][1][1][1][1] = _asioDropDown;
     _sp.Div()[3][0][1][1][2].Align(Div::Alignment::Horizontal);
@@ -423,7 +431,7 @@ void Controller::Run()
     _sp.Div()[3][0][1][1][2].DivSize(24);
     _sp.Div()[3][0][1][1][2][0].DivSize(150);
     _sp.Div()[3][0][1][1][2][0].Align(Div::Alignment::Left);
-    _sp.Div()[3][0][1][1][2][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Control Panel");
+    _sp.Div()[3][0][1][1][2][0] = _sp.Emplace<TextComponent>("Control Panel");
     _sp.Div()[3][0][1][1][2][1].Align(Div::Alignment::Left);
     _sp.Div()[3][0][1][1][2][1] = _asioControlPanel;
     _sp.Div()[3][0][0].DivSize(20);
@@ -432,7 +440,9 @@ void Controller::Run()
     _sp.Div()[2].Divs(2);
     _sp.Div()[2].DivSize(190);
     _sp.Div()[2][1].DivSize(36);
-    _sp.Div()[2][1] = _sp.Emplace<TextComponent<>>("Midi Settings", Graphics::Fonts::Gidole, 24.0f);
+    auto& _moretext = _sp.Emplace<TextComponent>("Midi Settings", Graphics::Fonts::Gidole, 24.0f);
+    _moretext.AlignLines(Align::CENTER);
+    _sp.Div()[2][1] = _moretext;
     _sp.Div()[2][0].DivSize(158);
     _sp.Div()[2][0].Divs(3);
     _sp.Div()[2][0].Align(Div::Alignment::Vertical);
@@ -446,7 +456,9 @@ void Controller::Run()
     _sp.Div()[1].Divs(2);
     _sp.Div()[1].DivSize(202);
     _sp.Div()[1][1].DivSize(36);
-    _sp.Div()[1][1] = _sp.Emplace<TextComponent<>>("General Settings", Graphics::Fonts::Gidole, 24.0f);
+    auto& _evenmore = _sp.Emplace<TextComponent>("General Settings", Graphics::Fonts::Gidole, 24.0f);
+    _evenmore.AlignLines(Align::CENTER);
+    _sp.Div()[1][1] = _evenmore;
     _sp.Div()[1][0].Divs(3);
     _sp.Div()[1][0].Align(Div::Alignment::Vertical);
     _sp.Div()[1][0][2].DivSize(4);
@@ -460,7 +472,7 @@ void Controller::Run()
     _sp.Div()[1][0][1][1][0].DivSize(26);
     _sp.Div()[1][0][1][1][0][0].DivSize(150);
     _sp.Div()[1][0][1][1][0][0].Align(Div::Alignment::Left);
-    _sp.Div()[1][0][1][1][0][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reload Themes");
+    _sp.Div()[1][0][1][1][0][0] = _sp.Emplace<TextComponent>("Reload Themes");
     _sp.Div()[1][0][1][1][0][1].Align(Div::Alignment::Left);
     _sp.Div()[1][0][1][1][0][1] = _reloadThemes;
     _sp.Div()[1][0][1][1][1].Align(Div::Alignment::Horizontal);
@@ -468,7 +480,7 @@ void Controller::Run()
     _sp.Div()[1][0][1][1][1].DivSize(26);
     _sp.Div()[1][0][1][1][1][0].DivSize(150);
     _sp.Div()[1][0][1][1][1][0].Align(Div::Alignment::Left);
-    _sp.Div()[1][0][1][1][1][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Theme");
+    _sp.Div()[1][0][1][1][1][0] = _sp.Emplace<TextComponent>("Theme");
     _sp.Div()[1][0][1][1][1][1].Align(Div::Alignment::Left);
     _sp.Div()[1][0][1][1][1][1] = _themeDropDown;
     _sp.Div()[1][0][1][1][2].Align(Div::Alignment::Horizontal);
@@ -476,7 +488,7 @@ void Controller::Run()
     _sp.Div()[1][0][1][1][2].DivSize(26);
     _sp.Div()[1][0][1][1][2][0].DivSize(150);
     _sp.Div()[1][0][1][1][2][0].Align(Div::Alignment::Left);
-    _sp.Div()[1][0][1][1][2][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reload Effects");
+    _sp.Div()[1][0][1][1][2][0] = _sp.Emplace<TextComponent>("Reload Effects");
     _sp.Div()[1][0][1][1][2][1].Align(Div::Alignment::Left);
     _sp.Div()[1][0][1][1][2][1] = _refreshEffects;
     _sp.Div()[1][0][1][1][3].Align(Div::Alignment::Horizontal);
@@ -484,7 +496,7 @@ void Controller::Run()
     _sp.Div()[1][0][1][1][3].DivSize(26);
     _sp.Div()[1][0][1][1][3][0].DivSize(150);
     _sp.Div()[1][0][1][1][3][0].Align(Div::Alignment::Left);
-    _sp.Div()[1][0][1][1][3][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Reset Channel Grouping");
+    _sp.Div()[1][0][1][1][3][0] = _sp.Emplace<TextComponent>("Reset Channel Grouping");
     _sp.Div()[1][0][1][1][3][1].Align(Div::Alignment::Left);
     _sp.Div()[1][0][1][1][3][1] = _resetGrouping;
     _sp.Div()[1][0][1][1][4].Align(Div::Alignment::Horizontal);
@@ -492,7 +504,7 @@ void Controller::Run()
     _sp.Div()[1][0][1][1][4].DivSize(26);
     _sp.Div()[1][0][1][1][4][0].DivSize(150);
     _sp.Div()[1][0][1][1][4][0].Align(Div::Alignment::Left);
-    _sp.Div()[1][0][1][1][4][0] = _sp.Emplace<TextComponent<Align::LEFT>>("Zoom Display");
+    _sp.Div()[1][0][1][1][4][0] = _sp.Emplace<TextComponent>("Zoom Display");
     _sp.Div()[1][0][1][1][4][1].Align(Div::Alignment::Left);
     _sp.Div()[1][0][1][1][4][1] = _scalingSlider;
     _sp.Div()[1][0][0].DivSize(20);

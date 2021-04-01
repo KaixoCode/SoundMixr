@@ -125,16 +125,6 @@ Effect::Effect(Effects::EffectBase* effect)
 			RightClickMenu::Get().Open(&m_Menu);
 	};
 
-	m_Listener += [this](Event::MouseEntered& e)
-	{
-		m_Hovering = true;
-	};
-
-	m_Listener += [this](Event::MouseExited& e)
-	{
-		m_Hovering = false;
-	};
-
 	m_Listener += [this](Event::MouseMoved& e)
 	{
 		m_HoveringDrag = false;
@@ -426,71 +416,85 @@ void Effect::SetObject(Effects::Div& div, const Vec4<int>& dim)
 
 
 	// Determine type and add to effect.
+	Component* ob = nullptr;
 	auto xy = dynamic_cast<Effects::XYController*>(object);
 	if (xy != nullptr)
 	{
-		Emplace<XYController>(*xy), xy->Position({ position.x, position.y });
-		return;
+		ob = &Emplace<XYController>(*xy), xy->Position({ position.x, position.y });
+		goto theback;
 	}
 
 	auto fc = dynamic_cast<Effects::FilterCurve*>(object);
 	if (fc != nullptr)
 	{
-		Emplace<FilterCurve>(*fc), fc->Position({ position.x, position.y });
-		return;
+		ob = &Emplace<FilterCurve>(*fc), fc->Position({ position.x, position.y });
+		goto theback;
 	}
 
 	auto sc = dynamic_cast<Effects::SimpleFilterCurve*>(object);
 	if (sc != nullptr)
 	{
-		Emplace<SimpleFilterCurve>(*sc), sc->Position({ position.x, position.y });
-		return;
+		ob = &Emplace<SimpleFilterCurve>(*sc), sc->Position({ position.x, position.y });
+		goto theback;
 	}
 
 	auto rb = dynamic_cast<Effects::RadioButton*>(object);
 	if (rb != nullptr)
 	{
-		Emplace<RadioButton>(*rb, m_RadioButtonKeys, m_RadioButtons), rb->Position({ position.x, position.y });
-		return;
+		ob = &Emplace<RadioButton>(*rb, m_RadioButtonKeys, m_RadioButtons), rb->Position({ position.x, position.y });
+		goto theback;
 	}
 
 	auto dy = dynamic_cast<Effects::DynamicsSlider*>(object);
 	if (dy != nullptr)
 	{
-		Emplace<DynamicsSlider>(*dy), dy->Position({ position.x, position.y });
-		return;
+		ob = &Emplace<DynamicsSlider>(*dy), dy->Position({ position.x, position.y });
+		goto theback;
 	}
 
 	auto vs = dynamic_cast<Effects::VolumeSlider*>(object);
 	if (vs != nullptr)
 	{
-		Emplace<VolumeSlider>(*vs), vs->Position({ position.x, position.y - 5 });
-		return;
+		ob = &Emplace<VolumeSlider>(*vs), vs->Position({ position.x, position.y - 5 });
+		goto theback;
 	}
 
 	auto param = dynamic_cast<Effects::Parameter*>(object);
 	if (param != nullptr)
 	{
 		if (param->Type() == Effects::ParameterType::Slider)
-			Emplace<Slider>(*param), param->Position({ position.x, position.y });
+			ob = &Emplace<Slider>(*param), param->Position({ position.x, position.y });
 		else if (param->Type() == Effects::ParameterType::Knob)
-			Emplace<Knob>(*param), param->Position({ position.x, position.y });
-		return;
+			ob = &Emplace<Knob>(*param), param->Position({ position.x, position.y });
+		goto theback;
 	}
 
 	auto dd = dynamic_cast<Effects::DropDown*>(object);
 	if (dd != nullptr)
 	{
-		Emplace<DropDown<int, DropdownButton>>(*dd), dd->Position({ position.x, position.y });
-		return;
+		ob = &Emplace<DropDown<int, DropdownButton>>(*dd), dd->Position({ position.x, position.y });
+		goto theback;
 	}
 
 	auto toggle = dynamic_cast<Effects::ToggleButton*>(object);
 	if (toggle != nullptr)
 	{
-		Emplace<ToggleButton>(*toggle), toggle->Position({ position.x, position.y });
-		return;
+		ob = &Emplace<ToggleButton>(*toggle), toggle->Position({ position.x, position.y });
+		goto theback;
 	}
+
+theback:
+
+	if (ob == nullptr)
+		return;
+
+	if (m_PrevObj)
+	{
+		m_PrevObj->TabComponent(ob);
+		ob->BackTabComponent(m_PrevObj);
+	}
+
+	m_PrevObj = ob;
 }
 
 // -------------------------------------------------------------------------- \\
@@ -505,7 +509,7 @@ EffectsGroup::EffectsGroup()
 	m_Listener += [this](Event& e)
 	{
 		// Make event coords relative to this panel
-		if (e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
+		if (e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased && e.type != Event::Type::KeyTyped)
 			e.x -= X(), e.y -= Y();
 
 		m_LayoutManager.AddEvent(e);
@@ -519,7 +523,7 @@ EffectsGroup::EffectsGroup()
 		Event _copy = e;
 		Event _copy2 = e;
 
-		if (e.type == Event::Type::KeyPressed || e.type == Event::Type::KeyReleased)
+		if (e.type == Event::Type::KeyPressed || e.type == Event::Type::KeyReleased || e.type == Event::Type::KeyTyped)
 		{
 			for (auto& _c : m_Effects)
 				_c->AddEvent(_copy);
@@ -528,16 +532,16 @@ EffectsGroup::EffectsGroup()
 		}
 
 		// If there was an unfocus event, unfocus the focussed component
-		if (m_Focussed && e.type == Event::Type::Unfocused)
+		if (m_FocusedComponent && e.type == Event::Type::Unfocused)
 		{
-			m_Focussed->AddEvent(_copy);
+			m_FocusedComponent->AddEvent(_copy);
 			return;
 		}
 
 		if (e.type == Event::Type::MouseEntered)
 		{
-			if (m_Hovering)
-				m_Hovering->AddEvent(_copy);
+			if (m_HoveringComponent)
+				m_HoveringComponent->AddEvent(_copy);
 
 			return;
 		}
@@ -547,11 +551,11 @@ EffectsGroup::EffectsGroup()
 			this->Determine(e);
 
 		// Send events to hovering and focussed if it's not the same component.
-		if (m_Hovering)
-			m_Hovering->AddEvent(_copy);
+		if (m_HoveringComponent)
+			m_HoveringComponent->AddEvent(_copy);
 
-		if (m_Hovering != m_Focussed && m_Focussed)
-			m_Focussed->AddEvent(_copy2);
+		if (m_HoveringComponent != m_FocusedComponent && m_FocusedComponent)
+			m_FocusedComponent->AddEvent(_copy2);
 
 		// If the mouse is released update the hovering and focussed after sending the events.
 		if (e.type == Event::Type::MouseReleased)
@@ -560,8 +564,8 @@ EffectsGroup::EffectsGroup()
 
 	m_Listener += [this](Event::MousePressed& e)
 	{
-		if (e.button == Event::MouseButton::LEFT && m_Hovering && m_Hovering->HoveringDrag())
-			m_Dragging = m_Hovering,
+		if (e.button == Event::MouseButton::LEFT && m_HoveringComponent && m_HoveringComponent->HoveringDrag())
+			m_Dragging = m_HoveringComponent,
 			m_InsertIndex = constrain(GetIndex(e.y), 0, m_EffectCount - 1);;
 	};
 
@@ -694,16 +698,16 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 			Lock();
 			m_EffectCount--;
 			m_Effects.erase(m_Effects.begin() + i);
-			m_Hovering = nullptr;
-			m_Focussed = nullptr;
+			m_HoveringComponent = nullptr;
+			m_FocusedComponent = nullptr;
 			Unlock();
 		}
 	}
 
 	m_LayoutManager.UpdateLayoutStack({ 0, 0, Width(), Height() }, m_Effects); // Also set the cursor
-	m_Cursor = 
-		(m_Hovering && m_Hovering->HoveringDrag()) || m_Dragging ? GLFW_RESIZE_ALL_CURSOR : 
-		m_Hovering ? m_Hovering->Cursor() :
+	m_Cursor =
+		(m_HoveringComponent && m_HoveringComponent->HoveringDrag()) || m_Dragging ? GLFW_RESIZE_ALL_CURSOR :
+		m_HoveringComponent ? m_HoveringComponent->Cursor() :
 		m_Pressed && m_LayoutManager.Cursor() == -1 ? GLFW_CURSOR_NORMAL : m_LayoutManager.Cursor();
 
 	if (m_AutoResizeX)
@@ -720,10 +724,32 @@ void EffectsGroup::Update(const Vec4<int>& viewport)
 
 	// Update all the components that lie within the viewport and are visible.
 	for (auto& _c : m_Effects)
+	{
 		if (_c->Visible() &&
 			_c->X() + _c->Width() >= m_Viewport.x && _c->Y() + _c->Height() >= m_Viewport.y &&
 			_c->X() <= m_Viewport.x + m_Viewport.width && _c->Y() <= m_Viewport.y + m_Viewport.height)
-		_c->Update(viewport);
+			_c->Update(viewport);
+
+
+		// If a sub component gained focus on its own, also focus this container.
+		if (m_FocusedComponent == nullptr && _c->Focused())
+			m_FocusedComponent = _c.get(), Focused(true);
+	}
+
+	// If the focused component lost focus, check if it swapped to other component, otherwise
+	// remove focus from this container as well.
+	if (m_FocusedComponent && !m_FocusedComponent->Focused())
+	{
+		m_FocusedComponent = nullptr;
+
+		bool _found = false;
+		for (auto& _c : m_Effects)
+			if (_c->Focused())
+				m_FocusedComponent = _c.get(), Focused(true), _found = true;
+
+		if (!_found)
+			Focused(false), m_FocusedComponent = nullptr;
+	}
 }
 
 void EffectsGroup::Render(CommandCollection& d)
@@ -793,36 +819,66 @@ void EffectsGroup::Determine(Event& e)
 				_nextHover = _c.get();
 
 	// If it is different, send MouseEntered and MouseExited events.
-	if (_nextHover != m_Hovering)
+	if (_nextHover != m_HoveringComponent)
 	{
-		if (m_Hovering)
+		if (m_HoveringComponent)
 		{
 			Event _e{ Event::Type::MouseExited, e.x, e.y };
-			m_Hovering->AddEvent(_e);
+			m_HoveringComponent->Hovering(false);
+			m_HoveringComponent->AddEvent(_e);
 		}
 
 		if (_nextHover != nullptr)
 		{
 			Event _e{ Event::Type::MouseEntered, e.x, e.y };
+			_nextHover->Hovering(true);
 			_nextHover->AddEvent(_e);
 		}
-		m_Hovering = _nextHover;
+		m_HoveringComponent = _nextHover;
 	}
 
 	// If MousePressed and Hovering is not focussed, send focus events.
-	if (e.type == Event::Type::MousePressed && m_Hovering != m_Focussed)
+	if (e.type == Event::Type::MousePressed && m_HoveringComponent != m_FocusedComponent)
 	{
-		if (m_Focussed != nullptr)
+		if (m_FocusedComponent != nullptr)
 		{
 			Event _e{ Event::Type::Unfocused };
-			m_Focussed->AddEvent(_e);
+			m_FocusedComponent->Focused(false);
+			m_FocusedComponent->AddEvent(_e);
 		}
 
-		m_Focussed = m_Hovering;
-		if (m_Focussed != nullptr)
+		m_FocusedComponent = m_HoveringComponent;
+		if (m_FocusedComponent != nullptr)
 		{
 			Event _e{ Event::Type::Focused };
-			m_Focussed->AddEvent(_e);
+			m_FocusedComponent->Focused(true);
+			m_FocusedComponent->AddEvent(_e);
 		}
+	}
+}
+
+void EffectsGroup::Focused(bool v)
+{
+	m_Focused = v;
+
+	// Make sure all sub components are also unfocused.
+	if (!v)
+	{
+		for (auto& _c : m_Effects)
+			_c->Focused(false);
+		m_FocusedComponent = nullptr;
+	}
+}
+
+void EffectsGroup::Hovering(bool v)
+{
+	m_Hovering = v;
+
+	// Make sure all sub components are also unfocused.
+	if (!v)
+	{
+		for (auto& _c : m_Effects)
+			_c->Hovering(false);
+		m_HoveringComponent = nullptr;
 	}
 }

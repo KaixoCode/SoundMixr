@@ -1046,32 +1046,6 @@ public:
 	}
 };
 
-template<Align Xa = Align::CENTER, Align Ya = Align::CENTER>
-class TextComponent : public Component
-{
-public:
-	TextComponent(const std::string& t, int f = Graphics::Fonts::Gidole14, float fsize = 14)
-		: m_Text(t), m_Font(f), m_FontSize(fsize)
-	{}
-
-	void Render(CommandCollection& d) override
-	{
-		using namespace Graphics;
-		Color _c2 = ThemeT::Get().text_small;
-
-		d.Command<Font>(m_Font, m_FontSize);
-		d.Command<Fill>(_c2);
-		d.Command<TextAlign>(Xa, Ya);
-		d.Command<Text>(&m_Text, X() + Width() / 2, Y() + Height() / 2);
-		Component::Render(d);
-	}
-
-private:
-	std::string m_Text;
-	float m_FontSize;
-	int m_Font;
-};
-
 class RouteButton
 {
 public:
@@ -1806,7 +1780,7 @@ namespace SoundMixrGraphics
 				d.Command<Fill>(ThemeT::Get().menu_button_disabled_background);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().menu_button_active_background);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().menu_button_hovering_background);
 			else
 				d.Command<Fill>(ThemeT::Get().menu_button_idle_background);
@@ -1817,7 +1791,7 @@ namespace SoundMixrGraphics
 				d.Command<Fill>(ThemeT::Get().menu_button_disabled_text);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().menu_button_active_text);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().menu_button_hovering_text);
 			else
 				d.Command<Fill>(ThemeT::Get().menu_button_idle_text);
@@ -1844,7 +1818,7 @@ namespace SoundMixrGraphics
 				d.Command<Fill>(ThemeT::Get().menu_button_disabled_background);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().menu_button_active_background);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().menu_button_hovering_background);
 			else
 				d.Command<Fill>(ThemeT::Get().menu_button_idle_background);
@@ -1855,7 +1829,7 @@ namespace SoundMixrGraphics
 				d.Command<Fill>(ThemeT::Get().menu_button_disabled_text);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().menu_button_active_text);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().menu_button_hovering_text);
 			else
 				d.Command<Fill>(ThemeT::Get().menu_button_idle_text);
@@ -1870,7 +1844,7 @@ namespace SoundMixrGraphics
 					d.Command<Fill>(ThemeT::Get().menu_button_disabled_text_small);
 				else if (b.Active())
 					d.Command<Fill>(ThemeT::Get().menu_button_active_text_small);
-				else if (b.Hovering())
+				else if (b.Hovering() || b.Focused())
 					d.Command<Fill>(ThemeT::Get().menu_button_hovering_text_small);
 				else
 					d.Command<Fill>(ThemeT::Get().menu_button_idle_text_small);
@@ -1887,7 +1861,7 @@ namespace SoundMixrGraphics
 
 			if (b.Disabled())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_background);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_background);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
@@ -1905,7 +1879,7 @@ namespace SoundMixrGraphics
 
 			if (b.Disabled())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
@@ -1920,7 +1894,7 @@ namespace SoundMixrGraphics
 			{
 				if (b.Disabled())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text_small);
-				else if (b.Hovering())
+				else if (b.Hovering() || b.Focused())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text_small);
 				else if (b.Active())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
@@ -1939,7 +1913,7 @@ namespace SoundMixrGraphics
 
 			if (b.Disabled())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_background);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_background);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
@@ -1957,7 +1931,7 @@ namespace SoundMixrGraphics
 
 			if (b.Disabled())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
@@ -1972,7 +1946,7 @@ namespace SoundMixrGraphics
 			{
 				if (b.Disabled())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text_small);
-				else if (b.Hovering())
+				else if (b.Hovering() || b.Focused())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text_small);
 				else if (b.Active())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
@@ -1993,7 +1967,7 @@ namespace SoundMixrGraphics
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_background);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_background);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_background);
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_background);
@@ -2004,7 +1978,7 @@ namespace SoundMixrGraphics
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text);
 			else if (b.Active())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text);
-			else if (b.Hovering())
+			else if (b.Hovering() || b.Focused())
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text);
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
@@ -2019,7 +1993,7 @@ namespace SoundMixrGraphics
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_disabled_text_small);
 				else if (b.Active())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_active_text_small);
-				else if (b.Hovering())
+				else if (b.Hovering() || b.Focused())
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_hovering_text_small);
 				else
 					d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text_small);
@@ -2297,8 +2271,10 @@ class MenuDivider : public Component
 {
 public:
 	MenuDivider(int size, int stroke, int paddingx, int paddingy)
-		: m_Size(size), m_PaddingX(paddingx), m_PaddingY(paddingy), m_Stroke(stroke), Component({ size, stroke + paddingy * 2 })
-	{}
+		: m_Size(size), m_PaddingX(paddingx), m_PaddingY(paddingy), m_Stroke(stroke), Component()
+	{
+		Size({ size, stroke + paddingy * 2 });
+	}
 
 	void Render(CommandCollection& d) override 
 	{
@@ -2320,8 +2296,10 @@ class VerticalMenuDivider : public Component
 {
 public:
 	VerticalMenuDivider(int size, int stroke, int paddingx, int paddingy)
-		: m_Size(size), m_PaddingX(paddingx), m_PaddingY(paddingy), m_Stroke(stroke), Component({ stroke + paddingx * 2, size })
-	{}
+		: m_Size(size), m_PaddingX(paddingx), m_PaddingY(paddingy), m_Stroke(stroke), Component()
+	{
+		Size({ stroke + paddingx * 2, size });
+	}
 
 	void Render(CommandCollection& d) override
 	{

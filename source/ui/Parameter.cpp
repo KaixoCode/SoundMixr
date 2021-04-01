@@ -114,12 +114,36 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 	{
 		if (e.key == VK_SHIFT)
 			m_Shift = true;
+
+		if (!Focused())
+			return;
+
+		double amt = 0.01;
+		if (e.keymod & Event::Mod::CONTROL)
+			amt *= 4;
+		else if (e.keymod & Event::Mod::SHIFT)
+			amt *= 0.1;
+
+		if (e.key == Key::UP || e.key == Key::RIGHT)
+			m_Parameter.NormalizedValue(m_Parameter.NormalizedValue() + amt);
+
+		else if (e.key == Key::DOWN || e.key == Key::LEFT)
+			m_Parameter.NormalizedValue(m_Parameter.NormalizedValue() - amt);
 	};
 
 	m_Listener += [this](Event::KeyReleased& e)
 	{
 		if (e.key == VK_SHIFT)
 			m_Shift = false;
+	};
+
+	m_Listener += [this](Event::MouseWheel& e)
+	{
+		if (Hovering() && e.wheelmod == Event::Mod::CONTROL)
+			m_Parameter.NormalizedValue(m_Parameter.NormalizedValue() + e.amount * 0.0001);
+
+		if (Hovering() && e.wheelmod == (Event::Mod::CONTROL | Event::Mod::SHIFT))
+			m_Parameter.NormalizedValue(m_Parameter.NormalizedValue() + e.amount * 0.00001);
 	};
 }
 
@@ -198,4 +222,5 @@ void ParameterBase::Render(CommandCollection& d)
 		m_Counter--;
 
 	NeedsRedraw(false);
+	Component::Render(d);
 };

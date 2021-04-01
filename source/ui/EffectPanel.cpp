@@ -12,7 +12,7 @@ EffectPanel::EffectPanel()
 	{
 		if (m_EffectsGroup)
 		{
-			if (e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
+			if (e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased && e.type != Event::Type::KeyTyped)
 				e.x -= X(), e.y -= Y();
 			m_EffectsGroup->AddEvent(e);
 		}

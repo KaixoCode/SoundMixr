@@ -319,7 +319,32 @@ public:
 		{
 			m_Dragging = false;
 		};
+		m_Listener += [this](Event::KeyPressed& e)
+		{
+			if (!Focused())
+				return;
+
+			double amt = 0.01;
+			if (e.keymod & Event::Mod::CONTROL)
+				amt *= 4;
+			else if (e.keymod & Event::Mod::SHIFT)
+				amt *= 0.1;
+
+			if (e.key == Key::LEFT)
+				m_Curve.freq.NormalizedValue(m_Curve.freq.NormalizedValue() - amt);
+
+			if (e.key == Key::RIGHT)
+				m_Curve.freq.NormalizedValue(m_Curve.freq.NormalizedValue() + amt);
+
+			if (e.key == Key::UP)
+				m_Curve.width.NormalizedValue(m_Curve.width.NormalizedValue() + amt);
+
+			if (e.key == Key::DOWN)
+				m_Curve.width.NormalizedValue(m_Curve.width.NormalizedValue() - amt);
+	
+		};
 	}
+	
 
 
 	void Update(const Vec4<int>& v) override;

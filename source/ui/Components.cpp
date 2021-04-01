@@ -112,6 +112,34 @@ XYController::XYController(Effects::XYController& c)
 	{
 		m_Dragging = false;
 	};
+
+	m_Listener += [this](Event::KeyPressed& e)
+	{
+		if (!Focused())
+			return;
+
+		double amt = 0.01;
+		if (e.keymod & Event::Mod::CONTROL)
+			amt *= 4;
+		else if (e.keymod & Event::Mod::SHIFT)
+			amt *= 0.1;
+
+		if (e.key == Key::LEFT)
+			controller.Param1().NormalizedValue(controller.Param1().NormalizedValue() - amt);
+
+		if (e.key == Key::RIGHT)
+			controller.Param1().NormalizedValue(controller.Param1().NormalizedValue() + amt);
+
+		if (e.key == Key::UP)
+			controller.Param2().NormalizedValue(controller.Param2().NormalizedValue() + amt);
+
+		if (e.key == Key::DOWN)
+			controller.Param2().NormalizedValue(controller.Param2().NormalizedValue() - amt);
+
+		m_Dragging = false;
+	};
+
+
 }
 
 void XYController::Render(CommandCollection& d)

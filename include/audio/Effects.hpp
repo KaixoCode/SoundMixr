@@ -25,7 +25,6 @@ public:
 	auto  Name() -> const std::string& { return m_Effect->Name(); }
 	float NextSample(float s, int c) { return !m_Bypass && m_Enabled ? m_Effect->NextSample(s, c) : s; };
 	void  Channels(int c) { m_Effect->Channels(c); m_Channels = c; }
-	bool  Hovering() { return m_Hovering; }
 	bool  HoveringDrag() { return m_HoveringDrag; }
 	void  Bypass(bool b);
 	bool  Delete() { return m_Delete; }
@@ -39,8 +38,7 @@ protected:
 		m_RealHeight = 0, 
 		m_Delete = false;
 	
-	bool m_Hovering = false, 
-		m_PSmall = false, 
+	bool m_PSmall = false, 
 		m_Small = false, 
 		m_HoveringDrag = false,
 		m_PEnabled = true,
@@ -65,6 +63,7 @@ protected:
 	void Init();
 	void InitDiv(Effects::Div& div, const Vec4<int>& dim);
 	void SetObject(Effects::Div& div, const Vec4<int>& dim);
+	Component* m_PrevObj = nullptr;
 };
 
 // -------------------------------------------------------------------------- \\
@@ -99,6 +98,11 @@ public:
 
 	void Clear() { for (auto& _c : m_Effects) _c->Delete(true); }
 
+	virtual void Focused(bool v) override;
+	virtual bool Focused() const override { return m_Focused; }
+	virtual void Hovering(bool v) override;
+	virtual bool Hovering() const override { return m_Hovering; }
+
 	operator nlohmann::json();
 	void operator=(const nlohmann::json& json);
 
@@ -114,8 +118,8 @@ private:
 
 	double m_MouseY = 0;
 	
-	Effect* m_Hovering = nullptr,
-		* m_Focussed = nullptr,
+	Effect* m_HoveringComponent = nullptr,
+		* m_FocusedComponent = nullptr,
 		* m_Dragging = nullptr;
 
 	std::string m_Name;
