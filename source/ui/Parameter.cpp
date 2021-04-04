@@ -24,6 +24,7 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 			NormalizedValue(v);
 		}
 	};
+
 	m_Menu.Clear();
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Listener += [&](Event::MousePressed& e)
@@ -149,7 +150,6 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 
 void ParameterBase::Update(const Vec4<int>& vp) 
 {
-
 	m_Size = { m_Parameter.Size().width, m_Parameter.Size().height };
 	m_Pos = { m_Parameter.Position().x, m_Parameter.Position().y };
 

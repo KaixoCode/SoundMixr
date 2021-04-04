@@ -604,6 +604,7 @@ public:
 	{
 		m_Theme = nullptr;
 		m_Themes.clear();
+		std::filesystem::create_directory("./themes");
 		for (auto& p : std::filesystem::directory_iterator("./themes"))
 		{
 			if (!p.is_regular_file())

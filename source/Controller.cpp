@@ -641,6 +641,8 @@ void Controller::LoadRouting()
                 nlohmann::json _channels = i.at("channels");
                 for (int i : _channels)
                 {
+                    if (i >= _outputIdsLoaded.size())
+                        break;
                     _outputIdsLoaded[i] = true;
                     _c.AddChannel(&m_AsioDevice.Outputs()[i]);
                 }
@@ -660,6 +662,9 @@ void Controller::LoadRouting()
                 nlohmann::json _channels = i.at("channels");
                 for (int i : _channels)
                 {
+                    if (i >= _inputIdsLoaded.size())
+                        break;
+
                     _inputIdsLoaded[i] = true;
                     _c.AddChannel(&m_AsioDevice.Inputs()[i]);
                 }

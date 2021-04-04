@@ -3,7 +3,7 @@
 #include "Graphics.hpp"
 #include "midi/Midi.hpp"
 
-class ParameterBase : public Component
+class ParameterBase : public Container
 {
 public:
 	ParameterBase(Effects::Parameter& param);
