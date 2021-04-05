@@ -9,7 +9,7 @@
 // ------------------------------ Effect ------------------------------------ \\
 // -------------------------------------------------------------------------- \\
 
-class Effect : public Panel
+class Effect : public Panel<>
 {
 public:
 	static inline double sampleRate = 48000;
@@ -70,7 +70,7 @@ protected:
 // --------------------------- Effect Group --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class EffectsGroup : public Panel
+class EffectsGroup : public Panel<Effect>
 {
 public:
 	EffectsGroup();

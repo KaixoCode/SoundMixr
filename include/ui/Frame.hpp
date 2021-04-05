@@ -23,7 +23,7 @@ public:
         m_MaxiButton2(&Emplace<Button<SoundMixrGraphics::Maxi2Button, ButtonType::Normal>>([&]() { this->Maximize(); }, "")),
         m_MinimButton(&Emplace<Button<SoundMixrGraphics::MiniButton, ButtonType::Normal>>([&]() { this->Iconify(); }, "")),
         m_Menu(&Emplace<::Menu<SoundMixrGraphics::Horizontal, MenuType::ToggleHover>>()),
-        m_Panel(&Emplace<::Panel>())
+        m_Panel(&Emplace<::Panel<>>())
     {
         m_CloseButton->Size({ 46, 32 });
         m_MaxiButton1->Size({ 46, 32 });
@@ -103,11 +103,11 @@ public:
      * Returns the base panel.
      * @return panel
      */
-    ::Panel& Panel() { return *m_Panel; }
+    ::Panel<>& Panel() { return *m_Panel; }
 
 private:
     const bool m_Resizable;
-    ::Panel* m_Panel;
+    ::Panel<>* m_Panel;
 
     ButtonBase* m_CloseButton;
     ButtonBase* m_MaxiButton1;

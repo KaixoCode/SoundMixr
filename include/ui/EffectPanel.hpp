@@ -7,7 +7,7 @@
 // --------------------------- Effect Panel --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class EffectPanel : public Panel
+class EffectPanel : public Panel<>
 {
 public:
 	EffectPanel();
@@ -31,7 +31,7 @@ private:
 // ------------------------ Effect Scroll Panel ----------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class EffectScrollPanel : public SMXRScrollPanel
+class EffectScrollPanel : public SMXRScrollPanel<EffectPanel>
 {
 public:
 	EffectScrollPanel();
@@ -49,7 +49,7 @@ private:
 // ------------------------- Effect Frame Panel ----------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class EffectFramePanel : public Panel
+class EffectFramePanel : public Panel<>
 {
 public:
 	EffectFramePanel();

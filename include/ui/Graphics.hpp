@@ -2243,28 +2243,14 @@ namespace SoundMixrGraphics
 	};
 }
 
-class SMXRScrollPanel : public ScrollPanel
+template<typename Type = Panel<>>
+class SMXRScrollPanel : public ScrollPanel<Type>
 {
 public:
 
 	Vec2<bool> ScrollbarNotNecessary()
 	{
-		return { m_ScrollbarX->NotNecessary(), m_ScrollbarY->NotNecessary() };
-	}
-
-	// Overwrite these methods from ScrollPanel for custom ScrollbarGraphics	
-	::Panel& Panel() const { return *m_Panel; }
-	template<typename T, typename ...Args>
-	T& Panel(Args&&... args)
-	{
-		if (m_Panel != nullptr)
-			return dynamic_cast<T&>(*m_Panel);
-
-		auto& _t = Emplace<T>(std::forward<Args>(args)...);
-		m_Panel = &_t;
-		m_ScrollbarX = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Horizontal>>();
-		m_ScrollbarY = &Emplace<Scrollbar<SoundMixrGraphics::ScrollbarNormal, ScrollbarType::Vertical>>();
-		return _t;
+		return { m_ScrollbarX.NotNecessary(), m_ScrollbarY.NotNecessary() };
 	}
 };
 

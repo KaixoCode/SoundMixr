@@ -45,7 +45,7 @@ private:
 // --------------------------- XY Controller -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class XYController : public Container
+class XYController : public Container<>
 {
 public:
 	XYController(Effects::XYController& c);
@@ -123,7 +123,7 @@ private:
 // -------------------------- Dynamics Slider ------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class DynamicsSlider : public Container
+class DynamicsSlider : public Container<>
 {
 public:
 	DynamicsSlider(Effects::DynamicsSlider& o);
