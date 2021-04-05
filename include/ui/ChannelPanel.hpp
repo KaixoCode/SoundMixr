@@ -8,7 +8,7 @@
 // -------------------------- Channel Panel --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class ChannelPanel : public Panel<>
+class ChannelPanel : public Panel
 {
 public:
 	template<typename T>

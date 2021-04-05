@@ -59,11 +59,12 @@ void Controller::Run()
     auto& _panel = mainWindow.Panel();
     _panel.Layout<Layout::Grid>(1, 1, 8, 8);
     _panel.Background(ThemeT::Get().window_border);
+    _panel.SmartPanel(false);
 
-    auto& _p3 = _panel.Emplace<Panel<>>();
+    auto& _p3 = _panel.Emplace<Panel>();
     _p3.Width(260);
     _p3.Layout<Layout::Border>(0, 0, false, false, false, false);
-    auto& _p31 = _p3.Emplace<Panel<>>(Layout::Hint::North);
+    auto& _p31 = _p3.Emplace<Panel>(Layout::Hint::North);
     _p31.Layout<Layout::Grid>(1, 1, 0, 0);
     _p31.MinHeight(40);
     _p31.Height(40);
@@ -111,11 +112,11 @@ void Controller::Run()
 
     auto& _ppp = settings.Panel();
     _ppp.Layout<Layout::Grid>(1, 1, 8, 8);
-    auto& _sp = _ppp.Emplace<Panel<>>();
-    auto& _scrp = _sp.Emplace<SMXRScrollPanel<>>();
+    auto& _sp = _ppp.Emplace<Panel>();
+    auto& _scrp = _sp.Emplace<SMXRScrollPanel>();
     _scrp.Size({ 384, 100 });
     _scrp.EnableScrollbars(false, true);
-    auto& _midiDevices = _scrp.Panel();
+    auto& _midiDevices = _scrp.Panel<Panel>();
     _midiDevices.Layout<Layout::Divs>();
 
     auto& _themeCallback = [&]

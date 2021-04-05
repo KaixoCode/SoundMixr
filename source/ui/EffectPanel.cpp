@@ -66,7 +66,7 @@ void EffectPanel::Render(CommandCollection& d)
 // -------------------------------------------------------------------------- \\
 
 EffectScrollPanel::EffectScrollPanel()
-	: m_EffectPanel(Panel())
+	: m_EffectPanel(Panel<EffectPanel>())
 {
 	EnableScrollbars(true, true);
 
@@ -86,10 +86,10 @@ void EffectScrollPanel::Update(const Vec4<int>& v)
 	if (m_EffectPanel.EffectsGroup() && m_EffectPanel.EffectsGroup()->Dragging())
 	{
 		if (m_MouseY < Y() + 50)
-			m_ScrollbarY.Scroll(5 * 0.02 * (((Y() + 50) - m_MouseY)));
+			m_ScrollbarY->Scroll(5 * 0.02 * (((Y() + 50) - m_MouseY)));
 
 		if (m_MouseY > Y() + Height() - 50)
-			m_ScrollbarY.Scroll(-5 * 0.02 * ((m_MouseY - (Y() + Height() - 50))));
+			m_ScrollbarY->Scroll(-5 * 0.02 * ((m_MouseY - (Y() + Height() - 50))));
 	}
 	SMXRScrollPanel::Update(v);
 }

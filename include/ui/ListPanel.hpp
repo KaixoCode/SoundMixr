@@ -7,7 +7,7 @@
 // ---------------------------- List Panel ---------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-class ListPanel : public SMXRScrollPanel<>
+class ListPanel : public SMXRScrollPanel
 {
 public:
 	ListPanel(AsioDevice& sarasio);
@@ -33,12 +33,12 @@ public:
 
 private:
 	AsioDevice& asio;
-	::SMXRScrollPanel<>& m_ChannelsPanel;
+	::SMXRScrollPanel& m_ChannelsPanel;
 	::EffectFramePanel& m_Effect;
-	::Panel<>& m_Inputs;
+	::Panel& m_Inputs;
 	VerticalMenuDivider* m_Divider = nullptr;
-	::Panel<>& m_Outputs;
+	::Panel& m_Outputs;
 	VerticalMenuDivider* m_Divider2 = nullptr;
-	::Panel<>& m_Specials;
+	::Panel& m_Specials;
 	std::vector<ChannelPanel*> m_Channels;
 };

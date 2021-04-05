@@ -34,6 +34,7 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 			m_PressMouse = Vertical() ? e.y : e.x;
 
 			m_Dragging = true;
+			m_NeedsRedraw = true;
 		}
 
 		if (e.button == Event::MouseButton::RIGHT && !RightClickMenu::Get().Opened())
@@ -83,6 +84,7 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 		if (e.button != Event::MouseButton::LEFT || !m_Dragging)
 			return;
 
+		m_NeedsRedraw = true;
 		if (Vertical())
 			NormalizedValue(NormalizedValue() + (m_Shift ? Multiplier() / 8 : Multiplier()) * ((e.y - m_PressMouse) / (float)(Height()))), m_PressMouse = e.y;
 
@@ -219,5 +221,6 @@ void ParameterBase::Render(CommandCollection& d)
 	if (m_Counter > 0)
 		m_Counter--;
 
+	NeedsRedraw(false);
 	Component::Render(d);
 };

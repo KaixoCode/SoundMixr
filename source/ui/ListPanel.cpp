@@ -6,17 +6,18 @@
 
 ListPanel::ListPanel(AsioDevice& sarasio)
 	: asio(sarasio),
-	m_ChannelsPanel(Panel().Emplace<::SMXRScrollPanel<>>(Layout::Hint::Center)),
+	m_ChannelsPanel(Panel<::Panel>().Emplace<::SMXRScrollPanel>(Layout::Hint::Center)),
 	m_Effect(Panel().Emplace<::EffectFramePanel>(Layout::Hint::East)),
-	m_Inputs(m_ChannelsPanel.Panel().Emplace<::Panel<>>()),
+	m_Inputs(m_ChannelsPanel.Panel<::Panel>().Emplace<::Panel>()),
 	m_Divider(&m_ChannelsPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
-	m_Outputs(m_ChannelsPanel.Panel().Emplace<::Panel<>>()),
+	m_Outputs(m_ChannelsPanel.Panel().Emplace<::Panel>()),
 	m_Divider2(&m_ChannelsPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
-	m_Specials(m_ChannelsPanel.Panel().Emplace<::Panel<>>())
+	m_Specials(m_ChannelsPanel.Panel().Emplace<::Panel>())
 {
 	m_Effect.Width(332);
 	m_Effect.MinWidth(332);
 	m_Effect.Hide();
+	m_ChannelsPanel.Panel<::Panel>();
 	m_ChannelsPanel.Panel().Layout<Layout::SidewaysStack>(0);
 	m_ChannelsPanel.Panel().AutoResize(true, false);
 	m_ChannelsPanel.MinWidth(200);
@@ -78,7 +79,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 					s = true;
 				}
 			}
-			if (!s && !m_ScrollbarX.Hovering() && !m_ScrollbarY.Hovering())
+			if (!s && !m_ScrollbarX->Hovering() && !m_ScrollbarY->Hovering())
 			{
 				for (auto& _p : m_Channels)
 				{
@@ -91,7 +92,7 @@ ListPanel::ListPanel(AsioDevice& sarasio)
 
 	m_Listener += [this](Event::Unfocused& e)
 	{
-		if (!m_ScrollbarX.Hovering() && !m_ScrollbarY.Hovering())
+		if (!m_ScrollbarX->Hovering() && !m_ScrollbarY->Hovering())
 		{
 			for (auto& _p : m_Channels)
 			{
