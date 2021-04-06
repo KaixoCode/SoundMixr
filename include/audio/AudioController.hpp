@@ -10,10 +10,15 @@ class AudioController : public Panel
 public:
     AudioController()
         : m_ChannelScrollPanel(Emplace<SMXRScrollPanel>(Layout::Hint::Center)),
+        m_DeviceName(Emplace<TextComponent>(Layout::Hint::North, "Channels", Graphics::Fonts::Gidole, 24.0f)),
         m_InputsPanel(m_ChannelScrollPanel.Panel<Panel>().Emplace<Panel>()),
         m_Divider(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
         m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>())
     {
+        m_DeviceName.MinHeight(40);
+        m_DeviceName.Height(40);
+        m_DeviceName.AlignLines(Align::CENTER);
+
         Layout<Layout::Border>(0, 0, false, false, false, false);
         m_ChannelScrollPanel.EnableScrollbars(true, false);
         m_ChannelScrollPanel.Panel().Layout<Layout::SidewaysStack>(0, 0);
@@ -22,6 +27,11 @@ public:
         m_InputsPanel.AutoResize(true, false);
         m_OutputsPanel.Layout<Layout::SidewaysStack>(8, 8);
         m_OutputsPanel.AutoResize(true, false);
+    
+        m_ChannelScrollPanel.Listener() += [this](Event::Unfocused& e)
+        {
+             ChannelBase::selected = nullptr;
+        };
     }
 
     auto Channels() -> std::vector<ChannelBase*>& { return m_Channels; };
@@ -52,6 +62,7 @@ public:
         }
 
         // Start stream
+        LoadRouting();
         if (!m_Asio.StartStream())
         {
             m_Asio.CloseStream();
@@ -60,7 +71,7 @@ public:
         }
 
         // Load the routing
-        LoadRouting();
+        m_DeviceName.Content(m_Asio.Device().info.name);
         return true;
     }
 
@@ -76,12 +87,14 @@ public:
 
         // Close the stream in case there was one open.
         m_Asio.CloseStream();
+        SaveRouting();
 
         // Set to no device.
         m_Asio.NoDevice();
 
         // Clear the panel.
         Clear();
+        m_DeviceName.Content("No Device");
         return true;
     }
 
@@ -105,6 +118,7 @@ public:
      */
     void Clear()
     {
+        ChannelBase::selected = nullptr;
         m_Channels.clear();
         m_InputsPanel.Clear();
         m_OutputsPanel.Clear();
@@ -150,7 +164,8 @@ public:
                 for (auto& i : _outputs)
                 {
                     // Emplace a channelgroup to the list
-                    auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(ChannelBase::ChannelType::Output);
+                    auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
+                        ChannelBase::Type::Output | ChannelBase::Type::Endpoint);
                     m_Channels.push_back(&_c);
 
                     // Add all channels that are in this channelgroup
@@ -172,7 +187,8 @@ public:
                 for (auto& i : _inputs)
                 {
                     // Emplace a channelgroup to the list
-                    auto& _c = m_InputsPanel.Emplace<EndpointChannel>(ChannelBase::ChannelType::Input);
+                    auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
+                        ChannelBase::Type::Input | ChannelBase::Type::Endpoint);
                     m_Channels.push_back(&_c);
 
                     // Add all channels that are in this channelgroup
@@ -194,9 +210,8 @@ public:
                         auto& _it = std::find_if(Channels().begin(), Channels().end(),
                             [=](ChannelBase* c)
                             {
-                                bool type = (int)c->Type() & (int)ChannelBase::ChannelType::Input;
-                                return !(type)
-                                    && c->Id() == i;
+                                bool output = (int)c->Type() & (int)ChannelBase::Type::Output;
+                                return output && c->Id() == i;
                             }
                         );
 
@@ -235,8 +250,10 @@ public:
             if (!i.second)
             {
                 // Add a ChannelPanel with the input
-                auto& _c = m_InputsPanel.Emplace<EndpointChannel>(ChannelBase::ChannelType::Input);
+                auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
+                    ChannelBase::Type::Input | ChannelBase::Type::Endpoint);
                 _c.AddEndpoint(&m_Asio.Inputs()[i.first]);
+                m_Channels.push_back(&_c);
             }
         }
 
@@ -245,13 +262,18 @@ public:
             if (!i.second)
             {
                 // Add a ChannelPanel with the output
-                auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(ChannelBase::ChannelType::Output);
+                auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
+                    ChannelBase::Type::Output | ChannelBase::Type::Endpoint);
                 _c.AddEndpoint(&m_Asio.Outputs()[i.first]);
+                m_Channels.push_back(&_c);
             }
 
         }
     }
 
+    /**
+     * Load the default routing of the asio device.
+     */
     void DefaultRouting()
     {
         Clear();
@@ -259,9 +281,11 @@ public:
         for (i = 0; i < m_Asio.Device().info.maxInputChannels - 1; i += 2)
         {
             // Add a ChannelPanel with all the inputs
-            auto& _c = m_InputsPanel.Emplace<EndpointChannel>(ChannelBase::ChannelType::Input);
+            auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
+                ChannelBase::Type::Input | ChannelBase::Type::Endpoint);
             _c.AddEndpoint(&m_Asio.Inputs()[i]);
             _c.AddEndpoint(&m_Asio.Inputs()[i + 1]);
+            m_Channels.push_back(&_c);
 
             // Set all parameters of this Channel
             _c.mono.Active(false);
@@ -274,8 +298,10 @@ public:
         if (i == m_Asio.Device().info.maxInputChannels - 1)
         {
             // Add a ChannelPanel with all the inputs
-            auto& _c = m_InputsPanel.Emplace<EndpointChannel>(ChannelBase::ChannelType::Input);
+            auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
+                ChannelBase::Type::Input | ChannelBase::Type::Endpoint);
             _c.AddEndpoint(&m_Asio.Inputs()[i]);
+            m_Channels.push_back(&_c);
 
             // Set all parameters of this Channel
             _c.mono.Active(false);
@@ -287,9 +313,11 @@ public:
         for (i = 0; i < m_Asio.Device().info.maxOutputChannels - 1; i += 2)
         {
             // Add a ChannelPanel with all the outputs
-            auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(ChannelBase::ChannelType::Output);
+            auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
+                ChannelBase::Type::Output | ChannelBase::Type::Endpoint);
             _c.AddEndpoint(&m_Asio.Outputs()[i]);
             _c.AddEndpoint(&m_Asio.Outputs()[i + 1]);
+            m_Channels.push_back(&_c);
 
             // Set all parameters of this Channel
             _c.mono.Active(false);
@@ -302,8 +330,10 @@ public:
         if (i == m_Asio.Device().info.maxOutputChannels - 1)
         {
             // Add a ChannelPanel with all the outputs
-            auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(ChannelBase::ChannelType::Output);
+            auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
+                ChannelBase::Type::Output | ChannelBase::Type::Endpoint);
             _c.AddEndpoint(&m_Asio.Outputs()[i]);
+            m_Channels.push_back(&_c);
 
             // Set all parameters of this Channel
             _c.mono.Active(false);
@@ -313,12 +343,46 @@ public:
         }
     }
 
-    void SaveRouting() {}
+    /**
+     * Save the current routing for the opened asio device.
+     */
+    void SaveRouting() 
+    {
+        if (m_Asio.DeviceId() == -1)
+            return;
+
+        LOG("Saving Routing");
+
+        nlohmann::json _json;
+        _json["input_channels"] = nlohmann::json::array();
+
+        // Inputs
+        for (auto& _ch : Channels())
+        {
+            if (_ch->Type() == (ChannelBase::Type::Input | ChannelBase::Type::Endpoint))
+                _json["input_channels"].push_back(*_ch);
+        }
+
+        _json["output_channels"] = nlohmann::json::array();
+
+        // Outputs
+        for (auto& _ch : Channels())
+        {
+            if (_ch->Type() == (ChannelBase::Type::Output | ChannelBase::Type::Endpoint))
+                _json["output_channels"].push_back(*_ch);
+        }
+
+        std::ofstream _out;
+        _out.open("./settings/routing" + std::to_string(m_Asio.DeviceId()));
+        _out << std::setw(4) << _json;
+        _out.close();
+    }
 
     void Update(const Vec4<int>& v)
     {
-        m_ChannelScrollPanel.Panel().Background(ThemeT::Get().window_panel);
-        Background(ThemeT::Get().window_panel);
+        m_ChannelScrollPanel.Background(ThemeT::Get().window_panel);
+        Background(ThemeT::Get().window_frame);
+        m_DeviceName.TextColor(ThemeT::Get().text);
 
         Panel::Update(v);
     }
@@ -328,6 +392,7 @@ private:
 
     std::vector<ChannelBase*> m_Channels;
 
+    TextComponent& m_DeviceName;
     SMXRScrollPanel& m_ChannelScrollPanel;
     Panel& m_InputsPanel;
     VerticalMenuDivider& m_Divider;

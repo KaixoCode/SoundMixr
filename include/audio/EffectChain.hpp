@@ -9,4 +9,12 @@ public:
 	{
 		return s;
 	}
+
+
+	virtual operator nlohmann::json() 
+	{
+		return {};
+	};
+
+	virtual void operator=(const nlohmann::json&) {};
 };

@@ -19,11 +19,13 @@ public:
 	 */
 	virtual void Process() override
 	{
+		m_Lock.lock();
+
 		// Input takes sample from endpoint and sends to connections
-		if (Type() == ChannelBase::ChannelType::Input)
+		if (Type() & ChannelBase::Type::Input)
 			for (int i = 0; i < m_Lines; i++)
 			{
-				int _sample = m_Endpoints[i]->sample;
+				float _sample = m_Endpoints[i]->sample;
 			
 				_sample = m_EffectChain.Apply(_sample);
 				_sample *= volume.Value();
@@ -38,7 +40,7 @@ public:
 		else
 			for (int i = 0; i < m_Lines; i++)
 			{
-				int _sample = m_Levels[i];
+				float _sample = m_Levels[i];
 
 				_sample = m_EffectChain.Apply(_sample);
 				_sample *= volume.Value();
@@ -51,6 +53,8 @@ public:
 		// Reset levels
 		for (auto& i : m_Levels)
 			i = 0;
+
+		m_Lock.unlock();
 	}
 
 
@@ -61,6 +65,11 @@ public:
 	 */
 	void AddEndpoint(Endpoint* e) 
 	{ 
+		// If first endpoint, set name of channel.
+		if (m_Endpoints.size() == 0 && e)
+			name.Content(e->name), m_Id = e->id;
+		
+		// Add if not already added.
 		if (!std::contains(m_Endpoints, e))
 			m_Endpoints.push_back(e), Lines(Lines() + 1);
 	};
@@ -79,13 +88,38 @@ public:
 
 	virtual operator nlohmann::json() override
 	{
-		nlohmann::json _json = nlohmann::json::object();
+		nlohmann::json _json = m_EffectChain;
+		_json["id"] = Id();
+		_json["volume"] = volume.Value();
+		_json["muted"] = mute.Active();
+		_json["mono"] = mono.Active();
+		_json["pan"] = pan.Value();
+
+		if (Type() & Type::Input)
+		{
+			std::vector<int> _connections{};
+			for (auto& i : m_Connections)
+				_connections.push_back(i->Id());
+
+			_json["connections"] = _connections;
+		}
+
+		std::vector<int> _channels{};
+		for (auto& i : m_Endpoints)
+			_channels.push_back(i->id);
+
+		_json["channels"] = _channels;
+
 		return _json;
 	};
 
 	virtual void operator=(const nlohmann::json& json) override
 	{
-	
+		mono.Active(json.at("mono").get<bool>());
+		mute.Active(json.at("muted").get<bool>());
+		pan.Value(json.at("pan").get<double>());
+		volume.Value(json.at("volume").get<double>());
+		m_EffectChain = json;
 	};
 
 private:
