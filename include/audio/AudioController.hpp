@@ -5,39 +5,82 @@
 #include "ui/Graphics.hpp"
 #include "audio/ChannelBase.hpp"
 
+/**
+ * The main panel for displaying any audio channel and their effect chain.
+ * Also used by the main Controller to open/close asio streams/devices.
+ */
 class AudioController : public Panel
 {
 public:
+
+    /**
+     * Constructor.
+     * Emplaces all panels and sets all panel layouts.
+     */
     AudioController()
-        : m_ChannelScrollPanel(Emplace<SMXRScrollPanel>(Layout::Hint::Center)),
+        : 
+        
+        // This panel contains the channel scrollpanel in the center and the 
+        // device name at the top.
+        m_ChannelScrollPanel(Emplace<SMXRScrollPanel>(Layout::Hint::Center)),
         m_DeviceName(Emplace<TextComponent>(Layout::Hint::North, "Channels", Graphics::Fonts::Gidole, 24.0f)),
+
+        // The panel in the channel scrollpanel contains the input panel and output panel
+        // also add a divider inbetween. The order off addition is important! First added will
+        // be on the left of the panel.
         m_InputsPanel(m_ChannelScrollPanel.Panel<Panel>().Emplace<Panel>()),
         m_Divider(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
         m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>())
     {
+        // This panel layout is border with no padding/resizing.
+        Layout<Layout::Border>(0, false);
+
+        // Device name, which is displayed at the top, has height of 40, also set minheight 
+        // to make sure resizing the window doesn't resize the panel to something smaller.
+        // also align the text to the center of the TextDisplayer.
         m_DeviceName.MinHeight(40);
         m_DeviceName.Height(40);
         m_DeviceName.AlignLines(Align::CENTER);
 
-        Layout<Layout::Border>(0, 0, false, false, false, false);
+        // The main scrollpanel for all the channels, only scrolls in x-axis, means that y-axis will
+        // autoresize all components to be Height().
         m_ChannelScrollPanel.EnableScrollbars(true, false);
+
+        // The panel in the channel scrollpanel has sideways stack layout with no padding, this will
+        // layout the inputs/outputs panel side by side with the divider inbetween. Also autoresize
+        // this panel in the x-axis to make sure it fits all channels.
         m_ChannelScrollPanel.Panel().Layout<Layout::SidewaysStack>(0, 0);
         m_ChannelScrollPanel.Panel().AutoResize(true, false);
+
+        // The inputs/outputs pannel once again has sideways stack layout, now with 8 pixels padding
+        // which will leave some space inbetween each channel, also resize in x-axis to make sure]
+        // the panels are big enough to fit all channels.
         m_InputsPanel.Layout<Layout::SidewaysStack>(8, 8);
         m_InputsPanel.AutoResize(true, false);
         m_OutputsPanel.Layout<Layout::SidewaysStack>(8, 8);
         m_OutputsPanel.AutoResize(true, false);
-    
+        
+        /**
+         * Add unfocused event listener to channel scrollpanel and set selected channel to nullptr
+         * to unselect channel if clicked outside of channel area.
+         */
         m_ChannelScrollPanel.Listener() += [this](Event::Unfocused& e)
         {
              ChannelBase::selected = nullptr;
         };
     }
 
+    /**
+     * Get all channels.
+     * @return channels
+     */
     auto Channels() -> std::vector<ChannelBase*>& { return m_Channels; };
+
+    /**
+     * Get the Asio.
+     * @return asio
+     */
     auto Asio() -> Asio& { return m_Asio; }
-    auto Devices() -> std::vector<Device>& { return m_Asio.Devices(); }
-    auto Device() -> Device& { return m_Asio.Device(); }
 
     /**
      * Open the asio device with the given id.
@@ -55,7 +98,7 @@ public:
 
         // Set the device and open the stream
         m_Asio.Device(id);
-        if (!m_Asio.OpenStream(SarCallback, this))
+        if (!m_Asio.OpenStream(AsioCallback, this))
         {
             m_Asio.NoDevice();
             return false;
@@ -109,7 +152,7 @@ public:
 
         m_Asio.CloseStream();
         PaAsio_ShowControlPanel(m_Asio.Device().id, nullptr);
-        m_Asio.OpenStream(SarCallback, this);
+        m_Asio.OpenStream(AsioCallback, this);
         m_Asio.StartStream();
     }
 
@@ -380,6 +423,7 @@ public:
 
     void Update(const Vec4<int>& v)
     {
+        // Make sure all colors stay updated with the theme
         m_ChannelScrollPanel.Background(ThemeT::Get().window_panel);
         Background(ThemeT::Get().window_frame);
         m_DeviceName.TextColor(ThemeT::Get().text);
@@ -392,13 +436,18 @@ private:
 
     std::vector<ChannelBase*> m_Channels;
 
+    // Order of the components are important for initializating
+    // them in the constructor.
     TextComponent& m_DeviceName;
     SMXRScrollPanel& m_ChannelScrollPanel;
     Panel& m_InputsPanel;
     VerticalMenuDivider& m_Divider;
     Panel& m_OutputsPanel;
 
-    static int SarCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
+    /**
+     * Callback for the Asio, processes all audio.
+     */
+    static int AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
         const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData)
     {
         AudioController& _this = *static_cast<AudioController*>(userData);
@@ -416,12 +465,15 @@ private:
 
         for (int i = 0; i < nBufferFrames; i++)
         {
+            // First input the samples from the input buffer to the input endpoints
             for (int j = 0; j < _inChannels; j++)
                 _inputs[j].sample = _inBuffer[i * _inChannels + j];
 
+            // Process all channels
             for (auto& j : _channels)
                 j->Process();
 
+            // Output the samples from the output endpoints to the output buffer.
             for (int j = 0; j < _outChannels; j++)
                 _outBuffer[i * _outChannels + j] = _outputs[j].sample;
         }

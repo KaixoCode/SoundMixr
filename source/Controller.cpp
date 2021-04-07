@@ -96,7 +96,7 @@ void Controller::Run()
             if (Audio().CloseDevice())
                 _asioControlPanel.Disable(), SaveSettings();
         });
-    for (auto& _d : Audio().Devices())
+    for (auto& _d : Audio().Asio().Devices())
         m_AsioDropDown->AddOption(_d.info.name, _d.id + 1, [&](int i)
             {
                 // If device opened successfully, enable the controlpanel button and save settings.
@@ -279,7 +279,7 @@ void Controller::SaveSettings()
     try
     {
         nlohmann::json _json = nlohmann::json::object();
-        _json["device"] = (&m_Audio->Device() != nullptr ? m_Audio->Device().id : -1);
+        _json["device"] = m_Audio->Asio().DeviceId();
         _json["zoom"] = m_ScaleSlider->Value();
         _json["theme"] = ThemeT::Get().Name();
         _json["midi-enabled"] = nlohmann::json::array();
@@ -395,4 +395,3 @@ void Controller::LoadEffects()
 {
     EffectLoader::LoadEffects();
 }
-

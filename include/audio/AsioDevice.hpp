@@ -1,6 +1,9 @@
 #pragma once
 #include "pch.hpp"
 
+/**
+ * Device class contains information regarting an Asio device.
+ */
 class Device
 {
 public:
@@ -12,6 +15,10 @@ public:
 	const PaDeviceInfo& info;
 };
 
+/**
+ * The Endpoint class is used as a single endpoint of a device.
+ * <code>sample</code> is used as an input/output.
+ */
 class Endpoint
 {
 public:
@@ -19,7 +26,6 @@ public:
 		: id(id), name(name), input(input)
 	{}
 
-	
 	float sample = 0;
 
 	const std::string name;
@@ -27,6 +33,9 @@ public:
 	bool input;
 };
 
+/**
+ * Asio class opens/closes Asio devices and their streams.
+ */
 class Asio
 {
 public:
@@ -59,14 +68,52 @@ public:
 		CloseStream();
 	}
 
+	/**
+	 * Get all available devices.
+	 * @return vector of devices
+	 */
 	auto Devices() -> std::vector<::Device>& { return m_Devices; }
+
+	/**
+	 * Set the device that should be opened.
+	 * @param d device
+	 */
 	void Device(::Device& d) { m_Device = &d; }
+
+	/**
+	 * Set the device that should be opened using its id.
+	 * @param d id
+	 */
 	void Device(int d) { m_Device = &Devices()[d]; }
+	
+	/**
+	 * Clear the device, sets it to nullptr.
+	 */
 	void NoDevice() { m_Device = nullptr; }
+
+	/**
+	 * Get the current device.
+	 * @return device
+	 */
 	auto Device() -> ::Device& { return *m_Device; }
+
+	/**
+	 * Returns true if the stream is currently running.
+	 * @return true if stream running
+	 */
 	bool StreamRunning() { return Pa_IsStreamActive(stream); }
-	bool Opened() { return m_Opened; }
-	int  DeviceId() { return m_Device ? m_Device->id : -1; }
+
+	/**
+	 * Returns true if a stream is opened, also returns true if it's also running.
+	 * @return true if stream open
+	 */
+	bool StreamOpened() { return m_Opened; }
+
+	/**
+	 * Get the device id of the device that is currently open. -1 if no device.
+	 * @return device id
+	 */
+	int DeviceId() { return m_Device ? m_Device->id : -1; }
 	
 	/**
 	 * Opens a stream with the set device and the given callback and userdata.
@@ -226,7 +273,16 @@ public:
 		return true;
 	}
 
+	/**
+	 * Get all the input Endpoints.
+	 * @return inputs
+	 */
 	std::vector<Endpoint>& Inputs() { return m_Inputs; }
+
+	/**
+	 * Get all the output Endpoints.
+	 * @return outputs
+	 */
 	std::vector<Endpoint>& Outputs() { return m_Outputs; }
 
 private:

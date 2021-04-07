@@ -15,11 +15,17 @@ namespace std
 	};
 }
 
+/**
+ * Basis for any channel, Endpoint/Generator/SoundBoard etc.
+ */
 class ChannelBase : public Panel
 {
 public:
 
-	typedef int ChannelType;
+	/**
+	 * The channel type, can be stacked, channel is either Input or Output and one of
+	 * Generator, Soundboard and Endpoint.
+	 */
 	struct Type
 	{
 		constexpr static inline const int Input = 0x1;
@@ -28,9 +34,16 @@ public:
 		constexpr static inline const int SoundBoard = 0x8;
 		constexpr static inline const int Endpoint = 0x10;
 	};
+	typedef int ChannelType;
 
+	/**
+	 * Constructor.
+	 * @param type channeltype
+	 */
 	ChannelBase(ChannelType type)
 		: m_Type(type),
+
+		// Emplace all the parameters
 		volume(Emplace<VolumeSlider>(volumeParam)),
 		pan(Emplace<PanSlider>()),
 		name(Emplace<TextComponent>("Discord")),
@@ -39,12 +52,10 @@ public:
 		mono(Emplace<Button<MonoButton, ButtonType::Toggle>>("MONO")),
 		route(Emplace<Button<RouteButton, ButtonType::Toggle>>(type & Type::Input ? "in" : ""))
 	{
-		Background({0, 255, 255, 255});
+		// Standard width of channel is 70.
 		Width(70);
 
-		Layout<Layout::Divs>();
-
-		volumeParam.Channels(2);
+		// Parameter settings
 		volumeVal.AlignLines(Align::LEFT);
 		name.AlignLines(Align::CENTER);
 		name.Editable(true);
@@ -52,6 +63,8 @@ public:
 		pan.Name("Pan");
 		pan.DisplayName(false);
 
+		// Layout is divs, for easy complex layout.
+		Layout<Layout::Divs>();
 		Div() = { 7, Div::Alignment::Vertical, 0, false, Div::AUTO };
 		Div()[6] = { name, Div::Alignment::Center, 28, true };
 		Div()[5].DivSize(14);
@@ -72,11 +85,15 @@ public:
 		Div()[1][2].DivSize(2);
 		Div()[0] = { route, Div::Alignment::Center, 25, true };
 
+		/**
+		 * Listener for mousepressed which sets the static selected to 'this' if it's
+		 * not hovering over any buttons.
+		 */
 		m_Listener += [this](Event::MousePressed& e)
 		{
 			// Only select if not hovering over any button/parameter
-			bool hovering = pan.Hovering() || 
-				mute.Hovering() || mono.Hovering() || (route.Hovering() && !route.Disabled());
+			bool hovering = pan.Hovering() || mute.Hovering() ||
+				mono.Hovering() || (route.Hovering() && !route.Disabled());
 
 			if (!hovering && e.button == Event::MouseButton::LEFT)
 				selected = this;
@@ -127,9 +144,28 @@ public:
 	 */
 	virtual void Process() = 0;
 
-	int  Id() { return m_Id; }
-	int  Lines() const { return m_Lines; }
+	/**
+	 * Get the channel id.
+	 * @return id
+	 */
+	int Id() const { return m_Id; }
+
+	/**
+	 * Get the amount of lines in this channel.
+	 * @return lines
+	 */
+	int Lines() const { return m_Lines; }
+
+	/**
+	 * Get the type of this channel.
+	 * @return type
+	 */
 	auto Type() const -> ChannelType { return m_Type; }
+
+	/**
+	 * Get all the connections this channel has.
+	 * @return connections
+	 */
 	auto Connections() -> std::vector<ChannelBase*>& { return m_Connections; }
 	
 	/**
@@ -152,11 +188,21 @@ public:
 	 * Set how many lines are in this channel. Reallocates buffers.
 	 * @param c lines amount
 	 */
-	void Lines(int c) 
+	void Lines(int c)
 	{
+		// Don't update if same.
+		if (c == m_Lines)
+			return;
+
+		// Make sure the volume parameter has the same amount of channels.
+		volumeParam.Channels(c);
+		
+		// Emplace to levels.
 		m_Levels.reserve(c);
 		while (m_Levels.size() < c)
 			m_Levels.push_back(0);
+
+		// Set lines
 		m_Lines = c;
 	}
 
@@ -199,14 +245,9 @@ public:
 			c = ThemeT::Get().channel_hovering_background;
 		else
 			c = ThemeT::Get().channel_idle_background;
-
 		Background(c);
-		Panel::Update(v);
-	}
 
-	void Render(CommandCollection& d) override
-	{
-		Panel::Render(d);
+		Panel::Update(v);
 	}
 
 	virtual operator nlohmann::json() = 0;

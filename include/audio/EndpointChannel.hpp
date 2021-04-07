@@ -7,9 +7,7 @@
 class EndpointChannel : public ChannelBase
 {
 public:
-	EndpointChannel(ChannelType type)
-		: ChannelBase(type)
-	{}
+	using ChannelBase::ChannelBase;
 
 	/**
 	 * Processing for the endpoint channel happens as follows:
@@ -86,6 +84,10 @@ public:
 			m_Endpoints.erase(it), Lines(Lines() - 1);
 	};
 
+	/**
+	 * Saving operator, converts this channel to json.
+	 * @return json
+	 */
 	virtual operator nlohmann::json() override
 	{
 		nlohmann::json _json = m_EffectChain;
@@ -113,6 +115,10 @@ public:
 		return _json;
 	};
 
+	/**
+	 * Loading operator, sets this channel's state using json.
+	 * @param json
+	 */
 	virtual void operator=(const nlohmann::json& json) override
 	{
 		mono.Active(json.at("mono").get<bool>());
