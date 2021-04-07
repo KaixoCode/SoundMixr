@@ -12,6 +12,7 @@ Controller::Controller()
 
 void Controller::Run()
 {
+    LoadEffects();
     mainWindow.Icon(IDI_ICON1);
     settings.Icon(IDI_ICON1);
 
@@ -176,7 +177,6 @@ void Controller::Run()
     // Main loop
     //
 
-    LoadEffects();
     LoadMidi();
     LoadThemes();
     LoadSettings();
@@ -198,7 +198,7 @@ void Controller::Run()
 
         Midi::Get().ReadMessages();
 
-        //m_List->UpdateEffects();
+        m_Audio->UpdateEffects();
 
         _midiReloadCounter--;
         if (_midiReloadCounter <= 0)

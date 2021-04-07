@@ -1,8 +1,6 @@
 #pragma once
 #include "pch.hpp"
 #include "audio/AsioDevice.hpp"
-#include "ui/ChannelPanel.hpp"
-#include "ui/ListPanel.hpp"
 #include "ui/Soundboard.hpp"
 #include "ui/Graphics.hpp"
 #include "ui/Frame.hpp"

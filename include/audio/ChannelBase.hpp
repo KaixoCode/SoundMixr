@@ -134,7 +134,7 @@ public:
 	 * @param c channel
 	 * @param s sample
 	 */
-	virtual void Input(int c, float s)
+	virtual void Input(float s, int c)
 	{
 		m_Levels[c % m_Lines] += s;
 	}
@@ -202,9 +202,18 @@ public:
 		while (m_Levels.size() < c)
 			m_Levels.push_back(0);
 
+		// Also make sure the effect chain has the amount of lines.
+		m_EffectChain.Lines(c);
+
 		// Set lines
 		m_Lines = c;
 	}
+
+	/**
+	 * Get the effect chain of this channel.
+	 * @return effect chain
+	 */
+	auto EffectChain() -> ::EffectChain& { return m_EffectChain; }
 
 	void Update(const Vec4<int>& v)
 	{
@@ -269,7 +278,7 @@ protected:
 	std::vector<ChannelBase*> m_Connections;
 	std::vector<float> m_Levels;
 
-	EffectChain m_EffectChain;
+	::EffectChain m_EffectChain;
 
 	std::mutex m_Lock;
 

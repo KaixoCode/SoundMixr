@@ -3,7 +3,6 @@
 #include "audio/ChannelBase.hpp"
 #include "audio/AsioDevice.hpp"
 
-
 class EndpointChannel : public ChannelBase
 {
 public:
@@ -25,7 +24,7 @@ public:
 			{
 				float _sample = m_Endpoints[i]->sample;
 			
-				_sample = m_EffectChain.Apply(_sample);
+				_sample = m_EffectChain.NextSample(_sample, i);
 				_sample *= volume.Value();
 
 				// TODO: Apply pan, mute, mono, levels for visuals.
@@ -40,7 +39,7 @@ public:
 			{
 				float _sample = m_Levels[i];
 
-				_sample = m_EffectChain.Apply(_sample);
+				_sample = m_EffectChain.NextSample(_sample, i);
 				_sample *= volume.Value();
 
 				// TODO: Apply pan, mute, mono, levels for visuals.

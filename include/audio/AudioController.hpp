@@ -4,6 +4,7 @@
 #include "audio/EndpointChannel.hpp"
 #include "ui/Graphics.hpp"
 #include "audio/ChannelBase.hpp"
+#include "audio/EffectPanel.hpp"
 
 /**
  * The main panel for displaying any audio channel and their effect chain.
@@ -30,7 +31,10 @@ public:
         // be on the left of the panel.
         m_InputsPanel(m_ChannelScrollPanel.Panel<Panel>().Emplace<Panel>()),
         m_Divider(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
-        m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>())
+        m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>()),
+
+        // The effect panel will be displayed in the east.
+        m_EffectPanel(Emplace<EffectPanel>(Layout::Hint::East))
     {
         // This panel layout is border with no padding/resizing.
         Layout<Layout::Border>(0, false);
@@ -59,7 +63,10 @@ public:
         m_InputsPanel.AutoResize(true, false);
         m_OutputsPanel.Layout<Layout::SidewaysStack>(8, 8);
         m_OutputsPanel.AutoResize(true, false);
-        
+
+        // Initially hide the effect panel, will be shown when double click on channel.
+        m_EffectPanel.Hide();
+
         /**
          * Add unfocused event listener to channel scrollpanel and set selected channel to nullptr
          * to unselect channel if clicked outside of channel area.
@@ -67,6 +74,22 @@ public:
         m_ChannelScrollPanel.Listener() += [this](Event::Unfocused& e)
         {
              ChannelBase::selected = nullptr;
+             //m_EffectPanel.EffectChain(nullptr);
+        };
+
+        m_ChannelScrollPanel.Listener() += [this](Event::MousePressed& e)
+        {
+            if (ChannelBase::selected)
+                m_EffectPanel.EffectChain(&ChannelBase::selected->EffectChain());
+        };
+
+        // If double click, show effect panel.
+        m_ChannelScrollPanel.Listener() += [this](Event::MouseClicked& e)
+        {
+            if (m_Click > 0)
+                m_EffectPanel.Show();
+
+            m_Click = 20;
         };
     }
 
@@ -421,8 +444,20 @@ public:
         _out.close();
     }
 
+    /**
+     * Update all the effects in all the channels.
+     */
+    void UpdateEffects()
+    {
+        for (auto& i : m_Channels)
+            i->EffectChain().UpdateEffects();
+    }
+
     void Update(const Vec4<int>& v)
     {
+        if (m_Click)
+            m_Click--;
+
         // Make sure all colors stay updated with the theme
         m_ChannelScrollPanel.Background(ThemeT::Get().window_panel);
         Background(ThemeT::Get().window_frame);
@@ -434,6 +469,8 @@ public:
 private:
     ::Asio m_Asio;
 
+    int m_Click = 0;
+
     std::vector<ChannelBase*> m_Channels;
 
     // Order of the components are important for initializating
@@ -443,6 +480,7 @@ private:
     Panel& m_InputsPanel;
     VerticalMenuDivider& m_Divider;
     Panel& m_OutputsPanel;
+    EffectPanel& m_EffectPanel;
 
     /**
      * Callback for the Asio, processes all audio.
