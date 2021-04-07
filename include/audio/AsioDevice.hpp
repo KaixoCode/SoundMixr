@@ -52,7 +52,7 @@ public:
 			return;
 		}
 
-		LOG("Finding ASIO devices");
+		LOG("Finding Asio devices");
 		const PaDeviceInfo* info;
 		for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
 		{
@@ -64,7 +64,7 @@ public:
 
 	~Asio()
 	{
-		LOG("Destructing ASIO device ");
+		LOG("Destructing Asio device ");
 		CloseStream();
 	}
 
@@ -122,7 +122,7 @@ public:
 	 */
 	bool OpenStream(PaStreamCallback c, void* userdata)
 	{
-		LOG("Attempting to open ASIO stream");
+		LOG("Attempting to open Asio stream");
 		PaError err;
 		PaStreamParameters ip, op;
 
@@ -180,7 +180,7 @@ public:
 
 		// Logging
 		LOG("Opened stream (" << Device().info.name << ")" <<
-			"\n type:       " << "ASIO" <<
+			"\n type:       " << "Asio" <<
 			"\n samplerate: " << m_Samplerate <<
 			"\n buffersize: " << m_BufferSize <<
 			"\n inchannels: " << ip.channelCount <<
@@ -211,13 +211,13 @@ public:
 
 		// Close stream
 		m_Opened = false;
-		LOG("Closing SAR stream...");
+		LOG("Closing Asio stream...");
 		PaError err;
 		err = Pa_CloseStream(stream);
 		if (err != paNoError)
 			LOG(Pa_GetErrorText(err));
 		else
-			LOG("Closed SAR stream");
+			LOG("Closed Asio stream");
 
 		// Clear the vectors of endpoints.
 		m_Inputs.clear();
@@ -238,7 +238,7 @@ public:
 		if (StreamRunning())
 			return false;
 
-		LOG("Starting SAR stream...");
+		LOG("Starting Asio stream...");
 		PaError err = Pa_StartStream(stream);
 		if (err != paNoError)
 		{
@@ -246,7 +246,7 @@ public:
 			return false;
 		}
 		else
-			LOG("Started SAR stream");
+			LOG("Started Asio stream");
 
 		return true;
 	}
@@ -260,7 +260,7 @@ public:
 		if (!StreamRunning())
 			return false;
 
-		LOG("Stopping SAR stream...");
+		LOG("Stopping Asio stream...");
 		PaError err = Pa_StopStream(stream);
 		if (err != paNoError)
 		{
@@ -268,7 +268,7 @@ public:
 			return false;
 		}
 		else
-			LOG("Stopped SAR stream");
+			LOG("Stopped Asio stream");
 
 		return true;
 	}

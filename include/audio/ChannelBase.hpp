@@ -79,7 +79,7 @@ public:
 		Div()[2][1] = { mono, Div::Alignment::Center, Div::AUTO, true };
 		Div()[2][2] = { mute, Div::Alignment::Center, Div::AUTO, true };
 		Div()[2][3].DivSize(2);
-		Div()[1] = { 3, Div::Alignment::Horizontal, 2, false, 24 };
+		Div()[1] = { 3, Div::Alignment::Horizontal, 2, false, 22 };
 		Div()[1][0].DivSize(2);
 		Div()[1][1] = { pan, Div::Alignment::Center, Div::AUTO, true };
 		Div()[1][2].DivSize(2);

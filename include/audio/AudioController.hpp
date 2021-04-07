@@ -20,21 +20,18 @@ public:
      */
     AudioController()
         : 
-        
         // This panel contains the channel scrollpanel in the center and the 
-        // device name at the top.
+        // device name at the top. The effect panel will be displayed in the east.
         m_ChannelScrollPanel(Emplace<SMXRScrollPanel>(Layout::Hint::Center)),
         m_DeviceName(Emplace<TextComponent>(Layout::Hint::North, "Channels", Graphics::Fonts::Gidole, 24.0f)),
+        m_EffectPanel(Emplace<EffectPanel>(Layout::Hint::East)),
 
         // The panel in the channel scrollpanel contains the input panel and output panel
         // also add a divider inbetween. The order off addition is important! First added will
         // be on the left of the panel.
         m_InputsPanel(m_ChannelScrollPanel.Panel<Panel>().Emplace<Panel>()),
         m_Divider(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
-        m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>()),
-
-        // The effect panel will be displayed in the east.
-        m_EffectPanel(Emplace<EffectPanel>(Layout::Hint::East))
+        m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>())
     {
         // This panel layout is border with no padding/resizing.
         Layout<Layout::Border>(0, false);
@@ -74,23 +71,151 @@ public:
         m_ChannelScrollPanel.Listener() += [this](Event::Unfocused& e)
         {
              ChannelBase::selected = nullptr;
-             //m_EffectPanel.EffectChain(nullptr);
         };
 
         m_ChannelScrollPanel.Listener() += [this](Event::MousePressed& e)
         {
-            if (ChannelBase::selected)
+            // if the effects panel is visible and pressed on channel, view the
+            // selected channel's effect chain.
+            if (e.button == Event::MouseButton::LEFT && ChannelBase::selected && m_EffectPanel.Visible())
+            {
                 m_EffectPanel.EffectChain(&ChannelBase::selected->EffectChain());
+                m_EffectPanel.Name(ChannelBase::selected->name.Content());
+            }
+
+            // If rightclick, check if hovering over a channel and show a rightclick
+            // menu generated from that channel.
+            if (e.button == Event::MouseButton::RIGHT)
+            {
+                if (m_InputsPanel.HoveringComponent())
+                    GenerateMenu(m_InputsPanel), RightClickMenu::Get().Open(&m_Menu);
+                else if (m_OutputsPanel.HoveringComponent())
+                    GenerateMenu(m_OutputsPanel), RightClickMenu::Get().Open(&m_Menu);
+            }
         };
 
         // If double click, show effect panel.
         m_ChannelScrollPanel.Listener() += [this](Event::MouseClicked& e)
         {
-            if (m_Click > 0)
-                m_EffectPanel.Show();
+            // Only if mousebutton is left, so return for other
+            if (e.button != Event::MouseButton::LEFT)
+                return;
 
+            // If click twice in same position, open effectpanel.
+            if (m_Click > 0 && m_PrevPos == Vec2<int>{ e.x, e.y } && ChannelBase::selected && ChannelBase::selected->Hovering())
+            { 
+                // Also make sure we're not hovering over the volume or pan parameter, because
+                // double clicking on those will reset their value and should not open the effect panel.
+                if (!ChannelBase::selected->volume.Hovering() && !ChannelBase::selected->pan.Hovering() &&
+                    !ChannelBase::selected->mute.Hovering() && !ChannelBase::selected->mono.Hovering() &&
+                    !ChannelBase::selected->name.Hovering())
+                {
+                    m_EffectPanel.EffectChain(&ChannelBase::selected->EffectChain());
+                    m_EffectPanel.Name(ChannelBase::selected->name.Content());
+                }
+            }
+            m_PrevPos = { e.x, e.y };
             m_Click = 20;
         };
+    }
+
+    /**
+     * Generate a rightclick menu given the panel of channels.
+     * @param panel containing channels
+     */
+    void GenerateMenu(Panel& panel)
+    {
+        // First get pointers to both the hovering and the focused channel.
+        auto hover = (EndpointChannel*)panel.HoveringComponent();
+        auto focus = ChannelBase::selected;
+
+        m_Menu.Clear();
+        m_Menu.ButtonSize({ 180, 20 });
+        m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(hover->name.Content()).Disable();
+        m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+        m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+            [&, hover] {
+                m_EffectPanel.EffectChain(&hover->EffectChain());
+                m_EffectPanel.Name(hover->name.Content());
+            }, "Show Effects");
+
+        // A channel can split if it has more than 1 line
+        bool canSplit = hover->Lines() > 1;
+
+        // Channels can combine if they are the same type, and not the same channel.
+        bool canCombine = focus && focus->Type() == hover->Type() && focus != hover;
+
+        // Add divider if any of the 2 are possible
+        if (canSplit || canCombine)
+            m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+
+        // If can combine, add combine button
+        if (canCombine)
+        {
+            m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+                [&, hover, focus] {
+                    
+                    // Lock for good measure
+                    m_Lock.lock();
+
+                    // Cast focus to endpoint channel
+                    auto focuse = (EndpointChannel*)focus;
+
+                    // Move over all endpoints from hover to focus
+                    for (auto& endpoint : hover->Endpoints())
+                        focuse->AddEndpoint(endpoint);
+
+                    // Make sure the effect panel is not displaying the effect chain
+                    // because we are going to remove 'hover'
+                    if (m_EffectPanel.EffectChain() == &hover->EffectChain())
+                        m_EffectPanel.EffectChain(nullptr);
+
+                    // Remove the hovering panel from both the panel and the channels.
+                    auto it = std::remove_if(panel.Components().begin(), panel.Components().end(), 
+                        [hover](std::unique_ptr<Component>& u) { return u.get() == hover; });
+                    panel.Erase(it);
+                    auto it2 = std::remove(m_Channels.begin(), m_Channels.end(), hover);
+                    m_Channels.erase(it2);
+                    m_Lock.unlock();
+                }, "Combine");
+        }
+
+        // if can split, add split button
+        if (canSplit)
+            m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+                [&, hover] {
+
+                    // Lock for good measure
+                    m_Lock.lock();
+
+                    // Add new channel
+                    auto& a = panel.Emplace<EndpointChannel>(hover->Type());
+                    m_Channels.push_back(&a);
+
+                    // move endpoints to new channel
+                    int size = hover->Lines() / 2;
+                    for (int i = 0; i < size; i++)
+                    {
+                        auto endpoint = hover->Endpoints()[0];
+                        hover->RemoveEndpoint(endpoint);
+                        a.AddEndpoint(endpoint);
+                    }
+                    m_Lock.unlock();
+
+                    // Sort the channels
+                    SortChannels();
+                }, "Split");
+
+           m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+           m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(
+               [hover](bool s) {
+                   hover->mute.Active(s);
+               }, "Mute").Active(hover->mute.Active());
+
+           m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(
+               [hover](bool s) {
+                   hover->mono.Active(s);
+               }, "Mono").Active(hover->mono.Active());;
     }
 
     /**
@@ -116,6 +241,10 @@ public:
         if (m_Asio.DeviceId() == id)
             return false;
 
+        // Make sure the effect chain being displayed is set to nullptr
+        // since it will otherwise be undefined.
+        m_EffectPanel.EffectChain(nullptr);
+
         // Close the stream in case there was one open.
         m_Asio.CloseStream();
 
@@ -136,7 +265,7 @@ public:
             return false;
         }
 
-        // Load the routing
+        // Set device name
         m_DeviceName.Content(m_Asio.Device().info.name);
         return true;
     }
@@ -150,6 +279,10 @@ public:
         // Don't close if already closed.
         if (m_Asio.DeviceId() == -1)
             return false;
+
+        // Make sure the effect chain being displayed is set to nullptr
+        // since it will otherwise be undefined.
+        m_EffectPanel.EffectChain(nullptr);
 
         // Close the stream in case there was one open.
         m_Asio.CloseStream();
@@ -173,10 +306,26 @@ public:
         if (m_Asio.DeviceId() == -1)
             return;
 
+        // Save the routing before closing.
+        SaveRouting();
+
+        // Make sure everything is cleared before closing, since it will
+        // remove all input and output endpoints and leave them undefined
+        // inside all channels.
+        Clear();
+
+        // Close the stream so we can open the control panel.
         m_Asio.CloseStream();
+
+        // Show control panel.
         PaAsio_ShowControlPanel(m_Asio.Device().id, nullptr);
+
+        // Open and start the stream
         m_Asio.OpenStream(AsioCallback, this);
         m_Asio.StartStream();
+
+        // Load the routing again.
+        LoadRouting();
     }
 
     /**
@@ -184,7 +333,10 @@ public:
      */
     void Clear()
     {
+        // Select nullptr
         ChannelBase::selected = nullptr;
+
+        // Clear all channels
         m_Channels.clear();
         m_InputsPanel.Clear();
         m_OutputsPanel.Clear();
@@ -445,6 +597,32 @@ public:
     }
 
     /**
+     * Sorts all the channels on their id, so ordering is always consistent
+     */
+    void SortChannels()
+    {
+        // Define sort algorithm
+        static auto sort = [] (Panel& p)
+        { 
+            std::sort(p.Components().begin(), p.Components().end(),
+            [](const std::unique_ptr<Component>& a, const std::unique_ptr<Component>& b) -> bool
+            {
+                auto channel1 = (ChannelBase*)a.get();
+                auto channel2 = (ChannelBase*)b.get();
+
+                if (channel1 != nullptr && channel2 != nullptr)
+                    return channel1->Id() < channel2->Id();
+
+                return -1;
+            });
+        };
+
+        // Sort all panels
+        sort(m_InputsPanel);
+        sort(m_OutputsPanel);
+    }
+
+    /**
      * Update all the effects in all the channels.
      */
     void UpdateEffects()
@@ -471,6 +649,14 @@ private:
 
     int m_Click = 0;
 
+    mutable std::mutex m_Lock;
+    Vec2<int> m_PrevPos{ 0, 0 };
+    Vec2<int> m_PDim{ 0, 0 };
+
+    // Rightclick menu
+    Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
+
+    // Vector of pointers to all channels
     std::vector<ChannelBase*> m_Channels;
 
     // Order of the components are important for initializating
@@ -508,8 +694,10 @@ private:
                 _inputs[j].sample = _inBuffer[i * _inChannels + j];
 
             // Process all channels
+            _this.m_Lock.lock();
             for (auto& j : _channels)
                 j->Process();
+            _this.m_Lock.unlock();
 
             // Output the samples from the output endpoints to the output buffer.
             for (int j = 0; j < _outChannels; j++)

@@ -39,14 +39,14 @@ public:
 		m_EffectPanel->AutoResize(true, true);
 
 		// Padding panel.
-		Panel().Emplace<::Panel>().Height(64);
+		Panel().Emplace<::Panel>().Height(128);
 
 		// Enable scrollbars for both axis to not have autoresizing of components.
 		// because effects are always 300 pixels wide.
 		EnableScrollbars(true, true);
 
 		// Setup the rightclick menu.
-		SetupMenu();
+		GenerateMenu();
 
 		m_Listener += [this](Event::MousePressed& e) 
 		{
@@ -63,8 +63,27 @@ public:
 
 					return;
 				}
-				// TODO: Rightclick menu for effect. Right here so it's easier to delete.
-				m_EffectPanel->HoveringComponent();
+				
+				// Get the hovering effect
+				Effect* effect = (Effect*) m_EffectPanel->HoveringComponent();
+
+				// Generate the rightclick menu from the effect.
+				effect->GetMenu(m_EffectMenu);
+
+				// Add a remove button.
+				m_EffectMenu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+					[&, effect] {
+
+						// Lock, to prevent concurrency issues
+						m_Lock.lock();
+
+						// Erase the effect from the effect panel
+						auto it = std::remove_if(m_EffectPanel->Components().begin(), m_EffectPanel->Components().end(), 
+							[effect](std::unique_ptr<Component>& c) { return c.get() == effect; });
+						m_EffectPanel->Erase(it);
+						m_Lock.unlock();
+					}, "Remove");
+				RightClickMenu::Get().Open(&m_EffectMenu);
 			}
 		};
 		
@@ -113,10 +132,58 @@ public:
 	/**
 	 * Setup the rightclick menu.
 	 */
-	void SetupMenu()
+	void GenerateMenu()
 	{
 		m_Menu.Clear();
 		m_Menu.ButtonSize({ 160, 20 });
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Effect Panel").Disable();
+		m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Visible(false); }, "Hide Effects Panel");
+		m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+			{
+				RightClickMenu::Get().Close();
+				std::string path = FileDialog::SaveFile();
+				if (path.empty())
+					return;
+				try
+				{
+					std::ofstream _of{ path };
+					nlohmann::json _json = *this;
+					_of << _json;
+					_of.close();
+				}
+				catch (...)
+				{
+					LOG("Failed to save effect chain");
+				}
+			}, "Save Effect Chain...");
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+			{
+				RightClickMenu::Get().Close();
+				std::string path = FileDialog::OpenFile();
+				if (path.empty())
+					return;
+
+				try
+				{
+					std::ifstream _in{ path };
+					nlohmann::json _json;
+					_json << _in;
+					_in.close();
+					Clear();
+					this->operator=(_json);
+				}
+				catch (...)
+				{
+					LOG("Failed to load effect chain");
+				}
+			}, "Load Effect Chain...");
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+			{
+				Clear();
+			}, "Remove All Effects");
+		m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
 		for (auto& i : EffectLoader::Effects())
 		{
 			m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
@@ -129,13 +196,34 @@ public:
 	}
 
 	/**
+	 * Override because we need to lock before clearing.
+	 */
+	void Clear() override
+	{
+		// Make sure shit is locked
+		m_Lock.lock();
+		SMXRScrollPanel::Clear();
+		m_Lock.unlock();
+	}
+
+	/**
 	 * Add an effect to this chain.
 	 * @param effect effectbase
 	 */
-	void AddEffect(Effects::EffectBase* effect)
+	auto AddEffect(Effects::EffectBase* effect) -> Effect& 
 	{
+		// Lock to not cause concurrency issues.
+		m_Lock.lock();
+
+		// Set amount of channels.
 		effect->Channels(m_Lines);
-		&m_EffectPanel->Emplace<Effect>(effect);
+
+		// Add effect
+		auto& e = m_EffectPanel->Emplace<Effect>(effect);
+		
+		m_Lock.unlock();
+
+		return e;
 	}
 
 	/**
@@ -151,13 +239,31 @@ public:
 	}
 
 	/**
+	 * Set if this effect chain should be bypassed.
+	 * @param v bypass
+	 */
+	void Bypass(bool v) 
+	{
+		for (auto& i : m_EffectPanel->Components())
+			((Effect*)i.get())->Bypass(v);
+
+		m_Bypassed = v; 
+	}
+
+	/**
+	 * Returns true if this effect chain is bypassed.
+	 * @return true if bypassed
+	 */
+	bool Bypass() const { return m_Bypassed; }
+
+	/**
 	 * Generate the next sample given the input sample and the line number.
 	 * @param s input sample
 	 * @param c line number
 	 */
-	float NextSample(float s, int c)
+	double NextSample(double s, int c)
 	{
-		float out = s;
+		double out = s;
 
 		// Lock, to make sure deleting of effects doesn't give concurrency issues.
 		m_Lock.lock();
@@ -241,26 +347,73 @@ public:
 		d.Command<PopMatrix>();
 	}
 
-	virtual operator nlohmann::json() 
+	virtual operator nlohmann::json()
 	{
-		// TODO
-		return {};
-	};
+		nlohmann::json _json = nlohmann::json::object();
+		_json["bypassed"] = m_Bypassed;
+		_json["effects"] = nlohmann::json::array();
+		for (auto& i : m_EffectPanel->Components())
+		{
+			nlohmann::json _j = *(Effect*)i.get();
+			_json["effects"].push_back(_j);
+		}
+		return _json;
+	}
 
-	virtual void operator=(const nlohmann::json&) 
+	virtual void operator=(const nlohmann::json& json)
 	{
-		// TODO
-	};
+		try
+		{
+			m_Bypassed = json.at("bypassed").get<bool>();
+
+			for (auto effect : json.at("effects"))
+			{
+				try
+				{
+					auto& type = effect.at("type").get<std::string>();
+
+					auto& _it = EffectLoader::Effects().find(type);
+					if (_it != EffectLoader::Effects().end())
+					{
+						Effects::EffectBase* e = (*_it).second->CreateInstance();
+						if (e != nullptr)
+						{
+							auto& a = AddEffect(e);
+							a = effect;
+							a.Bypass(m_Bypassed);
+						}
+					}
+				}
+				catch (...)
+				{
+				}
+			}
+		}
+		catch (...)
+		{
+		}
+	}
 
 private:
-	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
-	::Panel* m_EffectPanel;
-	Component* m_DraggingComponent = nullptr;
-	int m_InsertIndex = -1;
-	mutable std::mutex m_Lock;
-	double m_MouseY = 0;
-	int m_Lines = 0;
+	int m_InsertIndex = -1,
+		m_Lines = 0;
 
+	double m_MouseY = 0;
+
+	bool m_Bypassed = false;
+
+	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> 
+		m_Menu,
+		m_EffectMenu;
+
+	::Panel* m_EffectPanel;
+	
+	Component* m_DraggingComponent = nullptr;
+	
+	// Lock is used to make sure any mutations to the effect chain 
+	// are done concurrently safe.
+	mutable std::mutex m_Lock;
+	
 	/**
 	 * Converts y-coord to index in the effect panel.
 	 * @param y y-coord

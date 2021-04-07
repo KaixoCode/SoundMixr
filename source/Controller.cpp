@@ -43,7 +43,7 @@ void Controller::Run()
     _file.MenuBase().ButtonSize({ 170, 20 });
     _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
     _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, "Debug Overlay", Key::CTRL_D);
-    _file.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit", Key::ALT_F4);
+    _file.Emplace<MenuButton>([&] { m_Audio->Asio().CloseStream(); m_Gui.Close(); }, "Exit", Key::ALT_F4);
 
     // Settings window.
     settings.Panel().Layout<Layout::Grid>(1, 1, 8, 8);

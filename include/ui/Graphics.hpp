@@ -1071,7 +1071,7 @@ public:
 			_c2 = ThemeT::Get().route_button_hovering_triangle;
 		}
 
-		int _w = b.Width() / _div;
+		int _w = 3 * b.Height() / _div;
 		int _h = 2 * b.Height() / _div;
 		d.Command<Fill>(_c1);
 		d.Command<Quad>(b.Position(), b.Size());

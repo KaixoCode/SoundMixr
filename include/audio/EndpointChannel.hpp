@@ -30,7 +30,7 @@ public:
 				// TODO: Apply pan, mute, mono, levels for visuals.
 
 				for (auto& j : Connections())
-					j->Input(i, _sample);
+					j->Input(_sample, i);
 			}
 		
 		// Otherwise it's output and takes samples from m_Levels and sends to endpoints
@@ -68,7 +68,7 @@ public:
 		
 		// Add if not already added.
 		if (!std::contains(m_Endpoints, e))
-			m_Endpoints.push_back(e), Lines(Lines() + 1);
+			m_Endpoints.push_back(e), Lines(Lines() + 1), SortEndpoints();
 	};
 
 	/**
@@ -80,8 +80,39 @@ public:
 	{
 		auto& it = std::find(m_Endpoints.begin(), m_Endpoints.end(), e);
 		if (it != m_Endpoints.end())
-			m_Endpoints.erase(it), Lines(Lines() - 1);
+			m_Endpoints.erase(it), Lines(Lines() - 1), SortEndpoints();
 	};
+
+	/**
+	 * Sorts the endpoints.
+	 */
+	void SortEndpoints()
+	{
+		std::sort(m_Endpoints.begin(), m_Endpoints.end(),
+			[](Endpoint* a, Endpoint* b) -> bool
+			{
+				return a->id < b->id;
+			});
+
+		CalcWidth();
+	}
+
+	/**
+	 * Calculates predetermined width given the amount of endpoints.
+	 */
+	void CalcWidth()
+	{
+		if (Lines() <= 4)
+			Width(70);
+		else
+			Width(Lines() * 7 + 42);
+	}
+
+	/**
+	 * Get all endpoints in this EndpointChannel.
+	 * @return endpoints
+	 */
+	auto Endpoints() -> std::vector<Endpoint*>& { return m_Endpoints; }
 
 	/**
 	 * Saving operator, converts this channel to json.

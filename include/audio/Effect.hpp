@@ -4,22 +4,40 @@
 #include "ui/Graphics.hpp"
 #include "ui/Dropdown.hpp"
 #include "EffectLoader.hpp"
+#include "FileDialog.hpp"
 
+/**
+ * Simple wrapper for the Effects::EffectBase object, this is a panel and will 
+ * display the EffectBase object.
+ */
 class Effect : public Panel
 {
 public:
+
+	/**
+	 * Constructor
+	 * @param effect EffectBase from a DLL
+	 */
 	Effect(Effects::EffectBase* effect)
 		: m_Effect(effect)
 	{
+		// Init the div
 		Init();
+
+		// Set the name to the effect name
 		m_Name = effect->Name();
 
-		m_RealHeight = -1;
+		// Set the size.
+		m_Size.height = m_Small ? 24 : m_Effect->Height() + 24;
+		m_RealHeight = m_Effect->Height() + 24;
+
+		// Add ze buttons
 		m_MinimB = &Emplace<Button<NOTHING, ButtonType::Toggle>>(&m_Small, "");
 		m_Enable = &Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(&m_Enabled, "");
 		m_Enable->Size({ 18, 18 });
 		m_MinimB->Size({ 24, 24 });
 
+		// Keep track of when hovering over draggable area.
 		m_Listener += [this](Event::MouseMoved& e)
 		{
 			m_HoveringDrag = false;
@@ -27,18 +45,133 @@ public:
 				m_HoveringDrag = true;
 		};
 
+		// This offsets events when hovering over draggable area to prevent clicking on
+		// any parameters when the effect is minimized.
 		m_Listener += [this](Event& e)
 		{
-			if (e.x - X() >= 24 && e.x - X() <= Width() - 24 && m_Small && e.type != Event::Type::KeyPressed && e.type != Event::Type::KeyReleased)
+			if (e.x - X() >= 24 && e.x - X() <= Width() - 24 && m_Small && e.type != Event::Type::KeyPressed 
+				&& e.type != Event::Type::KeyReleased && e.type != Event::Type::KeyTyped)
 				e.y = Y() + 1;
 		};
 	}
 
-	float NextSample(float s, int c)
+	/**
+	 * Generate the rightclick menu for this effect.
+	 * used by the effect chain, which adds a remove button at the end because
+	 * an effect cannot remove itself from the effect chain.
+	 * @param menu menu to add to
+	 */
+	void GetMenu(MenuBase& menu)
 	{
+		menu.Clear();
+		menu.ButtonSize({ 160, 20 });
+		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Effect->Name()).Disable();
+		menu.Emplace<MenuDivider>(160, 1, 0, 2);
+		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
+		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Small, "Minimize");
+		menu.Emplace<MenuDivider>(160, 1, 0, 2);
+		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+			{
+				try
+				{
+					std::ofstream _of{ m_Preset };
+					nlohmann::json _json = operator nlohmann::json();
+					_of << _json;
+					_of.close();
+				}
+				catch (...)
+				{
+					LOG("Failed to save preset");
+				}
+			}, "Save Preset").Enabled(m_Preset != "");
+		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+			{
+				RightClickMenu::Get().Close();
+				std::string path = FileDialog::SaveFile();
+				if (path.empty())
+					return;
+				try
+				{
+					std::ofstream _of{ path };
+					nlohmann::json _json = operator nlohmann::json();
+					_of << _json;
+					_of.close();
+
+					m_Preset = path;
+					m_Name = m_Effect->Name() + " - " + m_Preset.stem().string();
+				}
+				catch (...)
+				{
+					LOG("Failed to save preset");
+				}
+			}, "Save Preset As...");
+		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+			{
+				RightClickMenu::Get().Close();
+				std::string path = FileDialog::OpenFile();
+				if (path.empty())
+					return;
+
+				try
+				{
+					std::ifstream _in{ path };
+					nlohmann::json _json;
+					_json << _in;
+					_in.close();
+
+					if (_json.at("type") != Name())
+						return;
+
+					*this = _json;
+					m_Preset = path;
+					m_Name = m_Effect->Name() + " - " + m_Preset.stem().string();
+				}
+				catch (...)
+				{
+					LOG("Failed to load preset");
+				}
+			}, "Load Preset...");
+		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+			{
+				try
+				{
+					m_Preset = "";
+					m_Name = m_Effect->Name();
+
+					for (auto& i : m_Effect->Objects())
+						i->Default();
+				}
+				catch (...)
+				{
+					LOG("Failed to set to default");
+				}
+			}, "Default Preset");
+		menu.Emplace<MenuDivider>(160, 1, 0, 2);
+	}
+
+	/**
+	 * Get the name of the effect.
+	 * @return name
+	 */
+	auto Name() -> const std::string& { return m_Effect->Name(); }
+
+	/**
+	 * Generate the next sample given the input sample and channel.
+	 * @param s input sample
+	 * @param c channel
+	 */
+	double NextSample(double s, int c)
+	{
+		if (m_Bypass || !m_Enabled)
+			return s;
+
 		return m_Effect->NextSample(s, c);
 	}
 
+	/**
+	 * Bypass this effect. Different from enable/disable, this is used when the
+	 * entire effect chain is bypassed because it also disables the enable/disable button.
+	 */
 	void Bypass(bool b)
 	{
 		m_Bypass = b;
@@ -67,15 +200,31 @@ public:
 		}
 	}
 
+	/**
+	 * Set the amount of lines in this channel.
+	 * @param c count
+	 */
 	void Lines(int c)
 	{
 		m_Effect->Channels(c);
 	}
 
+	/**
+	 * Returns true when hovering over the draggable area.
+	 * @return true when over drag area
+	 */
 	bool HoveringDrag() { return m_HoveringDrag; }
 
+	/**
+	 * Update the effect, calls the Effects::EffectBase::Update() method, this is separate
+	 * from the normal update because it happens even when the effect is not being displayed.
+	 * Doesn't call Update if bypassed or disabled.
+	 */
 	void UpdateEffect()
 	{
+		if (m_Bypass || !m_Enabled)
+			return;
+
 		m_Effect->Update();
 	}
 
@@ -171,7 +320,7 @@ public:
 		_json["enabled"] = m_Enable->Active();
 		_json["small"] = m_Small;
 		_json["preset"] = m_Preset.string();
-		_json["type"] = m_Name;
+		_json["type"] = Name();
 		return _json;
 	}
 
@@ -182,11 +331,7 @@ public:
 		m_Preset = json.at("preset").get<std::string>();
 
 		if (m_Preset != "")
-		{
 			m_Name = m_Effect->Name() + " - " + m_Preset.stem().string();
-
-			m_SavePreset->Enable();
-		}
 
 		*m_Effect = json;
 	}
@@ -203,31 +348,47 @@ private:
 		m_Bypass = false;
 
 	Effects::EffectBase* m_Effect;
-	Component* m_PrevObj = nullptr;
-	std::vector<Vec4<int>> m_Dividers;
 
-	Button<SoundMixrGraphics::Menu, ButtonType::Normal>* m_SavePreset;
 	Button<ToggleButtonGraphics, ButtonType::Toggle>* m_Enable;
 	Button<NOTHING, ButtonType::Toggle>* m_MinimB;
 
+	// Preset and name of this effect.
 	std::filesystem::path m_Preset{ "" };
 	std::string m_Name;
 
+	// Radio button keys are stored in the effect, keeps track of radio
+	// button groups and their keys, convert to ListButton keys.
 	std::unordered_map<int, int> m_RadioButtonKeys;
 	std::unordered_map<int, std::vector<Effects::RadioButton*>> m_RadioButtons;
 
+	// Used for tab objects when initializing the effect div, and dividers
+	Component* m_PrevObj = nullptr;
+	std::vector<Vec4<int>> m_Dividers;
 
+	/**
+	 * Init the layout of the effect, uses the same mechanics as Layout::Divs to creaté
+	 * a complex layout.
+	 */
 	void Effect::Init()
 	{
 		InitDiv(m_Effect->Div(), { 0, 0, 300, m_Effect->Height() });
 	}
 
+	/**
+	 * Recursive init method for a single div.
+	 * @param div div to init
+	 * @param dim dimensions this div gets
+	 */
 	void Effect::InitDiv(Effects::Div& div, const Vec4<int>& dim)
 	{
+		// If it's an object, set the object
 		if (div.DivType() == Effects::Div::Type::Object)
 			SetObject(div, dim);
 
+		// Otherwise divide the space between divs and recurse to next divs.
 		else
+
+			// Dividing depends on the alignment of the div.
 			if (div.Align() == Effects::Div::Alignment::Horizontal)
 			{
 				// Get all the sizes of the sub-divs
@@ -334,6 +495,11 @@ private:
 			}
 	}
 
+	/**
+	 * Set the object in the given div.
+	 * @param div the div
+	 * @param dim dimensions this object gets
+	 */
 	void Effect::SetObject(Effects::Div& div, const Vec4<int>& dim)
 	{
 		// Get the object from the div
@@ -351,7 +517,6 @@ private:
 			position += { dim.width / 2 - object->Size().width / 2, 0 };
 		else if (div.Align() == Effects::Div::Alignment::Top)
 			position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
-
 
 		// Determine type and add to effect.
 		Component* ob = nullptr;
@@ -426,6 +591,7 @@ private:
 		if (ob == nullptr)
 			return;
 
+		// Set the tab object.
 		if (m_PrevObj)
 		{
 			m_PrevObj->TabComponent(ob);
