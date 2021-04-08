@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.hpp"
 #include "Graphics.hpp"
-#include "midi/Midi.hpp"
+#include "Midi.hpp"
 
 class ParameterBase : public Container
 {

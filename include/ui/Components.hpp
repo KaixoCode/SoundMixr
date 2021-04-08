@@ -3,6 +3,11 @@
 #include "ui/Parameter.hpp"
 #include "ui/Graphics.hpp"
 
+/**
+ * This file contains all components used by Effects, they're all gui wrappers for the
+ * components in the EffectBase project.
+ */
+
 using Knob = Parameter<KnobGraphics>;
 using Slider = Parameter<SliderGraphics>;
 
@@ -70,6 +75,7 @@ public:
 	VolumeSlider(Effects::VolumeSlider& s);
 
 	double Decibels() { return 20 * std::log10(std::max(m_Parameter.Value(), 0.000001)); };
+	Effects::VolumeSlider& Slider() { return m_Slider; }
 
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;

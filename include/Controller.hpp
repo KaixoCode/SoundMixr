@@ -1,12 +1,12 @@
 #pragma once
 #include "pch.hpp"
-#include "audio/AsioDevice.hpp"
+#include "audio/Asio.hpp"
 #include "ui/Soundboard.hpp"
 #include "ui/Graphics.hpp"
 #include "ui/Frame.hpp"
-#include "audio/AudioController.hpp"
+#include "audio/Audio.hpp"
 #include "EffectLoader.hpp"
-#include "midi/Midi.hpp"
+#include "Midi.hpp"
 
 // Some namespace thingies
 namespace GR = SoundMixrGraphics; namespace BT = ButtonType; namespace MT = MenuType;
@@ -31,7 +31,7 @@ public:
     void LoadMidi();
     void LoadEffects();
 
-    auto Audio() -> AudioController& { return *m_Audio; }
+    auto Audio() -> Audio& { return *m_Audio; }
 
 private:
     bool m_LoadedSettings = false;
@@ -49,5 +49,5 @@ private:
     DropDown<int, DropdownButton2>* m_AsioDropDown;
     Parameter<SliderGraphics>* m_ScaleSlider;
 
-    AudioController* m_Audio;
+    ::Audio* m_Audio;
 };

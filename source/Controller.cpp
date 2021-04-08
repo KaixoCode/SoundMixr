@@ -12,7 +12,11 @@ Controller::Controller()
 
 void Controller::Run()
 {
-    LoadEffects();
+    // For the first time we need to load effects separately, since
+    // Controller::LoadEffects assumes a device is already running.
+    EffectLoader::LoadEffects();
+
+    // Set window icons.
     mainWindow.Icon(IDI_ICON1);
     settings.Icon(IDI_ICON1);
 
@@ -35,7 +39,7 @@ void Controller::Run()
     // AudioController panel, contains all channels and effect panel. Basically the main component.
     mainWindow.Panel().Layout<Layout::Grid>(1, 1, 8, 8);
     mainWindow.Panel().Background(ThemeT::Get().window_border);
-    m_Audio = &mainWindow.Panel().Emplace<AudioController>(Layout::Hint::Center);
+    m_Audio = &mainWindow.Panel().Emplace<::Audio>(Layout::Hint::Center);
 
     // The frame menu of the main window.
     auto& _file = mainWindow.Menu().Emplace<TitleMenuButton>("File");
@@ -69,6 +73,7 @@ void Controller::Run()
 
     auto& _resetGrouping = _settingsPanel.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(
         [this] {
+            m_Audio->DefaultRouting();
         }, "Reset");
     _resetGrouping.Size({ 110, 18 });
 
@@ -393,5 +398,23 @@ void Controller::LoadMidi()
 
 void Controller::LoadEffects()
 {
+    // In order to load effects we need to stop the stream, because when reloading effects
+    // we will deallocate all effects from the DLLs, so no audio can be routed when reloading.
+
+    // First save routing.
+    m_Audio->SaveRouting();
+
+    // Stop stream and clear all channels, so all effects will be removed.
+    m_Audio->Asio().StopStream();
+    m_Audio->Clear();
+
+    // Load effects.
     EffectLoader::LoadEffects();
+
+    // Now we can load the routing again, which will load all channels and effects again.
+    m_Audio->LoadRouting();
+
+    // Finally we can start the stream again, since everything is loaded the as 
+    // back when we started.
+    m_Audio->Asio().StartStream();
 }
