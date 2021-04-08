@@ -21,6 +21,12 @@ public:
 	Effect(Effects::EffectBase* effect);
 
 	/**
+	 * Destructor
+	 * Makes sure the effect is being destroyed and doesn't cause memory leaks
+	 */
+	~Effect() { m_Effect->Destroy(); }
+
+	/**
 	 * Generate the rightclick menu for this effect.
 	 * used by the effect chain, which adds a remove button at the end because
 	 * an effect cannot remove itself from the effect chain.

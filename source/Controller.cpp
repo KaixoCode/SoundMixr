@@ -307,6 +307,7 @@ void Controller::SaveSettings()
 void Controller::LoadThemes()
 {
     SaveSettings();
+    m_LoadedSettings = false;
     ThemeT::ReloadThemes();
     m_ThemeDropDown->Clear();
 
