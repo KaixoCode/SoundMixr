@@ -67,7 +67,7 @@ Audio::Audio()
 
         // If rightclick, check if hovering over a channel and show a rightclick
         // menu generated from that channel.
-        if (e.button == Event::MouseButton::RIGHT)
+        if (e.button == Event::MouseButton::RIGHT && !RightClickMenu::Get().Opened())
         {
             if (m_InputsPanel.HoveringComponent())
                 GenerateMenu(m_InputsPanel), RightClickMenu::Get().Open(&m_Menu);
@@ -104,7 +104,7 @@ Audio::Audio()
 void Audio::GenerateMenu(Panel& panel)
 {
     // First get pointers to both the hovering and the focused channel.
-    auto hover = (EndpointChannel*)panel.HoveringComponent();
+    auto hover = (ChannelBase*)panel.HoveringComponent();
     auto focus = ChannelBase::selected;
 
     m_Menu.Clear();
@@ -117,11 +117,13 @@ void Audio::GenerateMenu(Panel& panel)
             m_EffectPanel.Name(hover->name.Content());
         }, "Show Effects");
 
-    // A channel can split if it has more than 1 line
-    bool canSplit = hover->Lines() > 1;
+    // A channel can split if it has more than 1 line, and is an endpoint
+    bool canSplit = (hover->Type() & ChannelBase::Type::Endpoint) && hover->Lines() > 1;
 
     // Channels can combine if they are the same type, and not the same channel.
-    bool canCombine = focus && focus->Type() == hover->Type() && focus != hover;
+    // and an endpoint.
+    bool canCombine = (hover->Type() & ChannelBase::Type::Endpoint) && focus && 
+        focus->Type() == hover->Type() && focus != hover;
 
     // Add divider if any of the 2 are possible
     if (canSplit || canCombine)
@@ -138,9 +140,10 @@ void Audio::GenerateMenu(Panel& panel)
 
                 // Cast focus to endpoint channel
                 auto focuse = (EndpointChannel*)focus;
+                auto hovere = (EndpointChannel*)hover;
 
                 // Move over all endpoints from hover to focus
-                for (auto& endpoint : hover->Endpoints())
+                for (auto& endpoint : hovere->Endpoints())
                     focuse->AddEndpoint(endpoint);
 
                 // Make sure the effect panel is not displaying the effect chain
@@ -170,12 +173,15 @@ void Audio::GenerateMenu(Panel& panel)
                 auto& a = panel.Emplace<EndpointChannel>(hover->Type());
                 m_Channels.push_back(&a);
 
+                // Cast focus to endpoint channel
+                auto hovere = (EndpointChannel*)hover;
+
                 // move endpoints to new channel
                 int size = hover->Lines() / 2;
                 for (int i = 0; i < size; i++)
                 {
-                    auto endpoint = hover->Endpoints()[0];
-                    hover->RemoveEndpoint(endpoint);
+                    auto endpoint = hovere->Endpoints()[0];
+                    hovere->RemoveEndpoint(endpoint);
                     a.AddEndpoint(endpoint);
                 }
                 m_Lock.unlock();
