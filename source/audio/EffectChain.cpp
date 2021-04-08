@@ -80,28 +80,34 @@ EffectChain::EffectChain()
 
 	m_EffectPanel->Listener() += [this](Event::MouseDragged& e)
 	{
+		// Update the insert index if dragging an effect
 		if (m_DraggingComponent)
 			m_InsertIndex = constrain(GetIndex(e.y), 0, m_EffectPanel->Components().size() - 1);
 	};
 
 	m_EffectPanel->Listener() += [this](Event::MouseReleased& e)
 	{
+		// If released and we were dragging an effect.
 		if (m_DraggingComponent)
 		{
-			int _myIndex = 0;
+			// Find the index of the dragging component
 			int _index = 0;
 			for (auto& i : m_EffectPanel->Components())
 			{
 				if (i.get() == m_DraggingComponent)
-				{
-					_myIndex = _index;
 					break;
-				}
+
 				_index++;
 			}
+
+			// Lock to make sure nothing crazy happens
 			m_Lock.lock();
+
+			// Move the effect from the found index to the insert index.
 			move(m_EffectPanel->Components(), _index, m_InsertIndex);
 			m_Lock.unlock();
+
+			// Reset all related stuff
 			m_DraggingComponent = nullptr;
 			m_InsertIndex = -1;
 		}
