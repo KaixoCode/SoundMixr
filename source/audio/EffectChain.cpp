@@ -99,7 +99,9 @@ EffectChain::EffectChain()
 				}
 				_index++;
 			}
+			m_Lock.lock();
 			move(m_EffectPanel->Components(), _index, m_InsertIndex);
+			m_Lock.unlock();
 			m_DraggingComponent = nullptr;
 			m_InsertIndex = -1;
 		}

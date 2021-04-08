@@ -3,6 +3,13 @@
 #include "audio/Effect.hpp"
 #include "ui/Graphics.hpp"
 
+/**
+ * Moves object at 'oldIndex' in vector 'v' to the 'newIndex' while maintaining order
+ * of the other elements.
+ * @param v vector
+ * @param oldIndex old index
+ * @param newIndex new index
+ */
 template <typename t> void move(std::vector<t>& v, size_t oldIndex, size_t newIndex)
 {
 	if (oldIndex > newIndex)
