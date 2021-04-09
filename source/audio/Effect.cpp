@@ -195,12 +195,14 @@ void Effect::Update(const Vec4<int>& v)
 
 	if (m_Small && !m_PSmall)
 	{
+		NeedsRecalc(true);
 		m_PSmall = true;
 		m_RealHeight = Height();
 		Height(24);
 	}
 	else if (!m_Small && m_PSmall)
 	{
+		NeedsRecalc(true);
 		m_PSmall = false;
 		if (m_RealHeight == -1)
 			m_RealHeight = Height();
@@ -208,12 +210,11 @@ void Effect::Update(const Vec4<int>& v)
 		Height(m_RealHeight);
 	}
 
-
 	m_Size.height = m_Small ? 24 : m_Effect->Height() + 24;
 	m_Enable->Position({ 3, Height() - 21 });
 	m_MinimB->Position({ Width() - 24, Height() - 24 });
 	Background(ThemeT::Get().effect_background);
-	Panel::Update(v);
+	Panel::Update({Position(), Size()});
 }
 
 void Effect::Render(CommandCollection& d)

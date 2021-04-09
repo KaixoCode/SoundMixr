@@ -54,6 +54,11 @@ EffectChain::EffectChain()
 					// Lock, to prevent concurrency issues
 					m_Lock.lock();
 
+					// Because we are removing an effect, adjust the height of the panel
+					// to fit the new height, and request an immediate recalculation.
+					m_EffectPanel->Height(m_EffectPanel->Height() - effect->Height() - 8);
+					NeedsRecalc(true);
+
 					// Erase the effect from the effect panel
 					auto it = std::remove_if(m_EffectPanel->Components().begin(), m_EffectPanel->Components().end(),
 						[effect](std::unique_ptr<Component>& c) { return c.get() == effect; });
@@ -256,7 +261,7 @@ void EffectChain::Update(const Vec4<int>& v)
 		if (m_MouseY > Y() + Height() - 50)
 			m_ScrollbarY->Scroll(-5 * 0.02 * ((m_MouseY - (Y() + Height() - 50))));
 	}
-	SMXRScrollPanel::Update(v);
+	SMXRScrollPanel::Update({ v.x, v.y - 16, v.width, v.height + 32 });
 }
 
 void EffectChain::Render(CommandCollection& d)
