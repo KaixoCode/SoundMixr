@@ -1,30 +1,8 @@
 #include "ui/Parameter.hpp"
 
-ParameterBase::~ParameterBase()
-{
-	Midi::Get().Remove<Midi::Event::ControlChange>(m_CallbackId);
-}
-
 ParameterBase::ParameterBase(Effects::Parameter& param)
 	: m_Parameter(param)
 {
-	m_CallbackId = Midi::Get() += [this](Midi::Event::ControlChange& a)
-	{ 
-		if (m_Linking)
-		{
-			m_Parameter.MidiLink({ a.channel, a.control, a.device });
-			m_Linking = false;
-		}
-
-		if (m_Parameter.MidiLink() == Effects::MidiCCLink{ a.channel, a.control, a.device })
-		{
-			float v = a.value / 127.0;
-			if (std::abs(v - 0.5) < 1 / 127.0)
-				v = 0.5;
-			NormalizedValue(v);
-		}
-	};
-
 	m_Menu.Clear();
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Listener += [&](Event::MousePressed& e)

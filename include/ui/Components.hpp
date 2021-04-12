@@ -11,33 +11,55 @@
 using Knob = Parameter<KnobGraphics>;
 using Slider = Parameter<SliderGraphics>;
 
-// -------------------------------------------------------------------------- \\
-// ---------------------------- Radio Button -------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * Radio button is part of a group where only 1 of the buttons in the group
+ * can be selected at a time.
+ */
 class RadioButton : public Button<RadioButtonGraphics, ButtonType::List>
 {
 public:
+	/**
+	 * Constructor
+	 * @param t reference to Effects::RadioButton
+	 * @param keys conversion map from effect RadioButton group key to ButtonType::List key
+	 * @param buttons map from key to group of buttons
+	 */
 	RadioButton(Effects::RadioButton& t, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons);
 
 	void Update(const Vec4<int>& v);
 
 private:
+	// Store a refernce to the keymap and buttongroup map received from the effect this RadioButton
+	// belongs to so we can unselect the Effects::RadioButton when pressing this RadioButton.
 	std::unordered_map<int, int> &m_Keys;
 	std::unordered_map<int, std::vector<Effects::RadioButton*>>& m_RButtons;
 
-	Effects::RadioButton& m_Toggle;
+	Effects::RadioButton& m_RadioButton;
 
+	/**
+	 * Look in the keymap to see if the key in m_RadioButton already exists, if it does, it takes
+	 * out the converted key and adds m_RadioButton to the vector at the location of that key in the button map
+	 * and then it returns the key. If it was not found it will generate a new one using ButtonType::List::NewKey(), 
+	 * emplace a vector to the button map, then add the button to the map at the generated key, 
+	 * and then return the new key.
+	 * @param k m_RadioButton, since it cannot be initialized because this is called in the super constructor
+	 * @param keys key map received from the effect
+	 * @param buttons button map received from the effect
+	 */
 	static inline int GetKey(Effects::RadioButton& k, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons);
 };
 
-// -------------------------------------------------------------------------- \\
-// --------------------------- Toggle Button -------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * Very simple toggle button for an effect.
+ */
 class ToggleButton : public Button<ToggleButtonGraphics, ButtonType::Toggle>
 {
 public:
+
+	/**
+	 * Constructor
+	 * @param t Effects::ToggleButton
+	 */
 	ToggleButton(Effects::ToggleButton& t);
 
 	void Update(const Vec4<int>& v);
@@ -46,13 +68,17 @@ private:
 	Effects::ToggleButton& m_Toggle;
 };
 
-// -------------------------------------------------------------------------- \\
-// --------------------------- XY Controller -------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * Simple 2 dimensional controller, with a linked parameter for the x-axis and y-axis 
+ */
 class XYController : public Container
 {
 public:
+	
+	/**
+	 * Constructor
+	 * @param c Effects::XYController
+	 */
 	XYController(Effects::XYController& c);
 
 	void Render(CommandCollection& d) override;
@@ -62,57 +88,51 @@ private:
 	int m_Click = 0;
 	bool m_Dragging = false,
 		m_Hovering = false;
+
 	Effects::XYController& controller;
 };
 
-// -------------------------------------------------------------------------- \\
-// --------------------------- Volume Slider -------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * Simple volume slider, practically just a preset for a standard Parameter with some
+ * additional functionality for converting the linear value to logarithmic decibels.
+ */
 class VolumeSlider : public Parameter<VolumeSliderGraphics>
 {
 public:
+
+	/**
+	 * Constructor
+	 * @param s Effects::VolumeSlider
+	 */
 	VolumeSlider(Effects::VolumeSlider& s);
 
-	double Decibels() { return 20 * std::log10(std::max(m_Parameter.Value(), 0.000001)); };
+	/**
+	 * Get the value of the parameter in decibels.
+	 * @return linear value to decibels
+	 */
+	double Decibels() const { return 20 * std::log10(std::max(m_Parameter.Value(), 0.000001)); };
+
+	/**
+	 * Returns the Effects::VolumeSlider.
+	 */
 	Effects::VolumeSlider& Slider() { return m_Slider; }
 
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;
 
 private:
+
+	// Statically store the numbers to not reallocate it for each object
 	static inline std::unordered_map<int, std::string> m_Numbers;
 	static inline std::string m_NegInf = "Inf";
 
 	Effects::VolumeSlider& m_Slider;
 };
 
-// -------------------------------------------------------------------------- \\
-// ------------------------- Old Volume Slider ------------------------------ \\
-// -------------------------------------------------------------------------- \\
-
-class OldVolumeSlider : public Parameter<VolumeSliderGraphics>
-{
-public:
-	using Parent = Parameter<VolumeSliderGraphics>;
-
-	OldVolumeSlider();
-
-	double Decibels() { return 20 * std::log10(std::max(m_Parameter.Value(), 0.000001)); };
-
-	void Update(const Vec4<int>& v);
-
-	virtual operator nlohmann::json() { return m_Parameter.operator nlohmann::json(); };
-	virtual void operator=(const nlohmann::json& json) { m_Parameter = json; };
-
-private:
-	Effects::Parameter m_Parameter{ "Volume", Effects::ParameterType::Slider };
-};
-
-// -------------------------------------------------------------------------- \\
-// ----------------------------- Pan Slider --------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * Only used in the channels, stores its own Effects::Parameter, basically a preset
+ * for a normal Parameter, with no additional functionality.
+ */
 class PanSlider : public Parameter<PanSliderGraphics>
 {
 public:
@@ -125,20 +145,35 @@ private:
 	Effects::Parameter m_Parameter{ "Pan", Effects::ParameterType::Slider };
 };
 
-// -------------------------------------------------------------------------- \\
-// -------------------------- Dynamics Slider ------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * The visuals/functionality for the dynamics slider in the Dynamics effect.
+ */
 class DynamicsSlider : public Container
 {
 public:
+
+	/**
+	 * Constuctor
+	 * @param o Effects::DynamicsSlider
+	 */
 	DynamicsSlider(Effects::DynamicsSlider& o);
+
+	/**
+	 * Convert the pixel on the screen to decibels.
+	 * @param p pixel
+	 * @return decibels
+	 */
+	double PixelToDb(int p);
+
+	/**
+ 	 * Convert decibels to a pixel on the screen.
+	 * @param p decibles
+	 * @return pixel
+	 */
+	int DbToPixel(double p);
 
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;
-
-	double PixelToDb(int p);
-	int DbToPixel(double p);
 
 private:
 	static inline std::unordered_map<int, std::string> m_Numbers;
@@ -165,18 +200,22 @@ private:
 	double m_PressVal = 0;
 	bool m_Shift = false;
 
+	/**
+	 * Updates all the value strings.
+	 */
 	void UpdateStrings();
 };
 
-
-// -------------------------------------------------------------------------- \\
-// ---------------------------- Filter Curve -------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * Filter Curve. WIP TODO
+ */
 class FilterCurve : public Component
 {
 public:
 
+	/**
+	 * Constructor
+	 */
 	FilterCurve(Effects::FilterCurve& params)
 		: m_Curve(params)
 	{}
@@ -269,155 +308,55 @@ private:
 	Effects::FilterCurve& m_Curve;
 };
 
-
-// -------------------------------------------------------------------------- \\
-// ---------------------------- Filter Curve -------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * Simple Filter Curve for a bandpass with width filter only.
+ */
 class SimpleFilterCurve : public Component
 {
 public:
 
-	SimpleFilterCurve(Effects::SimpleFilterCurve& params)
-		: m_Curve(params)
-	{
-		m_Listener += [this](Event::MousePressed& e)
-		{
-			if (e.button == Event::MouseButton::LEFT && e.x > X() && e.x < X() + Width() && e.y > Y() && e.y < Y() + Height())
-				m_Dragging = true;
-
-		};
-
-		m_Listener += [this](Event::MouseClicked& e)
-		{
-			if (e.button == Event::MouseButton::LEFT)
-			{
-				if (m_Click > 0)
-					m_Curve.freq.ResetValue(), m_Curve.width.ResetValue();
-				m_Click = 20;
-			}
-		};
-
-		m_Listener += [this](Event::MouseEntered& e)
-		{
-			m_Hovering = true;
-		};
-
-		m_Listener += [this](Event::MouseExited& e)
-		{
-			m_Hovering = false;
-		};
-
-		m_Listener += [this](Event::MouseDragged& e)
-		{
-			if (m_Dragging)
-			{
-				double _x = constrain((e.x - X() - 8) / (Width() - 8 * 2.0), 0, 1);
-				double _y = constrain((e.y - Y() - 8) / (Height() - 8 * 2.0), 0, 1);
-				if (!m_Curve.freq.Disabled()) 
-					m_Curve.freq.NormalizedValue(_x);
-				if (!m_Curve.width.Disabled())
-					m_Curve.width.NormalizedValue(_y);
-			}
-		};
-
-		m_Listener += [this](Event::MouseReleased& e)
-		{
-			m_Dragging = false;
-		};
-		m_Listener += [this](Event::KeyPressed& e)
-		{
-			if (!Focused())
-				return;
-
-			double amt = 0.01;
-			if (e.keymod & Event::Mod::CONTROL)
-				amt *= 4;
-			else if (e.keymod & Event::Mod::SHIFT)
-				amt *= 0.1;
-
-			if (e.key == Key::LEFT)
-				m_Curve.freq.NormalizedValue(m_Curve.freq.NormalizedValue() - amt);
-
-			if (e.key == Key::RIGHT)
-				m_Curve.freq.NormalizedValue(m_Curve.freq.NormalizedValue() + amt);
-
-			if (e.key == Key::UP)
-				m_Curve.width.NormalizedValue(m_Curve.width.NormalizedValue() + amt);
-
-			if (e.key == Key::DOWN)
-				m_Curve.width.NormalizedValue(m_Curve.width.NormalizedValue() - amt);
+	/**
+	 * Constructor
+	 * @param params Effects::SimpleFilterCurve
+	 */
+	SimpleFilterCurve(Effects::SimpleFilterCurve& params);
 	
-		};
-	}
-	
-
-
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;
 
 private:
+	static inline const int m_Log = 10;
+	static inline const double m_Logg = std::log(m_Log);
 
-	void UpdateMags()
-	{
-		if (m_Dragging) m_Update = true;
+	int m_Scale = 4,
+		m_Click = 0;
 
+	bool m_Dragging = false, 
+		m_Hovering = false, 
+		m_Update = false;
 
-		int size = std::ceil(Width() / m_Scale) + m_Scale;
-		while (m_Mags.size() < size)
-			m_Mags.push_back(0), m_Update = true;
-
-		if (m_Update)
-		{
-			for (int i = 0; i < size; i++)
-			{
-				float ma = Magnitude(i * m_Scale);
-
-				m_Mags[i] = ma;
-			}
-			m_Update = false;
-		}
-
-		if (m_PrevFreq != m_Curve.freq.Value())
-			m_PrevFreq = m_Curve.freq.Value(), m_Update = true;
-
-		if (m_PrevWidth != m_Curve.width.Value())
-			m_PrevWidth = m_Curve.width.Value(), m_Update = true;
-	}
-
-	float PosToFreq(int x)
-	{
-		if (x <= 0)
-			return 0;
-
-		return ((std::powf(m_Log, x / (float)Width()) - 1.0) / (m_Log - 1.0)) * (21990) + 10;
-	}
-
-	int DbToY(float db)
-	{
-		if (db < -12)
-			return Y() + Height();
-		if (db > 12)
-			return Y();
-
-		return Y() + Height() - db * Height();
-	}
-
-	float FreqToPos(float freq);
-
-	float Magnitude(float freq);
-
-	int m_Scale = 4;
-
-	const int m_Log = 10;
-	const double m_Logg = std::log(m_Log);
-
-	int m_Click = 0;
-	bool m_Dragging = false, m_Hovering = false, m_Update = false;
-
-	double m_PrevWidth = 0, m_PrevFreq = 0;
+	double m_PrevWidth = 0, 
+		m_PrevFreq = 0;
 
 	std::vector<float> m_Mags;
 
 	Effects::SimpleFilterCurve& m_Curve;
+
+	/**
+	 * Updates all the magnitudes if it is necessary.
+	 */
+	void UpdateMags();
+
+	/**
+	 * Converts a frequency to a position on the screen.
+	 * @param freq frequency
+	 * @return position
+	 */
+	float FreqToPos(float freq);
+
+	/**
+	 * Calculates the magnitude
+	 */
+	float Magnitude(float freq);
+
 };

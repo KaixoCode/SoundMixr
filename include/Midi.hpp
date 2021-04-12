@@ -17,8 +17,8 @@ public:
 	public:
 		enum class Type
 		{
-			NoteOn = 0b1000,
-			NoteOff = 0b1001,
+			NoteOn = 0b1001,
+			NoteOff = 0b1000,
 			PolyAfterTouch = 0b1010,
 			ControlChange = 0b1011,
 			ProgramChange = 0b1100,
@@ -150,17 +150,36 @@ public:
 
 	std::unordered_map<int, RtMidiIn>& Opened() { return m_Opened; }
 
-	template<typename T>
-	int operator+=(T t) { return AddCallback(t); }
 
-	int AddCallback(Callback<Event> a) { m_EventCallbacks.emplace(m_Counter++, a); return m_Counter-1; }
-	int AddCallback(Callback<Event::NoteOff> a) { m_NoteOffCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
-	int AddCallback(Callback<Event::NoteOn> a) { m_NoteOnCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
-	int AddCallback(Callback<Event::PolyAfterTouch> a) { m_PolyAfterTouchCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
-	int AddCallback(Callback<Event::ControlChange> a) { m_ControlChangeCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
-	int AddCallback(Callback<Event::ProgramChange> a) { m_ProgramChangeCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
-	int AddCallback(Callback<Event::ChannelAfterTouch> a) { m_ChannelAfterTouchCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
-	int AddCallback(Callback<Event::PitchWheel> a) { m_PitchWheelCallbacks.emplace(m_Counter++, a); return m_Counter - 1; }
+	class EventStorage
+	{
+	public:
+		using Callback = std::function<void(void)>;
+
+		EventStorage(Callback c)
+			: m_Callback(c)
+		{}
+
+		~EventStorage()
+		{
+			m_Callback();
+		}
+
+	private:
+		Callback m_Callback;
+	};
+
+	template<typename T>
+	inline auto operator+=(T t) { return AddCallback(t); }
+
+	auto AddCallback(Callback<Event> a)                    { m_EventCallbacks.emplace(m_Counter++, a);             int b = m_Counter; return [&, b] { Remove<Event>(b - 1); }; }
+	auto AddCallback(Callback<Event::NoteOff> a)           { m_NoteOffCallbacks.emplace(m_Counter++, a);           int b = m_Counter; return [&, b] { Remove<Event::NoteOff>(b - 1); }; }
+	auto AddCallback(Callback<Event::NoteOn> a)            { m_NoteOnCallbacks.emplace(m_Counter++, a);            int b = m_Counter; return [&, b] { Remove<Event::NoteOn>(b - 1); }; }
+	auto AddCallback(Callback<Event::PolyAfterTouch> a)    { m_PolyAfterTouchCallbacks.emplace(m_Counter++, a);    int b = m_Counter; return [&, b] { Remove<Event::PolyAfterTouch>(b - 1); }; }
+	auto AddCallback(Callback<Event::ControlChange> a)     { m_ControlChangeCallbacks.emplace(m_Counter++, a);     int b = m_Counter; return [&, b] { Remove<Event::ControlChange>(b - 1); }; }
+	auto AddCallback(Callback<Event::ProgramChange> a)     { m_ProgramChangeCallbacks.emplace(m_Counter++, a);     int b = m_Counter; return [&, b] { Remove<Event::ProgramChange>(b - 1); }; }
+	auto AddCallback(Callback<Event::ChannelAfterTouch> a) { m_ChannelAfterTouchCallbacks.emplace(m_Counter++, a); int b = m_Counter; return [&, b] { Remove<Event::ChannelAfterTouch>(b - 1); }; }
+	auto AddCallback(Callback<Event::PitchWheel> a)        { m_PitchWheelCallbacks.emplace(m_Counter++, a);        int b = m_Counter; return [&, b] { Remove<Event::PitchWheel>(b - 1); }; }
 
 	template<typename T>
 	void Remove(int id) { RemoveCallback(id); }

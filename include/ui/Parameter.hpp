@@ -3,11 +3,18 @@
 #include "Graphics.hpp"
 #include "Midi.hpp"
 
+/**
+ * Gui wrapper for Effects::Parameter
+ */
 class ParameterBase : public Container
 {
 public:
 	ParameterBase(Effects::Parameter& param);
-	~ParameterBase();
+
+	/**
+	 * I really can't be bothered to add comments to all these things, I think they
+	 * speak for themselves...
+	 */
 
 	virtual void   X(int x) override { m_Parameter.Position({ x, m_Parameter.Position().y }); }
 	virtual int    X() const override { return m_Parameter.Position().x; }
@@ -72,12 +79,29 @@ protected:
 		m_Shift = false,
 		m_Linking = false;
 
-	int m_MidiLink = -1;
-
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_LinkButton;
 	Button<SoundMixrGraphics::Menu, ButtonType::Normal>* m_UnlinkButton;
 
-	int m_CallbackId = -1;
+	/**
+	 * Midi Event, stored here, will automatically remove callback from Midi
+	 * class when it destructs.
+	 */
+	Midi::EventStorage _1{ Midi::Get() += [this](Midi::Event::ControlChange& a)
+	{
+		if (m_Linking)
+		{
+			m_Parameter.MidiLink({ a.channel, a.control, a.device });
+			m_Linking = false;
+		}
+
+		if (m_Parameter.MidiLink() == Effects::MidiCCLink{ a.channel, a.control, a.device })
+		{
+			float v = a.value / 127.0;
+			if (std::abs(v - 0.5) < 1 / 127.0)
+				v = 0.5;
+			NormalizedValue(v);
+		}
+	} };
 
 	std::string m_ValueText;
 };

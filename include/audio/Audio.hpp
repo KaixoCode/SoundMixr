@@ -2,6 +2,7 @@
 #include "pch.hpp"
 #include "audio/Asio.hpp"
 #include "audio/EndpointChannel.hpp"
+#include "audio/GeneratorChannel.hpp"
 #include "ui/Graphics.hpp"
 #include "audio/ChannelBase.hpp"
 #include "audio/EffectPanel.hpp"
@@ -114,6 +115,8 @@ private:
     Panel& m_InputsPanel;
     VerticalMenuDivider& m_Divider;
     Panel& m_OutputsPanel;
+    VerticalMenuDivider& m_Divider2;
+    Panel& m_GeneratorPanel;
     EffectPanel& m_EffectPanel;
 
     /**

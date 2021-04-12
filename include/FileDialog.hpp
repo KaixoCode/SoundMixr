@@ -1,7 +1,9 @@
 #pragma once
 #include "pch.hpp"
 
-
+/**
+ * Simple wrapper for the Windows file dialog.
+ */
 class FileDialog
 {
 public:

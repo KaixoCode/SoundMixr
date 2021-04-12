@@ -13,7 +13,9 @@ Audio::Audio()
     // be on the left of the panel.
     m_InputsPanel(m_ChannelScrollPanel.Panel<Panel>().Emplace<Panel>()),
     m_Divider(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
-    m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>())
+    m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>()),
+    m_Divider2(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
+    m_GeneratorPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>())
 {
     // This panel layout is border with no padding/resizing.
     Layout<Layout::Border>(0, false);
@@ -42,6 +44,10 @@ Audio::Audio()
     m_InputsPanel.AutoResize(true, false);
     m_OutputsPanel.Layout<Layout::SidewaysStack>(8, 8);
     m_OutputsPanel.AutoResize(true, false);
+    m_GeneratorPanel.MinWidth(70);
+    m_GeneratorPanel.Width(70);
+    m_GeneratorPanel.Layout<Layout::SidewaysStack>(8, 8);
+    m_GeneratorPanel.AutoResize(true, false);
 
     // Initially hide the effect panel, will be shown when double click on channel.
     m_EffectPanel.Hide();
@@ -73,6 +79,27 @@ Audio::Audio()
                 GenerateMenu(m_InputsPanel), RightClickMenu::Get().Open(&m_Menu);
             else if (m_OutputsPanel.HoveringComponent())
                 GenerateMenu(m_OutputsPanel), RightClickMenu::Get().Open(&m_Menu);
+            else if (m_GeneratorPanel.Hovering())
+            {
+                m_Menu.Clear();
+                m_Menu.ButtonSize({ 180, 20 });
+                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>("Add Generator").Disable();
+                m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+                    [&]
+                    {
+                        m_Lock.lock();
+
+                        // Emplace a channelgroup to the list
+                        auto& _c = m_GeneratorPanel.Emplace<GeneratorChannel>(
+                            ChannelBase::Type::Input | ChannelBase::Type::Generator);
+                        m_Channels.push_back(&_c);
+
+                        m_Lock.unlock();
+                    }, " + Test Thing");
+                RightClickMenu::Get().Open(&m_Menu);
+
+            }
         }
     };
 
@@ -125,8 +152,10 @@ void Audio::GenerateMenu(Panel& panel)
     bool canCombine = (hover->Type() & ChannelBase::Type::Endpoint) && focus && 
         focus->Type() == hover->Type() && focus != hover;
 
+    bool canAdd = (hover->Type() & ChannelBase::Type::Generator);
+
     // Add divider if any of the 2 are possible
-    if (canSplit || canCombine)
+    if (canSplit || canCombine || canAdd)
         m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 
     // If can combine, add combine button
@@ -196,10 +225,10 @@ void Audio::GenerateMenu(Panel& panel)
             hover->mute.Active(s);
         }, "Mute").Active(hover->mute.Active());
 
-        m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(
-            [hover](bool s) {
-                hover->mono.Active(s);
-            }, "Mono").Active(hover->mono.Active());;
+    m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(
+        [hover](bool s) {
+            hover->mono.Active(s);
+        }, "Mono").Active(hover->mono.Active());
 }
 
 bool Audio::OpenDevice(int id)
@@ -298,6 +327,7 @@ void Audio::Clear()
     m_Channels.clear();
     m_InputsPanel.Clear();
     m_OutputsPanel.Clear();
+    m_GeneratorPanel.Clear();
 }
 
 void Audio::LoadRouting()

@@ -5,23 +5,37 @@
 // -------------------------------------------------------------------------- \\
 
 RadioButton::RadioButton(Effects::RadioButton& t, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons)
-	: m_Toggle(t), Button<RadioButtonGraphics, ButtonType::List>([&]
+	: m_RadioButton(t), Button<RadioButtonGraphics, ButtonType::List>([&]
 		{
+			// Get the ButtonType::List id using the radio button id and the lookup.
+			auto _listId = m_Keys[m_RadioButton.Id()];
+
+			// If this button is pressed it unselects all button in
+			// the buttongroup with the id _listId
 			for (auto& i : m_RButtons)
-				if (i.first == m_Keys[m_Toggle.Id()])
+
+				// If id found
+				if (i.first == _listId)
+				{
+					// Unselect all buttons in group
 					for (auto& c : i.second)
 						c->Selected(false);
 
-			m_Toggle.Selected(true);
+					// Break out of the loop
+					break;
+				}
+
+			// After unselecting all buttons, select this button
+			m_RadioButton.Selected(true);
 		}, t.Name(), GetKey(t, keys, buttons)), m_Keys(keys), m_RButtons(buttons)
 {}
 
 void RadioButton::Update(const Vec4<int>& v)
 {
-	m_Size = { m_Toggle.Size().width, m_Toggle.Size().height };
-	m_Pos = { m_Toggle.Position().x, m_Toggle.Position().y };
+	m_Size = { m_RadioButton.Size().width, m_RadioButton.Size().height };
+	m_Pos = { m_RadioButton.Position().x, m_RadioButton.Position().y };
 
-	if (!Selected() && m_Toggle.Selected())
+	if (!Selected() && m_RadioButton.Selected())
 	{
 		Selected(true);
 	}
@@ -57,6 +71,7 @@ ToggleButton::ToggleButton(Effects::ToggleButton& t)
 
 void ToggleButton::Update(const Vec4<int>& v)
 {
+	// Update the size and position
 	m_Size = { m_Toggle.Size().width, m_Toggle.Size().height };
 	m_Pos = { m_Toggle.Position().x, m_Toggle.Position().y };
 
@@ -74,7 +89,6 @@ XYController::XYController(Effects::XYController& c)
 	{
 		if (e.button == Event::MouseButton::LEFT && e.x > X() && e.x < X() + Width() && e.y > Y() && e.y < Y() + Height())
 			m_Dragging = true;
-
 	};
 
 	m_Listener += [this](Event::MouseClicked& e)
@@ -351,34 +365,6 @@ void VolumeSlider::Render(CommandCollection& d)
 	d.Command<Graphics::Text>(&m_NegInf, Vec2<int>{_x + _w + 25, _y});
 	d.Command<PopMatrix>();
 	Parameter<VolumeSliderGraphics>::Render(d);
-}
-
-// -------------------------------------------------------------------------- \\
-// ------------------------- Old Volume Slider ------------------------------ \\
-// -------------------------------------------------------------------------- \\
-
-OldVolumeSlider::OldVolumeSlider()
-	: Parent(m_Parameter)
-{
-	m_Parameter.Range({ 0.0, 3.98107 });
-	m_Parameter.Power(4);
-	m_Parameter.Value(1);
-	m_Parameter.ResetValue(1);
-	m_Parameter.Vertical(true);
-}
-
-void OldVolumeSlider::Update(const Vec4<int>& v)
-{
-	Component::Update(v);
-
-	char s[10];
-	if (Decibels() < -100)
-		m_ValueText = "-inf";
-	else {
-		std::sprintf(s, "%.1f", Decibels());
-		m_ValueText = s;
-	}
-	m_ValueText += "dB";
 }
 
 // -------------------------------------------------------------------------- \\
@@ -700,6 +686,9 @@ void DynamicsSlider::UpdateStrings()
 	}
 }
 
+// -------------------------------------------------------------------------- \\
+// ---------------------------- Filter Curve -------------------------------- \\
+// -------------------------------------------------------------------------- \\
 
 float FilterCurve::Magnitude(float freq)
 {
@@ -743,6 +732,111 @@ float FilterCurve::Magnitude(float freq)
 }
 
 
+// -------------------------------------------------------------------------- \\
+// ------------------------- Simple Filter Curve ---------------------------- \\
+// -------------------------------------------------------------------------- \\
+
+SimpleFilterCurve::SimpleFilterCurve(Effects::SimpleFilterCurve& params)
+	: m_Curve(params)
+{
+	m_Listener += [this](Event::MousePressed& e)
+	{
+		if (e.button == Event::MouseButton::LEFT && e.x > X() && e.x < X() + Width() && e.y > Y() && e.y < Y() + Height())
+			m_Dragging = true;
+
+	};
+
+	m_Listener += [this](Event::MouseClicked& e)
+	{
+		if (e.button == Event::MouseButton::LEFT)
+		{
+			if (m_Click > 0)
+				m_Curve.freq.ResetValue(), m_Curve.width.ResetValue();
+			m_Click = 20;
+		}
+	};
+
+	m_Listener += [this](Event::MouseEntered& e)
+	{
+		m_Hovering = true;
+	};
+
+	m_Listener += [this](Event::MouseExited& e)
+	{
+		m_Hovering = false;
+	};
+
+	m_Listener += [this](Event::MouseDragged& e)
+	{
+		if (m_Dragging)
+		{
+			double _x = constrain((e.x - X() - 8) / (Width() - 8 * 2.0), 0, 1);
+			double _y = constrain((e.y - Y() - 8) / (Height() - 8 * 2.0), 0, 1);
+			if (!m_Curve.freq.Disabled())
+				m_Curve.freq.NormalizedValue(_x);
+			if (!m_Curve.width.Disabled())
+				m_Curve.width.NormalizedValue(_y);
+		}
+	};
+
+	m_Listener += [this](Event::MouseReleased& e)
+	{
+		m_Dragging = false;
+	};
+	m_Listener += [this](Event::KeyPressed& e)
+	{
+		if (!Focused())
+			return;
+
+		double amt = 0.01;
+		if (e.keymod & Event::Mod::CONTROL)
+			amt *= 4;
+		else if (e.keymod & Event::Mod::SHIFT)
+			amt *= 0.1;
+
+		if (e.key == Key::LEFT)
+			m_Curve.freq.NormalizedValue(m_Curve.freq.NormalizedValue() - amt);
+
+		if (e.key == Key::RIGHT)
+			m_Curve.freq.NormalizedValue(m_Curve.freq.NormalizedValue() + amt);
+
+		if (e.key == Key::UP)
+			m_Curve.width.NormalizedValue(m_Curve.width.NormalizedValue() + amt);
+
+		if (e.key == Key::DOWN)
+			m_Curve.width.NormalizedValue(m_Curve.width.NormalizedValue() - amt);
+
+	};
+}
+
+
+void SimpleFilterCurve::UpdateMags()
+{
+	if (m_Dragging) m_Update = true;
+
+
+	int size = std::ceil(Width() / m_Scale) + m_Scale;
+	while (m_Mags.size() < size)
+		m_Mags.push_back(0), m_Update = true;
+
+	if (m_Update)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			float ma = Magnitude(i * m_Scale);
+
+			m_Mags[i] = ma;
+		}
+		m_Update = false;
+	}
+
+	if (m_PrevFreq != m_Curve.freq.Value())
+		m_PrevFreq = m_Curve.freq.Value(), m_Update = true;
+
+	if (m_PrevWidth != m_Curve.width.Value())
+		m_PrevWidth = m_Curve.width.Value(), m_Update = true;
+}
+
 void SimpleFilterCurve::Update(const Vec4<int>& v)
 {
 	m_Click--;
@@ -759,7 +853,6 @@ void SimpleFilterCurve::Render(CommandCollection& d)
 	d.Command<Graphics::Clip>(Vec4<int>{ Position(), Size() });
 	d.Command<Graphics::Fill>(ThemeT::Get().effect_graph_background);
 	d.Command<Graphics::Quad>(Vec4<int>{ Position(), Size() });
-
 
 	for (int j = 1; j < 5; j++)
 	{
@@ -802,7 +895,6 @@ void SimpleFilterCurve::Render(CommandCollection& d)
 	d.Command<Graphics::PopClip>();
 }
 
-
 float SimpleFilterCurve::Magnitude(float a)
 {
 	auto& hp = m_Curve.Parameters()[0];
@@ -825,12 +917,10 @@ float SimpleFilterCurve::Magnitude(float a)
 
 	else
 		return (std::pow(10, (myf((lpfx - a + m2 * 30) * 0.05 - 0.9) * 0.5 + 0.5) - 1) - 0.1) * (0.9 + 0.1 * (m));
-
 }
 
 float SimpleFilterCurve::FreqToPos(float freq)
 {
-
 	static const auto mylog = [](double v, double b) { return std::log(v) / b; };
 
 	auto log = freq > 0 ? mylog(freq, m_Logg) : mylog(-freq, m_Logg);
