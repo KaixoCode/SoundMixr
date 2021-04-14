@@ -1,16 +1,21 @@
 #pragma once
 #include "pch.hpp"
 
-class MidiDevice
-{
-public:
-	unsigned int id;
-	std::string name;
-};
-
 class Midi
 {
 public:
+
+	enum class Type
+	{
+		Input, Output
+	};
+
+	class Device
+	{
+	public:
+		unsigned int id;
+		std::string name;
+	};
 
 	class Event
 	{
@@ -52,6 +57,7 @@ public:
 
 		union
 		{
+			uint32_t data;
 			struct { byte data1, data2, channel, device; };
 
 			NoteOff noteoff;
@@ -75,11 +81,11 @@ public:
 
 	Midi() { LoadPorts(); }
 
-	void OpenPort(MidiDevice& m) { OpenPort(m.id); }
+	void OpenInputPort(Midi::Device& m) { OpenInputPort(m.id); }
 
-	bool OpenPort(int id)
+	bool OpenInputPort(int id)
 	{
-		auto& o = m_Opened.try_emplace(id);
+		auto& o = m_InOpened.try_emplace(id);
 		if (o.second)
 			try
 			{
@@ -87,37 +93,70 @@ public:
 			}
 			catch (...)
 			{
-				m_Opened.erase(m_Opened.find(id));
+				m_InOpened.erase(m_InOpened.find(id));
 				return false;
 			}
 
 		return true;
 	}
 
-	void ClosePort(MidiDevice& m) { ClosePort(m.id); }
+	void OpenOutputPort(Midi::Device& m) { OpenOutputPort(m.id); }
 
-	void ClosePort(int id)
+	bool OpenOutputPort(int id)
 	{
-		auto& i = m_Opened.find(id);
-		if (i != m_Opened.end())
-			i->second.closePort(), m_Opened.erase(i);
+		auto& o = m_OutOpened.try_emplace(id);
+		if (o.second)
+			try
+		{
+			o.first->second.openPort(id);
+		}
+		catch (...)
+		{
+			m_OutOpened.erase(m_OutOpened.find(id));
+			return false;
+		}
+
+		return true;
+	}
+
+	void CloseInputPort(Midi::Device& m) { CloseInputPort(m.id); }
+
+	void CloseInputPort(int id)
+	{
+		auto& i = m_InOpened.find(id);
+		if (i != m_InOpened.end())
+			i->second.closePort(), m_InOpened.erase(i);
+	}
+
+	void CloseOutputPort(Midi::Device& m) { CloseOutputPort(m.id); }
+
+	void CloseOutputPort(int id)
+	{
+		auto& i = m_InOpened.find(id);
+		if (i != m_InOpened.end())
+			i->second.closePort(), m_InOpened.erase(i);
 	}
 
 	void LoadPorts()
 	{
-		m_Devices.clear();
-		int ports = m_Midi.getPortCount();
+		m_InputDevices.clear();
+		int ports = m_MidiIn.getPortCount();
 		for (unsigned int i = 0; i < ports; i++)
-			m_Devices.emplace_back(MidiDevice{ i, m_Midi.getPortName(i) });
+			m_InputDevices.emplace_back(Midi::Device{ i, m_MidiIn.getPortName(i) });
+
+		m_OutputDevices.clear();
+		ports = m_MidiOut.getPortCount();
+		for (unsigned int i = 0; i < ports; i++)
+			m_OutputDevices.emplace_back(Midi::Device{ i, m_MidiOut.getPortName(i) });
 	}
 
 	void ReadMessages()
 	{
-		if (m_Opened.size() == 0)
+		if (m_InOpened.size() == 0)
 			return;
 
 		// Go through all opened midi devices.
-		for (auto& midi : m_Opened)
+		for (auto& midi : m_InOpened)
 		{
 			// Read 50 messages.
 			for (int i = 0; i < 50; i++)
@@ -126,6 +165,10 @@ public:
 				midi.second.getMessage(&m_Message);
 				if (!m_Message.size())
 					break;
+
+				// Forward midi to all connected output devices
+				for (auto& out : m_OutOpened)
+					out.second.sendMessage(&m_Message);
 
 				// Send the event to all callbacks.
 				Event event{ m_Message };
@@ -148,7 +191,8 @@ public:
 		};
 	}
 
-	std::unordered_map<int, RtMidiIn>& Opened() { return m_Opened; }
+	std::unordered_map<int, RtMidiIn>& InputsOpened() { return m_InOpened; }
+	std::unordered_map<int, RtMidiOut>& OutputsOpened() { return m_OutOpened; }
 
 
 	class EventStorage
@@ -192,9 +236,11 @@ public:
 	template<> void Remove<Event::ChannelAfterTouch>(int id) { m_ChannelAfterTouchCallbacks.erase(m_ChannelAfterTouchCallbacks.find(id)); }
 	template<> void Remove<Event::PitchWheel>(int id) { m_PitchWheelCallbacks.erase(m_PitchWheelCallbacks.find(id)); }
 
-	auto Devices() -> std::vector<MidiDevice>& { return m_Devices; }
+	auto InputDevices() -> std::vector<Midi::Device>& { return m_InputDevices; }
+	auto OutputDevices() -> std::vector<Midi::Device>& { return m_OutputDevices; }
 
-	int DeviceCount() { return m_Midi.getPortCount(); }
+	int InputDeviceCount() { return m_MidiIn.getPortCount(); }
+	int OutputDeviceCount() { return m_MidiOut.getPortCount(); }
 
 private:
 	std::unordered_map<int, Callback<Event>>                    m_EventCallbacks;
@@ -206,9 +252,12 @@ private:
 	std::unordered_map<int, Callback<Event::ChannelAfterTouch>> m_ChannelAfterTouchCallbacks;
 	std::unordered_map<int, Callback<Event::PitchWheel>>        m_PitchWheelCallbacks;
 
-	RtMidiIn m_Midi;
-	std::vector<MidiDevice> m_Devices;
-	std::unordered_map<int, RtMidiIn> m_Opened;
+	RtMidiIn m_MidiIn;
+	RtMidiOut m_MidiOut;
+	std::vector<Midi::Device> m_InputDevices;
+	std::vector<Midi::Device> m_OutputDevices;
+	std::unordered_map<int, RtMidiIn> m_InOpened;
+	std::unordered_map<int, RtMidiOut> m_OutOpened;
 	std::vector<uint8_t> m_Message;
 	int m_Counter = 0;
 };

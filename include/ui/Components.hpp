@@ -120,6 +120,9 @@ public:
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;
 
+	virtual operator nlohmann::json() { return m_Parameter.operator nlohmann::json(); };
+	virtual void operator=(const nlohmann::json& json) { m_Parameter = json; };
+
 private:
 
 	// Statically store the numbers to not reallocate it for each object

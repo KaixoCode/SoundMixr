@@ -40,10 +40,17 @@ private:
     SoundMixrFrame& mainWindow, &settings;
     Soundboard& soundboard;
 
-    std::vector<std::string> m_MidiEnabled;
+    std::vector<std::string> 
+        m_MidiInEnabled,
+        m_MidiOutEnabled;
 
-    std::vector<Button<ToggleButtonGraphics, ButtonType::Toggle>*> m_MidiButtons;
-    Panel* m_MidiDevices;
+    std::vector<Button<ToggleButtonGraphics, ButtonType::Toggle>*> 
+        m_MidiInButtons,
+        m_MidiOutButtons;
+
+    Panel
+        *m_MidiInDevices, 
+        *m_MidiOutDevices;
 
     DropDown<std::string, DropdownButton2>* m_ThemeDropDown;
     DropDown<int, DropdownButton2>* m_AsioDropDown;

@@ -184,10 +184,10 @@ EndpointChannel::operator nlohmann::json()
 {
 	nlohmann::json _json = m_EffectChain;
 	_json["id"] = Id();
-	_json["volume"] = volume.Value();
+	_json["volume"] = volume;
 	_json["muted"] = mute.Active();
 	_json["mono"] = mono.Active();
-	_json["pan"] = pan.Value();
+	_json["pan"] = pan;
 	_json["name"] = name.Content();
 
 	if (Type() & Type::Input)
@@ -212,8 +212,8 @@ void EndpointChannel::operator=(const nlohmann::json& json)
 {
 	mono.Active(json.at("mono").get<bool>());
 	mute.Active(json.at("muted").get<bool>());
-	pan.Value(json.at("pan").get<double>());
-	volume.Value(json.at("volume").get<double>());
+	pan = json.at("pan");
+	volume = json.at("volume");
 	name.Content(json.at("name").get<std::string>());
 	m_EffectChain = json;
 };
