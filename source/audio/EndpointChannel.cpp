@@ -122,7 +122,7 @@ void EndpointChannel::Process()
 			for (int i = 0; i < Lines(); i++)
 			{
 				float _level = _avg * m_Pans[i];
-				m_Endpoints[i]->sample = _level;
+				m_Endpoints[i]->sample = constrain(_level, -1, 1);
 
 				// Set peak, for the volume slider meter.
 				if (_level > m_Peaks[i])
