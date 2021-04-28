@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.hpp"
+#include "ui/Frame.hpp"
 
 namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 
@@ -77,7 +78,7 @@ private:
 	float m_MultiplicationFactor = 1.0F;
 };
 
-class Soundboard : public Frame
+class Soundboard : public SoundMixrFrame
 {
 public:
 	Soundboard();

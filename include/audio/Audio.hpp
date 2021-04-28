@@ -88,6 +88,12 @@ public:
      */
     void UpdateEffects();
 
+    template<typename Type, typename ... Args>
+    void EmplaceChannel(Args&& ... args)
+    {
+        m_GeneratorPanel.Emplace<Type>(std::forward<Args>(args)...);
+    }
+
     void Update(const Vec4<int>& v) override;
     void Render(CommandCollection& d) override;
 
