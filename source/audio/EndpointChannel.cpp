@@ -99,7 +99,7 @@ void EndpointChannel::Process()
 			// If it's not mono, directly send to endpoints
 			if (!_mono)
 			{
-				m_Endpoints[i]->sample = _sample;
+				m_Endpoints[i]->sample = constrain(_sample, -1, 1);
 
 				// Set peak, for the volume slider meter.
 				if (_sample > m_Peaks[i])

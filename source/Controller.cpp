@@ -320,6 +320,7 @@ void Controller::SaveSettings()
         std::ofstream _of;
         std::filesystem::path dir("./settings");
         std::filesystem::create_directories(dir);
+        LOG(std::filesystem::current_path());
         _of.open("./settings/settings");
         _of << /*std::setw(4) <<*/ _json;
         _of.close();
