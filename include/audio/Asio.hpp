@@ -7,6 +7,7 @@
 class Device
 {
 public:
+	Device() : info(*static_cast<const PaDeviceInfo*>(nullptr)) { }
 	Device(PaDeviceIndex id, const PaDeviceInfo& a)
 		: id(id), info(a)
 	{}
@@ -56,7 +57,7 @@ public:
 	 * Get all available devices.
 	 * @return vector of devices
 	 */
-	auto Devices() -> std::vector<::Device>& { return m_Devices; }
+	auto Devices() -> std::unordered_map<int, ::Device>& { return m_Devices; }
 
 	/**
 	 * Set the device that should be opened.
@@ -146,5 +147,5 @@ private:
 	PaStream* stream = nullptr;
 	::Device* m_Device = nullptr;
 
-	std::map<int, ::Device> m_Devices;
+	std::unordered_map<int, ::Device> m_Devices;
 };

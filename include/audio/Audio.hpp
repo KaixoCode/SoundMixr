@@ -91,7 +91,8 @@ public:
     template<typename Type, typename ... Args>
     void EmplaceChannel(Args&& ... args)
     {
-        m_GeneratorPanel.Emplace<Type>(std::forward<Args>(args)...);
+        auto& _c = m_GeneratorPanel.Emplace<Type>(std::forward<Args>(args)...);
+        m_Channels.push_back(&_c);
     }
 
     void Update(const Vec4<int>& v) override;

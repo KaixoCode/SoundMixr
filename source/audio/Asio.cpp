@@ -18,7 +18,7 @@ Asio::Asio()
 	{
 		info = Pa_GetDeviceInfo(i);
 		if (std::string(Pa_GetHostApiInfo(info->hostApi)->name) == "ASIO")
-			m_Devices.emplace_back(i, *info);
+			m_Devices.emplace(i, ::Device{ i, *info });
 	}
 }
 
