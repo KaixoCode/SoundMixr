@@ -10,7 +10,7 @@ ChannelBase::ChannelBase(ChannelType type)
 	volumeVal(Emplace<TextComponent>("0.0dB")),
 	mute(Emplace<Button<MuteButton, ButtonType::Toggle>>("MUTE")),
 	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>("MONO")),
-	route(Emplace<Button<RouteButton, ButtonType::Toggle>>(type& Type::Input ? "in" : ""))
+	route(Emplace<Button<RouteButton, ButtonType::Toggle>>((type & Type::Input) ? "in" : ""))
 {
 	// Standard width of channel is 70.
 	Width(70);
