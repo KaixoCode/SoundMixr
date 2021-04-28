@@ -1,6 +1,6 @@
 #include "Controller.hpp"
 
-#ifndef _WIN32
+#ifdef _DEBUG
 int main()
 {
 	Controller _c;
