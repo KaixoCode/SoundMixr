@@ -1,4 +1,5 @@
 #include "Controller.hpp"
+#include <audio/SoundboardChannel.hpp>
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
@@ -193,6 +194,8 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     gnrl[0][0].DivSize(4);
 
     _settingsPanel.Div()[0].DivSize(20);
+
+    m_Audio->EmplaceChannel<SoundboardChannel>(soundboard);
 
     //
     // Main loop

@@ -48,8 +48,8 @@ Audio::Audio()
     m_GeneratorPanel.Width(70);
     m_GeneratorPanel.Layout<Layout::SidewaysStack>(8, 8);
     m_GeneratorPanel.AutoResize(true, false);
-    m_GeneratorPanel.Hide();
-    m_Divider2.Hide();
+    /*m_GeneratorPanel.Hide();
+    m_Divider2.Hide();*/
 
     // Initially hide the effect panel, will be shown when double click on channel.
     m_EffectPanel.Hide();

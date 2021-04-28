@@ -146,5 +146,5 @@ private:
 	PaStream* stream = nullptr;
 	::Device* m_Device = nullptr;
 
-	std::vector<::Device> m_Devices;
+	std::map<int, ::Device> m_Devices;
 };

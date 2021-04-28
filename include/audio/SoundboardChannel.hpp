@@ -7,9 +7,9 @@
 class SoundboardChannel : public ChannelBase
 {
 public:
-	SoundboardChannel()
+	SoundboardChannel(Soundboard& soundboard)
 		: ChannelBase(ChannelBase::Type::Input & ChannelBase::Type::SoundBoard),
-		m_Soundboard(Soundboard())
+		m_Soundboard(soundboard)
 	{
 		Lines(2);
 	}
@@ -97,6 +97,9 @@ public:
 		m_Lock.unlock();
 	};
 
+	virtual operator nlohmann::json() override { return {}; };
+	virtual void operator=(const nlohmann::json& json) override {};
+
 private:
-	Soundboard m_Soundboard;
+	Soundboard& m_Soundboard;
 };
