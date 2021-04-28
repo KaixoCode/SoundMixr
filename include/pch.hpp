@@ -12,7 +12,7 @@
 #include "GuiCode/ui/graphics/Command.hpp"
 #include "GuiCode/ui/graphics/Graphics.hpp"
 #include "GuiCode/ui/window/Frame.hpp"
-#include "GuiCode/ui/window/MenuFrame.hpp"
+#include "GuiCode/ui/window/ComponentFrame.hpp"
 #include "GuiCode/ui/window/SmallFrame.hpp"
 #include "GuiCode/ui/window/Window.hpp"
 #include "GuiCode/ui/components/text/TextComponent.hpp"
