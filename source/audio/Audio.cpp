@@ -329,7 +329,15 @@ void Audio::Clear()
     m_Channels.clear();
     m_InputsPanel.Clear();
     m_OutputsPanel.Clear();
-    m_GeneratorPanel.Clear();
+
+    for (auto& c : m_GeneratorPanel.Components())
+    {
+        ChannelBase* s = dynamic_cast<ChannelBase*>(c.get());
+        if (s)
+            m_Channels.push_back(s);
+    }
+
+    //m_GeneratorPanel.Clear();
 }
 
 void Audio::LoadRouting()
