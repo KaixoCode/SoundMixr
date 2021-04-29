@@ -115,7 +115,7 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
                 _asioControlPanel.Disable(), SaveSettings();
         });
     for (auto& _d : Audio().Asio().Devices())
-        m_AsioDropDown->AddOption(_d.info.name, _d.id + 1, [&](int i)
+        m_AsioDropDown->AddOption(_d.second.info.name, _d.second.id + 1, [&](int i)
             {
                 // If device opened successfully, enable the controlpanel button and save settings.
                 if (Audio().OpenDevice(i - 1))
