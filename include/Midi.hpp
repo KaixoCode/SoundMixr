@@ -13,6 +13,9 @@ public:
 	class Device
 	{
 	public:
+		Device(unsigned int id, const std::string& name)
+			: id(id), name(name.substr(0, name.size() - 2))
+		{}
 		unsigned int id;
 		std::string name;
 	};

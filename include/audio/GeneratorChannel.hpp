@@ -12,8 +12,8 @@ class GeneratorChannel : public ChannelBase
 {
 public:
 
-	GeneratorChannel(ChannelType type)
-		: ChannelBase(type)
+	GeneratorChannel()
+		: ChannelBase(ChannelBase::Type::Input | ChannelBase::Type::Generator)
 	{
 		name.Content("Generator");
 		Lines(2);

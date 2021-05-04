@@ -43,6 +43,12 @@ public:
 	ChannelBase(ChannelType type);
 
 	/**
+	 * Destructor with lock to make sure it isn't being deleted
+	 * when the process method is still busy in another thread.
+	 */
+	~ChannelBase() { m_Lock.lock(); m_Lock.unlock(); };
+
+	/**
 	 * Connect to a channel.
 	 * @param c channel
 	 */

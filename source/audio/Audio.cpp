@@ -93,14 +93,32 @@ Audio::Audio()
                         m_Lock.lock();
 
                         // Emplace a channelgroup to the list
-                        auto& _c = m_GeneratorPanel.Emplace<GeneratorChannel>(
-                            ChannelBase::Type::Input | ChannelBase::Type::Generator);
+                        auto& _c = m_GeneratorPanel.Emplace<GeneratorChannel>();
                         m_Channels.push_back(&_c);
 
                         m_Lock.unlock();
                     }, " + Test Thing");
                 RightClickMenu::Get().Open(&m_Menu);
 
+            }
+            else
+            {
+                m_Menu.Clear();
+                m_Menu.ButtonSize({ 180, 20 });
+                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>("Add Generator").Disable();
+                m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+                    [&]
+                    {
+                        m_Lock.lock();
+
+                        // Emplace a channelgroup to the list
+                        auto& _c = m_GeneratorPanel.Emplace<GeneratorChannel>();
+                        m_Channels.push_back(&_c);
+
+                        m_Lock.unlock();
+                    }, " + Test Thing");
+                RightClickMenu::Get().Open(&m_Menu);
             }
         }
     };
@@ -439,7 +457,7 @@ void Audio::LoadRouting()
 
         // If error occured (either file didn't exist or was parced incorrectly
         // load all the channels as stereo channels.
-        catch (...)
+        catch (std::exception)
         {
             _error = true;
         }
