@@ -8,7 +8,7 @@ class SoundboardChannel : public ChannelBase
 {
 public:
 	SoundboardChannel(Soundboard& soundboard)
-		: ChannelBase(ChannelBase::Type::Input & ChannelBase::Type::SoundBoard),
+		: ChannelBase(ChannelBase::Type::Input | ChannelBase::Type::SoundBoard),
 		m_Soundboard(soundboard)
 	{
 		Lines(2);

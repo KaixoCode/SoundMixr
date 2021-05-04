@@ -132,9 +132,9 @@ public:
 
 	void CloseOutputPort(int id)
 	{
-		auto& i = m_InOpened.find(id);
-		if (i != m_InOpened.end())
-			i->second.closePort(), m_InOpened.erase(i);
+		auto& i = m_OutOpened.find(id);
+		if (i != m_OutOpened.end())
+			i->second.closePort(), m_OutOpened.erase(i);
 	}
 
 	void LoadPorts()

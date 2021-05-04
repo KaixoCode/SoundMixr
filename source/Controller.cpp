@@ -45,7 +45,7 @@ void Controller::Run()
     // The frame menu of the main window.
     auto& _file = mainWindow.Menu().Emplace<TitleMenuButton>("File");
     _file.Size({ 34, 32 });
-    _file.MenuBase().ButtonSize({ 170, 20 });
+    _file.MenuBase().ButtonSize({ 220, 20 });
     _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, "Debug Overlay", Key::CTRL_D);
     _file.Emplace<MenuButton>([&] { soundboard.Show(); }, "Soundboard...", Key::CTRL_SHIFT_S);
@@ -269,7 +269,7 @@ void Controller::LoadSettings()
         std::ifstream _if;
         _if.open("./settings/settings");
         if (!_if.is_open())
-            return;
+            throw std::exception();
 
         nlohmann::json _json;
         _json << _if;
@@ -280,14 +280,24 @@ void Controller::LoadSettings()
         auto zoom = _json.at("zoom").get<double>();
 
         for (auto& i : _json.at("midiin-enabled"))
+        {
+            if (std::find(m_MidiInEnabled.begin(), m_MidiInEnabled.end(), i.get<std::string>()) == m_MidiInEnabled.end())
+                m_MidiInEnabled.push_back(i.get<std::string>());
+
             for (auto& dev : Midi::Get().InputDevices())
                 if (dev.name == i.get<std::string>() && dev.id >= 0 && dev.id < m_MidiInButtons.size())
                     m_MidiInButtons[dev.id]->Active(true);
-
+        }
+        
         for (auto& i : _json.at("midiout-enabled"))
+        {
+            if (std::find(m_MidiOutEnabled.begin(), m_MidiOutEnabled.end(), i.get<std::string>()) == m_MidiOutEnabled.end())
+                m_MidiOutEnabled.push_back(i.get<std::string>());
+
             for (auto& dev : Midi::Get().OutputDevices())
                 if (dev.name == i.get<std::string>() && dev.id >= 0 && dev.id < m_MidiOutButtons.size())
                     m_MidiOutButtons[dev.id]->Active(true);
+        }
 
         m_ScaleSlider->Value(zoom);
         m_AsioDropDown->Select(device);
@@ -295,8 +305,9 @@ void Controller::LoadSettings()
 
         SaveSettings();
     }
-    catch (...)
+    catch (std::exception)
     {
+        m_LoadedSettings = true;
         LOG("Failed to load settings.");
     }
     m_LoadedSettings = true;
@@ -350,6 +361,7 @@ void Controller::LoadThemes()
                 SaveSettings();
             });
     }
+    m_LoadedSettings = true;
     LoadSettings();
 }
 

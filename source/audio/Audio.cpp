@@ -651,8 +651,8 @@ int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned lo
     float* _inBuffer = (float*)inputBuffer;
     float* _outBuffer = (float*)outputBuffer;
 
-    int _inChannels = _this.Asio().Device().info.maxInputChannels;
-    int _outChannels = _this.Asio().Device().info.maxOutputChannels;
+    int _inChannelCount = _this.Asio().Device().info.maxInputChannels;
+    int _outChannelCount = _this.Asio().Device().info.maxOutputChannels;
 
     auto& _inputs = _this.Asio().Inputs();
     auto& _outputs = _this.Asio().Outputs();
@@ -662,8 +662,8 @@ int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned lo
     for (int i = 0; i < nBufferFrames; i++)
     {
         // First input the samples from the input buffer to the input endpoints
-        for (int j = 0; j < _inChannels; j++)
-            _inputs[j].sample = _inBuffer[i * _inChannels + j];
+        for (int j = 0; j < _inChannelCount; j++)
+            _inputs[j].sample = _inBuffer[i * _inChannelCount + j];
 
         // Process all channels, this lock is here for splitting/combining channels
         _this.m_Lock.lock();
@@ -672,8 +672,8 @@ int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned lo
         _this.m_Lock.unlock();
 
         // Output the samples from the output endpoints to the output buffer.
-        for (int j = 0; j < _outChannels; j++)
-            _outBuffer[i * _outChannels + j] = _outputs[j].sample;
+        for (int j = 0; j < _outChannelCount; j++)
+            _outBuffer[i * _outChannelCount + j] = _outputs[j].sample;
     }
     return 0;
 }
