@@ -5,7 +5,7 @@ ChannelBase::ChannelBase(ChannelType type)
 
 	// Emplace all the parameters
 	volume(Emplace<VolumeSlider>(volumeParam)),
-	pan(Emplace<PanSlider>()),
+	pan(Emplace<PanSlider>(panParam)),
 	name(Emplace<TextComponent>("Discord")),
 	volumeVal(Emplace<TextComponent>("0.0dB")),
 	mute(Emplace<Button<MuteButton, ButtonType::Toggle>>("MUTE")),

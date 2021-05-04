@@ -49,6 +49,9 @@ void Controller::Run()
     _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, "Debug Overlay", Key::CTRL_D);
     _file.Emplace<MenuButton>([&] { soundboard.Show(); }, "Soundboard...", Key::CTRL_SHIFT_S);
+    _file.Emplace<MenuToggleButton>([&](bool c) { 
+        SetWindowPos(mainWindow.GetWin32Handle(), c ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE); 
+        }, "Always On Top");
     _file.Emplace<MenuButton>([&] { m_Audio->Asio().CloseStream(); m_Gui.Close(); }, "Exit", Key::ALT_F4);
 
     // Settings window.

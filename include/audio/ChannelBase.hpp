@@ -121,6 +121,7 @@ public:
 	virtual void operator=(const nlohmann::json&) = 0;
 
 	Effects::VolumeSlider volumeParam;
+	Effects::Parameter panParam{ "Pan", Effects::ParameterType::Slider };
 	VolumeSlider& volume;
 	PanSlider& pan;
 	TextComponent& name, &volumeVal;

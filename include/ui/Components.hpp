@@ -139,13 +139,10 @@ private:
 class PanSlider : public Parameter<PanSliderGraphics>
 {
 public:
-	PanSlider();
+	PanSlider(Effects::Parameter&);
 
 	virtual operator nlohmann::json() { return m_Parameter.operator nlohmann::json(); };
 	virtual void operator=(const nlohmann::json& json) { m_Parameter = json; };
-
-private:
-	Effects::Parameter m_Parameter{ "Pan", Effects::ParameterType::Slider };
 };
 
 /**

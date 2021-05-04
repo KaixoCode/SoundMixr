@@ -60,6 +60,13 @@ public:
 	virtual bool   Hovering() const { return m_Hovering; }
 	virtual bool   Dragging() const { return m_Dragging; }
 
+
+	bool WithinBounds(const Vec2<int>& pos) const override
+	{
+		return pos.x >= m_Dims.x && pos.x <= m_Dims.x + m_Dims.width
+			&& pos.y >= m_Dims.y && pos.y <= m_Dims.y + m_Dims.height;
+	}
+
 	virtual operator nlohmann::json() { return m_Parameter.operator nlohmann::json(); };
 	virtual void operator=(const nlohmann::json& json) { m_Parameter = json; };
 
@@ -69,8 +76,10 @@ public:
 protected:
 	Effects::Parameter& m_Parameter;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
+	Vec4<int> m_Dims;
 
 	int m_Counter = 0;
+	int m_PressBox = 0;
 
 	double m_PressMouse = 0;
 
@@ -81,6 +90,8 @@ protected:
 
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_LinkButton;
 	Button<SoundMixrGraphics::Menu, ButtonType::Normal>* m_UnlinkButton;
+
+	TextBox& m_Value;
 
 	/**
 	 * Midi Event, stored here, will automatically remove callback from Midi
@@ -114,7 +125,7 @@ public:
 
 	void Render(CommandCollection& d) override
 	{
-		ParameterBase::Render(d);
 		Graphics::Render(*this, d);
+		ParameterBase::Render(d);
 	};
 };

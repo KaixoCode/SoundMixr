@@ -371,9 +371,10 @@ void VolumeSlider::Render(CommandCollection& d)
 // ----------------------------- Pan Slider --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-PanSlider::PanSlider()
-	: Parameter<PanSliderGraphics>(m_Parameter), m_Parameter("", Effects::ParameterType::Slider)
+PanSlider::PanSlider(Effects::Parameter& param)
+	: Parameter<PanSliderGraphics>(param)
 {
+	Name("pan");
 	Range({ -50, 50 });
 	Power(1);
 	Decimals(-1);

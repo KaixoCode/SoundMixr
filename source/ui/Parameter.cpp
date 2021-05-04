@@ -1,13 +1,69 @@
 #include "ui/Parameter.hpp"
 
 ParameterBase::ParameterBase(Effects::Parameter& param)
-	: m_Parameter(param)
+	: m_Parameter(param),
+	m_Value(Emplace<TextBox>())
 {
+	m_Size = { param.Size().width, param.Size().height };
+	m_Value.Background(Color{ 0, 0, 0, 0 });
+	m_Value.AlignLines(Align::CENTER);
+	if (m_Parameter.Type() == Effects::ParameterType::Slider)
+		m_Value.Hide();
+
+	m_Value.Listener() += [this](Event::Unfocused& e) 
+	{
+		auto content = m_Value.Content();
+		std::regex reg{ "[^\\d\\.\\-]+" };
+		std::string out = std::regex_replace(content, reg, "");
+		if (m_Parameter.Type() == Effects::ParameterType::Slider)
+			m_Value.Hide();
+		try {
+			double i = std::stod(out);
+			Value(i);
+		}
+		catch (std::invalid_argument const& e) {
+		}
+		catch (std::out_of_range const& e) {
+		}
+	};
+
+	m_Value.Listener() += [this](Event::KeyTyped& e)
+	{
+		if (e.key == Key::ENTER && Focused())
+		{
+			Event e{ Event::Type::Unfocused };
+			m_Value.AddEvent(e);
+			m_Value.Focused(false);
+			m_FocusedComponent = nullptr;
+		};
+	};
+
+	Listener() += [this](Event::MousePressed& e)
+	{
+		if (e.button == Event::MouseButton::LEFT)
+			m_PressBox = 100;
+	};
+
+	Listener() += [this](Event::MouseClicked& e)
+	{
+		if (e.button == Event::MouseButton::LEFT)
+		{
+			if (m_PressBox < 80)
+			{
+				m_Value.Focused(true);
+				m_FocusedComponent = &m_Value;
+				m_Value.Displayer().Container().Select({ 0, (int)m_Value.Content().length() });
+				m_Value.Visible(true);
+			}
+			m_PressBox = 0;
+		}
+	};
+
 	m_Menu.Clear();
 	m_Menu.ButtonSize({ 160, 20 });
 	m_Listener += [&](Event::MousePressed& e)
 	{
-		if (e.button == Event::MouseButton::LEFT)
+		if (e.button == Event::MouseButton::LEFT && !m_Value.Hovering())
 		{
 			m_PressMouse = Vertical() ? e.y : e.x;
 
@@ -72,10 +128,10 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 
 	m_Listener += [this](Event::MouseClicked& e)
 	{
-		if (m_Counter > 0) // Double Click
+		if (m_Counter > 0 && !m_Value.Hovering()) // Double Click
 			ResetValue();
 
-		if (e.button == Event::MouseButton::LEFT)
+		if (e.button == Event::MouseButton::LEFT && !m_Value.Hovering())
 			m_Counter = 20;
 	};
 
@@ -128,8 +184,37 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 
 void ParameterBase::Update(const Vec4<int>& vp) 
 {
+	if (m_PressBox > 1)
+		m_PressBox--;
+
 	m_Size = { m_Parameter.Size().width, m_Parameter.Size().height };
 	m_Pos = { m_Parameter.Position().x, m_Parameter.Position().y };
+
+	if (Disabled())
+		m_Value.TextColor(ThemeT::Get().knob_disabled_value_text);
+	else if (Dragging())
+		m_Value.TextColor(ThemeT::Get().knob_active_value_text);
+	else if (Hovering())
+		m_Value.TextColor(ThemeT::Get().knob_hovering_value_text);
+	else
+		m_Value.TextColor(ThemeT::Get().knob_idle_value_text);
+
+	if (m_Parameter.Type() == Effects::ParameterType::Knob)
+	{
+		m_Value.Visible(DisplayValue());
+		m_Dims = { m_Pos.x - 15, m_Pos.y - 15, m_Size.width + 30, m_Size.height + 15 };
+	}
+	else
+	{
+		m_Dims = { m_Pos.x, m_Pos.y, m_Size.width, m_Size.height };
+	}
+	m_Value.Size({ m_Dims.width, 20 });
+	m_Value.Position({ m_Dims.x, m_Dims.y });
+	
+	if (m_Parameter.Type() == Effects::ParameterType::Slider)
+	{
+		m_Value.Position({ m_Dims.x, m_Dims.y + m_Dims.height / 2 - 10 });
+	}
 
 	m_ValueText = "";
 	double _v = Value();
@@ -191,7 +276,10 @@ void ParameterBase::Update(const Vec4<int>& vp)
 		m_ValueText += s;
 	}
 
+	if (!m_Value.Focused())
+		m_Value.Content(m_ValueText);
 	Component::Update(vp);
+	m_Value.Update(vp);
 }
 
 void ParameterBase::Render(CommandCollection& d)
@@ -201,4 +289,5 @@ void ParameterBase::Render(CommandCollection& d)
 
 	NeedsRedraw(false);
 	Component::Render(d);
+	m_Value.Render(d);
 };

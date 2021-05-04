@@ -908,20 +908,20 @@ public:
 		d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2, b.Y() + 1, _w, b.Height() - 2});
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);		
-		if (b.DisplayValue())
-		{
-			if (b.Disabled())
-				d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
-			else if (b.Dragging())
-				d.Command<Fill>(ThemeT::Get().slider_active_value_text);
-			else if (b.Hovering())
-				d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
-			else
-				d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
+		//if (b.DisplayValue())
+		//{
+		//	if (b.Disabled())
+		//		d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
+		//	else if (b.Dragging())
+		//		d.Command<Fill>(ThemeT::Get().slider_active_value_text);
+		//	else if (b.Hovering())
+		//		d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
+		//	else
+		//		d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
 
-			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-			d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
-		}
+		//	d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		//	d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
+		//}
 		if (b.DisplayName())
 		{
 			if (b.Disabled())
@@ -1027,20 +1027,20 @@ public:
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.DisplayValue())
-		{
-			if (b.Disabled())
-				d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
-			else if (b.Dragging())
-				d.Command<Fill>(ThemeT::Get().slider_active_value_text);
-			else if (b.Hovering())
-				d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
-			else
-				d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
+		//if (b.DisplayValue())
+		//{
+		//	if (b.Disabled())
+		//		d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
+		//	else if (b.Dragging())
+		//		d.Command<Fill>(ThemeT::Get().slider_active_value_text);
+		//	else if (b.Hovering())
+		//		d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
+		//	else
+		//		d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
 
-			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-			d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + b.Height() / 2});
-		}
+		//	d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		//	d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + b.Height() / 2});
+		//}
 		if (b.DisplayName())
 		{
 			if (b.Disabled())
@@ -1386,20 +1386,20 @@ public:
 		}
 
 		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.DisplayValue())
-		{
-			if (b.Disabled())
-				d.Command<Fill>(ThemeT::Get().knob_disabled_value_text);
-			else if (b.Dragging())
-				d.Command<Fill>(ThemeT::Get().knob_active_value_text);
-			else if (b.Hovering())
-				d.Command<Fill>(ThemeT::Get().knob_hovering_value_text);
-			else
-				d.Command<Fill>(ThemeT::Get().knob_idle_value_text);
+		//if (b.DisplayValue())
+		//{
+		//	if (b.Disabled())
+		//		d.Command<Fill>(ThemeT::Get().knob_disabled_value_text);
+		//	else if (b.Dragging())
+		//		d.Command<Fill>(ThemeT::Get().knob_active_value_text);
+		//	else if (b.Hovering())
+		//		d.Command<Fill>(ThemeT::Get().knob_hovering_value_text);
+		//	else
+		//		d.Command<Fill>(ThemeT::Get().knob_idle_value_text);
 
-			d.Command<TextAlign>(Align::CENTER, Align::TOP);
-			d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + 3});
-		}		
+		//	d.Command<TextAlign>(Align::CENTER, Align::TOP);
+		//	d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + 3});
+		//}		
 		if (b.DisplayName())
 		{
 			if (b.Disabled())
