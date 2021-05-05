@@ -37,7 +37,7 @@ private:
     bool m_LoadedSettings = false;
 
     Gui m_Gui;
-    SoundMixrFrame& mainWindow, &settings;
+    SoundMixrFrame& mainWindow, &settings, &effectWindow;
     Soundboard& soundboard;
 
     std::vector<std::string> 

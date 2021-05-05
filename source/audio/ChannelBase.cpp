@@ -23,6 +23,18 @@ ChannelBase::ChannelBase(ChannelType type)
 	pan.Name("Pan");
 	pan.DisplayName(false);
 
+	// Unfocus when pressing enter
+	name.Listener() += [this](Event::KeyTyped& e)
+	{
+		if (e.key == Key::ENTER && Focused())
+		{
+			Event e{ Event::Type::Unfocused };
+			name.AddEvent(e);
+			name.Focused(false);
+			m_FocusedComponent = nullptr;
+		};
+	};
+
 	// Layout is divs, for easy complex layout.
 	Layout<Layout::Divs>();
 	Div() = { 7, Div::Alignment::Vertical, 0, false, Div::AUTO };

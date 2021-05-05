@@ -6,8 +6,9 @@
 // -------------------------------------------------------------------------- \\
  
 Controller::Controller()
-    : mainWindow(m_Gui.AddWindow<SoundMixrFrame>("SoundMixr", 728, 500, true)),
-    settings(m_Gui.AddWindow<SoundMixrFrame>("Settings", 400, 526, true, false, true)),
+    : mainWindow(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "SoundMixr", { 728, 500 }, false, false, true, true, true, true, nullptr })),
+    settings(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "Settings", { 400, 526 }, false, false, true, false, true, true, &mainWindow })),
+    effectWindow(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "Effect Chain", { 348, 316 }, false, false, true, false, true, true, &mainWindow })),
     soundboard(m_Gui.AddWindow<Soundboard>())
 {}
 
@@ -38,6 +39,12 @@ void Controller::Run()
         });
     
     // AudioController panel, contains all channels and effect panel. Basically the main component.
+    effectWindow.Panel().Layout<Layout::Grid>(1, 1, 8, 8);
+    effectWindow.Panel().Background(ThemeT::Get().window_border);
+    effectWindow.MaxSize({ 348, -1 });
+    effectWindow.MinSize({ 348, -1 });
+    auto& _effectWindowPanel = effectWindow.Panel().Emplace<EffectPanel>();
+    _effectWindowPanel.m_ShowSidebar = false;
     mainWindow.Panel().Layout<Layout::Grid>(1, 1, 8, 8);
     mainWindow.Panel().Background(ThemeT::Get().window_border);
     m_Audio = &mainWindow.Panel().Emplace<::Audio>(Layout::Hint::Center);
@@ -49,9 +56,10 @@ void Controller::Run()
     _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, "Debug Overlay", Key::CTRL_D);
     _file.Emplace<MenuButton>([&] { soundboard.Show(); }, "Soundboard...", Key::CTRL_SHIFT_S);
-    _file.Emplace<MenuToggleButton>([&](bool c) { 
+    _file.Emplace<MenuButton>([&] { effectWindow.Show(); }, "Effect Window...", Key::CTRL_E);
+    _file.Emplace<MenuToggleButton>([&](bool c) {
         SetWindowPos(mainWindow.GetWin32Handle(), c ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE); 
-        }, "Always On Top");
+        }, "Always On Top", Key::CTRL_SPACE);
     _file.Emplace<MenuButton>([&] { m_Audio->Asio().CloseStream(); m_Gui.Close(); }, "Exit", Key::ALT_F4);
 
     // Settings window.
@@ -220,6 +228,8 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
         soundboard.Color(ThemeT::Get().window_border);
         settings.Color(ThemeT::Get().window_border);
         mainWindow.Panel().Background(ThemeT::Get().window_border);
+        effectWindow.Panel().Background(ThemeT::Get().window_border);
+        effectWindow.Color(ThemeT::Get().window_border);
         _settingsPanel.LayoutManager().DividerColor(ThemeT::Get().divider);
         _settingsPanel.Background(ThemeT::Get().window_panel);
         _midiInScrollPanel.Background(ThemeT::Get().window_frame);
@@ -244,10 +254,20 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
             }
         }
 
+        if (_effectWindowPanel.EffectChain() != m_Audio->m_EffectPanel.EffectChain())
+        {
+            _effectWindowPanel.EffectChain(m_Audio->m_EffectPanel.EffectChain());
+            _effectWindowPanel.Name(m_Audio->m_EffectPanel.Name());
+        }
+
         if (m_ScaleSlider->Value() != pscale)
         {
             pscale = m_ScaleSlider->Value();
             mainWindow.Scale(1.0 / (pscale * 0.01));
+            effectWindow.Scale(1.0 / (pscale * 0.01));
+            effectWindow.MaxSize({ (int)std::ceil(348 * (pscale * 0.01)), -1 });
+            effectWindow.MinSize({ (int)std::ceil(348 * (pscale * 0.01)), -1 });
+            effectWindow.Size({ 0, effectWindow.RealSize().height - 39 });
             RightClickMenu::Get().Scale(1.0 / (pscale * 0.01));
         }
         _saveCounter--;

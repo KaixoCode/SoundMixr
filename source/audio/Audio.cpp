@@ -69,10 +69,12 @@ Audio::Audio()
     {
         // if the effects panel is visible and pressed on channel, view the
         // selected channel's effect chain.
-        if (e.button == Event::MouseButton::LEFT && ChannelBase::selected && m_EffectPanel.Visible())
+        if (e.button == Event::MouseButton::LEFT && ChannelBase::selected)
         {
+            bool vis = m_EffectPanel.Visible();
             m_EffectPanel.EffectChain(&ChannelBase::selected->EffectChain());
             m_EffectPanel.Name(ChannelBase::selected->name.Content());
+            m_EffectPanel.Visible(vis);
         }
 
         // If rightclick, check if hovering over a channel and show a rightclick
@@ -152,7 +154,7 @@ Audio::Audio()
             return;
 
         // If click twice in same position, open effectpanel.
-        if (m_Click > 0 && m_PrevPos == Vec2<int>{ e.x, e.y }&& ChannelBase::selected&& ChannelBase::selected->Hovering())
+        if (m_Click > 0 && m_PrevPos == Vec2<int>{ e.x, e.y } && ChannelBase::selected && ChannelBase::selected->Hovering())
         {
             // Also make sure we're not hovering over the volume or pan parameter, because
             // double clicking on those will reset their value and should not open the effect panel.

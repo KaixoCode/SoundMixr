@@ -17,7 +17,7 @@ public:
      * @param show show on creation
      * @param r resizeable
      */
-    SoundMixrFrame(const std::string& name, const int width, const int height, bool hideonclose = false, bool show = true, bool r = true);
+    SoundMixrFrame(const WindowData&);
 
     /**
      * Returns the menu.

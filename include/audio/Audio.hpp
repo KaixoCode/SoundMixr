@@ -129,4 +129,6 @@ private:
      */
     static int AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
         const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData);
+
+    friend class Controller;
 };
