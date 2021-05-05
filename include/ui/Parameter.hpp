@@ -63,6 +63,8 @@ public:
 
 	bool WithinBounds(const Vec2<int>& pos) const override
 	{
+		if (m_Parameter.Type() == Effects::ParameterType::VolumeSlider)
+			return Container::WithinBounds(pos);
 		return pos.x >= m_Dims.x && pos.x <= m_Dims.x + m_Dims.width
 			&& pos.y >= m_Dims.y && pos.y <= m_Dims.y + m_Dims.height;
 	}

@@ -1,4 +1,6 @@
 #include "audio/Audio.hpp"
+#include "audio/EndpointChannel.hpp"
+#include "audio/GeneratorChannel.hpp"
 
 Audio::Audio()
     :
@@ -105,19 +107,38 @@ Audio::Audio()
             {
                 m_Menu.Clear();
                 m_Menu.ButtonSize({ 180, 20 });
-                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>("Add Generator").Disable();
+                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>("Channels").Disable();
                 m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
-                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
-                    [&]
-                    {
-                        m_Lock.lock();
+                auto& _sub = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                    ("Show Inputs");
+                _sub.MenuBase().ButtonSize({ 180, 20 });
+                for (auto& _c : m_InputsPanel.Components())
+                {
+                    ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
+                    if (s)
+                        _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
+                }
 
-                        // Emplace a channelgroup to the list
-                        auto& _c = m_GeneratorPanel.Emplace<GeneratorChannel>();
-                        m_Channels.push_back(&_c);
+                auto& _sub2 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                    ("Show Outputs");
+                _sub2.MenuBase().ButtonSize({ 180, 20 });
+                for (auto& _c : m_OutputsPanel.Components())
+                {
+                    ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
+                    if (s)
+                        _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
+                }
 
-                        m_Lock.unlock();
-                    }, " + Test Thing");
+                auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                    ("Show Generators");
+                _sub3.MenuBase().ButtonSize({ 180, 20 });
+                for (auto& _c : m_GeneratorPanel.Components())
+                {
+                    ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
+                    if (s)
+                        _sub3.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
+                }
+
                 RightClickMenu::Get().Open(&m_Menu);
             }
         }
@@ -163,6 +184,10 @@ void Audio::GenerateMenu(Panel& panel)
             m_EffectPanel.EffectChain(&hover->EffectChain());
             m_EffectPanel.Name(hover->name.Content());
         }, "Show Effects");
+    m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+        [&, hover] {
+            hover->Visible(false);
+        }, "Hide Channel");
 
     // A channel can split if it has more than 1 line, and is an endpoint
     bool canSplit = (hover->Type() & ChannelBase::Type::Endpoint) && hover->Lines() > 1;
@@ -640,6 +665,16 @@ void Audio::Update(const Vec4<int>& v)
     // Make sure all colors stay updated with the theme
     m_ChannelScrollPanel.Background(ThemeT::Get().window_panel);
     m_DeviceName.TextColor(ThemeT::Get().text);
+
+    bool ivis = false; for (auto& _c : m_InputsPanel.Components()) if (_c->Visible()) { ivis = true; break; }
+    bool ovis = false; for (auto& _c : m_OutputsPanel.Components()) if (_c->Visible()) { ovis = true; break; }
+    bool gvis = false; for (auto& _c : m_GeneratorPanel.Components()) if (_c->Visible()) { gvis = true; break; }
+    m_InputsPanel.Visible(ivis);
+    m_OutputsPanel.Visible(ovis);
+    m_GeneratorPanel.Visible(gvis);
+    int vis = ivis + ovis + gvis;
+    m_Divider.Visible(vis >= 2);
+    m_Divider2.Visible(m_GeneratorPanel.Visible() && m_OutputsPanel.Visible());
 
     Panel::Update(v);
 }

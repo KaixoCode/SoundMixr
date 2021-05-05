@@ -79,6 +79,7 @@ EndpointChannel::operator nlohmann::json()
 	_json["mono"] = mono.Active();
 	_json["pan"] = pan;
 	_json["name"] = name.Content();
+	_json["visible"] = m_Visible;
 
 	if (Type() & Type::Input)
 	{
@@ -106,4 +107,5 @@ void EndpointChannel::operator=(const nlohmann::json& json)
 	volume = json.at("volume");
 	name.Content(json.at("name").get<std::string>());
 	m_EffectChain = json;
+	m_Visible = json.at("visible");
 };

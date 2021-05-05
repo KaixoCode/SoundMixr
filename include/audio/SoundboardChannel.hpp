@@ -11,6 +11,7 @@ public:
 		: ChannelBase(ChannelBase::Type::Input | ChannelBase::Type::SoundBoard | ChannelBase::Type::Generator),
 		m_Soundboard(soundboard)
 	{
+		Hide();
 		Lines(2);
 		name.Content("Soundboard");
 	}

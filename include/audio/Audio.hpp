@@ -1,8 +1,6 @@
 #pragma once
 #include "pch.hpp"
 #include "audio/Asio.hpp"
-#include "audio/EndpointChannel.hpp"
-#include "audio/GeneratorChannel.hpp"
 #include "ui/Graphics.hpp"
 #include "audio/ChannelBase.hpp"
 #include "audio/EffectPanel.hpp"

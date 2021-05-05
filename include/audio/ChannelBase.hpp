@@ -158,4 +158,6 @@ protected:
 	 * each call of Process.
 	 */
 	void UpdatePans();
+
+	friend class Audio;
 };
