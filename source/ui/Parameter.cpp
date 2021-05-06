@@ -2,7 +2,7 @@
 
 ParameterBase::ParameterBase(Effects::Parameter& param)
 	: m_Parameter(param),
-	m_Value(Emplace<TextBox>())
+	m_Value(Emplace<SMXRTextBox>())
 {
 	m_Size = { param.Size().width, param.Size().height };
 	m_Value.Background(Color{ 0, 0, 0, 0 });

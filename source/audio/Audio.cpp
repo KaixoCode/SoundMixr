@@ -7,7 +7,7 @@ Audio::Audio()
     // This panel contains the channel scrollpanel in the center and the 
     // device name at the top. The effect panel will be displayed in the east.
     m_ChannelScrollPanel(Emplace<SMXRScrollPanel>(Layout::Hint::Center)),
-    m_DeviceName(Emplace<TextComponent>(Layout::Hint::North, "Channels", Graphics::Fonts::Gidole, 24.0f)),
+    m_DeviceName(Emplace<SMXRTextComponent>(Layout::Hint::North, "Channels", 24.0f)),
     m_EffectPanel(Emplace<EffectPanel>(Layout::Hint::East)),
 
     // The panel in the channel scrollpanel contains the input panel and output panel

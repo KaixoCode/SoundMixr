@@ -287,7 +287,7 @@ void VolumeSlider::Render(CommandCollection& d)
 		_d = 6;
 
 	bool _b = true;
-	d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
+	d.Command<Graphics::Font>(ThemeT::Get().font14, 14.0f);
 	d.Command<Graphics::TextAlign>(Align::RIGHT, Align::CENTER);
 	for (int i = 12; i > -120; i -= _d)
 	{
@@ -534,7 +534,7 @@ void DynamicsSlider::Render(CommandCollection& d)
 	int _y = Height() - 22;
 	int _d = 3;
 	bool _b = true;
-	d.Command<Graphics::Font>(Graphics::Fonts::Gidole14, 14.0f);
+	d.Command<Graphics::Font>(ThemeT::Get().font14, 14.0f);
 	d.Command<Graphics::TextAlign>(Align::CENTER, Align::BOTTOM);
 	for (int i = 0; i > -120; i -= _d)
 	{
@@ -604,7 +604,7 @@ void DynamicsSlider::Render(CommandCollection& d)
 			break;
 	}
 	d.Command<Fill>(ThemeT::Get().dynamics_value_text);
-	d.Command<Font>(Fonts::Gidole14, 14.0f);
+	d.Command<Font>(ThemeT::Get().font14, 14.0f);
 	d.Command<TextAlign>(Align::LEFT, Align::TOP);
 	d.Command<Text>(&m_TH2Str, Vec2<int>{0, -3});
 	d.Command<Text>(&m_RT2Str, Vec2<int>{60, -3});

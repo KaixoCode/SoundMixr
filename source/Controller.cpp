@@ -17,6 +17,7 @@ void Controller::Run()
     // For the first time we need to load effects separately, since
     // Controller::LoadEffects assumes a device is already running.
     EffectLoader::LoadEffects();
+    ThemeT::ReloadThemes();
 
     // Set window icons.
     mainWindow.Icon(IDI_ICON1);
@@ -139,13 +140,13 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     auto& _reloadThemes = _settingsPanel.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([this] { LoadThemes(); }, "Reload");
     _reloadThemes.Size({ 98, 18 });
 
-    auto& _asiotext = _settingsPanel.Emplace<TextComponent>("Asio Settings", Graphics::Fonts::Gidole, 24.0f);
+    auto& _asiotext = _settingsPanel.Emplace<SMXRTextComponent>("Asio Settings", 24.0f);
     _asiotext.AlignLines(Align::CENTER);
     
-    auto& _moretext = _settingsPanel.Emplace<TextComponent>("Midi Settings", Graphics::Fonts::Gidole, 24.0f);
+    auto& _moretext = _settingsPanel.Emplace<SMXRTextComponent>("Midi Settings", 24.0f);
     _moretext.AlignLines(Align::CENTER);
 
-    auto& _evenmore = _settingsPanel.Emplace<TextComponent>("General Settings", Graphics::Fonts::Gidole, 24.0f);
+    auto& _evenmore = _settingsPanel.Emplace<SMXRTextComponent>("General Settings", 24.0f);
     _evenmore.AlignLines(Align::CENTER);
 
     // Settings panel layout
@@ -161,9 +162,9 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     asio[0][1][0].DivSize(10);
     asio[0][1][1] = { 3, Div::Alignment::Vertical };
     asio[0][1][2] = { 3, Div::Alignment::Vertical };
-    asio[0][1][1][1] = { _settingsPanel.Emplace<TextComponent>("Asio Device"), Div::Alignment::Left, 24 };
+    asio[0][1][1][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Asio Device"), Div::Alignment::Left, 24 };
     asio[0][1][2][1] = { *m_AsioDropDown, Div::Alignment::Left, 24 };
-    asio[0][1][1][2] = { _settingsPanel.Emplace<TextComponent>("Control Panel"), Div::Alignment::Left, 24 };
+    asio[0][1][1][2] = { _settingsPanel.Emplace<SMXRTextComponent>("Control Panel"), Div::Alignment::Left, 24 };
     asio[0][1][2][2] = { _asioControlPanel, Div::Alignment::Left, 24 };
     asio[0][1][3].DivSize(40);
     asio[0][0].DivSize(20);
@@ -174,8 +175,8 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     midi[0] = { 5, Div::Alignment::Vertical };
     midi[0][4].DivSize(8);
     midi[0][3] = { 2, Div::Alignment::Horizontal, 8, false, 16 };
-    midi[0][3][0] = { _settingsPanel.Emplace<TextComponent>("Inputs"), Div::Alignment::Center, Div::AUTO };
-    midi[0][3][1] = { _settingsPanel.Emplace<TextComponent>("Outputs"), Div::Alignment::Center, Div::AUTO };
+    midi[0][3][0] = { _settingsPanel.Emplace<SMXRTextComponent>("Inputs"), Div::Alignment::Center, Div::AUTO };
+    midi[0][3][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Outputs"), Div::Alignment::Center, Div::AUTO };
     midi[0][2] = { 2, Div::Alignment::Horizontal, 8 };
     midi[0][2][0] = { _midiInScrollPanel, Div::Alignment::Center, Div::AUTO, true };
     midi[0][2][1] = { _midiOutScrollPanel, Div::Alignment::Center, Div::AUTO, true };
@@ -191,15 +192,15 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     gnrl[0][1][0].DivSize(10);
     gnrl[0][1][1] = { 5, Div::Alignment::Vertical };
     gnrl[0][1][2] = { 5, Div::Alignment::Vertical };
-    gnrl[0][1][1][0] = { _settingsPanel.Emplace<TextComponent>("Reload Themes"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][0] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Themes"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][0] = { _reloadThemes, Div::Alignment::Left, 26};
-    gnrl[0][1][1][1] = { _settingsPanel.Emplace<TextComponent>("Theme"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Theme"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][1] = { *m_ThemeDropDown, Div::Alignment::Left, 26 };
-    gnrl[0][1][1][2] = { _settingsPanel.Emplace<TextComponent>("Reload Effects"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][2] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Effects"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][2] = { _refreshEffects, Div::Alignment::Left, 26};
-    gnrl[0][1][1][3] = { _settingsPanel.Emplace<TextComponent>("Reset Channel Grouping"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][3] = { _settingsPanel.Emplace<SMXRTextComponent>("Reset Channel Grouping"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][3] = { _resetGrouping, Div::Alignment::Left, 26 };
-    gnrl[0][1][1][4] = { _settingsPanel.Emplace<TextComponent>("Zoom Display"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][4] = { _settingsPanel.Emplace<SMXRTextComponent>("Zoom Display"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][4] = { *m_ScaleSlider, Div::Alignment::Left, 26 };
     gnrl[0][1][3].DivSize(40);
     gnrl[0][0].DivSize(4);
@@ -418,7 +419,7 @@ void Controller::LoadMidi()
         // Add the enable button and text component to the div.
         m_MidiInDevices->Div()[i] = { 4, Div::Alignment::Horizontal, 0, false, 24 };
         m_MidiInDevices->Div()[i][0].DivSize(8);
-        auto& _text = m_MidiInDevices->Emplace<TextComponent>(_devices[i].name);
+        auto& _text = m_MidiInDevices->Emplace<SMXRTextComponent>(_devices[i].name);
         _text.MaxWidth(_text.Width());
         m_MidiInDevices->Div()[i][1] = { _text, Div::Alignment::Left, Div::AUTO, true };
         auto& _b = m_MidiInDevices->Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(
@@ -489,7 +490,7 @@ void Controller::LoadMidi()
         // Add the enable button and text component to the div.
         m_MidiOutDevices->Div()[i] = { 4, Div::Alignment::Horizontal, 0, false, 24 };
         m_MidiOutDevices->Div()[i][0].DivSize(8);
-        auto& _text = m_MidiOutDevices->Emplace<TextComponent>(_outdevices[i].name);
+        auto& _text = m_MidiOutDevices->Emplace<SMXRTextComponent>(_outdevices[i].name);
         _text.MaxWidth(_text.Width());
         m_MidiOutDevices->Div()[i][1] = { _text, Div::Alignment::Left, Div::AUTO, true };
         auto& _b = m_MidiOutDevices->Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(

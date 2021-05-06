@@ -124,7 +124,7 @@ public:
 	Effects::Parameter panParam{ "Pan", Effects::ParameterType::Slider };
 	VolumeSlider& volume;
 	PanSlider& pan;
-	TextComponent& name, &volumeVal;
+	SMXRTextComponent& name, &volumeVal;
 	Button<MuteButton, ButtonType::Toggle>& mute;
 	Button<MonoButton, ButtonType::Toggle>& mono;
 	Button<RouteButton, ButtonType::Toggle>& route;

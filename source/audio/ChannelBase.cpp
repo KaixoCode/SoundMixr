@@ -6,8 +6,8 @@ ChannelBase::ChannelBase(ChannelType type)
 	// Emplace all the parameters
 	volume(Emplace<VolumeSlider>(volumeParam)),
 	pan(Emplace<PanSlider>(panParam)),
-	name(Emplace<TextComponent>("Discord")),
-	volumeVal(Emplace<TextComponent>("0.0dB")),
+	name(Emplace<SMXRTextComponent>("", 14, false)),
+	volumeVal(Emplace<SMXRTextComponent>("0.0dB")),
 	mute(Emplace<Button<MuteButton, ButtonType::Toggle>>("MUTE")),
 	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>("MONO")),
 	route(Emplace<Button<RouteButton, ButtonType::Toggle>>((type & Type::Input) ? "in" : ""))

@@ -115,7 +115,7 @@ private:
 
     // Order of the components are important for initializating
     // them in the constructor.
-    TextComponent& m_DeviceName;
+    SMXRTextComponent& m_DeviceName;
     SMXRScrollPanel& m_ChannelScrollPanel;
     Panel& m_InputsPanel;
     VerticalMenuDivider& m_Divider;
