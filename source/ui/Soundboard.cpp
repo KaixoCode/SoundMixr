@@ -54,6 +54,8 @@ float SoundboardButton::GetLevel(int channel)
 	if (m_SampleNum >= 0 && channel == 0)
 		m_SampleNum++;
 
+	std::cout << m_File.samples[channel][curSample];
+
 	return m_File.samples[channel][curSample];
 }
 
@@ -103,6 +105,8 @@ void SoundboardButton::PlayFile(bool forceOpen)
 		// Set the name of the button to the filename
 		std::filesystem::directory_entry loadedFile{ fileNameStr };
 		ButtonBase::Name(loadedFile.path().filename().string());
+
+		LoadFile(fileNameStr, loadedFile.path().filename().string());
 	}
 };
 
