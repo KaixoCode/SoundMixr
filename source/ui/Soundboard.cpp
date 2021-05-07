@@ -111,7 +111,7 @@ void SoundboardButton::PlayFile(bool forceOpen)
 };
 
 Soundboard::Soundboard()
-	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 1000, 500 }, false, false, false, false, true, true, nullptr))
+	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 1000, 500 }, false, false, true, false, true, true, nullptr))
 {
 	Init();
 }
