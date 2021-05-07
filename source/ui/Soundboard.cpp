@@ -54,8 +54,6 @@ float SoundboardButton::GetLevel(int channel)
 	if (m_SampleNum >= 0 && channel == 0)
 		m_SampleNum++;
 
-	std::cout << m_File.samples[channel][curSample];
-
 	return m_File.samples[channel][curSample];
 }
 
@@ -97,14 +95,7 @@ void SoundboardButton::PlayFile(bool forceOpen)
 	else
 	{
 		std::string fileNameStr = FileDialog::OpenFile("WAV Files (*.wav)\0*.wav\0");
-
-		m_Filepath = fileNameStr;
-		m_File.load(fileNameStr);
-		m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
-
-		// Set the name of the button to the filename
 		std::filesystem::directory_entry loadedFile{ fileNameStr };
-		ButtonBase::Name(loadedFile.path().filename().string());
 
 		LoadFile(fileNameStr, loadedFile.path().filename().string());
 	}
