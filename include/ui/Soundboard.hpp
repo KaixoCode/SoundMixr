@@ -23,6 +23,10 @@ public:
 		nlohmann::json _json = nlohmann::json::object();
 		_json["filepath"] = m_Filepath;
 		_json["filename"] = m_Name.Content();
+		_json["midi"] = nlohmann::json::array();
+		_json["midi"][0] = m_MidiConf.x;
+		_json["midi"][1] = m_MidiConf.y;
+		_json["midi"][2] = m_MidiConf.z;
 
 		return _json;
 	}
@@ -30,6 +34,8 @@ public:
 	void operator = (const nlohmann::json& json)
 	{
 		this->LoadFile(json.at("filepath"), json.at("filename"));
+
+		m_MidiConf = { json.at("midi")[0], json.at("midi")[1], json.at("midi")[2] };
 	}
 
 private:
