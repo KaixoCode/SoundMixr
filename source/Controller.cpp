@@ -216,6 +216,7 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     LoadMidi();
     LoadThemes();
     LoadSettings();
+    soundboard.Load();
 
     double pscale = 0;
     int _saveCounter = 5 * 60 * 60;
@@ -277,12 +278,14 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
             _saveCounter = 5 * 60 * 60;
             SaveSettings();
             m_Audio->SaveRouting();
+            soundboard.Save();
         }
     }
 
     // Final save to make sure it is saved when exited.
     SaveSettings();
     m_Audio->SaveRouting();
+    soundboard.Save();
 }
 
 void Controller::LoadSettings()
