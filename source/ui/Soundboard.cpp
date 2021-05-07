@@ -7,6 +7,7 @@ SoundboardButton::SoundboardButton()
 	// Initialise the right click menu
 	m_Menu.ButtonSize({ 180, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Rename(); }, "Rename");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { RemoveFile(); }, "Remove");
 
 	// Add an event listener for mouse click events
 	m_Listener += [this](Event::MousePressed& e)
@@ -48,6 +49,14 @@ void SoundboardButton::Update(const Vec4<int>& v)
 	m_Name.Width(Width());
 	m_Name.Height(25);
 	Button<G::Menu, BT::Normal>::Update(v);
+}
+
+void SoundboardButton::RemoveFile()
+{
+	m_Name.Content("");
+	m_SampleNum = -1;
+	m_MaxSamples = -1;
+	m_MultiplicationFactor = 1.0F;
 }
 
 void SoundboardButton::ShowMenu()
@@ -110,7 +119,7 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 
 void SoundboardButton::PlayFile(bool forceOpen)
 {
-	if (m_File.getNumSamplesPerChannel() > 0 && !forceOpen)
+	if (m_MaxSamples > 0 && !forceOpen)
 	{
 		// A file is already loaded, play it if it isn't playing
 		if (m_SampleNum < 0)
