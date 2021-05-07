@@ -110,7 +110,7 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 
 void SoundboardButton::PlayFile(bool forceOpen)
 {
-	if (m_File.getNumSamplesPerChannel() > 0)
+	if (m_File.getNumSamplesPerChannel() > 0 && !forceOpen)
 	{
 		// A file is already loaded, play it if it isn't playing
 		if (m_SampleNum < 0)
