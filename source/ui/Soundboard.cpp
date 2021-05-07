@@ -2,7 +2,7 @@
 #include <FileDialog.hpp>
 
 SoundboardButton::SoundboardButton()
-	: Button<G::Menu, BT::Normal>([&] {}, "")
+	: Button<G::Menu, BT::Normal>([&] {}, ""), m_Name(Emplace<SMXRTextBox>())
 {
 	// Initialise the right click menu
 	m_Menu.ButtonSize({ 180, 20 });
@@ -18,11 +18,22 @@ SoundboardButton::SoundboardButton()
 		else if (e.button == Event::MouseButton::RIGHT)
 			ShowMenu();
 	};
+
+	m_Name.AlignLines(Align::CENTER);
+	m_Name.Background({ 0, 0, 0, 0 });
 };
+
+void SoundboardButton::Update(const Vec4<int>& v)
+{
+	m_Name.Position({ 0, (Height() + m_Name.Height()) / 2 });
+	m_Name.Width(Width());
+	Button<G::Menu, BT::Normal>::Update(v);
+}
 
 void SoundboardButton::ShowMenu()
 {
-	RightClickMenu::Get().Open(&m_Menu);
+	if (!m_Filename.empty())
+		RightClickMenu::Get().Open(&m_Menu);
 }
 
 void SoundboardButton::Rename()
@@ -68,7 +79,7 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 	}
 
 	// Set the name of the button to the filename
-	ButtonBase::Name(filename);
+	m_Name.Content(filename);
 
 	m_Filepath = path;
 	m_Filename = filename;

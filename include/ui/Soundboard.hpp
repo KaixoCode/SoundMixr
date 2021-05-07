@@ -14,6 +14,7 @@ public:
 	void PlayFile(bool forceOpen = false);
 	void ShowMenu();
 	void Rename();
+	void Update(const Vec4<int>&) override;
 
 	operator nlohmann::json()
 	{
@@ -36,6 +37,7 @@ private:
 	int m_SampleNum = -1;
 	int m_MaxSamples = -1;
 	float m_MultiplicationFactor = 1.0F;
+	SMXRTextBox& m_Name;
 	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 };
 
