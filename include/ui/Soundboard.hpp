@@ -20,7 +20,7 @@ public:
 	{
 		nlohmann::json _json = nlohmann::json::object();
 		_json["filepath"] = m_Filepath;
-		_json["filename"] = m_Filename;
+		_json["filename"] = m_Name.Content();
 
 		return _json;
 	}
@@ -32,7 +32,6 @@ public:
 
 private:
 	std::string m_Filepath;
-	std::string m_Filename;
 	AudioFile<double> m_File;
 	int m_SampleNum = -1;
 	int m_MaxSamples = -1;

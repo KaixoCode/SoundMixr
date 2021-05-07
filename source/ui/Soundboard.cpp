@@ -21,32 +21,48 @@ SoundboardButton::SoundboardButton()
 
 	m_Name.AlignLines(Align::CENTER);
 	m_Name.Background({ 0, 0, 0, 0 });
+	m_Name.TextColor({ 255, 255, 255, 255 });
+	m_Name.Editable(false);
+
+	m_Name.Listener() += [this](Event::Unfocused& e)
+	{
+		Enable();
+		m_Name.Editable(false);
+	};
+
+	m_Name.Listener() += [this](Event::KeyTyped& e)
+	{
+		if (e.key == Key::ENTER && Focused())
+		{
+			Event e{ Event::Type::Unfocused };
+			m_Name.AddEvent(e);
+			m_Name.Focused(false);
+			m_FocusedComponent = nullptr;
+		};
+	};
 };
 
 void SoundboardButton::Update(const Vec4<int>& v)
 {
-	m_Name.Position({ 0, (Height() + m_Name.Height()) / 2 });
+	m_Name.Position({ X(), Y() +(Height() + m_Name.Height()) / 2 });
 	m_Name.Width(Width());
+	m_Name.Height(25);
 	Button<G::Menu, BT::Normal>::Update(v);
 }
 
 void SoundboardButton::ShowMenu()
 {
-	if (!m_Filename.empty())
+	if (!m_Name.Content().empty())
 		RightClickMenu::Get().Open(&m_Menu);
 }
 
 void SoundboardButton::Rename()
 {
-	std::string name;
-	std::cout << "Please enter a new name for this button, or type cancel to cancel] ";
-	std::getline(std::cin, name, '\n');
-
-	if (name != "cancel")
-	{
-		m_Filename = name;
-		ButtonBase::Name(name);
-	}
+	Disable();
+	m_Name.Editable(true);
+	m_Name.Displayer().Container().Select({0, (int)m_Name.Content().length()});
+	m_FocusedComponent = &m_Name;
+	m_Name.Focused(true);
 }
 
 float SoundboardButton::GetLevel(int channel)
@@ -82,7 +98,6 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 	m_Name.Content(filename);
 
 	m_Filepath = path;
-	m_Filename = filename;
 
 	// Create a new thread as not to delay the main thread
 	std::thread([&] {
