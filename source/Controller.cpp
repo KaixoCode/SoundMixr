@@ -6,8 +6,9 @@
 // -------------------------------------------------------------------------- \\
  
 Controller::Controller()
-    : mainWindow(m_Gui.AddWindow<SoundMixrFrame>("SoundMixr", 728, 500, true)),
-    settings(m_Gui.AddWindow<SoundMixrFrame>("Settings", 400, 526, true, false, true)),
+    : mainWindow(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "SoundMixr", { 728, 500 }, false, false, true, true, true, true, nullptr })),
+    settings(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "Settings", { 400, 526 }, false, false, true, false, true, true, &mainWindow })),
+    effectWindow(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "Effect Chain", { 348, 316 }, false, false, true, false, true, true, &mainWindow })),
     soundboard(m_Gui.AddWindow<Soundboard>())
 {}
 
@@ -16,6 +17,7 @@ void Controller::Run()
     // For the first time we need to load effects separately, since
     // Controller::LoadEffects assumes a device is already running.
     EffectLoader::LoadEffects();
+    ThemeT::ReloadThemes();
 
     // Set window icons.
     mainWindow.Icon(IDI_ICON1);
@@ -38,6 +40,12 @@ void Controller::Run()
         });
     
     // AudioController panel, contains all channels and effect panel. Basically the main component.
+    effectWindow.Panel().Layout<Layout::Grid>(1, 1, 8, 8);
+    effectWindow.Panel().Background(ThemeT::Get().window_border);
+    effectWindow.MaxSize({ 348, -1 });
+    effectWindow.MinSize({ 348, -1 });
+    auto& _effectWindowPanel = effectWindow.Panel().Emplace<EffectPanel>();
+    _effectWindowPanel.m_ShowSidebar = false;
     mainWindow.Panel().Layout<Layout::Grid>(1, 1, 8, 8);
     mainWindow.Panel().Background(ThemeT::Get().window_border);
     m_Audio = &mainWindow.Panel().Emplace<::Audio>(Layout::Hint::Center);
@@ -45,10 +53,14 @@ void Controller::Run()
     // The frame menu of the main window.
     auto& _file = mainWindow.Menu().Emplace<TitleMenuButton>("File");
     _file.Size({ 34, 32 });
-    _file.MenuBase().ButtonSize({ 170, 20 });
+    _file.MenuBase().ButtonSize({ 220, 20 });
     _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, "Debug Overlay", Key::CTRL_D);
     _file.Emplace<MenuButton>([&] { soundboard.Show(); }, "Soundboard...", Key::CTRL_SHIFT_S);
+    _file.Emplace<MenuButton>([&] { effectWindow.Show(); }, "Effect Window...", Key::CTRL_E);
+    _file.Emplace<MenuToggleButton>([&](bool c) {
+        SetWindowPos(mainWindow.GetWin32Handle(), c ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE); 
+        }, "Always On Top", Key::CTRL_SPACE);
     _file.Emplace<MenuButton>([&] { m_Audio->Asio().CloseStream(); m_Gui.Close(); }, "Exit", Key::ALT_F4);
 
     // Settings window.
@@ -128,13 +140,13 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     auto& _reloadThemes = _settingsPanel.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([this] { LoadThemes(); }, "Reload");
     _reloadThemes.Size({ 98, 18 });
 
-    auto& _asiotext = _settingsPanel.Emplace<TextComponent>("Asio Settings", Graphics::Fonts::Gidole, 24.0f);
+    auto& _asiotext = _settingsPanel.Emplace<SMXRTextComponent>("Asio Settings", 24.0f);
     _asiotext.AlignLines(Align::CENTER);
     
-    auto& _moretext = _settingsPanel.Emplace<TextComponent>("Midi Settings", Graphics::Fonts::Gidole, 24.0f);
+    auto& _moretext = _settingsPanel.Emplace<SMXRTextComponent>("Midi Settings", 24.0f);
     _moretext.AlignLines(Align::CENTER);
 
-    auto& _evenmore = _settingsPanel.Emplace<TextComponent>("General Settings", Graphics::Fonts::Gidole, 24.0f);
+    auto& _evenmore = _settingsPanel.Emplace<SMXRTextComponent>("General Settings", 24.0f);
     _evenmore.AlignLines(Align::CENTER);
 
     // Settings panel layout
@@ -150,9 +162,9 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     asio[0][1][0].DivSize(10);
     asio[0][1][1] = { 3, Div::Alignment::Vertical };
     asio[0][1][2] = { 3, Div::Alignment::Vertical };
-    asio[0][1][1][1] = { _settingsPanel.Emplace<TextComponent>("Asio Device"), Div::Alignment::Left, 24 };
+    asio[0][1][1][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Asio Device"), Div::Alignment::Left, 24 };
     asio[0][1][2][1] = { *m_AsioDropDown, Div::Alignment::Left, 24 };
-    asio[0][1][1][2] = { _settingsPanel.Emplace<TextComponent>("Control Panel"), Div::Alignment::Left, 24 };
+    asio[0][1][1][2] = { _settingsPanel.Emplace<SMXRTextComponent>("Control Panel"), Div::Alignment::Left, 24 };
     asio[0][1][2][2] = { _asioControlPanel, Div::Alignment::Left, 24 };
     asio[0][1][3].DivSize(40);
     asio[0][0].DivSize(20);
@@ -163,8 +175,8 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     midi[0] = { 5, Div::Alignment::Vertical };
     midi[0][4].DivSize(8);
     midi[0][3] = { 2, Div::Alignment::Horizontal, 8, false, 16 };
-    midi[0][3][0] = { _settingsPanel.Emplace<TextComponent>("Inputs"), Div::Alignment::Center, Div::AUTO };
-    midi[0][3][1] = { _settingsPanel.Emplace<TextComponent>("Outputs"), Div::Alignment::Center, Div::AUTO };
+    midi[0][3][0] = { _settingsPanel.Emplace<SMXRTextComponent>("Inputs"), Div::Alignment::Center, Div::AUTO };
+    midi[0][3][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Outputs"), Div::Alignment::Center, Div::AUTO };
     midi[0][2] = { 2, Div::Alignment::Horizontal, 8 };
     midi[0][2][0] = { _midiInScrollPanel, Div::Alignment::Center, Div::AUTO, true };
     midi[0][2][1] = { _midiOutScrollPanel, Div::Alignment::Center, Div::AUTO, true };
@@ -180,15 +192,15 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     gnrl[0][1][0].DivSize(10);
     gnrl[0][1][1] = { 5, Div::Alignment::Vertical };
     gnrl[0][1][2] = { 5, Div::Alignment::Vertical };
-    gnrl[0][1][1][0] = { _settingsPanel.Emplace<TextComponent>("Reload Themes"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][0] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Themes"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][0] = { _reloadThemes, Div::Alignment::Left, 26};
-    gnrl[0][1][1][1] = { _settingsPanel.Emplace<TextComponent>("Theme"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Theme"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][1] = { *m_ThemeDropDown, Div::Alignment::Left, 26 };
-    gnrl[0][1][1][2] = { _settingsPanel.Emplace<TextComponent>("Reload Effects"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][2] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Effects"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][2] = { _refreshEffects, Div::Alignment::Left, 26};
-    gnrl[0][1][1][3] = { _settingsPanel.Emplace<TextComponent>("Reset Channel Grouping"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][3] = { _settingsPanel.Emplace<SMXRTextComponent>("Reset Channel Grouping"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][3] = { _resetGrouping, Div::Alignment::Left, 26 };
-    gnrl[0][1][1][4] = { _settingsPanel.Emplace<TextComponent>("Zoom Display"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][4] = { _settingsPanel.Emplace<SMXRTextComponent>("Zoom Display"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][4] = { *m_ScaleSlider, Div::Alignment::Left, 26 };
     gnrl[0][1][3].DivSize(40);
     gnrl[0][0].DivSize(4);
@@ -217,6 +229,8 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
         soundboard.Color(ThemeT::Get().window_border);
         settings.Color(ThemeT::Get().window_border);
         mainWindow.Panel().Background(ThemeT::Get().window_border);
+        effectWindow.Panel().Background(ThemeT::Get().window_border);
+        effectWindow.Color(ThemeT::Get().window_border);
         _settingsPanel.LayoutManager().DividerColor(ThemeT::Get().divider);
         _settingsPanel.Background(ThemeT::Get().window_panel);
         _midiInScrollPanel.Background(ThemeT::Get().window_frame);
@@ -241,10 +255,20 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
             }
         }
 
+        if (_effectWindowPanel.EffectChain() != m_Audio->m_EffectPanel.EffectChain())
+        {
+            _effectWindowPanel.EffectChain(m_Audio->m_EffectPanel.EffectChain());
+            _effectWindowPanel.Name(m_Audio->m_EffectPanel.Name());
+        }
+
         if (m_ScaleSlider->Value() != pscale)
         {
             pscale = m_ScaleSlider->Value();
             mainWindow.Scale(1.0 / (pscale * 0.01));
+            effectWindow.Scale(1.0 / (pscale * 0.01));
+            effectWindow.MaxSize({ (int)std::ceil(348 * (pscale * 0.01)), -1 });
+            effectWindow.MinSize({ (int)std::ceil(348 * (pscale * 0.01)), -1 });
+            effectWindow.Size({ 0, effectWindow.RealSize().height - 39 });
             RightClickMenu::Get().Scale(1.0 / (pscale * 0.01));
         }
         _saveCounter--;
@@ -269,7 +293,7 @@ void Controller::LoadSettings()
         std::ifstream _if;
         _if.open("./settings/settings");
         if (!_if.is_open())
-            return;
+            throw std::exception();
 
         nlohmann::json _json;
         _json << _if;
@@ -280,14 +304,24 @@ void Controller::LoadSettings()
         auto zoom = _json.at("zoom").get<double>();
 
         for (auto& i : _json.at("midiin-enabled"))
+        {
+            if (std::find(m_MidiInEnabled.begin(), m_MidiInEnabled.end(), i.get<std::string>()) == m_MidiInEnabled.end())
+                m_MidiInEnabled.push_back(i.get<std::string>());
+
             for (auto& dev : Midi::Get().InputDevices())
                 if (dev.name == i.get<std::string>() && dev.id >= 0 && dev.id < m_MidiInButtons.size())
                     m_MidiInButtons[dev.id]->Active(true);
-
+        }
+        
         for (auto& i : _json.at("midiout-enabled"))
+        {
+            if (std::find(m_MidiOutEnabled.begin(), m_MidiOutEnabled.end(), i.get<std::string>()) == m_MidiOutEnabled.end())
+                m_MidiOutEnabled.push_back(i.get<std::string>());
+
             for (auto& dev : Midi::Get().OutputDevices())
                 if (dev.name == i.get<std::string>() && dev.id >= 0 && dev.id < m_MidiOutButtons.size())
                     m_MidiOutButtons[dev.id]->Active(true);
+        }
 
         m_ScaleSlider->Value(zoom);
         m_AsioDropDown->Select(device);
@@ -295,8 +329,9 @@ void Controller::LoadSettings()
 
         SaveSettings();
     }
-    catch (...)
+    catch (std::exception)
     {
+        m_LoadedSettings = true;
         LOG("Failed to load settings.");
     }
     m_LoadedSettings = true;
@@ -350,6 +385,7 @@ void Controller::LoadThemes()
                 SaveSettings();
             });
     }
+    m_LoadedSettings = true;
     LoadSettings();
 }
 
@@ -383,7 +419,7 @@ void Controller::LoadMidi()
         // Add the enable button and text component to the div.
         m_MidiInDevices->Div()[i] = { 4, Div::Alignment::Horizontal, 0, false, 24 };
         m_MidiInDevices->Div()[i][0].DivSize(8);
-        auto& _text = m_MidiInDevices->Emplace<TextComponent>(_devices[i].name);
+        auto& _text = m_MidiInDevices->Emplace<SMXRTextComponent>(_devices[i].name);
         _text.MaxWidth(_text.Width());
         m_MidiInDevices->Div()[i][1] = { _text, Div::Alignment::Left, Div::AUTO, true };
         auto& _b = m_MidiInDevices->Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(
@@ -454,7 +490,7 @@ void Controller::LoadMidi()
         // Add the enable button and text component to the div.
         m_MidiOutDevices->Div()[i] = { 4, Div::Alignment::Horizontal, 0, false, 24 };
         m_MidiOutDevices->Div()[i][0].DivSize(8);
-        auto& _text = m_MidiOutDevices->Emplace<TextComponent>(_outdevices[i].name);
+        auto& _text = m_MidiOutDevices->Emplace<SMXRTextComponent>(_outdevices[i].name);
         _text.MaxWidth(_text.Width());
         m_MidiOutDevices->Div()[i][1] = { _text, Div::Alignment::Left, Div::AUTO, true };
         auto& _b = m_MidiOutDevices->Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(

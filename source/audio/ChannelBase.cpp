@@ -5,9 +5,9 @@ ChannelBase::ChannelBase(ChannelType type)
 
 	// Emplace all the parameters
 	volume(Emplace<VolumeSlider>(volumeParam)),
-	pan(Emplace<PanSlider>()),
-	name(Emplace<TextComponent>("Discord")),
-	volumeVal(Emplace<TextComponent>("0.0dB")),
+	pan(Emplace<PanSlider>(panParam)),
+	name(Emplace<SMXRTextComponent>("", 14, false)),
+	volumeVal(Emplace<SMXRTextComponent>("0.0dB")),
 	mute(Emplace<Button<MuteButton, ButtonType::Toggle>>("MUTE")),
 	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>("MONO")),
 	route(Emplace<Button<RouteButton, ButtonType::Toggle>>((type & Type::Input) ? "in" : ""))
@@ -22,6 +22,18 @@ ChannelBase::ChannelBase(ChannelType type)
 	route.Disable();
 	pan.Name("Pan");
 	pan.DisplayName(false);
+
+	// Unfocus when pressing enter
+	name.Listener() += [this](Event::KeyTyped& e)
+	{
+		if (e.key == Key::ENTER && Focused())
+		{
+			Event e{ Event::Type::Unfocused };
+			name.AddEvent(e);
+			name.Focused(false);
+			m_FocusedComponent = nullptr;
+		};
+	};
 
 	// Layout is divs, for easy complex layout.
 	Layout<Layout::Divs>();
@@ -88,6 +100,135 @@ void ChannelBase::Input(float s, int c)
 
 void ChannelBase::Process()
 {
+	float _avg = 0;
+	bool _mono = mono.Active();
+
+	// Input
+	if (Type() & ChannelBase::Type::Input)
+	{
+		// Go through all the lines 
+		for (int i = 0; i < m_Lines; i++)
+		{
+			float _sample = m_Levels[i];
+
+			// If muted set sample to 0
+			if (!mute.Active())
+			{
+				_sample = m_EffectChain.NextSample(_sample, i);
+				_sample *= volume.Value();
+				_sample *= m_Pans[i];
+			}
+			else
+				_sample = 0;
+
+			// If it's not mono, directly add to all connections
+			if (!_mono)
+			{
+				for (auto& j : Connections())
+					j->Input(_sample, i);
+
+				// Set peak, for the volume slider meter.
+				if (_sample > m_Peaks[i])
+					m_Peaks[i] = _sample;
+				if (-_sample > m_Peaks[i])
+					m_Peaks[i] = -_sample;
+			}
+
+			// Increase average if mono
+			else
+				_avg += _sample;
+		}
+
+		// Actually make it an average.
+		_avg /= Lines();
+
+		// If mono, send the avg sample to all lines of all connected channels
+		if (_mono)
+		{
+			// The connections will get averaged levels, but panning will still be applied
+			// panning will be applied as if there were the same amount of channels (n), but 
+			// any channel above n will receive the pan of x mod n channel. So example:
+			// this has 2 channels, connection 4, channel 3 of connection will get pan of channel 1.
+			for (auto& j : Connections())
+				for (int i = 0; i < j->Lines(); i++)
+				{
+					float _level = _avg * m_Pans[i % Lines()];
+					j->Input(_level, i);
+				}
+
+			// Set peaks for volume slider meter to mono, panning will be applied after monoing.
+			for (int i = 0; i < Lines(); i++)
+			{
+				float _level = _avg * m_Pans[i];
+
+				// Set peak, for the volume slider meter.
+				if (_level > m_Peaks[i])
+					m_Peaks[i] = _level;
+				if (-_level > m_Peaks[i])
+					m_Peaks[i] = -_level;
+			}
+		}
+	}
+
+	// Otherwise it's output
+	else
+	{
+		float _avg = 0;
+		bool _mono = mono.Active();
+
+		// Go through all the lines
+		for (int i = 0; i < m_Lines; i++)
+		{
+			float _sample = m_Levels[i];
+
+			// If muted set sample to 0
+			if (!mute.Active())
+			{
+				_sample = m_EffectChain.NextSample(_sample, i);
+				_sample *= volume.Value();
+				if (!_mono)
+					_sample *= m_Pans[i];
+			}
+			else
+				_sample = 0;
+
+			// If it's not mono, directly send to endpoints
+			if (!_mono)
+			{
+				m_Levels[i] = constrain(_sample, -1, 1);
+
+				// Set peak, for the volume slider meter.
+				if (_sample > m_Peaks[i])
+					m_Peaks[i] = _sample;
+				if (-_sample > m_Peaks[i])
+					m_Peaks[i] = -_sample;
+			}
+
+			// Increase average if mono
+			else
+				_avg += _sample;
+		}
+
+		// Actually make it an average.
+		_avg /= Lines();
+
+		// If mono, send the avg sample to all endpoints
+		if (_mono)
+		{
+			for (int i = 0; i < Lines(); i++)
+			{
+				float _level = _avg * m_Pans[i];
+				m_Levels[i] = constrain(_level, -1, 1);
+
+				// Set peak, for the volume slider meter.
+				if (_level > m_Peaks[i])
+					m_Peaks[i] = _level;
+				if (-_level > m_Peaks[i])
+					m_Peaks[i] = -_level;
+			}
+		}
+	}
+
 	// Every 512 samples, set the value for the volume slider meter.
 	m_Counter++;
 	if (m_Counter > 512)

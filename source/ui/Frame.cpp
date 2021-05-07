@@ -1,7 +1,7 @@
 #include "ui/Frame.hpp"
 
-SoundMixrFrame::SoundMixrFrame(const std::string& name, const int width, const int height, bool hideonclose, bool show, bool r)
-    : Window(name, width, height, hideonclose, show, r), m_Resizable(r),
+SoundMixrFrame::SoundMixrFrame(const WindowData& d)
+    : Window(d), m_Resizable(d.resizeable),
     m_CloseButton(&Emplace<Button<SoundMixrGraphics::CloseButton, ButtonType::Normal>>([&]() { this->Close(); }, "")),
     m_MaxiButton1(&Emplace<Button<SoundMixrGraphics::Maxi1Button, ButtonType::Normal>>([&]() { this->Restore(); }, "")),
     m_MaxiButton2(&Emplace<Button<SoundMixrGraphics::Maxi2Button, ButtonType::Normal>>([&]() { this->Maximize(); }, "")),
@@ -59,7 +59,7 @@ void SoundMixrFrame::Render(CommandCollection& d)
 
     d.Command<TexturedQuad>(Graphics::Textures::Logo, _x + 12, Height() - 26 + _offset, 20, 20);
     d.Command<Fill>(ThemeT::Get().window_title_text);
-    d.Command<Font>(Fonts::Gidole14, 14.0f);
+    d.Command<Font>(ThemeT::Get().font14, 14.0f);
     d.Command<TextAlign>(Align::CENTER, Align::CENTER);
     d.Command<Text>(&_line, _x += 45, _y + 16);
 

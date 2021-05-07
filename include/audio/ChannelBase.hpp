@@ -43,6 +43,12 @@ public:
 	ChannelBase(ChannelType type);
 
 	/**
+	 * Destructor with lock to make sure it isn't being deleted
+	 * when the process method is still busy in another thread.
+	 */
+	~ChannelBase() { m_Lock.lock(); m_Lock.unlock(); };
+
+	/**
 	 * Connect to a channel.
 	 * @param c channel
 	 */
@@ -115,9 +121,10 @@ public:
 	virtual void operator=(const nlohmann::json&) = 0;
 
 	Effects::VolumeSlider volumeParam;
+	Effects::Parameter panParam{ "Pan", Effects::ParameterType::Slider };
 	VolumeSlider& volume;
 	PanSlider& pan;
-	TextComponent& name, &volumeVal;
+	SMXRTextComponent& name, &volumeVal;
 	Button<MuteButton, ButtonType::Toggle>& mute;
 	Button<MonoButton, ButtonType::Toggle>& mono;
 	Button<RouteButton, ButtonType::Toggle>& route;
@@ -151,4 +158,6 @@ protected:
 	 * each call of Process.
 	 */
 	void UpdatePans();
+
+	friend class Audio;
 };

@@ -25,7 +25,7 @@
     {std::clog << "Error in " << __FILE__ << ":" << __LINE__ \
                << " (function " << __FUNCTION__ << ") - "    \
                << (exception).what() << std::endl;           \
-     std::abort();}
+     throw exception; }
 
 #include <nlohmann/json.hpp>
 

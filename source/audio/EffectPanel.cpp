@@ -55,7 +55,8 @@ void EffectPanel::EffectChain(::EffectChain* e)
 void EffectPanel::Update(const Vec4<int>& viewport)
 {
 	// Set position of toggle button.
-	m_BypassChain->Position({ 16 + 3, Height() - 32 + 3 });
+	int x = m_ShowSidebar ? 8 : 0;
+	m_BypassChain->Position({ x + 8 + 3, Height() - 32 + 3 });
 
 	// Update and set size of effectchain if not nullptr.
 	if (m_EffectChain)
@@ -65,8 +66,8 @@ void EffectPanel::Update(const Vec4<int>& viewport)
 
 		auto newv = viewport;
 		newv.Translate({ X(), Y() });
-		m_EffectChain->Size(Size() - Vec2<int>{ 8, 32 });
-		m_EffectChain->X(8);
+		m_EffectChain->Size(Size() - Vec2<int>{ x, 32 });
+		m_EffectChain->X(x);
 		m_EffectChain->Update(newv);
 	}
 
@@ -87,22 +88,25 @@ void EffectPanel::Render(CommandCollection& d)
 	Background(d);
 
 	// Border on the left of the panel.
-	d.Command<Graphics::Fill>(ThemeT::Get().window_frame);
-	d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, 8, Height() });
+	int x = 8;
+	if (m_ShowSidebar)
+	{
+		d.Command<Graphics::Fill>(ThemeT::Get().window_frame);
+		d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, 8, Height() });
+		x = 16;
+	}
 
 	// Render effect chain if not nullptr.
 	if (m_EffectChain)
 		m_EffectChain->Render(d);
 
 	// Display the top bar of the effect panel
-	d.Command<Graphics::Fill>(ThemeT::Get().window_frame);
-	d.Command<Graphics::Quad>(Vec4<int>{ 0, 0, 8, Height()});
 	d.Command<Graphics::Fill>(ThemeT::Get().effect_title_bar);
-	d.Command<Graphics::Quad>(Vec4<int>{ 16, Height() - 32, Width() - 40, 24 });
+	d.Command<Graphics::Quad>(Vec4<int>{ x, Height() - 32, Width() - 24 - x, 24 });
 	d.Command<Graphics::Fill>(ThemeT::Get().effect_title_text);
 	d.Command<Graphics::Font>(Graphics::Fonts::Gidole16, 16.0f);
 	d.Command<Graphics::TextAlign>(Align::LEFT, Align::CENTER);
-	d.Command<Graphics::Text>(&m_Name, Vec2<int>{ 46, Height() - 20 });
+	d.Command<Graphics::Text>(&m_Name, Vec2<int>{ 30 + x, Height() - 20 });
 	d.Command<Graphics::Fill>(ThemeT::Get().effect_minimize_button);
 	d.Command<Graphics::Line>(Vec4<float>{ Width() - 42.f, Height() - 26.f, Width() - 30.f, Height() - 14.f }, 3.0f);
 	d.Command<Graphics::Line>(Vec4<float>{ Width() - 42.f, Height() - 14.f, Width() - 30.f, Height() - 26.f }, 3.0f);

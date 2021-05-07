@@ -275,8 +275,24 @@ public:
 		menu_border,
 		menu_divider;
 
+	int font, font14, font16;
+
 	ThemeT()
 	{}
+
+	~ThemeT()
+	{}
+
+	void FreeFonts()
+	{
+		// Free the fonts
+		if (font != Graphics::Fonts::Gidole)
+			Graphics::FreeFont(font);
+		if (font14 != Graphics::Fonts::Gidole14)
+			Graphics::FreeFont(font14);
+		if (font16 != Graphics::Fonts::Gidole16)
+			Graphics::FreeFont(font16);
+	}
 
 	ThemeT(nlohmann::json json)
 		: m_Json(json)
@@ -291,6 +307,8 @@ public:
 			m_Name = m_Json.at("name").get<std::string>();
 			for (auto& [key, v] : m_Json.at("variables").items())
 				m_Variables.emplace(key, Color{ v.at(0), v.at(1), v.at(2), v.at(3) });
+
+			m_Font = m_Json.at("font").get<std::string>();
 
 			text       = GetColor("text");
 			text_small = GetColor("textsmall");
@@ -535,6 +553,8 @@ public:
 			menu_background = GetColor("menu", "background");
 			menu_border = GetColor("menu", "border");
 			menu_divider = GetColor("menu", "divider");
+
+			LoadFont();
 		}
 		catch (...)
 		{
@@ -604,6 +624,9 @@ public:
 	static inline void ReloadThemes()
 	{
 		m_Theme = nullptr;
+		for (auto& i : m_Themes)
+			i.second->FreeFonts();
+
 		m_Themes.clear();
 		std::filesystem::create_directory("./themes");
 		for (auto& p : std::filesystem::directory_iterator("./themes"))
@@ -654,6 +677,23 @@ private:
 	nlohmann::json m_Json;
 	std::string m_Name;
 	std::unordered_map<std::string, Color> m_Variables;
+	std::string m_Font;
+
+	void LoadFont()
+	{
+		if (m_Font.empty())
+		{
+			font = Graphics::Fonts::Gidole;
+			font14 = Graphics::Fonts::Gidole14;
+			font16 = Graphics::Fonts::Gidole16;
+			return;
+		}
+		std::filesystem::path abspath = "./themes/" + m_Font;
+		font = Graphics::LoadFont(abspath.string());
+		font14 = Graphics::LoadFont(abspath.string(), 14);
+		font16 = Graphics::LoadFont(abspath.string(), 16);
+	}
+
 	
 	static inline std::unordered_map<std::string, std::unique_ptr<ThemeT>> m_Themes;
 	static inline ThemeT* m_Theme = nullptr;
@@ -676,7 +716,7 @@ public:
 		
 		d.Command<Fill>(_c1);
 		d.Command<Quad>(b.Position(), b.Size());
-		d.Command<Font>(Fonts::Gidole, 24.0f);
+		d.Command<Font>(ThemeT::Get().font, 24.0f);
 		d.Command<Fill>(_c2);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -691,7 +731,7 @@ public:
 		using namespace Graphics;
 		Color _c2 = ThemeT::Get().text_small;
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
 		d.Command<Fill>(_c2);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -757,7 +797,7 @@ public:
 		int _h = b.Height();
 		d.Command<Fill>(_c2);
 		d.Command<Quad>(Vec4<int>{b.Position(), _w, _h });
-		d.Command<Font>(Fonts::Gidole16, 11.0f);
+		d.Command<Font>(ThemeT::Get().font16, 11.0f);
 		d.Command<Fill>(_c1);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -790,7 +830,7 @@ public:
 		int _h = b.Height();
 		d.Command<Fill>(_c2);
 		d.Command<Quad>(Vec4<int>{b.Position(), _w, _h });
-		d.Command<Font>(Fonts::Gidole16, 11.0f);
+		d.Command<Font>(ThemeT::Get().font16, 11.0f);
 		d.Command<Fill>(_c1);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -907,21 +947,21 @@ public:
 
 		d.Command<Quad>(Vec4<int>{b.X() + b.Width() / 2, b.Y() + 1, _w, b.Height() - 2});
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);		
-		if (b.DisplayValue())
-		{
-			if (b.Disabled())
-				d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
-			else if (b.Dragging())
-				d.Command<Fill>(ThemeT::Get().slider_active_value_text);
-			else if (b.Hovering())
-				d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
-			else
-				d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
+		//if (b.DisplayValue())
+		//{
+		//	if (b.Disabled())
+		//		d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
+		//	else if (b.Dragging())
+		//		d.Command<Fill>(ThemeT::Get().slider_active_value_text);
+		//	else if (b.Hovering())
+		//		d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
+		//	else
+		//		d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
 
-			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-			d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
-		}
+		//	d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		//	d.Command<Text>(&b.ValueText(), b.Position() + (b.Size() / 2));
+		//}
 		if (b.DisplayName())
 		{
 			if (b.Disabled())
@@ -1026,21 +1066,21 @@ public:
 			d.Command<Quad>(Vec4<int>{b.X() + 1, b.Y() + 1, _w, b.Height() - 2});
 		}
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.DisplayValue())
-		{
-			if (b.Disabled())
-				d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
-			else if (b.Dragging())
-				d.Command<Fill>(ThemeT::Get().slider_active_value_text);
-			else if (b.Hovering())
-				d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
-			else
-				d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
+		//if (b.DisplayValue())
+		//{
+		//	if (b.Disabled())
+		//		d.Command<Fill>(ThemeT::Get().slider_disabled_value_text);
+		//	else if (b.Dragging())
+		//		d.Command<Fill>(ThemeT::Get().slider_active_value_text);
+		//	else if (b.Hovering())
+		//		d.Command<Fill>(ThemeT::Get().slider_hovering_value_text);
+		//	else
+		//		d.Command<Fill>(ThemeT::Get().slider_idle_value_text);
 
-			d.Command<TextAlign>(Align::CENTER, Align::CENTER);
-			d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + b.Height() / 2});
-		}
+		//	d.Command<TextAlign>(Align::CENTER, Align::CENTER);
+		//	d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + b.Height() / 2});
+		//}
 		if (b.DisplayName())
 		{
 			if (b.Disabled())
@@ -1099,7 +1139,7 @@ public:
 		else
 			d.Command<Fill>(ThemeT::Get().toggle_button_idle_text);
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
 	}
@@ -1145,7 +1185,7 @@ public:
 		else
 			d.Command<Fill>(ThemeT::Get().radio_button_idle_text);
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
 	}
@@ -1193,7 +1233,7 @@ public:
 		else
 			d.Command<Fill>(ThemeT::Get().button_idle_text);
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), b.Position() + Vec2<int>{ b.Width() / 2, b.Height() / 2 });
 	}
@@ -1241,7 +1281,7 @@ public:
 		else
 			d.Command<Fill>(ThemeT::Get().dropdown_button_idle_text);
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
 		d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() / 2 });
 	}
@@ -1289,7 +1329,7 @@ public:
 		else
 			d.Command<Fill>(ThemeT::Get().dropdown_button_idle_text);
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
 		d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 		d.Command<Text>(&b.Name(), Vec2<int>{ b.X() + 4, b.Y() + b.Height() / 2 });
 		
@@ -1385,21 +1425,21 @@ public:
 			d.Command<Graphics::Triangle>(Vec4<int>{ b.X() + b.Width() / 2, b.Y() + b.Height() + 2, 7, 4 }, -90.0f);
 		}
 
-		d.Command<Font>(Fonts::Gidole14, 14.0f);
-		if (b.DisplayValue())
-		{
-			if (b.Disabled())
-				d.Command<Fill>(ThemeT::Get().knob_disabled_value_text);
-			else if (b.Dragging())
-				d.Command<Fill>(ThemeT::Get().knob_active_value_text);
-			else if (b.Hovering())
-				d.Command<Fill>(ThemeT::Get().knob_hovering_value_text);
-			else
-				d.Command<Fill>(ThemeT::Get().knob_idle_value_text);
+		d.Command<Font>(ThemeT::Get().font14, 14.0f);
+		//if (b.DisplayValue())
+		//{
+		//	if (b.Disabled())
+		//		d.Command<Fill>(ThemeT::Get().knob_disabled_value_text);
+		//	else if (b.Dragging())
+		//		d.Command<Fill>(ThemeT::Get().knob_active_value_text);
+		//	else if (b.Hovering())
+		//		d.Command<Fill>(ThemeT::Get().knob_hovering_value_text);
+		//	else
+		//		d.Command<Fill>(ThemeT::Get().knob_idle_value_text);
 
-			d.Command<TextAlign>(Align::CENTER, Align::TOP);
-			d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + 3});
-		}		
+		//	d.Command<TextAlign>(Align::CENTER, Align::TOP);
+		//	d.Command<Text>(&b.ValueText(), Vec2<int>{ b.X() + (b.Width() / 2), b.Y() + 3});
+		//}		
 		if (b.DisplayName())
 		{
 			if (b.Disabled())
@@ -1448,7 +1488,7 @@ namespace SoundMixrGraphics
 			else
 				d.Command<Fill>(ThemeT::Get().menu_button_idle_text);
 
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(ThemeT::Get().font14, 14.0f);
 			d.Command<TextAlign>(Hori, Vert);
 			if (Hori == Align::CENTER)
 				d.Command<Text>(&b.Name(), b.X() + b.Width() / 2, b.Y() + b.Height() / 2);
@@ -1486,7 +1526,7 @@ namespace SoundMixrGraphics
 			else
 				d.Command<Fill>(ThemeT::Get().menu_button_idle_text);
 
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(ThemeT::Get().font14, 14.0f);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
 
@@ -1538,7 +1578,7 @@ namespace SoundMixrGraphics
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
 
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(ThemeT::Get().font14, 14.0f);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
 
@@ -1590,7 +1630,7 @@ namespace SoundMixrGraphics
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
 
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(ThemeT::Get().font14, 14.0f);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
 
@@ -1635,7 +1675,7 @@ namespace SoundMixrGraphics
 			else
 				d.Command<Fill>(ThemeT::Get().toggle_menu_button_idle_text);
 
-			d.Command<Font>(Fonts::Gidole14, 14.0f);
+			d.Command<Font>(ThemeT::Get().font14, 14.0f);
 			d.Command<TextAlign>(Align::LEFT, Align::CENTER);
 			d.Command<Text>(&b.Name(), _padding + b.X() + 6, b.Y() + b.Height() / 2);
 
@@ -1684,7 +1724,7 @@ namespace SoundMixrGraphics
 			 d.Command<Fill>(_c1);
 			 d.Command<Quad>(b.X(), b.Y(), b.Width(), b.Height() - 1);
 			 d.Command<Fill>(_c2);
-			 d.Command<Font>(Fonts::Gidole14, 14.0f);
+			 d.Command<Font>(ThemeT::Get().font14, 14.0f);
 			 d.Command<TextAlign>(Align::CENTER, Align::CENTER);
 			 d.Command<Text>(&b.Name(), Vec2<int>{b.X() + b.Width() / 2, b.Y() + b.Height() / 2});
 		 }
@@ -1967,4 +2007,104 @@ private:
 		m_PaddingX,
 		m_PaddingY,
 		m_Stroke;
+};
+
+class SMXRTextBox : public TextBox
+{
+
+public:
+
+	SMXRTextBox(bool autoresize = true)
+		: m_AutoResize(autoresize)
+	{}
+
+	void Update(const Vec4<int>& v)
+	{
+		if (FontSize() == 48) Font(ThemeT::Get().font, 48);
+		else if (FontSize() == 24) Font(ThemeT::Get().font, 24);
+		else if (FontSize() == 12) Font(ThemeT::Get().font, 12);
+		else if (FontSize() == 14) Font(ThemeT::Get().font14, 14);
+		else if (FontSize() == 16) Font(ThemeT::Get().font16, 16);
+		else if (FontSize() == 8) Font(ThemeT::Get().font16, 8);
+
+		TextBox::Update(v);
+	}
+
+	void Font(int f, float size) 
+	{
+		int fold = m_Displayer.Font();
+		if (f != fold)
+		{
+			m_Displayer.Font(f, size);
+
+			if (m_AutoResize)
+				Width(Graphics::StringWidth(m_Displayer.Content(), f, size) + 6);
+			
+			m_Displayer.RecalculateLines();
+		}
+	};
+private:
+	bool m_AutoResize = true;
+};
+
+class SMXRTextComponent : public SMXRTextBox
+{
+
+public:
+
+	SMXRTextComponent(const std::string& t, float fsize = 14, bool autoresize = true)
+		: SMXRTextBox(autoresize)
+	{
+		Font(0, fsize);
+
+		Content(t);
+		AlignLines(Align::LEFT);
+		TextColor({ 255, 255, 255, 255 });
+		Editable(false);
+		Width(Graphics::StringWidth(t, Font(), fsize) + 6);
+		Height(fsize + 4);
+		Padding(2);
+		Background({ 0, 0, 0, 0 });
+	}
+
+	/**
+	 * Set the content.
+	 * @param c content
+	 */
+	void Content(const std::string& c)
+	{
+		//Width(Graphics::StringWidth(c, Font(), FontSize()) + 4);
+		//Height(FontSize() + 4);
+		TextBox::Content(c);
+	}
+
+	/**
+	 * Get the content.
+	 * @return content
+	 */
+	auto Content() -> std::string& { return TextBox::Content(); }
+
+	/**
+	 * Set the font and font size.
+	 * @param f font
+	 * @param size font size
+	 */
+	void Font(int f, float fsize)
+	{
+		if (fsize == 48) TextBox::Font(ThemeT::Get().font, 48);
+		else if (fsize == 24) TextBox::Font(ThemeT::Get().font, 24);
+		else if (fsize == 12) TextBox::Font(ThemeT::Get().font, 12);
+		else if (fsize == 14) TextBox::Font(ThemeT::Get().font14, 14);
+		else if (fsize == 16) TextBox::Font(ThemeT::Get().font16, 16);
+		else if (fsize == 8) TextBox::Font(ThemeT::Get().font16, 8);
+
+		Width(Graphics::StringWidth(Content(), TextBox::FontSize(), fsize) + 6);
+		Height(fsize + 4);
+	}
+
+	/**
+	 * Get the font.
+	 * @return font
+	 */
+	int Font() const { return TextBox::Font(); }
 };

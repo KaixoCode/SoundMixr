@@ -7,134 +7,24 @@ void EndpointChannel::Process()
 	// Input takes sample from endpoint and sends to connections
 	if (Type() & ChannelBase::Type::Input)
 	{
-		float _avg = 0;
-		bool _mono = mono.Active();
+		// First get all levels from the endpoints
+		for (int i = 0; i < Lines(); i++)
+			m_Levels[i] = m_Endpoints[i]->sample;
 
-		// Go through all the input endpoints and collect samples
-		for (int i = 0; i < m_Lines; i++)
-		{
-			float _sample = m_Endpoints[i]->sample;
-
-			// If muted set sample to 0
-			if (!mute.Active())
-			{
-				_sample = m_EffectChain.NextSample(_sample, i);
-				_sample *= volume.Value();
-				_sample *= m_Pans[i];
-			}
-			else
-				_sample = 0;
-
-			// If it's not mono, directly add to all connections
-			if (!_mono)
-			{
-				for (auto& j : Connections())
-					j->Input(_sample, i);
-
-				// Set peak, for the volume slider meter.
-				if (_sample > m_Peaks[i])
-					m_Peaks[i] = _sample;
-				if (-_sample > m_Peaks[i])
-					m_Peaks[i] = -_sample;
-			}
-
-			// Increase average if mono
-			else
-				_avg += _sample;
-		}
-
-		// Actually make it an average.
-		_avg /= Lines();
-
-		// If mono, send the avg sample to all lines of all connected channels
-		if (_mono)
-		{
-			// The connections will get averaged levels, but panning will still be applied
-			// panning will be applied as if there were the same amount of channels (n), but 
-			// any channel above n will receive the pan of x mod n channel. So example:
-			// this has 2 channels, connection 4, channel 3 of connection will get pan of channel 1.
-			for (auto& j : Connections())
-				for (int i = 0; i < j->Lines(); i++)
-				{
-					float _level = _avg * m_Pans[i % Lines()];
-					j->Input(_level, i);
-				}
-
-			// Set peaks for volume slider meter to mono, panning will be applied after monoing.
-			for (int i = 0; i < Lines(); i++)
-			{
-				float _level = _avg * m_Pans[i];
-
-				// Set peak, for the volume slider meter.
-				if (_level > m_Peaks[i])
-					m_Peaks[i] = _level;
-				if (-_level > m_Peaks[i])
-					m_Peaks[i] = -_level;
-			}
-		}
+		// Then process the samples
+		ChannelBase::Process();
 	}
 
 	// Otherwise it's output and takes samples from m_Levels and sends to endpoints
 	else
 	{
-		float _avg = 0;
-		bool _mono = mono.Active();
+		// First process the incoming samples
+		ChannelBase::Process();
 
-		// Go through all the output endpoints and submit samples
-		for (int i = 0; i < m_Lines; i++)
-		{
-			float _sample = m_Levels[i];
-
-			// If muted set sample to 0
-			if (!mute.Active())
-			{
-				_sample = m_EffectChain.NextSample(_sample, i);
-				_sample *= volume.Value();
-				if (!_mono)
-					_sample *= m_Pans[i];
-			}
-			else
-				_sample = 0;
-
-			// If it's not mono, directly send to endpoints
-			if (!_mono)
-			{
-				m_Endpoints[i]->sample = constrain(_sample, -1, 1);
-
-				// Set peak, for the volume slider meter.
-				if (_sample > m_Peaks[i])
-					m_Peaks[i] = _sample;
-				if (-_sample > m_Peaks[i])
-					m_Peaks[i] = -_sample;
-			}
-
-			// Increase average if mono
-			else
-				_avg += _sample;
-		}
-
-		// Actually make it an average.
-		_avg /= Lines();
-
-		// If mono, send the avg sample to all endpoints
-		if (_mono)
-		{
-			for (int i = 0; i < Lines(); i++)
-			{
-				float _level = _avg * m_Pans[i];
-				m_Endpoints[i]->sample = constrain(_level, -1, 1);
-
-				// Set peak, for the volume slider meter.
-				if (_level > m_Peaks[i])
-					m_Peaks[i] = _level;
-				if (-_level > m_Peaks[i])
-					m_Peaks[i] = -_level;
-			}
-		}
+		// Then forward them to the endpoints
+		for (int i = 0; i < Lines(); i++)
+			m_Endpoints[i]->sample = m_Levels[i];
 	}
-
-	// Process main channel things
-	ChannelBase::Process();
 
 	// Reset levels
 	for (auto& i : m_Levels)
@@ -189,6 +79,7 @@ EndpointChannel::operator nlohmann::json()
 	_json["mono"] = mono.Active();
 	_json["pan"] = pan;
 	_json["name"] = name.Content();
+	_json["visible"] = m_Visible;
 
 	if (Type() & Type::Input)
 	{
@@ -216,4 +107,5 @@ void EndpointChannel::operator=(const nlohmann::json& json)
 	volume = json.at("volume");
 	name.Content(json.at("name").get<std::string>());
 	m_EffectChain = json;
+	m_Visible = json.at("visible");
 };

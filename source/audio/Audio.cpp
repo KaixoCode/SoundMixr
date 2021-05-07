@@ -1,11 +1,13 @@
 #include "audio/Audio.hpp"
+#include "audio/EndpointChannel.hpp"
+#include "audio/GeneratorChannel.hpp"
 
 Audio::Audio()
     :
     // This panel contains the channel scrollpanel in the center and the 
     // device name at the top. The effect panel will be displayed in the east.
     m_ChannelScrollPanel(Emplace<SMXRScrollPanel>(Layout::Hint::Center)),
-    m_DeviceName(Emplace<TextComponent>(Layout::Hint::North, "Channels", Graphics::Fonts::Gidole, 24.0f)),
+    m_DeviceName(Emplace<SMXRTextComponent>(Layout::Hint::North, "Channels", 24.0f)),
     m_EffectPanel(Emplace<EffectPanel>(Layout::Hint::East)),
 
     // The panel in the channel scrollpanel contains the input panel and output panel
@@ -67,10 +69,12 @@ Audio::Audio()
     {
         // if the effects panel is visible and pressed on channel, view the
         // selected channel's effect chain.
-        if (e.button == Event::MouseButton::LEFT && ChannelBase::selected && m_EffectPanel.Visible())
+        if (e.button == Event::MouseButton::LEFT && ChannelBase::selected)
         {
+            bool vis = m_EffectPanel.Visible();
             m_EffectPanel.EffectChain(&ChannelBase::selected->EffectChain());
             m_EffectPanel.Name(ChannelBase::selected->name.Content());
+            m_EffectPanel.Visible(vis);
         }
 
         // If rightclick, check if hovering over a channel and show a rightclick
@@ -93,14 +97,51 @@ Audio::Audio()
                         m_Lock.lock();
 
                         // Emplace a channelgroup to the list
-                        auto& _c = m_GeneratorPanel.Emplace<GeneratorChannel>(
-                            ChannelBase::Type::Input | ChannelBase::Type::Generator);
+                        auto& _c = m_GeneratorPanel.Emplace<GeneratorChannel>();
                         m_Channels.push_back(&_c);
 
                         m_Lock.unlock();
                     }, " + Test Thing");
                 RightClickMenu::Get().Open(&m_Menu);
 
+            }
+            else
+            {
+                m_Menu.Clear();
+                m_Menu.ButtonSize({ 180, 20 });
+                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>("Channels").Disable();
+                m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+                auto& _sub = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                    ("Show Inputs");
+                _sub.MenuBase().ButtonSize({ 180, 20 });
+                for (auto& _c : m_InputsPanel.Components())
+                {
+                    ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
+                    if (s)
+                        _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
+                }
+
+                auto& _sub2 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                    ("Show Outputs");
+                _sub2.MenuBase().ButtonSize({ 180, 20 });
+                for (auto& _c : m_OutputsPanel.Components())
+                {
+                    ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
+                    if (s)
+                        _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
+                }
+
+                auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                    ("Show Generators");
+                _sub3.MenuBase().ButtonSize({ 180, 20 });
+                for (auto& _c : m_GeneratorPanel.Components())
+                {
+                    ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
+                    if (s)
+                        _sub3.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
+                }
+
+                RightClickMenu::Get().Open(&m_Menu);
             }
         }
     };
@@ -113,7 +154,7 @@ Audio::Audio()
             return;
 
         // If click twice in same position, open effectpanel.
-        if (m_Click > 0 && m_PrevPos == Vec2<int>{ e.x, e.y }&& ChannelBase::selected&& ChannelBase::selected->Hovering())
+        if (m_Click > 0 && m_PrevPos == Vec2<int>{ e.x, e.y } && ChannelBase::selected && ChannelBase::selected->Hovering())
         {
             // Also make sure we're not hovering over the volume or pan parameter, because
             // double clicking on those will reset their value and should not open the effect panel.
@@ -145,6 +186,10 @@ void Audio::GenerateMenu(Panel& panel)
             m_EffectPanel.EffectChain(&hover->EffectChain());
             m_EffectPanel.Name(hover->name.Content());
         }, "Show Effects");
+    m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+        [&, hover] {
+            hover->Visible(false);
+        }, "Hide Channel");
 
     // A channel can split if it has more than 1 line, and is an endpoint
     bool canSplit = (hover->Type() & ChannelBase::Type::Endpoint) && hover->Lines() > 1;
@@ -439,7 +484,7 @@ void Audio::LoadRouting()
 
         // If error occured (either file didn't exist or was parced incorrectly
         // load all the channels as stereo channels.
-        catch (...)
+        catch (std::exception)
         {
             _error = true;
         }
@@ -623,6 +668,16 @@ void Audio::Update(const Vec4<int>& v)
     m_ChannelScrollPanel.Background(ThemeT::Get().window_panel);
     m_DeviceName.TextColor(ThemeT::Get().text);
 
+    bool ivis = false; for (auto& _c : m_InputsPanel.Components()) if (_c->Visible()) { ivis = true; break; }
+    bool ovis = false; for (auto& _c : m_OutputsPanel.Components()) if (_c->Visible()) { ovis = true; break; }
+    bool gvis = false; for (auto& _c : m_GeneratorPanel.Components()) if (_c->Visible()) { gvis = true; break; }
+    m_InputsPanel.Visible(ivis);
+    m_OutputsPanel.Visible(ovis);
+    m_GeneratorPanel.Visible(gvis);
+    int vis = ivis + ovis + gvis;
+    m_Divider.Visible(vis >= 2);
+    m_Divider2.Visible(m_GeneratorPanel.Visible() && m_OutputsPanel.Visible());
+
     Panel::Update(v);
 }
 
@@ -651,8 +706,8 @@ int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned lo
     float* _inBuffer = (float*)inputBuffer;
     float* _outBuffer = (float*)outputBuffer;
 
-    int _inChannels = _this.Asio().Device().info.maxInputChannels;
-    int _outChannels = _this.Asio().Device().info.maxOutputChannels;
+    int _inChannelCount = _this.Asio().Device().info.maxInputChannels;
+    int _outChannelCount = _this.Asio().Device().info.maxOutputChannels;
 
     auto& _inputs = _this.Asio().Inputs();
     auto& _outputs = _this.Asio().Outputs();
@@ -662,8 +717,8 @@ int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned lo
     for (int i = 0; i < nBufferFrames; i++)
     {
         // First input the samples from the input buffer to the input endpoints
-        for (int j = 0; j < _inChannels; j++)
-            _inputs[j].sample = _inBuffer[i * _inChannels + j];
+        for (int j = 0; j < _inChannelCount; j++)
+            _inputs[j].sample = _inBuffer[i * _inChannelCount + j];
 
         // Process all channels, this lock is here for splitting/combining channels
         _this.m_Lock.lock();
@@ -672,8 +727,8 @@ int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned lo
         _this.m_Lock.unlock();
 
         // Output the samples from the output endpoints to the output buffer.
-        for (int j = 0; j < _outChannels; j++)
-            _outBuffer[i * _outChannels + j] = _outputs[j].sample;
+        for (int j = 0; j < _outChannelCount; j++)
+            _outBuffer[i * _outChannelCount + j] = _outputs[j].sample;
     }
     return 0;
 }

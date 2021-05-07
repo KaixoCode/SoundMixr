@@ -1,8 +1,6 @@
 #pragma once
 #include "pch.hpp"
 #include "audio/Asio.hpp"
-#include "audio/EndpointChannel.hpp"
-#include "audio/GeneratorChannel.hpp"
 #include "ui/Graphics.hpp"
 #include "audio/ChannelBase.hpp"
 #include "audio/EffectPanel.hpp"
@@ -117,7 +115,7 @@ private:
 
     // Order of the components are important for initializating
     // them in the constructor.
-    TextComponent& m_DeviceName;
+    SMXRTextComponent& m_DeviceName;
     SMXRScrollPanel& m_ChannelScrollPanel;
     Panel& m_InputsPanel;
     VerticalMenuDivider& m_Divider;
@@ -131,4 +129,6 @@ private:
      */
     static int AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
         const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData);
+
+    friend class Controller;
 };

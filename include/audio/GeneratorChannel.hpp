@@ -12,8 +12,8 @@ class GeneratorChannel : public ChannelBase
 {
 public:
 
-	GeneratorChannel(ChannelType type)
-		: ChannelBase(type)
+	GeneratorChannel()
+		: ChannelBase(ChannelBase::Type::Input | ChannelBase::Type::Generator)
 	{
 		name.Content("Generator");
 		Lines(2);
@@ -31,69 +31,12 @@ public:
 	{
 		m_Lock.lock();
 
-		float _avg = 0;
-		bool _mono = mono.Active();
-
 		float _generatedSample = 0;
 		if (!mute.Active())
 			_generatedSample = m_Oscillator.NextSample();
 
-		// Go through all the output endpoints and submit samples
-		for (int i = 0; i < m_Lines; i++)
-		{
-			float _sample = _generatedSample;
-			m_Levels[i] = _sample;
-
-			// If muted set sample to 0
-			if (!mute.Active())
-			{
-				_sample = m_EffectChain.NextSample(_sample, i);
-				_sample *= volume.Value();
-				if (!_mono)
-					_sample *= m_Pans[i];
-			}
-			else
-				_sample = 0;
-
-			// If it's not mono, directly send to endpoints
-			if (!_mono)
-			{
-				for (auto& c : m_Connections)
-					c->Input(_sample, i);
-
-				// Set peak, for the volume slider meter.
-				if (_sample > m_Peaks[i])
-					m_Peaks[i] = _sample;
-				if (-_sample > m_Peaks[i])
-					m_Peaks[i] = -_sample;
-			}
-
-			// Increase average if mono
-			else
-				_avg += _sample;
-		}
-
-		// Actually make it an average.
-		_avg /= Lines();
-
-		// If mono, send the avg sample to all endpoints
-		if (_mono)
-		{
-			for (int i = 0; i < Lines(); i++)
-			{
-				float _level = _avg * m_Pans[i];				
-				for (auto& c : m_Connections)
-					c->Input(_level, i);
-
-
-				// Set peak, for the volume slider meter.
-				if (_level > m_Peaks[i])
-					m_Peaks[i] = _level;
-				if (-_level > m_Peaks[i])
-					m_Peaks[i] = -_level;
-			}
-		}
-
+		m_Levels[0] = _generatedSample;
+		m_Levels[1] = _generatedSample;
 
 		// Process main channel things
 		ChannelBase::Process();

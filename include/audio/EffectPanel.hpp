@@ -62,4 +62,7 @@ private:
 	::EffectChain* m_EffectChain = nullptr;
 	::ButtonBase* m_BypassChain;
 	std::string m_Name;
+
+	bool m_ShowSidebar = true;
+	friend class Controller;
 };
