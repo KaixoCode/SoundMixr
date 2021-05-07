@@ -8,6 +8,7 @@ SoundboardButton::SoundboardButton()
 	m_Menu.ButtonSize({ 180, 20 });
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Rename(); }, "Rename");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { RemoveFile(); }, "Remove");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, "Link midi key");
 
 	// Add an event listener for mouse click events
 	m_Listener += [this](Event::MousePressed& e)
@@ -41,7 +42,13 @@ SoundboardButton::SoundboardButton()
 			m_FocusedComponent = nullptr;
 		};
 	};
-};
+
+	Listener() += [this](Event::Unfocused& e)
+	{
+		// Stop midi linking if the button gets unfocussed
+		m_MidiLinking = false;
+	};
+}
 
 void SoundboardButton::Update(const Vec4<int>& v)
 {
@@ -117,8 +124,11 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 		}).detach();
 }
 
-void SoundboardButton::PlayFile(bool forceOpen)
+void SoundboardButton::PlayFile(bool forceOpen, bool midi)
 {
+	if (midi && m_MaxSamples < 0)
+		return;
+
 	if (m_MaxSamples > 0 && !forceOpen)
 	{
 		// A file is already loaded, play it if it isn't playing
