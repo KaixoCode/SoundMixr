@@ -7,7 +7,7 @@
 class FileDialog
 {
 public:
-	static inline std::string OpenFile()
+	static inline std::string OpenFile(LPCSTR filterOverride = "JSON Files (*.json)\0*.json\0")
 	{
 		// Load a file
 		OPENFILENAME ofn;
@@ -16,7 +16,7 @@ public:
 
 		ofn.lStructSize = sizeof(OPENFILENAME);
 		ofn.hwndOwner = nullptr;
-		ofn.lpstrFilter = "JSON Files (*.json)\0*.json\0";
+		ofn.lpstrFilter = filterOverride;
 		ofn.lpstrFile = fileName;
 		ofn.nMaxFile = MAX_PATH;
 		ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;

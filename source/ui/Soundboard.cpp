@@ -94,7 +94,7 @@ void SoundboardButton::PlayFile(bool forceOpen)
 	}
 	else
 	{
-		std::string fileNameStr = FileDialog::OpenFile();
+		std::string fileNameStr = FileDialog::OpenFile("WAV Files (*.wav)\0*.wav\0");
 
 		m_Filepath = fileNameStr;
 		m_File.load(fileNameStr);
