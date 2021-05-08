@@ -6,9 +6,10 @@ SoundboardButton::SoundboardButton()
 {
 	// Initialise the right click menu
 	m_Menu.ButtonSize({ 180, 20 });
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { Rename(); }, "Rename");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { RemoveFile(); }, "Remove");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, "Link midi key");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { Rename(); }, "Rename");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveFile(); }, "Remove");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, "Link Midi");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link");
 
 	// Add an event listener for mouse click events
 	m_Listener += [this](Event::MousePressed& e)

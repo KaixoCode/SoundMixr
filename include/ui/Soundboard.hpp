@@ -24,9 +24,9 @@ public:
 		_json["filepath"] = m_Filepath;
 		_json["filename"] = m_Name.Content();
 		_json["midi"] = nlohmann::json::array();
-		_json["midi"][0] = m_MidiConf.x;
-		_json["midi"][1] = m_MidiConf.y;
-		_json["midi"][2] = m_MidiConf.z;
+		_json["midi"][0] = m_MidiLink.x;
+		_json["midi"][1] = m_MidiLink.y;
+		_json["midi"][2] = m_MidiLink.z;
 
 		return _json;
 	}
@@ -35,7 +35,7 @@ public:
 	{
 		this->LoadFile(json.at("filepath"), json.at("filename"));
 
-		m_MidiConf = { json.at("midi")[0], json.at("midi")[1], json.at("midi")[2] };
+		m_MidiLink = { json.at("midi")[0], json.at("midi")[1], json.at("midi")[2] };
 	}
 
 private:
@@ -47,18 +47,18 @@ private:
 	float m_MultiplicationFactor = 1.0F;
 	SMXRTextBox& m_Name;
 	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
-	Vec3<byte> m_MidiConf {-1, -1, -1};
+	Vec3<int> m_MidiLink {-1, -1, -1};
 
 
 	Midi::EventStorage _1{ Midi::Get() += [this](Midi::Event::NoteOn& a)
 	{
 		if (m_MidiLinking)
 		{
-			m_MidiConf = { a.channel, a.note, a.device };
+			m_MidiLink = { a.channel, a.note, a.device };
 			m_MidiLinking = false;
 		}
 
-		if (m_MidiConf == Vec3<byte> { a.channel, a.note, a.device })
+		if (m_MidiLink == Vec3<int>{ a.channel, a.note, a.device })
 			PlayFile();
 	} };
 };
