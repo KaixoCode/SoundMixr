@@ -16,7 +16,8 @@ public:
 	void ShowMenu();
 	void Rename();
 	void Update(const Vec4<int>&) override;
-	void RemoveFile();
+	void Render(CommandCollection&) override;
+	void RemoveFile(); 
 
 	operator nlohmann::json()
 	{

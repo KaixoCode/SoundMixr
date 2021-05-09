@@ -59,7 +59,7 @@ void SoundMixrFrame::Render(CommandCollection& d)
 
     d.Command<TexturedQuad>(Graphics::Textures::Logo, _x + 12, Height() - 26 + _offset, 20, 20);
     d.Command<Fill>(ThemeT::Get().window_title_text);
-    d.Command<Font>(ThemeT::Get().font14, 14.0f);
+    d.Command<Font>(ThemeT::Get().font, 14.0f);
     d.Command<TextAlign>(Align::CENTER, Align::CENTER);
     d.Command<Text>(&_line, _x += 45, _y + 16);
 

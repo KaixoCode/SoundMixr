@@ -40,6 +40,7 @@ SoundboardButton::SoundboardButton()
 			Event e{ Event::Type::Unfocused };
 			m_Name.AddEvent(e);
 			m_Name.Focused(false);
+			m_Name.Hide();
 			m_FocusedComponent = nullptr;
 		};
 	};
@@ -59,6 +60,12 @@ void SoundboardButton::Update(const Vec4<int>& v)
 	Button<G::Menu, BT::Normal>::Update(v);
 }
 
+void SoundboardButton::Render(CommandCollection& d)
+{
+	Button<G::Menu, BT::Normal>::Render(d);
+	m_Name.Render(d);
+}
+
 void SoundboardButton::RemoveFile()
 {
 	m_Name.Content("");
@@ -76,6 +83,7 @@ void SoundboardButton::ShowMenu()
 void SoundboardButton::Rename()
 {
 	Disable();
+	m_Name.Show();
 	m_Name.Editable(true);
 	m_Name.Displayer().Container().Select({0, (int)m_Name.Content().length()});
 	m_FocusedComponent = &m_Name;
@@ -133,10 +141,10 @@ void SoundboardButton::PlayFile(bool forceOpen, bool midi)
 	if (m_MaxSamples > 0 && !forceOpen)
 	{
 		// A file is already loaded, play it if it isn't playing
-		if (m_SampleNum < 0)
+		//if (m_SampleNum < 0)
 			m_SampleNum = 0;
-		else
-			m_SampleNum = -1;
+		//else
+		//	m_SampleNum = -1;
 	}
 	else
 	{

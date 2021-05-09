@@ -104,7 +104,7 @@ void EffectPanel::Render(CommandCollection& d)
 	d.Command<Graphics::Fill>(ThemeT::Get().effect_title_bar);
 	d.Command<Graphics::Quad>(Vec4<int>{ x, Height() - 32, Width() - 24 - x, 24 });
 	d.Command<Graphics::Fill>(ThemeT::Get().effect_title_text);
-	d.Command<Graphics::Font>(Graphics::Fonts::Gidole16, 16.0f);
+	d.Command<Graphics::Font>(ThemeT::Get().font, 16.0f);
 	d.Command<Graphics::TextAlign>(Align::LEFT, Align::CENTER);
 	d.Command<Graphics::Text>(&m_Name, Vec2<int>{ 30 + x, Height() - 20 });
 	d.Command<Graphics::Fill>(ThemeT::Get().effect_minimize_button);
