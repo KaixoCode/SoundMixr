@@ -207,6 +207,7 @@ void VolumeSlider::Update(const Vec4<int>& v)
 {
 	m_Size = { m_Parameter.Size().width, m_Parameter.Size().height };
 	m_Pos = { m_Parameter.Position().x, m_Parameter.Position().y };
+	m_Dims = { m_Pos.x, m_Pos.y, m_Size.width, m_Size.height };
 
 	Component::Update(v);
 

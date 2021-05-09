@@ -26,6 +26,7 @@ SoundboardButton::SoundboardButton()
 	m_Name.Background({ 0, 0, 0, 0 });
 	m_Name.TextColor({ 255, 255, 255, 255 });
 	m_Name.Editable(false);
+	m_Name.Visible(false);
 
 	m_Name.Listener() += [this](Event::Unfocused& e)
 	{

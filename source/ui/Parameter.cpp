@@ -7,16 +7,14 @@ ParameterBase::ParameterBase(Effects::Parameter& param)
 	m_Size = { param.Size().width, param.Size().height };
 	m_Value.Background(Color{ 0, 0, 0, 0 });
 	m_Value.AlignLines(Align::CENTER);
-	if (m_Parameter.Type() == Effects::ParameterType::Slider)
-		m_Value.Hide();
+	m_Value.Hide();
 
 	m_Value.Listener() += [this](Event::Unfocused& e) 
 	{
 		auto content = m_Value.Content();
 		std::regex reg{ "[^\\d\\.\\-]+" };
 		std::string out = std::regex_replace(content, reg, "");
-		if (m_Parameter.Type() == Effects::ParameterType::Slider)
-			m_Value.Hide();
+		m_Value.Hide();
 		try {
 			double i = std::stod(out);
 			Value(i);
@@ -186,7 +184,10 @@ void ParameterBase::Update(const Vec4<int>& vp)
 {
 	if (m_PressBox > 1)
 		m_PressBox--;
-
+	if (m_Parameter.Type() == Effects::ParameterType::VolumeSlider)
+	{
+		LOG("VOLUME");
+	}
 	m_Size = { m_Parameter.Size().width, m_Parameter.Size().height };
 	m_Pos = { m_Parameter.Position().x, m_Parameter.Position().y };
 
@@ -199,15 +200,17 @@ void ParameterBase::Update(const Vec4<int>& vp)
 	else
 		m_Value.TextColor(ThemeT::Get().knob_idle_value_text);
 
+	if (!DisplayValue())
+		m_Value.Visible(false);
 	if (m_Parameter.Type() == Effects::ParameterType::Knob)
 	{
-		m_Value.Visible(DisplayValue());
 		m_Dims = { m_Pos.x - 15, m_Pos.y - 15, m_Size.width + 30, m_Size.height + 15 };
 	}
 	else
 	{
 		m_Dims = { m_Pos.x, m_Pos.y, m_Size.width, m_Size.height };
 	}
+
 	m_Value.Size({ m_Dims.width, 20 });
 	m_Value.Position({ m_Dims.x, m_Dims.y });
 	

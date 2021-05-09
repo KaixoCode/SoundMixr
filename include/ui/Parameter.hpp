@@ -63,8 +63,8 @@ public:
 
 	bool WithinBounds(const Vec2<int>& pos) const override
 	{
-		if (m_Parameter.Type() == Effects::ParameterType::VolumeSlider)
-			return Container::WithinBounds(pos);
+		//if (m_Parameter.Type() == Effects::ParameterType::VolumeSlider)
+		//	return Container::WithinBounds(pos);
 		return pos.x >= m_Dims.x && pos.x <= m_Dims.x + m_Dims.width
 			&& pos.y >= m_Dims.y && pos.y <= m_Dims.y + m_Dims.height;
 	}
@@ -93,7 +93,7 @@ protected:
 	Button<SoundMixrGraphics::Menu, ButtonType::Toggle>* m_LinkButton;
 	Button<SoundMixrGraphics::Menu, ButtonType::Normal>* m_UnlinkButton;
 
-	TextBox& m_Value;
+	SMXRTextBox& m_Value;
 
 	/**
 	 * Midi Event, stored here, will automatically remove callback from Midi
