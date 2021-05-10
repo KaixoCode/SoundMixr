@@ -168,21 +168,12 @@ void SoundboardButton::PlayFile(bool forceOpen, bool midi)
 Soundboard::Soundboard()
 	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 300, 300 }, false, false, true, false, true, true, nullptr))
 {
-	Init();
-}
-
-void Soundboard::Init() {
-
-	namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
-
-	auto& _panel = this->Panel();
-	this->Icon(IDI_ICON1);
-	_panel.Clear();
-
-	_panel.Layout<Layout::Grid>(4, 4, 8, 8);
+	Panel().Layout<Layout::Grid>(1, 1, 8, 8);
+	m_SubP = &Panel().Emplace<::Panel>();
+	m_SubP->Layout<Layout::Grid>(4, 4, 8, 8);
 
 	for (int i = 0; i < 16; i++) {
-		m_Buttons.push_back(&_panel.Emplace<SoundboardButton>());
+		m_Buttons.push_back(&m_SubP->Emplace<SoundboardButton>());
 	}
 }
 
@@ -237,26 +228,18 @@ void Soundboard::Load()
 			nlohmann::json _json;
 			_in >> _json;
 
-			// Clear the screen
-			m_Buttons.clear();
-			auto& _panel = this->Panel();
-			_panel.Clear();
-
 			// Load all the buttons
 			auto _data = _json.at("data");
+			int index = 0;
 			for (auto& cur : _data) {
-				auto& curBtn = _panel.Emplace<SoundboardButton>();
-				curBtn = cur;
-				m_Buttons.push_back(&curBtn);
+				*m_Buttons[index] = cur;
+				index++;
 			}
 		}
 		catch (std::exception& e) { _error = true; }
 
 		if (_error) {
 			LOG("Failed to load the soundboard");
-
-			// Initialise an empty soundboard
-			Init();
 		}
 
 		_in.close();

@@ -86,9 +86,15 @@ public:
 	float GetLevel(int);
 	void Save();
 	void Load();
-	void Init();
+
+	void Update(const Vec4<int>& v) override
+	{
+		m_SubP->Background(ThemeT::Get().window_frame);
+		SoundMixrFrame::Update(v);
+	}
 	
 private:
 	std::map<int, AudioFile<double>> m_files;
 	std::vector<SoundboardButton*> m_Buttons;
+	::Panel* m_SubP;
 };

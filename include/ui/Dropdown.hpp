@@ -46,14 +46,14 @@ public:
 	using Callback = std::function<void(Enum)>;
 
 	DropDown()
-		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); m_Active = false; } },
+		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu, false, m_AbsPos); m_Active = false; } },
 		m_Key(ButtonType::List::NewKey())
 	{
 		m_Menu.ButtonSize({ 140, 20 });
 	}
 
 	DropDown(Effects::DropDown& d)
-		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu); m_Active = false; } },
+		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu, false, m_AbsPos); m_Active = false; } },
 		m_DropDown(&d),
 		m_Key(ButtonType::List::NewKey())
 	{
@@ -125,10 +125,9 @@ public:
 
 	void Render(CommandCollection& d) override
 	{
-
 		ButtonType::Normal::Render(d);
 		Graphics::Render(*this, d);
-
+		m_AbsPos = d.Translate() + Position();
 		if (m_DropDown)
 		{
 			if (Disabled())
@@ -164,6 +163,8 @@ private:
 	friend class DropDownOption;
 	int m_Key;
 	Enum m_Value;
+
+	Vec2<int> m_AbsPos{ 0, 0 };
 
 	Effects::DropDown* m_DropDown = nullptr;
 

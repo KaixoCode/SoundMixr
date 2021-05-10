@@ -675,8 +675,8 @@ void Audio::Update(const Vec4<int>& v)
     m_OutputsPanel.Visible(ovis);
     m_GeneratorPanel.Visible(gvis);
     int vis = ivis + ovis + gvis;
-    m_Divider.Visible(vis >= 2);
-    m_Divider2.Visible(m_GeneratorPanel.Visible() && m_OutputsPanel.Visible());
+    m_Divider.Visible((gvis || ovis) && ivis);
+    m_Divider2.Visible(gvis && ovis);
 
     Panel::Update(v);
 }

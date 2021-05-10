@@ -22,6 +22,7 @@ void Controller::Run()
     // Set window icons.
     mainWindow.Icon(IDI_ICON1);
     settings.Icon(IDI_ICON1);
+    soundboard.Icon(IDI_ICON1);
 
     // Add shell icon.
     Menu<GR::Vertical, MT::Normal> _shellIconMenu;
@@ -48,7 +49,7 @@ void Controller::Run()
     _effectWindowPanel.m_ShowSidebar = false;
     mainWindow.Panel().Layout<Layout::Grid>(1, 1, 8, 8);
     mainWindow.Panel().Background(ThemeT::Get().window_border);
-    m_Audio = &mainWindow.Panel().Emplace<::Audio>(Layout::Hint::Center);
+    m_Audio = &mainWindow.Panel().Emplace<::Audio>();
 
     // The frame menu of the main window.
     auto& _file = mainWindow.Menu().Emplace<TitleMenuButton>("File");
@@ -230,6 +231,7 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
         soundboard.Color(ThemeT::Get().window_border);
         settings.Color(ThemeT::Get().window_border);
         mainWindow.Panel().Background(ThemeT::Get().window_border);
+        soundboard.Panel().Background(ThemeT::Get().window_border);
         effectWindow.Panel().Background(ThemeT::Get().window_border);
         effectWindow.Color(ThemeT::Get().window_border);
         _settingsPanel.LayoutManager().DividerColor(ThemeT::Get().divider);
