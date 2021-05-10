@@ -1,4 +1,5 @@
 #include "EffectLoader.hpp"
+#include "Audio/Asio.hpp"
 
 DynamicEffect::~DynamicEffect()
 {
@@ -16,6 +17,7 @@ Effects::EffectBase* DynamicEffect::CreateInstance()
 	if (instfunc)
 	{
 		Effects::EffectBase* p = static_cast<Effects::EffectBase*>(instfunc());
+		p->SampleRate(Asio::SAMPLE_RATE);
 		return p;
 	}
 	else

@@ -1,5 +1,7 @@
 #include "audio/Asio.hpp"
 
+int Asio::SAMPLE_RATE = -1;
+
 Asio::Asio()
 	: m_BufferSize(256), m_Samplerate(48000)
 {
@@ -85,6 +87,8 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 		LOG("Trying samplerate " << m_Samplerate);
 		tries++;
 	} while ((err = Pa_OpenStream(&stream, &ip, &op, m_Samplerate, m_BufferSize, paClipOff, c, userdata)) != 0);
+
+	SAMPLE_RATE = m_Samplerate;
 
 	// Logging
 	LOG("Opened stream (" << Device().info.name << ")" <<

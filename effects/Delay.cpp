@@ -68,7 +68,7 @@ namespace Effects
 			m_Width.Vertical(false);
 			m_Width.DisplayName(false);
 
-			m_DelayKnob.Range({ 1, 5000 });
+			m_DelayKnob.Range({ 1, 2000 });
 			m_DelayKnob.Log(10);
 			m_DelayKnob.ResetValue(300);
 			m_DelayKnob.ResetValue();
@@ -192,6 +192,7 @@ namespace Effects
 
 		void Channels(int c) override
 		{
+			BUFFER_SIZE = m_SampleRate * 10;
 			m_Equalizers.reserve(c);
 			while (m_Equalizers.size() < c)
 				m_Equalizers.emplace_back(m_Parameters.Parameters());
@@ -254,7 +255,7 @@ namespace Effects
 		}
 
 	private:
-		static inline constexpr int BUFFER_SIZE = 48000 * 10;
+		int BUFFER_SIZE = m_SampleRate * 10;
 		std::vector<std::vector<float>> m_Buffers;
 		int m_Position = 0;
 

@@ -1,5 +1,6 @@
 #include "ui/Soundboard.hpp"
-#include <FileDialog.hpp>
+#include "FileDialog.hpp"
+#include "audio/Asio.hpp"
 
 SoundboardButton::SoundboardButton()
 	: Parent([&] {}, ""), m_Name(Emplace<SMXRTextBox>())
@@ -62,6 +63,7 @@ SoundboardButton::SoundboardButton()
 
 void SoundboardButton::Update(const Vec4<int>& v)
 {
+	m_MultiplicationFactor = (m_File.getSampleRate() / Asio::SAMPLE_RATE);
 	m_Name.Position({ X(), Y() +(Height() - m_Name.Height()) / 2 });
 	m_Name.Width(Width());
 	m_Name.Height(25);
@@ -138,7 +140,6 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 	std::thread([&] {
 		m_MaxSamples = 0;
 		m_File.load(m_Filepath);
-		m_MultiplicationFactor = (m_File.getSampleRate() / 48000.0);
 		m_MaxSamples = m_File.getNumSamplesPerChannel();
 		}).detach();
 }

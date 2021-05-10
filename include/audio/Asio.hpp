@@ -40,6 +40,7 @@ public:
 class Asio
 {
 public:
+	static int SAMPLE_RATE;
 
 	/**
 	 * Constructor
