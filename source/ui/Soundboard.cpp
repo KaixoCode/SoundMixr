@@ -2,14 +2,17 @@
 #include <FileDialog.hpp>
 
 SoundboardButton::SoundboardButton()
-	: Button<G::Menu, BT::Normal>([&] {}, ""), m_Name(Emplace<SMXRTextBox>())
+	: Parent([&] {}, ""), m_Name(Emplace<SMXRTextBox>())
 {
 	// Initialise the right click menu
 	m_Menu.ButtonSize({ 180, 20 });
+	m_NameButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "");
+	m_NameButton->Disable();
+	m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { Rename(); }, "Rename");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveFile(); }, "Remove");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, "Link Midi");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link");
+	m_MidiLinkButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, "Link Midi");
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; m_MidiLinkButton->Name("Link Midi"); }, "Remove Midi Link");
 
 	// Add an event listener for mouse click events
 	m_Listener += [this](Event::MousePressed& e)
@@ -32,6 +35,8 @@ SoundboardButton::SoundboardButton()
 	{
 		Enable();
 		m_Name.Editable(false);
+		m_Name.Visible(false);
+		m_NameButton->Name(m_Name.Content());
 	};
 
 	m_Name.Listener() += [this](Event::KeyTyped& e)
@@ -43,6 +48,8 @@ SoundboardButton::SoundboardButton()
 			m_Name.Focused(false);
 			m_Name.Hide();
 			m_FocusedComponent = nullptr;
+			m_NameButton->Name(m_Name.Content());
+
 		};
 	};
 
@@ -55,21 +62,23 @@ SoundboardButton::SoundboardButton()
 
 void SoundboardButton::Update(const Vec4<int>& v)
 {
-	m_Name.Position({ X(), Y() +(Height() + m_Name.Height()) / 2 });
+	m_Name.Position({ X(), Y() +(Height() - m_Name.Height()) / 2 });
 	m_Name.Width(Width());
 	m_Name.Height(25);
-	Button<G::Menu, BT::Normal>::Update(v);
+	Parent::Update(v);
+	m_Name.Update(v);
 }
 
 void SoundboardButton::Render(CommandCollection& d)
 {
-	Button<G::Menu, BT::Normal>::Render(d);
+	Parent::Render(d);
 	m_Name.Render(d);
 }
 
 void SoundboardButton::RemoveFile()
 {
 	m_Name.Content("");
+	m_NameButton->Name("");
 	m_SampleNum = -1;
 	m_MaxSamples = -1;
 	m_MultiplicationFactor = 1.0F;
@@ -157,7 +166,7 @@ void SoundboardButton::PlayFile(bool forceOpen, bool midi)
 };
 
 Soundboard::Soundboard()
-	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 1000, 500 }, false, false, true, false, true, true, nullptr))
+	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 300, 300 }, false, false, true, false, true, true, nullptr))
 {
 	Init();
 }

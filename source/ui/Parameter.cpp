@@ -184,10 +184,7 @@ void ParameterBase::Update(const Vec4<int>& vp)
 {
 	if (m_PressBox > 1)
 		m_PressBox--;
-	if (m_Parameter.Type() == Effects::ParameterType::VolumeSlider)
-	{
-		LOG("VOLUME");
-	}
+
 	m_Size = { m_Parameter.Size().width, m_Parameter.Size().height };
 	m_Pos = { m_Parameter.Position().x, m_Parameter.Position().y };
 

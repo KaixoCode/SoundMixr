@@ -5,8 +5,9 @@
 
 namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 
-class SoundboardButton : public Button<G::Menu, BT::Normal>
+class SoundboardButton : public Button<MuteButton, BT::Normal>
 {
+	using Parent = Button<MuteButton, BT::Normal>;
 public:
 	SoundboardButton();
 
@@ -37,6 +38,10 @@ public:
 		this->LoadFile(json.at("filepath"), json.at("filename"));
 
 		m_MidiLink = { json.at("midi")[0], json.at("midi")[1], json.at("midi")[2] };
+		if (!(m_MidiLink == Vec3<int>{ -1, -1, -1 }))
+			m_MidiLinkButton->Name("Linked: " + std::to_string(m_MidiLink.x) + ":" + std::to_string(m_MidiLink.y) + ":" + std::to_string(m_MidiLink.z));
+
+		m_NameButton->Name(m_Name.Content());
 	}
 
 private:
@@ -49,18 +54,27 @@ private:
 	SMXRTextBox& m_Name;
 	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	Vec3<int> m_MidiLink {-1, -1, -1};
+	ButtonBase* m_MidiLinkButton = nullptr;
+	ButtonBase* m_NameButton = nullptr;
 
 
 	Midi::EventStorage _1{ Midi::Get() += [this](Midi::Event::NoteOn& a)
 	{
 		if (m_MidiLinking)
 		{
-			m_MidiLink = { a.channel, a.note, a.device };
+			m_MidiLink = { a.note, a.channel, a.device };
 			m_MidiLinking = false;
+			m_MidiLinkButton->Name("Linked: "+std::to_string(a.note) + ":" + std::to_string(a.channel) + ":" + std::to_string(a.device));
 		}
 
-		if (m_MidiLink == Vec3<int>{ a.channel, a.note, a.device })
-			PlayFile();
+		if (m_MidiLink == Vec3<int>{ a.note, a.channel, a.device })
+			Active(true), PlayFile(false, true);
+	} };
+
+	Midi::EventStorage _2{ Midi::Get() += [this](Midi::Event::NoteOff& a)
+	{
+		if (m_MidiLink == Vec3<int>{ a.note, a.channel, a.device })
+			Active(false);
 	} };
 };
 
