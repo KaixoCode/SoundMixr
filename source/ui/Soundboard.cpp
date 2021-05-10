@@ -5,16 +5,6 @@
 SoundboardButton::SoundboardButton()
 	: Parent([&] {}, ""), m_Name(Emplace<SMXRTextBox>())
 {
-	// Initialise the right click menu
-	m_Menu.ButtonSize({ 180, 20 });
-	m_NameButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "");
-	m_NameButton->Disable();
-	m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { Rename(); }, "Rename");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveFile(); }, "Remove");
-	m_MidiLinkButton = &m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, "Link Midi");
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; m_MidiLinkButton->Name("Link Midi"); }, "Remove Midi Link");
-
 	// Add an event listener for mouse click events
 	m_Listener += [this](Event::MousePressed& e)
 	{
@@ -37,7 +27,6 @@ SoundboardButton::SoundboardButton()
 		Enable();
 		m_Name.Editable(false);
 		m_Name.Visible(false);
-		m_NameButton->Name(m_Name.Content());
 	};
 
 	m_Name.Listener() += [this](Event::KeyTyped& e)
@@ -49,7 +38,6 @@ SoundboardButton::SoundboardButton()
 			m_Name.Focused(false);
 			m_Name.Hide();
 			m_FocusedComponent = nullptr;
-			m_NameButton->Name(m_Name.Content());
 
 		};
 	};
@@ -63,7 +51,6 @@ SoundboardButton::SoundboardButton()
 
 void SoundboardButton::Update(const Vec4<int>& v)
 {
-	m_MultiplicationFactor = (m_File.getSampleRate() / Asio::SAMPLE_RATE);
 	m_Name.Position({ X(), Y() +(Height() - m_Name.Height()) / 2 });
 	m_Name.Width(Width());
 	m_Name.Height(25);
@@ -80,7 +67,6 @@ void SoundboardButton::Render(CommandCollection& d)
 void SoundboardButton::RemoveFile()
 {
 	m_Name.Content("");
-	m_NameButton->Name("");
 	m_SampleNum = -1;
 	m_MaxSamples = -1;
 	m_MultiplicationFactor = 1.0F;
@@ -88,8 +74,31 @@ void SoundboardButton::RemoveFile()
 
 void SoundboardButton::ShowMenu()
 {
-	if (!m_Name.Content().empty())
-		RightClickMenu::Get().Open(&m_Menu);
+	m_Menu.Clear();
+	m_Menu.ButtonSize({ 180, 20 });
+	if (m_Name.Content().empty())
+	{
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, "Soundboard").Disable();
+		m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { PlayFile(true); }, "New Sound...");
+		m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+	}
+	else
+	{
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Name.Content()).Disable();
+		m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { Rename(); }, "Rename Button");
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { PlayFile(true); }, "New Sound...");
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveFile(); }, "Remove Sound");
+		m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+	}
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, m_MidiLink.x == -1 ? "Link Midi" :
+		"Linked: " + std::to_string(m_MidiLink.x) + ":" + std::to_string(m_MidiLink.y) + ":" + std::to_string(m_MidiLink.z));
+	if (m_MidiLink.x == -1)
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link").Disable();
+	else
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link");
+	RightClickMenu::Get().Open(&m_Menu);
 }
 
 void SoundboardButton::Rename()
@@ -107,18 +116,21 @@ float SoundboardButton::GetLevel(int channel)
 	if (m_SampleNum < 0 || m_MaxSamples < 0)
 		return 0;
 
-	int curSample = std::floor(m_SampleNum * m_MultiplicationFactor);
+	int curSample1 = std::ceil(m_SampleNum * m_MultiplicationFactor);
+	int curSample2 = std::floor(m_SampleNum * m_MultiplicationFactor);
 
-	if (curSample == m_MaxSamples)
+	if (curSample1 == m_MaxSamples)
 	{
 		m_SampleNum = -1;
 		return 0;
 	}
 
-	if (m_SampleNum >= 0 && channel == 0)
+	if (m_SampleNum >= 0 && channel == 1)
 		m_SampleNum++;
-
-	return m_File.samples[channel][curSample];
+	if (curSample1 == curSample2)
+		return m_File.samples[channel][curSample1];
+	else
+		return 0.5 * (m_File.samples[channel][curSample1] + m_File.samples[channel][curSample2]);
 }
 
 void SoundboardButton::LoadFile(const std::string& path, const std::string& filename)
@@ -151,6 +163,7 @@ void SoundboardButton::PlayFile(bool forceOpen, bool midi)
 
 	if (m_MaxSamples > 0 && !forceOpen)
 	{
+		m_MultiplicationFactor = (m_File.getSampleRate() / (double)Asio::SAMPLE_RATE);
 		// A file is already loaded, play it if it isn't playing
 		//if (m_SampleNum < 0)
 			m_SampleNum = 0;

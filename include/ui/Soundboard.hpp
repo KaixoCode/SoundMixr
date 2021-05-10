@@ -38,10 +38,6 @@ public:
 		this->LoadFile(json.at("filepath"), json.at("filename"));
 
 		m_MidiLink = { json.at("midi")[0], json.at("midi")[1], json.at("midi")[2] };
-		if (!(m_MidiLink == Vec3<int>{ -1, -1, -1 }))
-			m_MidiLinkButton->Name("Linked: " + std::to_string(m_MidiLink.x) + ":" + std::to_string(m_MidiLink.y) + ":" + std::to_string(m_MidiLink.z));
-
-		m_NameButton->Name(m_Name.Content());
 	}
 
 private:
@@ -54,9 +50,6 @@ private:
 	SMXRTextBox& m_Name;
 	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	Vec3<int> m_MidiLink {-1, -1, -1};
-	ButtonBase* m_MidiLinkButton = nullptr;
-	ButtonBase* m_NameButton = nullptr;
-
 
 	Midi::EventStorage _1{ Midi::Get() += [this](Midi::Event::NoteOn& a)
 	{
@@ -64,7 +57,6 @@ private:
 		{
 			m_MidiLink = { a.note, a.channel, a.device };
 			m_MidiLinking = false;
-			m_MidiLinkButton->Name("Linked: "+std::to_string(a.note) + ":" + std::to_string(a.channel) + ":" + std::to_string(a.device));
 		}
 
 		if (m_MidiLink == Vec3<int>{ a.note, a.channel, a.device })
