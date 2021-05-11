@@ -18,7 +18,7 @@ public:
 	void Rename();
 	void Update(const Vec4<int>&) override;
 	void Render(CommandCollection&) override;
-	void RemoveFile(); 
+	void RemoveFile();
 
 	operator nlohmann::json()
 	{

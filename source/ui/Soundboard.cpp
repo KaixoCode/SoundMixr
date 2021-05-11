@@ -92,12 +92,23 @@ void SoundboardButton::ShowMenu()
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveFile(); }, "Remove Sound");
 		m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 	}
+
+	// Midi linking
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, m_MidiLink.x == -1 ? "Link Midi" :
 		"Linked: " + std::to_string(m_MidiLink.x) + ":" + std::to_string(m_MidiLink.y) + ":" + std::to_string(m_MidiLink.z));
 	if (m_MidiLink.x == -1)
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link").Disable();
 	else
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link");
+
+	// Hotkey linking
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, m_MidiLink.x == -1 ? "Link Midi" :
+		"Linked: " + std::to_string(m_MidiLink.x) + ":" + std::to_string(m_MidiLink.y) + ":" + std::to_string(m_MidiLink.z));
+	if (m_MidiLink.x == -1)
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link").Disable();
+	else
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link");
+
 	RightClickMenu::Get().Open(&m_Menu);
 }
 
@@ -189,6 +200,8 @@ Soundboard::Soundboard()
 	for (int i = 0; i < 16; i++) {
 		m_Buttons.push_back(&m_SubP->Emplace<SoundboardButton>());
 	}
+
+	AddHotKey(Key::CTRL_I, [] { LOG("WOEF"); });
 }
 
 float Soundboard::GetLevel(int channel)
