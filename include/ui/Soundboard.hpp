@@ -4,12 +4,13 @@
 #include <Midi.hpp>
 
 namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
+class Soundboard;
 
 class SoundboardButton : public Button<MuteButton, BT::Normal>
 {
 	using Parent = Button<MuteButton, BT::Normal>;
 public:
-	SoundboardButton();
+	SoundboardButton(Soundboard&);
 
 	float GetLevel(int channel);
 	void LoadFile(const std::string& path, const std::string& filename);
@@ -19,6 +20,7 @@ public:
 	void Update(const Vec4<int>&) override;
 	void Render(CommandCollection&) override;
 	void RemoveFile();
+	void RemoveHotKey();
 
 	operator nlohmann::json()
 	{
@@ -50,6 +52,10 @@ private:
 	SMXRTextBox& m_Name;
 	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	Vec3<int> m_MidiLink {-1, -1, -1};
+	Key m_Hotkey = -1;
+	int m_HotkeyId = -1;
+	bool m_HotkeyLinking = false;
+	Soundboard* m_Soundboard;
 
 	Midi::EventStorage _1{ Midi::Get() += [this](Midi::Event::NoteOn& a)
 	{

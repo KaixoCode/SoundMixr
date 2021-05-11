@@ -2,8 +2,8 @@
 #include "FileDialog.hpp"
 #include "audio/Asio.hpp"
 
-SoundboardButton::SoundboardButton()
-	: Parent([&] {}, ""), m_Name(Emplace<SMXRTextBox>())
+SoundboardButton::SoundboardButton(Soundboard& soundboard)
+	: Parent([&] {}, ""), m_Name(Emplace<SMXRTextBox>()), m_Soundboard(&soundboard)
 {
 	// Add an event listener for mouse click events
 	m_Listener += [this](Event::MousePressed& e)
@@ -44,8 +44,21 @@ SoundboardButton::SoundboardButton()
 
 	Listener() += [this](Event::Unfocused& e)
 	{
-		// Stop midi linking if the button gets unfocussed
+		// Stop linking if the button gets unfocussed
 		m_MidiLinking = false;
+		m_HotkeyLinking = false;
+	};
+
+	Listener() += [this](Event::KeyPressed& e)
+	{
+		if (m_HotkeyLinking && !(e.key == Key::CONTROL || e.key == Key::SHIFT || e.key == Key::ALT))
+		{
+			RemoveHotKey();
+			Key k = e;
+			m_Hotkey = k;
+			m_HotkeyLinking = false;
+			m_HotkeyId = m_Soundboard->AddHotKey(k, [this] { PlayFile(false, true); });
+		}
 	};
 }
 
@@ -70,6 +83,14 @@ void SoundboardButton::RemoveFile()
 	m_SampleNum = -1;
 	m_MaxSamples = -1;
 	m_MultiplicationFactor = 1.0F;
+}
+
+void SoundboardButton::RemoveHotKey()
+{
+	if (m_HotkeyId != -1)
+		m_Soundboard->RemoveHotKey(m_HotkeyId);
+	m_Hotkey = -1;
+	m_HotkeyId = -1;
 }
 
 void SoundboardButton::ShowMenu()
@@ -101,13 +122,15 @@ void SoundboardButton::ShowMenu()
 	else
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link");
 
+	m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+
 	// Hotkey linking
-	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, m_MidiLink.x == -1 ? "Link Midi" :
-		"Linked: " + std::to_string(m_MidiLink.x) + ":" + std::to_string(m_MidiLink.y) + ":" + std::to_string(m_MidiLink.z));
-	if (m_MidiLink.x == -1)
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link").Disable();
+	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_HotkeyLinking, m_Hotkey == -1 ? "Link Hotkey" :
+		"Linked: " + m_Hotkey.ToString());
+	if (m_Hotkey == -1)
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveHotKey(); }, "Remove Hotkey").Disable();
 	else
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link");
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveHotKey(); }, "Remove Hotkey");
 
 	RightClickMenu::Get().Open(&m_Menu);
 }
@@ -167,9 +190,9 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 		}).detach();
 }
 
-void SoundboardButton::PlayFile(bool forceOpen, bool midi)
+void SoundboardButton::PlayFile(bool forceOpen, bool dontOpen)
 {
-	if (midi && m_MaxSamples < 0)
+	if (dontOpen && m_MaxSamples < 0)
 		return;
 
 	if (m_MaxSamples > 0 && !forceOpen)
@@ -197,11 +220,8 @@ Soundboard::Soundboard()
 	m_SubP = &Panel().Emplace<::Panel>();
 	m_SubP->Layout<Layout::Grid>(4, 4, 8, 8);
 
-	for (int i = 0; i < 16; i++) {
-		m_Buttons.push_back(&m_SubP->Emplace<SoundboardButton>());
-	}
-
-	AddHotKey(Key::CTRL_I, [] { LOG("WOEF"); });
+	for (int i = 0; i < 16; i++)
+		m_Buttons.push_back(&m_SubP->Emplace<SoundboardButton>(*this));	
 }
 
 float Soundboard::GetLevel(int channel)
