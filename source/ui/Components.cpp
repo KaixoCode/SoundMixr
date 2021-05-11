@@ -232,7 +232,7 @@ void VolumeSlider::Render(CommandCollection& d)
 	int _x = 6;
 	int _y = 5;
 	int _rh = Height();
-	int _w = (_width / _channels) - 2;
+	int _w = _channels ? (_width / _channels) - 2 : 0;
 	int _0db = ((std::powf(1, 0.25) / 1.412536) * (_rh)) + _y;
 
 	// Draw all audio meters
