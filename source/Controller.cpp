@@ -105,6 +105,7 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     m_ThemeDropDown = &_settingsPanel.Emplace<DropDown<std::string, DropdownButton2>>();
     m_ThemeDropDown->Size({ 98, 18 });
     m_ThemeDropDown->ButtonSize({ 98, 20 });
+    m_ThemeDropDown->Name("No Themes");
 
     Effects::Parameter _scaleParam{ "Zoom Display", Effects::ParameterType::Slider };
     m_ScaleSlider = &_settingsPanel.Emplace<Parameter<SliderGraphics>>(_scaleParam);
@@ -381,6 +382,11 @@ void Controller::LoadThemes()
     m_LoadedSettings = false;
     ThemeT::ReloadThemes();
     m_ThemeDropDown->Clear();
+
+    if (ThemeT::Themes().size() == 0)
+        m_ThemeDropDown->Disable();
+    else
+        m_ThemeDropDown->Enable();
 
     for (auto& [key, val] : ThemeT::Themes())
     {

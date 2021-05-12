@@ -10,272 +10,272 @@ class ThemeT
 {
 public:
 	Color
-		text,
-		text_small,
-		textOff;
+		text{ 255, 255, 255, 255 },
+		text_small{ 200, 200, 200, 255 },
+		textOff{ 128, 128, 128, 255 };
 
 	Color // Button
-		button_disabled_background,
-		button_disabled_border,
-		button_disabled_text,
-		button_active_background,
-		button_active_border,
-		button_active_text,
-		button_hovering_background,
-		button_hovering_border,
-		button_hovering_text,
-		button_idle_background,
-		button_idle_border,
-		button_idle_text;
+		button_disabled_background{ 29, 29, 29, 255 },
+		button_disabled_border{ 23, 23, 23, 255 },
+		button_disabled_text{ 128, 128, 128, 255 },
+		button_active_background{ 65, 65, 65, 255 },
+		button_active_border{ 23, 23, 23, 255 },
+		button_active_text{ 255, 255, 255, 255 },
+		button_hovering_background{ 40, 40, 40, 255 },
+		button_hovering_border{ 23, 23, 23, 255 },
+		button_hovering_text{ 255, 255, 255, 255 },
+		button_idle_background{ 29, 29, 29, 255 },
+		button_idle_border{ 23, 23, 23, 255 },
+		button_idle_text{ 255, 255, 255, 255 };
 
 
 	Color // Toggle button
-		toggle_button_disabled_background,
-		toggle_button_disabled_border,
-		toggle_button_disabled_text,
-		toggle_button_active_background,
-		toggle_button_active_border,
-		toggle_button_active_text,
-		toggle_button_hovering_background,
-		toggle_button_hovering_border,
-		toggle_button_hovering_text,
-		toggle_button_idle_background,
-		toggle_button_idle_border,
-		toggle_button_idle_text;
+		toggle_button_disabled_background{ 29, 29, 29, 255 },
+		toggle_button_disabled_border{ 23, 23, 23, 255 },
+		toggle_button_disabled_text{ 128, 128, 128, 255 },
+		toggle_button_active_background{ 65, 65, 65, 255 },
+		toggle_button_active_border{ 23, 23, 23, 255 },
+		toggle_button_active_text{ 255, 255, 255, 255 },
+		toggle_button_hovering_background{ 40, 40, 40, 255 },
+		toggle_button_hovering_border{ 23, 23, 23, 255 },
+		toggle_button_hovering_text{ 128, 128, 128, 255 },
+		toggle_button_idle_background{ 29, 29, 29, 255 },
+		toggle_button_idle_border{ 23, 23, 23, 255 },
+		toggle_button_idle_text{ 128, 128, 128, 255 };
 
 
 	Color // DropDown button
-		dropdown_button_disabled_background,
-		dropdown_button_disabled_border,
-		dropdown_button_disabled_text,
-		dropdown_button_active_background,
-		dropdown_button_active_border,
-		dropdown_button_active_text,
-		dropdown_button_hovering_background,
-		dropdown_button_hovering_border,
-		dropdown_button_hovering_text,
-		dropdown_button_idle_background,
-		dropdown_button_idle_border,
-		dropdown_button_idle_text;
+		dropdown_button_disabled_background{ 29, 29, 29, 255 },
+		dropdown_button_disabled_border{ 23, 23, 23, 255 },
+		dropdown_button_disabled_text{ 128, 128, 128, 255 },
+		dropdown_button_active_background{ 65, 65, 65, 255 },
+		dropdown_button_active_border{ 23, 23, 23, 255 },
+		dropdown_button_active_text{ 255, 255, 255, 255 },
+		dropdown_button_hovering_background{ 40, 40, 40, 255 },
+		dropdown_button_hovering_border{ 23, 23, 23, 255 },
+		dropdown_button_hovering_text{ 255, 255, 255, 255 },
+		dropdown_button_idle_background{ 29, 29, 29, 255 },
+		dropdown_button_idle_border{ 23, 23, 23, 255 },
+		dropdown_button_idle_text{ 255, 255, 255, 255 };
 
 	Color // Radio button
-		radio_button_disabled_background,
-		radio_button_disabled_border,
-		radio_button_disabled_text,
-		radio_button_active_background,
-		radio_button_active_border,
-		radio_button_active_text,
-		radio_button_hovering_background,
-		radio_button_hovering_border,
-		radio_button_hovering_text,
-		radio_button_idle_background,
-		radio_button_idle_border,
-		radio_button_idle_text;
+		radio_button_disabled_background{ 29, 29, 29, 255 },
+		radio_button_disabled_border{ 23, 23, 23, 255 },
+		radio_button_disabled_text{ 128, 128, 128, 255 },
+		radio_button_active_background{ 65, 65, 65, 255 },
+		radio_button_active_border{ 23, 23, 23, 255 },
+		radio_button_active_text{ 255, 255, 255, 255 },
+		radio_button_hovering_background{ 40, 40, 40, 255 },
+		radio_button_hovering_border{ 23, 23, 23, 255 },
+		radio_button_hovering_text{ 128, 128, 128, 255 },
+		radio_button_idle_background{ 29, 29, 29, 255 },
+		radio_button_idle_border{ 23, 23, 23, 255 },
+		radio_button_idle_text{ 128, 128, 128, 255 };
 
 	Color // Menu button
-		menu_button_disabled_background,
-		menu_button_disabled_text,
-		menu_button_disabled_text_small,
-		menu_button_active_background,
-		menu_button_active_text,
-		menu_button_active_text_small,
-		menu_button_hovering_background,
-		menu_button_hovering_text,
-		menu_button_hovering_text_small,
-		menu_button_idle_background,
-		menu_button_idle_text,
-		menu_button_idle_text_small;
+		menu_button_disabled_background{ 0, 0, 0, 0 },
+		menu_button_disabled_text{ 128, 128, 128, 255 },
+		menu_button_disabled_text_small{ 128, 128, 128, 255 },
+		menu_button_active_background{ 255, 255, 255, 26 },
+		menu_button_active_text{ 255, 255, 255, 255 },
+		menu_button_active_text_small{ 200, 200, 200, 255 },
+		menu_button_hovering_background{ 255, 255, 255, 13 },
+		menu_button_hovering_text{ 255, 255, 255, 255 },
+		menu_button_hovering_text_small{ 200, 200, 200, 255 },
+		menu_button_idle_background{ 0, 0, 0, 0 },
+		menu_button_idle_text{ 255, 255, 255, 255 },
+		menu_button_idle_text_small{ 200, 200, 200, 255 };
 
 	Color // Toggle menu button
-		toggle_menu_button_disabled_background,
-		toggle_menu_button_disabled_text,
-		toggle_menu_button_disabled_text_small,
-		toggle_menu_button_active_background,
-		toggle_menu_button_active_text,
-		toggle_menu_button_active_text_small,
-		toggle_menu_button_active_square,
-		toggle_menu_button_hovering_background,
-		toggle_menu_button_hovering_text,
-		toggle_menu_button_hovering_text_small,
-		toggle_menu_button_idle_background,
-		toggle_menu_button_idle_text,
-		toggle_menu_button_idle_text_small;
+		toggle_menu_button_disabled_background{ 0, 0, 0, 0 },
+		toggle_menu_button_disabled_text{ 128, 128, 128, 255 },
+		toggle_menu_button_disabled_text_small{ 128, 128, 128, 255 },
+		toggle_menu_button_active_background{ 255, 255, 255, 26 },
+		toggle_menu_button_active_square{ 255, 255, 255, 26 },
+		toggle_menu_button_active_text{ 255, 255, 255, 255 },
+		toggle_menu_button_active_text_small{ 200, 200, 200, 255 },
+		toggle_menu_button_hovering_background{ 255, 255, 255, 13 },
+		toggle_menu_button_hovering_text{ 255, 255, 255, 255 },
+		toggle_menu_button_hovering_text_small{ 200, 200, 200, 255 },
+		toggle_menu_button_idle_background{ 0, 0, 0, 0 },
+		toggle_menu_button_idle_text{ 255, 255, 255, 255 },
+		toggle_menu_button_idle_text_small{ 200, 200, 200, 255 };
 
 	Color // Scrollbar
-		scrollbar_idle_handle,
-		scrollbar_idle_bar,
-		scrollbar_hovering_handle,
-		scrollbar_hovering_bar,
-		scrollbar_active_handle,
-		scrollbar_active_bar;
+		scrollbar_idle_handle{ 55, 55, 55, 255 },
+		scrollbar_idle_bar{ 0, 0, 0, 0 },
+		scrollbar_hovering_handle{ 75, 75, 75, 255 },
+		scrollbar_hovering_bar{ 55, 55, 55, 255 },
+		scrollbar_active_handle{ 75, 75, 75, 255 },
+		scrollbar_active_bar{ 55, 55, 55, 255 };
 
 	Color // Slider
-		slider_disabled_background,
-		slider_disabled_border,
-		slider_disabled_value,
-		slider_disabled_value_text,
-		slider_disabled_name_text,
-		slider_idle_background,
-		slider_idle_border,
-		slider_idle_value,
-		slider_idle_value_text,
-		slider_idle_name_text,
-		slider_hovering_background,
-		slider_hovering_border,
-		slider_hovering_value,
-		slider_hovering_value_text,
-		slider_hovering_name_text,
-		slider_active_background,
-		slider_active_border,
-		slider_active_value,
-		slider_active_value_text,
-		slider_active_name_text;
+		slider_disabled_background{ 29, 29, 29, 255 },
+		slider_disabled_border{ 23, 23, 23, 255 },
+		slider_disabled_value{ 65, 65, 65, 255 },
+		slider_disabled_value_text{ 128, 128, 128, 255 },
+		slider_disabled_name_text{ 128, 128, 128, 255 },
+		slider_idle_background{ 29, 29, 29, 255 },
+		slider_idle_border{ 23, 23, 23, 255 },
+		slider_idle_value{ 65, 65, 65, 255 },
+		slider_idle_value_text{ 255, 255, 255, 255 },
+		slider_idle_name_text{ 255, 255, 255, 255 },
+		slider_hovering_background{ 29, 29, 29, 255 },
+		slider_hovering_border{ 23, 23, 23, 255 },
+		slider_hovering_value{ 65, 65, 65, 255 },
+		slider_hovering_value_text{ 255, 255, 255, 255 },
+		slider_hovering_name_text{ 255, 255, 255, 255 },
+		slider_active_background{ 29, 29, 29, 255 },
+		slider_active_border{ 23, 23, 23, 255 },
+		slider_active_value{ 65, 65, 65, 255 },
+		slider_active_value_text{ 255, 255, 255, 255 },
+		slider_active_name_text{ 255, 255, 255, 255 };
 
 	Color // Knob
-		knob_disabled_handle,
-		knob_disabled_border,
-		knob_disabled_value,
-		knob_disabled_name_text,
-		knob_disabled_value_text,
-		knob_idle_handle,
-		knob_idle_border,
-		knob_idle_value,
-		knob_idle_name_text,
-		knob_idle_value_text,
-		knob_hovering_handle,
-		knob_hovering_border,
-		knob_hovering_value,
-		knob_hovering_name_text,
-		knob_hovering_value_text,
-		knob_active_handle,
-		knob_active_border,
-		knob_active_value,
-		knob_active_name_text,
-		knob_active_value_text;
+		knob_disabled_handle{ 120, 120, 120, 255 },
+		knob_disabled_border{ 45, 45, 45, 255 },
+		knob_disabled_value{ 85, 85, 85, 255 },
+		knob_disabled_name_text{ 128, 128, 128, 255 },
+		knob_disabled_value_text{ 128, 128, 128, 255 },
+		knob_idle_handle{ 120, 120, 120, 255 },
+		knob_idle_border{ 45, 45, 45, 255 },
+		knob_idle_value{ 85, 85, 85, 255 },
+		knob_idle_name_text{ 255, 255, 255, 255 },
+		knob_idle_value_text{ 255, 255, 255, 255 },
+		knob_hovering_handle{ 120, 120, 120, 255 },
+		knob_hovering_border{ 45, 45, 45, 255 },
+		knob_hovering_value{ 85, 85, 85, 255 },
+		knob_hovering_name_text{ 255, 255, 255, 255 },
+		knob_hovering_value_text{ 255, 255, 255, 255 },
+		knob_active_handle{ 120, 120, 120, 255 },
+		knob_active_border{ 45, 45, 45, 255 },
+		knob_active_value{ 85, 85, 85, 255 },
+		knob_active_name_text{ 255, 255, 255, 255 },
+		knob_active_value_text{ 255, 255, 255, 255 };
 
 	Color // Volume slider
-		volume_slider_disabled_handle,
-		volume_slider_disabled_db_text,
-		volume_slider_disabled_value_text,
-		volume_slider_disabled_line,
-		volume_slider_disabled_line_highlight,
-		volume_slider_disabled_meter,
-		volume_slider_disabled_meter_value,
-		volume_slider_disabled_meter_value_c1,
-		volume_slider_disabled_meter_value_c2,
-		volume_slider_disabled_meter_value_c3,
-		volume_slider_idle_handle,
-		volume_slider_idle_db_text,
-		volume_slider_idle_value_text,
-		volume_slider_idle_line,
-		volume_slider_idle_line_highlight,
-		volume_slider_idle_meter,
-		volume_slider_idle_meter_value,
-		volume_slider_idle_meter_value_c1,
-		volume_slider_idle_meter_value_c2,
-		volume_slider_idle_meter_value_c3,
-		volume_slider_hovering_handle,
-		volume_slider_hovering_db_text,
-		volume_slider_hovering_value_text,
-		volume_slider_hovering_line,
-		volume_slider_hovering_line_highlight,
-		volume_slider_hovering_meter,
-		volume_slider_hovering_meter_value,
-		volume_slider_hovering_meter_value_c1,
-		volume_slider_hovering_meter_value_c2,
-		volume_slider_hovering_meter_value_c3,
-		volume_slider_active_handle,
-		volume_slider_active_db_text,
-		volume_slider_active_value_text,
-		volume_slider_active_line,
-		volume_slider_active_line_highlight,
-		volume_slider_active_meter,
-		volume_slider_active_meter_value,
-		volume_slider_active_meter_value_c1,
-		volume_slider_active_meter_value_c2,
-		volume_slider_active_meter_value_c3;
+		volume_slider_disabled_handle{ 100, 100, 100, 255 },
+		volume_slider_disabled_db_text{ 128, 128, 128, 255 },
+		volume_slider_disabled_value_text{ 255, 255, 255, 255 },
+		volume_slider_disabled_line{ 64, 64, 64, 255 },
+		volume_slider_disabled_line_highlight{ 128, 128, 128, 255 },
+		volume_slider_disabled_meter{ 15, 15, 15, 255 },
+		volume_slider_disabled_meter_value{ 0, 255, 0, 255 },
+		volume_slider_disabled_meter_value_c1{ 255, 255, 0, 255 },
+		volume_slider_disabled_meter_value_c2{ 255, 126, 0, 255 },
+		volume_slider_disabled_meter_value_c3{ 255, 0, 0, 255 },
+		volume_slider_idle_handle{ 100, 100, 100, 255 },
+		volume_slider_idle_db_text{ 128, 128, 128, 255 },
+		volume_slider_idle_value_text{ 255, 255, 255, 255 },
+		volume_slider_idle_line{ 64, 64, 64, 255 },
+		volume_slider_idle_line_highlight{ 128, 128, 128, 255 },
+		volume_slider_idle_meter{ 15, 15, 15, 255 },
+		volume_slider_idle_meter_value{ 0, 255, 0, 255 },
+		volume_slider_idle_meter_value_c1{ 255, 255, 0, 255 },
+		volume_slider_idle_meter_value_c2{ 255, 126, 0, 255 },
+		volume_slider_idle_meter_value_c3{ 255, 0, 0, 255 },
+		volume_slider_hovering_handle{ 100, 100, 100, 255 },
+		volume_slider_hovering_db_text{ 128, 128, 128, 255 },
+		volume_slider_hovering_value_text{ 255, 255, 255, 255 },
+		volume_slider_hovering_line{ 64, 64, 64, 255 },
+		volume_slider_hovering_line_highlight{ 128, 128, 128, 255 },
+		volume_slider_hovering_meter{ 15, 15, 15, 255 },
+		volume_slider_hovering_meter_value{ 0, 255, 0, 255 },
+		volume_slider_hovering_meter_value_c1{ 255, 255, 0, 255 },
+		volume_slider_hovering_meter_value_c2{ 255, 126, 0, 255 },
+		volume_slider_hovering_meter_value_c3{ 255, 0, 0, 255 },
+		volume_slider_active_handle{ 100, 100, 100, 255 },
+		volume_slider_active_db_text{ 128, 128, 128, 255 },
+		volume_slider_active_value_text{ 255, 255, 255, 255 },
+		volume_slider_active_line{ 64, 64, 64, 255 },
+		volume_slider_active_line_highlight{ 128, 128, 128, 255 },
+		volume_slider_active_meter{ 15, 15, 15, 255 },
+		volume_slider_active_meter_value{ 0, 255, 0, 255 },
+		volume_slider_active_meter_value_c1{ 255, 255, 0, 255 },
+		volume_slider_active_meter_value_c2{ 255, 126, 0, 255 },
+		volume_slider_active_meter_value_c3{ 255, 0, 0, 255 };
 
 	Color // XY-Controller
-		effect_graph_background,
-		effect_graph_graph_lines,
-		effect_graph_graph_lines_highlight,
-		effect_graph_disabled_circle,
-		effect_graph_disabled_line,
-		effect_graph_idle_circle,
-		effect_graph_idle_line,
-		effect_graph_hovering_circle,
-		effect_graph_hovering_line,
-		effect_graph_active_circle,
-		effect_graph_active_line;
+		effect_graph_background{ 15, 15, 15, 255 },
+		effect_graph_graph_lines{ 30, 30, 30, 255 },
+		effect_graph_graph_lines_highlight{ 40, 40, 40, 255 },
+		effect_graph_disabled_circle{ 90, 90, 90, 255 },
+		effect_graph_disabled_line{ 70, 70, 70, 255 },
+		effect_graph_idle_circle{ 150, 150, 150, 255 },
+		effect_graph_idle_line{ 130, 130, 130, 255 },
+		effect_graph_hovering_circle{ 150, 150, 150, 255 },
+		effect_graph_hovering_line{ 130, 130, 130, 255 },
+		effect_graph_active_circle{ 150, 150, 150, 255 },
+		effect_graph_active_line{ 130, 130, 130, 255 };
 
 	Color // Dynamics
-		dynamics_background,
-		dynamics_border,
-		dynamics_line,
-		dynamics_line_highlight,
-		dynamics_compressor,
-		dynamics_compressor_line,
-		dynamics_meter_value,
-		dynamics_db_text,
-		dynamics_value_text;
+		dynamics_background{ 15, 15, 15, 255 },
+		dynamics_border{ 100, 100, 100, 100 },
+		dynamics_line{ 64, 64, 64, 255 },
+		dynamics_line_highlight{ 128, 128, 128, 255 },
+		dynamics_compressor{ 100, 100, 100, 50 },
+		dynamics_compressor_line{ 100, 100, 100, 100 },
+		dynamics_meter_value{ 0, 255, 0, 255 },
+		dynamics_db_text = text,
+		dynamics_value_text = text;
 
 	Color // Route button
-		route_button_idle_background,
-		route_button_idle_triangle,
-		route_button_hovering_background,
-		route_button_hovering_triangle,
-		route_button_active_background,
-		route_button_active_triangle;
+		route_button_idle_background{ 0, 0, 0, 0 },
+		route_button_idle_triangle{ 50, 50, 50, 255 },
+		route_button_hovering_background{ 0, 0, 0, 0 },
+		route_button_hovering_triangle{ 70, 70, 70, 255 },
+		route_button_active_background{ 0, 0, 0, 0 },
+		route_button_active_triangle{ 100, 100, 100, 255 };
 
 	Color // Channel
-		channel_idle_name_text,
-		channel_idle_background,
-		channel_hovering_name_text,
-		channel_hovering_background,
-		channel_active_name_text,
-		channel_active_background;
+		channel_idle_name_text{ 255, 255, 255, 255 },
+		channel_idle_background{ 33, 33, 33, 255 },
+		channel_hovering_name_text{ 255, 255, 255, 255 },
+		channel_hovering_background{ 33, 33, 33, 255 },
+		channel_active_name_text{ 255, 255, 255, 255 },
+		channel_active_background{ 29, 29, 29, 255 };
 
 	Color // mute mono button
-		mute_mono_button_idle_background,
-		mute_mono_button_idle_text,
-		mute_mono_button_hovering_background,
-		mute_mono_button_hovering_text,
-		mute_mono_button_active_background,
-		mute_mono_button_active_text;
+		mute_mono_button_idle_background{ 50, 50, 50, 255 },
+		mute_mono_button_idle_text{ 128, 128, 128, 255 },
+		mute_mono_button_hovering_background{ 70, 70, 70, 255 },
+		mute_mono_button_hovering_text{ 128, 128, 128, 255 },
+		mute_mono_button_active_background{ 90, 90, 90, 255 },
+		mute_mono_button_active_text = text;
 
 	Color // Effect
-		effect_title_text,
-		effect_title_text_off,
-		effect_title_bar,
-		effect_background,
-		effect_minimize_button,
-		effect_divider,
-		effect_drag_divider;
+		effect_title_text{ 255, 255, 255, 255 },
+		effect_title_text_off{ 128, 128, 128, 255 },
+		effect_title_bar{ 29, 29, 29, 255 },
+		effect_background{ 33, 33, 33, 255 },
+		effect_minimize_button{ 128, 128, 128, 255 },
+		effect_divider{ 51, 51, 51, 255 },
+		effect_drag_divider{ 51, 51, 51, 255 };
 
 	Color // Divider
-		divider;
+		divider{ 51, 51, 51, 255 };
 
 	Color // Window
-		window_border,
-		window_frame,
-		window_panel,
-		window_title_text,
-		window_menu_text,
-		window_close_button_icon,
-		window_close_button_idle_background,
-		window_close_button_hovering_background,
-		window_close_button_active_background,
-		window_button_icon,
-		window_button_idle_background,
-		window_button_hovering_background,
-		window_button_active_background;
+		window_border{ 23, 23, 23, 255 },
+		window_frame{ 33, 33, 33, 255 },
+		window_panel{ 40, 40, 40, 255 },
+		window_title_text{ 200, 200, 200, 255 },
+		window_menu_text{ 255, 255, 255, 255 },
+		window_close_button_icon{ 255, 255, 255, 255 },
+		window_close_button_idle_background{ 0, 0, 0, 0 },
+		window_close_button_hovering_background{ 255, 0, 0, 111 },
+		window_close_button_active_background{ 170, 0, 0, 111 },
+		window_button_icon{ 255, 255, 255, 255 },
+		window_button_idle_background{ 0, 0, 0, 0 },
+		window_button_hovering_background{ 255, 255, 255, 31 },
+		window_button_active_background{ 255, 255, 255, 58 };
 
 	Color // Menu
-		menu_background,
-		menu_border,
-		menu_divider;
+		menu_background{ 18, 18, 18, 255 },
+		menu_border{ 64, 64, 64, 255 },
+		menu_divider{ 51, 51, 51, 255 };
 
-	int font;
+	int font = Graphics::Fonts::Gidole;
 
 	ThemeT()
 	{}
@@ -300,255 +300,261 @@ public:
 	{
 		try
 		{
-			m_Name = m_Json.at("name").get<std::string>();
-			for (auto& [key, v] : m_Json.at("variables").items())
-				m_Variables.emplace(key, Color{ v.at(0), v.at(1), v.at(2), v.at(3) });
+			try { m_Name = m_Json.at("name").get<std::string>(); }
+			catch (std::exception) { m_Name = "Theme"; }
 
-			m_Font = m_Json.at("font").get<std::string>();
+			try { for (auto& [key, v] : m_Json.at("variables").items())
+				m_Variables.emplace(key, Color{ v.at(0), v.at(1), v.at(2), v.at(3) }); }
+			catch (std::exception) {}
 
-			text       = GetColor("text");
-			text_small = GetColor("textsmall");
-			textOff    = GetColor("textoff");
+			try { m_Font = m_Json.at("font").get<std::string>(); }
+			catch (std::exception) { m_Font = ""; }
+			
+#define SetColor(name, ...) GetColor(name, #name, __VA_ARGS__);
 
-			button_disabled_background	= GetColor("button", "disabled", "background");
-			button_disabled_border		= GetColor("button", "disabled", "border");
-			button_disabled_text		= GetColor("button", "disabled", "text");
-			button_active_background	= GetColor("button", "active", "background");
-			button_active_border		= GetColor("button", "active", "border");
-			button_active_text			= GetColor("button", "active", "text");
-			button_hovering_background	= GetColor("button", "hovering", "background");
-			button_hovering_border		= GetColor("button", "hovering", "border");
-			button_hovering_text		= GetColor("button", "hovering", "text");
-			button_idle_background		= GetColor("button", "idle", "background");
-			button_idle_border			= GetColor("button", "idle", "border");
-			button_idle_text			= GetColor("button", "idle", "text");
+			SetColor(text      , "text");
+			SetColor(text_small, "textsmall");
+			SetColor(textOff   , "textoff");
 
-			toggle_button_disabled_background	 = GetColor("toggle-button", "disabled", "background");
-			toggle_button_disabled_border		 = GetColor("toggle-button", "disabled", "border");
-			toggle_button_disabled_text			 = GetColor("toggle-button", "disabled", "text");
-			toggle_button_active_background		 = GetColor("toggle-button", "active", "background");
-			toggle_button_active_border			 = GetColor("toggle-button", "active", "border");
-			toggle_button_active_text			 = GetColor("toggle-button", "active", "text");
-			toggle_button_hovering_background	 = GetColor("toggle-button", "hovering", "background");
-			toggle_button_hovering_border		 = GetColor("toggle-button", "hovering", "border");
-			toggle_button_hovering_text			 = GetColor("toggle-button", "hovering", "text");
-			toggle_button_idle_background		 = GetColor("toggle-button", "idle", "background");
-			toggle_button_idle_border			 = GetColor("toggle-button", "idle", "border");
-			toggle_button_idle_text				 = GetColor("toggle-button", "idle", "text");
+			SetColor(button_disabled_background, "button", "disabled", "background");
+			SetColor(button_disabled_border	   , "button", "disabled", "border");
+			SetColor(button_disabled_text	   , "button", "disabled", "text");
+			SetColor(button_active_background  , "button", "active", "background");
+			SetColor(button_active_border	   , "button", "active", "border");
+			SetColor(button_active_text		   , "button", "active", "text");
+			SetColor(button_hovering_background, "button", "hovering", "background");
+			SetColor(button_hovering_border	   , "button", "hovering", "border");
+			SetColor(button_hovering_text	   , "button", "hovering", "text");
+			SetColor(button_idle_background	   , "button", "idle", "background");
+			SetColor(button_idle_border		   , "button", "idle", "border");
+			SetColor(button_idle_text		   , "button", "idle", "text");
 
-			dropdown_button_disabled_background	 = GetColor("dropdown-button", "disabled", "background");
-			dropdown_button_disabled_border		 = GetColor("dropdown-button", "disabled", "border");
-			dropdown_button_disabled_text		 = GetColor("dropdown-button", "disabled", "text");
-			dropdown_button_active_background	 = GetColor("dropdown-button", "active", "background");
-			dropdown_button_active_border		 = GetColor("dropdown-button", "active", "border");
-			dropdown_button_active_text			 = GetColor("dropdown-button", "active", "text");
-			dropdown_button_hovering_background	 = GetColor("dropdown-button", "hovering", "background");
-			dropdown_button_hovering_border		 = GetColor("dropdown-button", "hovering", "border");
-			dropdown_button_hovering_text		 = GetColor("dropdown-button", "hovering", "text");
-			dropdown_button_idle_background		 = GetColor("dropdown-button", "idle", "background");
-			dropdown_button_idle_border			 = GetColor("dropdown-button", "idle", "border");
-			dropdown_button_idle_text			 = GetColor("dropdown-button", "idle", "text");
+			SetColor(toggle_button_disabled_background, "toggle-button", "disabled", "background");
+			SetColor(toggle_button_disabled_border	  , "toggle-button", "disabled", "border");
+			SetColor(toggle_button_disabled_text	  , "toggle-button", "disabled", "text");
+			SetColor(toggle_button_active_background  , "toggle-button", "active", "background");
+			SetColor(toggle_button_active_border	  , "toggle-button", "active", "border");
+			SetColor(toggle_button_active_text		  , "toggle-button", "active", "text");
+			SetColor(toggle_button_hovering_background, "toggle-button", "hovering", "background");
+			SetColor(toggle_button_hovering_border	  , "toggle-button", "hovering", "border");
+			SetColor(toggle_button_hovering_text	  , "toggle-button", "hovering", "text");
+			SetColor(toggle_button_idle_background	  , "toggle-button", "idle", "background");
+			SetColor(toggle_button_idle_border		  , "toggle-button", "idle", "border");
+			SetColor(toggle_button_idle_text		  , "toggle-button", "idle", "text");
 
-			radio_button_disabled_background	 = GetColor("radio-button", "disabled", "background");
-			radio_button_disabled_border		 = GetColor("radio-button", "disabled", "border");
-			radio_button_disabled_text			 = GetColor("radio-button", "disabled", "text");
-			radio_button_active_background		 = GetColor("radio-button", "active", "background");
-			radio_button_active_border			 = GetColor("radio-button", "active", "border");
-			radio_button_active_text			 = GetColor("radio-button", "active", "text");
-			radio_button_hovering_background	 = GetColor("radio-button", "hovering", "background");
-			radio_button_hovering_border		 = GetColor("radio-button", "hovering", "border");
-			radio_button_hovering_text			 = GetColor("radio-button", "hovering", "text");
-			radio_button_idle_background		 = GetColor("radio-button", "idle", "background");
-			radio_button_idle_border			 = GetColor("radio-button", "idle", "border");
-			radio_button_idle_text				 = GetColor("radio-button", "idle", "text");
+			SetColor(dropdown_button_disabled_background, "dropdown-button", "disabled", "background");
+			SetColor(dropdown_button_disabled_border	, "dropdown-button", "disabled", "border");
+			SetColor(dropdown_button_disabled_text		, "dropdown-button", "disabled", "text");
+			SetColor(dropdown_button_active_background	, "dropdown-button", "active", "background");
+			SetColor(dropdown_button_active_border		, "dropdown-button", "active", "border");
+			SetColor(dropdown_button_active_text		, "dropdown-button", "active", "text");
+			SetColor(dropdown_button_hovering_background, "dropdown-button", "hovering", "background");
+			SetColor(dropdown_button_hovering_border	, "dropdown-button", "hovering", "border");
+			SetColor(dropdown_button_hovering_text		, "dropdown-button", "hovering", "text");
+			SetColor(dropdown_button_idle_background	, "dropdown-button", "idle", "background");
+			SetColor(dropdown_button_idle_border		, "dropdown-button", "idle", "border");
+			SetColor(dropdown_button_idle_text			, "dropdown-button", "idle", "text");
 
-			menu_button_disabled_background		 = GetColor("menu-button", "disabled", "background");
-			menu_button_disabled_text			 = GetColor("menu-button", "disabled", "text");
-			menu_button_disabled_text_small		 = GetColor("menu-button", "disabled", "text-small");
-			menu_button_active_background		 = GetColor("menu-button", "active", "background");
-			menu_button_active_text				 = GetColor("menu-button", "active", "text");
-			menu_button_active_text_small		 = GetColor("menu-button", "active", "text-small");
-			menu_button_hovering_background		 = GetColor("menu-button", "hovering", "background");
-			menu_button_hovering_text			 = GetColor("menu-button", "hovering", "text");
-			menu_button_hovering_text_small		 = GetColor("menu-button", "hovering", "text-small");
-			menu_button_idle_background			 = GetColor("menu-button", "idle", "background");
-			menu_button_idle_text				 = GetColor("menu-button", "idle", "text");
-			menu_button_idle_text_small			 = GetColor("menu-button", "idle", "text-small");
+			SetColor(radio_button_disabled_background, "radio-button", "disabled", "background");
+			SetColor(radio_button_disabled_border	 , "radio-button", "disabled", "border");
+			SetColor(radio_button_disabled_text		 , "radio-button", "disabled", "text");
+			SetColor(radio_button_active_background	 , "radio-button", "active", "background");
+			SetColor(radio_button_active_border		 , "radio-button", "active", "border");
+			SetColor(radio_button_active_text		 , "radio-button", "active", "text");
+			SetColor(radio_button_hovering_background, "radio-button", "hovering", "background");
+			SetColor(radio_button_hovering_border	 , "radio-button", "hovering", "border");
+			SetColor(radio_button_hovering_text		 , "radio-button", "hovering", "text");
+			SetColor(radio_button_idle_background	 , "radio-button", "idle", "background");
+			SetColor(radio_button_idle_border		 , "radio-button", "idle", "border");
+			SetColor(radio_button_idle_text			 , "radio-button", "idle", "text");
 
-			toggle_menu_button_disabled_background = GetColor("toggle-menu-button", "disabled", "background");
-			toggle_menu_button_disabled_text	   = GetColor("toggle-menu-button", "disabled", "text");
-			toggle_menu_button_disabled_text_small = GetColor("toggle-menu-button", "disabled", "text-small");
-			toggle_menu_button_active_background   = GetColor("toggle-menu-button", "active", "background");
-			toggle_menu_button_active_text		   = GetColor("toggle-menu-button", "active", "text");
-			toggle_menu_button_active_text_small   = GetColor("toggle-menu-button", "active", "text-small");
-			toggle_menu_button_active_square       = GetColor("toggle-menu-button", "active", "square");
-			toggle_menu_button_hovering_background = GetColor("toggle-menu-button", "hovering", "background");
-			toggle_menu_button_hovering_text	   = GetColor("toggle-menu-button", "hovering", "text");
-			toggle_menu_button_hovering_text_small = GetColor("toggle-menu-button", "hovering", "text-small");
-			toggle_menu_button_idle_background	   = GetColor("toggle-menu-button", "idle", "background");
-			toggle_menu_button_idle_text		   = GetColor("toggle-menu-button", "idle", "text");
-			toggle_menu_button_idle_text_small	   = GetColor("toggle-menu-button", "idle", "text-small");
+			SetColor(menu_button_disabled_background, "menu-button", "disabled", "background");
+			SetColor(menu_button_disabled_text		, "menu-button", "disabled", "text");
+			SetColor(menu_button_disabled_text_small, "menu-button", "disabled", "text-small");
+			SetColor(menu_button_active_background	, "menu-button", "active", "background");
+			SetColor(menu_button_active_text		, "menu-button", "active", "text");
+			SetColor(menu_button_active_text_small	, "menu-button", "active", "text-small");
+			SetColor(menu_button_hovering_background, "menu-button", "hovering", "background");
+			SetColor(menu_button_hovering_text		, "menu-button", "hovering", "text");
+			SetColor(menu_button_hovering_text_small, "menu-button", "hovering", "text-small");
+			SetColor(menu_button_idle_background	, "menu-button", "idle", "background");
+			SetColor(menu_button_idle_text			, "menu-button", "idle", "text");
+			SetColor(menu_button_idle_text_small	, "menu-button", "idle", "text-small");
 
-			scrollbar_idle_handle	   = GetColor("scrollbar", "idle", "handle");
-			scrollbar_idle_bar		   = GetColor("scrollbar", "idle", "bar");
-			scrollbar_hovering_handle  = GetColor("scrollbar", "hovering", "handle");
-			scrollbar_hovering_bar	   = GetColor("scrollbar", "hovering", "bar");
-			scrollbar_active_handle	   = GetColor("scrollbar", "active", "handle");
-			scrollbar_active_bar	   = GetColor("scrollbar", "active", "bar");
+			SetColor(toggle_menu_button_disabled_background, "toggle-menu-button", "disabled", "background");
+			SetColor(toggle_menu_button_disabled_text	   , "toggle-menu-button", "disabled", "text");
+			SetColor(toggle_menu_button_disabled_text_small, "toggle-menu-button", "disabled", "text-small");
+			SetColor(toggle_menu_button_active_background  , "toggle-menu-button", "active", "background");
+			SetColor(toggle_menu_button_active_text		   , "toggle-menu-button", "active", "text");
+			SetColor(toggle_menu_button_active_text_small  , "toggle-menu-button", "active", "text-small");
+			SetColor(toggle_menu_button_active_square      , "toggle-menu-button", "active", "square");
+			SetColor(toggle_menu_button_hovering_background, "toggle-menu-button", "hovering", "background");
+			SetColor(toggle_menu_button_hovering_text	   , "toggle-menu-button", "hovering", "text");
+			SetColor(toggle_menu_button_hovering_text_small, "toggle-menu-button", "hovering", "text-small");
+			SetColor(toggle_menu_button_idle_background	   , "toggle-menu-button", "idle", "background");
+			SetColor(toggle_menu_button_idle_text		   , "toggle-menu-button", "idle", "text");
+			SetColor(toggle_menu_button_idle_text_small	   , "toggle-menu-button", "idle", "text-small");
 
-			slider_disabled_background = GetColor("slider", "disabled", "background");
-			slider_disabled_border	   = GetColor("slider", "disabled", "border");
-			slider_disabled_value	   = GetColor("slider", "disabled", "value");
-			slider_disabled_value_text = GetColor("slider", "disabled", "value-text");
-			slider_disabled_name_text  = GetColor("slider", "disabled", "name-text");
-			slider_idle_background	   = GetColor("slider", "idle", "background");
-			slider_idle_border		   = GetColor("slider", "idle", "border");
-			slider_idle_value		   = GetColor("slider", "idle", "value");			
-			slider_idle_value_text	   = GetColor("slider", "idle", "value-text");
-			slider_idle_name_text	   = GetColor("slider", "idle", "name-text");
-			slider_hovering_background = GetColor("slider", "hovering", "background");
-			slider_hovering_border	   = GetColor("slider", "hovering", "border");
-			slider_hovering_value	   = GetColor("slider", "hovering", "value");
-			slider_hovering_value_text = GetColor("slider", "hovering", "value-text");
-			slider_hovering_name_text  = GetColor("slider", "hovering", "name-text");
-			slider_active_background   = GetColor("slider", "active", "background");
-			slider_active_border	   = GetColor("slider", "active", "border");
-			slider_active_value		   = GetColor("slider", "active", "value");
-			slider_active_value_text   = GetColor("slider", "active", "value-text");
-			slider_active_name_text    = GetColor("slider", "active", "name-text");
+			SetColor(scrollbar_idle_handle	  , "scrollbar", "idle", "handle");
+			SetColor(scrollbar_idle_bar		  , "scrollbar", "idle", "bar");
+			SetColor(scrollbar_hovering_handle, "scrollbar", "hovering", "handle");
+			SetColor(scrollbar_hovering_bar	  , "scrollbar", "hovering", "bar");
+			SetColor(scrollbar_active_handle  , "scrollbar", "active", "handle");
+			SetColor(scrollbar_active_bar	  , "scrollbar", "active", "bar");
 
-			knob_disabled_handle	  = GetColor("knob", "disabled", "handle");
-			knob_disabled_border	  = GetColor("knob", "disabled", "border");
-			knob_disabled_value		  = GetColor("knob", "disabled", "value");
-			knob_disabled_name_text	  = GetColor("knob", "disabled", "name-text");
-			knob_disabled_value_text  = GetColor("knob", "disabled", "value-text");
-			knob_idle_handle		  = GetColor("knob", "idle", "handle");
-			knob_idle_border		  = GetColor("knob", "idle", "border");
-			knob_idle_value			  = GetColor("knob", "idle", "value");
-			knob_idle_name_text		  = GetColor("knob", "idle", "name-text");
-			knob_idle_value_text	  = GetColor("knob", "idle", "value-text");
-			knob_hovering_handle	  = GetColor("knob", "hovering", "handle");
-			knob_hovering_border	  = GetColor("knob", "hovering", "border");
-			knob_hovering_value		  = GetColor("knob", "hovering", "value");
-			knob_hovering_name_text	  = GetColor("knob", "hovering", "name-text");
-			knob_hovering_value_text  = GetColor("knob", "hovering", "value-text");
-			knob_active_handle		  = GetColor("knob", "active", "handle");
-			knob_active_border		  = GetColor("knob", "active", "border");
-			knob_active_value		  = GetColor("knob", "active", "value");
-			knob_active_name_text	  = GetColor("knob", "active", "name-text");
-			knob_active_value_text	  = GetColor("knob", "active", "value-text");
+			SetColor(slider_disabled_background, "slider", "disabled", "background");
+			SetColor(slider_disabled_border	   , "slider", "disabled", "border");
+			SetColor(slider_disabled_value	   , "slider", "disabled", "value");
+			SetColor(slider_disabled_value_text, "slider", "disabled", "value-text");
+			SetColor(slider_disabled_name_text , "slider", "disabled", "name-text");
+			SetColor(slider_idle_background	   , "slider", "idle", "background");
+			SetColor(slider_idle_border		   , "slider", "idle", "border");
+			SetColor(slider_idle_value		   , "slider", "idle", "value");
+			SetColor(slider_idle_value_text	   , "slider", "idle", "value-text");
+			SetColor(slider_idle_name_text	   , "slider", "idle", "name-text");
+			SetColor(slider_hovering_background, "slider", "hovering", "background");
+			SetColor(slider_hovering_border	   , "slider", "hovering", "border");
+			SetColor(slider_hovering_value	   , "slider", "hovering", "value");
+			SetColor(slider_hovering_value_text, "slider", "hovering", "value-text");
+			SetColor(slider_hovering_name_text , "slider", "hovering", "name-text");
+			SetColor(slider_active_background  , "slider", "active", "background");
+			SetColor(slider_active_border	   , "slider", "active", "border");
+			SetColor(slider_active_value	   ,"slider", "active", "value");
+			SetColor(slider_active_value_text  , "slider", "active", "value-text");
+			SetColor(slider_active_name_text   , "slider", "active", "name-text");
 
-			volume_slider_disabled_handle		   = GetColor("volume-slider", "disabled", "handle");
-			volume_slider_disabled_db_text		   = GetColor("volume-slider", "disabled", "db-text");
-			volume_slider_disabled_value_text	   = GetColor("volume-slider", "disabled", "value-text");
-			volume_slider_disabled_line			   = GetColor("volume-slider", "disabled", "line");
-			volume_slider_disabled_line_highlight  = GetColor("volume-slider", "disabled", "line-highlight");
-			volume_slider_disabled_meter		   = GetColor("volume-slider", "disabled", "meter");
-			volume_slider_disabled_meter_value	   = GetColor("volume-slider", "disabled", "meter-value");
-			volume_slider_disabled_meter_value_c1  = GetColor("volume-slider", "disabled", "meter-value-c1");
-			volume_slider_disabled_meter_value_c2  = GetColor("volume-slider", "disabled", "meter-value-c2");
-			volume_slider_disabled_meter_value_c3  = GetColor("volume-slider", "disabled", "meter-value-c3");
-			volume_slider_idle_handle			   = GetColor("volume-slider", "idle", "handle");
-			volume_slider_idle_db_text			   = GetColor("volume-slider", "idle", "db-text");
-			volume_slider_idle_value_text		   = GetColor("volume-slider", "idle", "value-text");
-			volume_slider_idle_line				   = GetColor("volume-slider", "idle", "line");
-			volume_slider_idle_line_highlight	   = GetColor("volume-slider", "idle", "line-highlight");
-			volume_slider_idle_meter			   = GetColor("volume-slider", "idle", "meter");
-			volume_slider_idle_meter_value		   = GetColor("volume-slider", "idle", "meter-value");
-			volume_slider_idle_meter_value_c1	   = GetColor("volume-slider", "idle", "meter-value-c1");
-			volume_slider_idle_meter_value_c2	   = GetColor("volume-slider", "idle", "meter-value-c2");
-			volume_slider_idle_meter_value_c3	   = GetColor("volume-slider", "idle", "meter-value-c3");
-			volume_slider_hovering_handle		   = GetColor("volume-slider", "hovering", "handle");
-			volume_slider_hovering_db_text		   = GetColor("volume-slider", "hovering", "db-text");
-			volume_slider_hovering_value_text	   = GetColor("volume-slider", "hovering", "value-text");
-			volume_slider_hovering_line			   = GetColor("volume-slider", "hovering", "line");
-			volume_slider_hovering_line_highlight  = GetColor("volume-slider", "hovering", "line-highlight");
-			volume_slider_hovering_meter		   = GetColor("volume-slider", "hovering", "meter");
-			volume_slider_hovering_meter_value	   = GetColor("volume-slider", "hovering", "meter-value");
-			volume_slider_hovering_meter_value_c1  = GetColor("volume-slider", "hovering", "meter-value-c1");
-			volume_slider_hovering_meter_value_c2  = GetColor("volume-slider", "hovering", "meter-value-c2");
-			volume_slider_hovering_meter_value_c3  = GetColor("volume-slider", "hovering", "meter-value-c3");
-			volume_slider_active_handle			   = GetColor("volume-slider", "active", "handle");
-			volume_slider_active_db_text		   = GetColor("volume-slider", "active", "db-text");
-			volume_slider_active_value_text		   = GetColor("volume-slider", "active", "value-text");
-			volume_slider_active_line			   = GetColor("volume-slider", "active", "line");
-			volume_slider_active_line_highlight	   = GetColor("volume-slider", "active", "line-highlight");
-			volume_slider_active_meter			   = GetColor("volume-slider", "active", "meter");
-			volume_slider_active_meter_value	   = GetColor("volume-slider", "active", "meter-value");
-			volume_slider_active_meter_value_c1	   = GetColor("volume-slider", "active", "meter-value-c1");
-			volume_slider_active_meter_value_c2	   = GetColor("volume-slider", "active", "meter-value-c2");
-			volume_slider_active_meter_value_c3	   = GetColor("volume-slider", "active", "meter-value-c3");
+			SetColor(knob_disabled_handle	 , "knob", "disabled", "handle");
+			SetColor(knob_disabled_border	 , "knob", "disabled", "border");
+			SetColor(knob_disabled_value	 , "knob", "disabled", "value");
+			SetColor(knob_disabled_name_text , "knob", "disabled", "name-text");
+			SetColor(knob_disabled_value_text, "knob", "disabled", "value-text");
+			SetColor(knob_idle_handle		 , "knob", "idle", "handle");
+			SetColor(knob_idle_border		 , "knob", "idle", "border");
+			SetColor(knob_idle_value		 , "knob", "idle", "value");
+			SetColor(knob_idle_name_text	 , "knob", "idle", "name-text");
+			SetColor(knob_idle_value_text	 , "knob", "idle", "value-text");
+			SetColor(knob_hovering_handle	 , "knob", "hovering", "handle");
+			SetColor(knob_hovering_border	 , "knob", "hovering", "border");
+			SetColor(knob_hovering_value	 , "knob", "hovering", "value");
+			SetColor(knob_hovering_name_text , "knob", "hovering", "name-text");
+			SetColor(knob_hovering_value_text, "knob", "hovering", "value-text");
+			SetColor(knob_active_handle		 , "knob", "active", "handle");
+			SetColor(knob_active_border		 , "knob", "active", "border");
+			SetColor(knob_active_value		 , "knob", "active", "value");
+			SetColor(knob_active_name_text	 , "knob", "active", "name-text");
+			SetColor(knob_active_value_text	 , "knob", "active", "value-text");
 
-			effect_graph_background			   = GetColor("effect-graph", "background");
-			effect_graph_graph_lines		   = GetColor("effect-graph", "graph-lines");
-			effect_graph_graph_lines_highlight = GetColor("effect-graph", "graph-lines-highlight");
-			effect_graph_disabled_circle	   = GetColor("effect-graph", "disabled", "circle");
-			effect_graph_disabled_line		   = GetColor("effect-graph", "disabled", "line");
-			effect_graph_idle_circle		   = GetColor("effect-graph", "idle", "circle");
-			effect_graph_idle_line   		   = GetColor("effect-graph", "idle", "line");
-			effect_graph_hovering_circle	   = GetColor("effect-graph", "hovering", "circle");
-			effect_graph_hovering_line		   = GetColor("effect-graph", "hovering", "line");
-			effect_graph_active_circle		   = GetColor("effect-graph", "active", "circle");
-			effect_graph_active_line		   = GetColor("effect-graph", "active", "line");
+			SetColor(volume_slider_disabled_handle		  , "volume-slider", "disabled", "handle");
+			SetColor(volume_slider_disabled_db_text		  , "volume-slider", "disabled", "db-text");
+			SetColor(volume_slider_disabled_value_text	  , "volume-slider", "disabled", "value-text");
+			SetColor(volume_slider_disabled_line		  , "volume-slider", "disabled", "line");
+			SetColor(volume_slider_disabled_line_highlight, "volume-slider", "disabled", "line-highlight");
+			SetColor(volume_slider_disabled_meter		  , "volume-slider", "disabled", "meter");
+			SetColor(volume_slider_disabled_meter_value	  , "volume-slider", "disabled", "meter-value");
+			SetColor(volume_slider_disabled_meter_value_c1, "volume-slider", "disabled", "meter-value-c1");
+			SetColor(volume_slider_disabled_meter_value_c2, "volume-slider", "disabled", "meter-value-c2");
+			SetColor(volume_slider_disabled_meter_value_c3, "volume-slider", "disabled", "meter-value-c3");
+			SetColor(volume_slider_idle_handle			  , "volume-slider", "idle", "handle");
+			SetColor(volume_slider_idle_db_text			  , "volume-slider", "idle", "db-text");
+			SetColor(volume_slider_idle_value_text		  , "volume-slider", "idle", "value-text");
+			SetColor(volume_slider_idle_line			  , "volume-slider", "idle", "line");
+			SetColor(volume_slider_idle_line_highlight	  , "volume-slider", "idle", "line-highlight");
+			SetColor(volume_slider_idle_meter			  , "volume-slider", "idle", "meter");
+			SetColor(volume_slider_idle_meter_value		  , "volume-slider", "idle", "meter-value");
+			SetColor(volume_slider_idle_meter_value_c1	  , "volume-slider", "idle", "meter-value-c1");
+			SetColor(volume_slider_idle_meter_value_c2	  , "volume-slider", "idle", "meter-value-c2");
+			SetColor(volume_slider_idle_meter_value_c3	  , "volume-slider", "idle", "meter-value-c3");
+			SetColor(volume_slider_hovering_handle		  , "volume-slider", "hovering", "handle");
+			SetColor(volume_slider_hovering_db_text		  , "volume-slider", "hovering", "db-text");
+			SetColor(volume_slider_hovering_value_text	  , "volume-slider", "hovering", "value-text");
+			SetColor(volume_slider_hovering_line		  , "volume-slider", "hovering", "line");
+			SetColor(volume_slider_hovering_line_highlight, "volume-slider", "hovering", "line-highlight");
+			SetColor(volume_slider_hovering_meter		  , "volume-slider", "hovering", "meter");
+			SetColor(volume_slider_hovering_meter_value	  , "volume-slider", "hovering", "meter-value");
+			SetColor(volume_slider_hovering_meter_value_c1, "volume-slider", "hovering", "meter-value-c1");
+			SetColor(volume_slider_hovering_meter_value_c2, "volume-slider", "hovering", "meter-value-c2");
+			SetColor(volume_slider_hovering_meter_value_c3, "volume-slider", "hovering", "meter-value-c3");
+			SetColor(volume_slider_active_handle		  , "volume-slider", "active", "handle");
+			SetColor(volume_slider_active_db_text		  , "volume-slider", "active", "db-text");
+			SetColor(volume_slider_active_value_text      , "volume-slider", "active", "value-text");
+			SetColor(volume_slider_active_line			  , "volume-slider", "active", "line");
+			SetColor(volume_slider_active_line_highlight  , "volume-slider", "active", "line-highlight");
+			SetColor(volume_slider_active_meter			  , "volume-slider", "active", "meter");
+			SetColor(volume_slider_active_meter_value	  , "volume-slider", "active", "meter-value");
+			SetColor(volume_slider_active_meter_value_c1  , "volume-slider", "active", "meter-value-c1");
+			SetColor(volume_slider_active_meter_value_c2  , "volume-slider", "active", "meter-value-c2");
+			SetColor(volume_slider_active_meter_value_c3  , "volume-slider", "active", "meter-value-c3");
 
-			dynamics_background		   = GetColor("dynamics", "background");
-			dynamics_border			   = GetColor("dynamics", "border");
-			dynamics_line			   = GetColor("dynamics", "line");
-			dynamics_line_highlight	   = GetColor("dynamics", "line-highlight");
-			dynamics_compressor		   = GetColor("dynamics", "compressor");
-			dynamics_compressor_line   = GetColor("dynamics", "compressor-line");
-			dynamics_meter_value	   = GetColor("dynamics", "meter-value");
-			dynamics_db_text		   = GetColor("dynamics", "db-text");
-			dynamics_value_text		   = GetColor("dynamics", "value-text");
+			SetColor(effect_graph_background		   , "effect-graph", "background");
+			SetColor(effect_graph_graph_lines		   , "effect-graph", "graph-lines");
+			SetColor(effect_graph_graph_lines_highlight, "effect-graph", "graph-lines-highlight");
+			SetColor(effect_graph_disabled_circle	   , "effect-graph", "disabled", "circle");
+			SetColor(effect_graph_disabled_line		   , "effect-graph", "disabled", "line");
+			SetColor(effect_graph_idle_circle		   , "effect-graph", "idle", "circle");
+			SetColor(effect_graph_idle_line   		   , "effect-graph", "idle", "line");
+			SetColor(effect_graph_hovering_circle	   , "effect-graph", "hovering", "circle");
+			SetColor(effect_graph_hovering_line		   , "effect-graph", "hovering", "line");
+			SetColor(effect_graph_active_circle		   , "effect-graph", "active", "circle");
+			SetColor(effect_graph_active_line		   , "effect-graph", "active", "line");
 
-			route_button_idle_background	 = GetColor("route-button", "idle", "background");
-			route_button_idle_triangle		 = GetColor("route-button", "idle", "triangle");
-			route_button_hovering_background = GetColor("route-button", "hovering", "background");
-			route_button_hovering_triangle	 = GetColor("route-button", "hovering", "triangle");
-			route_button_active_background	 = GetColor("route-button", "active", "background");
-			route_button_active_triangle	 = GetColor("route-button", "active", "triangle");
+			SetColor(dynamics_background	 , "dynamics", "background");
+			SetColor(dynamics_border		 , "dynamics", "border");
+			SetColor(dynamics_line			 , "dynamics", "line");
+			SetColor(dynamics_line_highlight , "dynamics", "line-highlight");
+			SetColor(dynamics_compressor	 , "dynamics", "compressor");
+			SetColor(dynamics_compressor_line, "dynamics", "compressor-line");
+			SetColor(dynamics_meter_value	 , "dynamics", "meter-value");
+			SetColor(dynamics_db_text		 , "dynamics", "db-text");
+			SetColor(dynamics_value_text	 , "dynamics", "value-text");
 
-			channel_idle_name_text			 = GetColor("channel", "idle", "name-text");
-			channel_idle_background			 = GetColor("channel", "idle", "background");
-			channel_hovering_name_text		 = GetColor("channel", "hovering", "name-text");
-			channel_hovering_background		 = GetColor("channel", "hovering", "background");
-			channel_active_name_text		 = GetColor("channel", "active", "name-text");
-			channel_active_background		 = GetColor("channel", "active", "background");
+			SetColor(route_button_idle_background	 , "route-button", "idle", "background");
+			SetColor(route_button_idle_triangle		 , "route-button", "idle", "triangle");
+			SetColor(route_button_hovering_background, "route-button", "hovering", "background");
+			SetColor(route_button_hovering_triangle	 , "route-button", "hovering", "triangle");
+			SetColor(route_button_active_background	 , "route-button", "active", "background");
+			SetColor(route_button_active_triangle	 , "route-button", "active", "triangle");
 
-			mute_mono_button_idle_background	 = GetColor("mute-mono-button", "idle", "background");
-			mute_mono_button_idle_text			 = GetColor("mute-mono-button", "idle", "text");
-			mute_mono_button_hovering_background = GetColor("mute-mono-button", "hovering", "background");
-			mute_mono_button_hovering_text		 = GetColor("mute-mono-button", "hovering", "text");
-			mute_mono_button_active_background	 = GetColor("mute-mono-button", "active", "background");
-			mute_mono_button_active_text		 = GetColor("mute-mono-button", "active", "text");
+			SetColor(channel_idle_name_text		, "channel", "idle", "name-text");
+			SetColor(channel_idle_background	, "channel", "idle", "background");
+			SetColor(channel_hovering_name_text	, "channel", "hovering", "name-text");
+			SetColor(channel_hovering_background, "channel", "hovering", "background");
+			SetColor(channel_active_name_text	, "channel", "active", "name-text");
+			SetColor(channel_active_background	, "channel", "active", "background");
 
-			effect_title_text      = GetColor("effect", "title-text");
-			effect_title_text_off  = GetColor("effect", "title-text-off");
-			effect_title_bar	   = GetColor("effect", "title-bar");
-			effect_background	   = GetColor("effect", "background");
-			effect_minimize_button = GetColor("effect", "minimize-button");
-			effect_divider		   = GetColor("effect", "divider");
-			effect_drag_divider	   = GetColor("effect", "drag-divider");
+			SetColor(mute_mono_button_idle_background	 , "mute-mono-button", "idle", "background");
+			SetColor(mute_mono_button_idle_text			 , "mute-mono-button", "idle", "text");
+			SetColor(mute_mono_button_hovering_background, "mute-mono-button", "hovering", "background");
+			SetColor(mute_mono_button_hovering_text		 , "mute-mono-button", "hovering", "text");
+			SetColor(mute_mono_button_active_background	 , "mute-mono-button", "active", "background");
+			SetColor(mute_mono_button_active_text		 , "mute-mono-button", "active", "text");
 
-			divider = GetColor("divider");
+			SetColor(effect_title_text     , "effect", "title-text");
+			SetColor(effect_title_text_off , "effect", "title-text-off");
+			SetColor(effect_title_bar	   , "effect", "title-bar");
+			SetColor(effect_background	   , "effect", "background");
+			SetColor(effect_minimize_button, "effect", "minimize-button");
+			SetColor(effect_divider		   , "effect", "divider");
+			SetColor(effect_drag_divider   , "effect", "drag-divider");
 
-			window_border						    = GetColor("window", "border");
-			window_frame						    = GetColor("window", "frame");
-			window_panel						    = GetColor("window", "panel");
-			window_title_text					    = GetColor("window", "title-text");
-			window_menu_text					    = GetColor("window", "menu-text");
-			window_close_button_icon			    = GetColor("window", "close-button", "icon");
-			window_close_button_idle_background	    = GetColor("window", "close-button", "idle", "background");
-			window_close_button_hovering_background = GetColor("window", "close-button", "hovering", "background");
-			window_close_button_active_background   = GetColor("window", "close-button", "active", "background");
-			window_button_icon					    = GetColor("window", "button", "icon");
-			window_button_idle_background		    = GetColor("window", "button", "idle", "background");
-			window_button_hovering_background	    = GetColor("window", "button", "hovering", "background");
-			window_button_active_background		    = GetColor("window", "button", "active", "background");
+			SetColor(divider, "divider");
 
-			menu_background = GetColor("menu", "background");
-			menu_border = GetColor("menu", "border");
-			menu_divider = GetColor("menu", "divider");
+			SetColor(window_border                          , "window", "border");
+			SetColor(window_frame                           , "window", "frame");
+			SetColor(window_panel                           , "window", "panel");
+			SetColor(window_title_text                      , "window", "title-text");
+			SetColor(window_menu_text                       , "window", "menu-text");
+			SetColor(window_close_button_icon               , "window", "close-button", "icon");
+			SetColor(window_close_button_idle_background    , "window", "close-button", "idle", "background");
+			SetColor(window_close_button_hovering_background, "window", "close-button", "hovering", "background");
+			SetColor(window_close_button_active_background  , "window", "close-button", "active", "background");
+			SetColor(window_button_icon                     , "window", "button", "icon");
+			SetColor(window_button_idle_background          , "window", "button", "idle", "background");
+			SetColor(window_button_hovering_background      , "window", "button", "hovering", "background");
+			SetColor(window_button_active_background        ,"window", "button", "active", "background");
+
+			SetColor(menu_background, "menu", "background");
+			SetColor(menu_border    , "menu", "border");
+			SetColor(menu_divider   , "menu", "divider");
 
 			LoadFont();
 		}
@@ -559,52 +565,42 @@ public:
 	}
 
 	template<typename ...Args>
-	Color GetColor(Args... args)
+	void GetColor(Color& c, const char const* name, const Args&... args)
+	{
+		try
+		{
+			Color col = GetColor(args...);
+			c = col;
+		}
+		catch (std::exception)
+		{
+			LOG("Error loading color : " << name);
+		}
+	}
+
+	template<typename ...Args>
+	Color GetColor(const Args&... args)
 	{
 		return GetColor(m_Json.at("components"), args...);
 	};
 
 	template<typename Arg, typename ...Args>
-	Color GetColor(const nlohmann::json& json, Arg a, Args... args)
+	Color GetColor(const nlohmann::json& json, const Arg& a, const Args&... args)
 	{
-		try
-		{
-			return GetColor(json.at(a), args...);
-		}
-		catch (...)
-		{
-			LOG("Error loading color : " << a);
-			return Color{ 0, 0, 0, 255 };
-		}
+		return GetColor(json.at(a), args...);
 	};
 
 	template<typename Arg>
-	Color GetColor(const nlohmann::json& json, Arg arg)
+	Color GetColor(const nlohmann::json& json, const Arg& arg)
 	{
-		try
-		{
-			return GetColor(json.at(arg));
-		}
-		catch (...)
-		{
-			LOG("Error loading color : " << arg);
-			return Color{ 0, 0, 0, 255 };
-		}
+		return GetColor(json.at(arg));
 	};
 
 	Color GetColor(const nlohmann::json& json)
 	{
-		try
-		{
-			if (json.is_string())
-				return m_Variables.at(json.get<std::string>());
-			return Color{ json.at(0), json.at(1), json.at(2), json.at(3) };
-		}
-		catch (...)
-		{
-			LOG("Error loading color : " << json);
-			return Color{ 0, 0, 0, 255 };
-		}
+		if (json.is_string())
+			return m_Variables.at(json.get<std::string>());
+		return Color{ json.at(0), json.at(1), json.at(2), json.at(3) };
 	}
 
 	std::string& Name() { return m_Name; }
@@ -673,7 +669,7 @@ private:
 	nlohmann::json m_Json;
 	std::string m_Name;
 	std::unordered_map<std::string, Color> m_Variables;
-	std::string m_Font;
+	std::string m_Font{ "" };
 
 	void LoadFont()
 	{
@@ -2010,7 +2006,7 @@ public:
 		: m_AutoResize(autoresize)
 	{}
 
-	void Update(const Vec4<int>& v)
+	void Update(const Vec4<int>& v) override
 	{
 		if (FontSize() == 48) Font(ThemeT::Get().font, 48);
 		else if (FontSize() == 24) Font(ThemeT::Get().font, 24);
@@ -2068,6 +2064,12 @@ public:
 		//Width(Graphics::StringWidth(c, Font(), FontSize()) + 4);
 		//Height(FontSize() + 4);
 		TextBox::Content(c);
+	}
+
+	void Update(const Vec4<int>& v) override
+	{
+		TextColor(ThemeT::Get().text);
+		SMXRTextBox::Update(v);
 	}
 
 	/**

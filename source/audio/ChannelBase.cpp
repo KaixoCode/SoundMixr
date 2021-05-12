@@ -322,13 +322,19 @@ void ChannelBase::Update(const Vec4<int>& v)
 	volumeVal.Content(volume.ValueText());
 
 	// Background color of the panel using theme.
-	Color c;
+	Color c, c2;
 	if (selected == this)
-		c = ThemeT::Get().channel_active_background;
+		c = ThemeT::Get().channel_active_background,
+		c2 = ThemeT::Get().channel_active_name_text;
 	else if (Hovering())
-		c = ThemeT::Get().channel_hovering_background;
+		c = ThemeT::Get().channel_hovering_background,
+		c2 = ThemeT::Get().channel_hovering_name_text;
 	else
-		c = ThemeT::Get().channel_idle_background;
+		c = ThemeT::Get().channel_idle_background,
+		c2 = ThemeT::Get().channel_idle_name_text;
+
+	volumeVal.TextColor(c2);
+	name.TextColor(c2);
 	Background(c);
 
 	Panel::Update(v);
