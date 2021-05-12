@@ -214,7 +214,7 @@ void SoundboardButton::PlayFile(bool forceOpen, bool dontOpen)
 };
 
 Soundboard::Soundboard()
-	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 300, 300 }, false, false, true, false, true, true, nullptr))
+	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 300, 300 }, false, false, true, false, true, true, m_MainWindow))
 {
 	Panel().Layout<Layout::Grid>(1, 1, 8, 8);
 	m_SubP = &Panel().Emplace<::Panel>();
