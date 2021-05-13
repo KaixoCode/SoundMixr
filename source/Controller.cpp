@@ -28,7 +28,7 @@ void Controller::Run()
     Menu<GR::Vertical, MT::Normal> _shellIconMenu;
     _shellIconMenu.ButtonSize({ 150, 20 });
     _shellIconMenu.Emplace<MenuButton>([] {}, "SoundMixr").Disable();
-    _shellIconMenu.Emplace<MenuDivider>(150, 1, 0, 4);
+    _shellIconMenu.Emplace<MenuDivider>(150, 1, 0, 2);
     _shellIconMenu.Emplace<MenuButton>([&] { mainWindow.Show(); }, "Open GUI");
     _shellIconMenu.Emplace<MenuButton>([&] { m_Gui.Close(); }, "Exit");
     Frame::AddShellIcon(IDI_ICON1, "SoundMixr", [&](Event& e)
