@@ -37,18 +37,32 @@ void EndpointChannel::AddEndpoint(Endpoint* e)
 {
 	// If first endpoint, set name of channel.
 	if (m_Endpoints.size() == 0 && e)
-		name.Content(e->name), m_Id = e->id;
+		name.Content(e->name);
 
 	// Add if not already added.
 	if (!std::contains(m_Endpoints, e))
+	{
+		// Add and sort with new endpoint.
 		m_Endpoints.push_back(e), Lines(Lines() + 1), SortEndpoints();
+		SortEndpoints();
+
+		// if Endpoint added, set id to first endpoint.
+		m_Id = m_Endpoints[0]->id;
+	}
 };
 
 void EndpointChannel::RemoveEndpoint(Endpoint* e)
 {
 	auto& it = std::find(m_Endpoints.begin(), m_Endpoints.end(), e);
 	if (it != m_Endpoints.end())
+	{
+		// If not added, add endpoint.
 		m_Endpoints.erase(it), Lines(Lines() - 1), SortEndpoints();
+
+		// if Endpoint removed, reset if to first endpoint.
+		if (m_Endpoints.size() != 0)
+			m_Id = m_Endpoints[0]->id;
+	}
 };
 
 void EndpointChannel::SortEndpoints()
@@ -84,7 +98,7 @@ EndpointChannel::operator nlohmann::json()
 	if (Type() & Type::Input)
 	{
 		std::vector<int> _connections{};
-		for (auto& i : m_Connections)
+		for (auto i : m_Connections)
 			_connections.push_back(i->Id());
 
 		_json["connections"] = _connections;

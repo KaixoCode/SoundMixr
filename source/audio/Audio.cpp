@@ -227,12 +227,23 @@ void Audio::GenerateMenu(Panel& panel)
                 if (m_EffectPanel.EffectChain() == &hover->EffectChain())
                     m_EffectPanel.EffectChain(nullptr);
 
+                // If output is removed, remove connection from all inputs
+                if (hover->Type() & ChannelBase::Type::Output)
+                    for (auto& _c : m_Channels)
+                        if (_c->Type() & ChannelBase::Type::Input)
+                        {
+                            _c->m_Lock.lock();
+                            auto _it = std::remove(_c->Connections().begin(), _c->Connections().end(), hover);
+                            if (_it != _c->Connections().end())
+                                _c->Connections().erase(_it);
+                            _c->m_Lock.unlock();
+                        }
                 // Remove the hovering panel from both the panel and the channels.
+                auto it2 = std::remove(m_Channels.begin(), m_Channels.end(), hover);
+                m_Channels.erase(it2);
                 auto it = std::remove_if(panel.Components().begin(), panel.Components().end(),
                     [hover](std::unique_ptr<Component>& u) { return u.get() == hover; });
                 panel.Erase(it);
-                auto it2 = std::remove(m_Channels.begin(), m_Channels.end(), hover);
-                m_Channels.erase(it2);
                 m_Lock.unlock();
             }, "Combine");
     }

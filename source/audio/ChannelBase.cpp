@@ -74,6 +74,10 @@ ChannelBase::ChannelBase(ChannelType type)
 
 void ChannelBase::Connect(ChannelBase* c)
 {
+	if (Type() & Type::Output)
+	{
+		LOG("This shit don goofed");
+	}
 	if (!std::contains(m_Connections, c))
 	{
 		m_Lock.lock();
@@ -307,12 +311,12 @@ void ChannelBase::Update(const Vec4<int>& v)
 
 	// Update connections given the state of the route button.
 	if (selected && selected != this)
-		if (!(Type() & Type::Input))
+		if (Type() & Type::Output && selected->Type() & Type::Input)
 			if (route.Active())
 				selected->Connect(this);
 			else
 				selected->Disconnect(this);
-		else if (Type() & Type::Input)
+		else if (Type() & Type::Input && selected->Type() & Type::Output)
 			if (route.Active())
 				Connect(selected);
 			else

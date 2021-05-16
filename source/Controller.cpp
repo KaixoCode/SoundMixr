@@ -53,12 +53,15 @@ void Controller::Run()
 
     // The frame menu of the main window.
     auto& _file = mainWindow.Menu().Emplace<TitleMenuButton>("File");
+    bool _fullscreen = false;
     _file.Size({ 34, 32 });
     _file.MenuBase().ButtonSize({ 220, 20 });
     _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, "Debug Overlay", Key::CTRL_D);
     _file.Emplace<MenuButton>([&] { soundboard.Show(); }, "Soundboard...", Key::CTRL_SHIFT_S);
-    _file.Emplace<MenuButton>([&] { effectWindow.Show(); }, "Effect Window...", Key::CTRL_E);
+    _file.Emplace<MenuButton>([&] { effectWindow.Show(); }, "Effect Window...", Key::CTRL_SHIFT_E);
+db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", Key::CTRL_S);
+    _file.Emplace<MenuToggleButton>(&_fullscreen, "FullScreen", Key::F11);
     _file.Emplace<MenuToggleButton>([&](bool c) {
         SetWindowPos(mainWindow.GetWin32Handle(), c ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE); 
         }, "Always On Top", Key::CTRL_SPACE);
@@ -225,8 +228,15 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     int _midiReloadCounter = 60;
     int _midiInDeviceCount = Midi::Get().InputDeviceCount();
     int _midiOutDeviceCount = Midi::Get().OutputDeviceCount();
+    bool _prevfs = _fullscreen;
     while (m_Gui.Loop())
     {
+        if (_prevfs != _fullscreen)
+        {
+            _prevfs = _fullscreen;
+            mainWindow.FullScreen(_fullscreen);
+        }
+
         // Coloring
         mainWindow.Color(ThemeT::Get().window_border);
         soundboard.Color(ThemeT::Get().window_border);
