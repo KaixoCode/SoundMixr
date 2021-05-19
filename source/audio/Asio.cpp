@@ -72,7 +72,7 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 
 	// Try common sample rates
 	int tries = 0;
-	double _srates[]{48000.0, 44100.0, Device().info.defaultSampleRate, 96000, 192000 };
+	double _srates[]{ Device().info.defaultSampleRate, 48000.0, 44100.0, 96000, 192000 };
 	do
 	{
 		if (tries == sizeof(_srates)/sizeof(double))
