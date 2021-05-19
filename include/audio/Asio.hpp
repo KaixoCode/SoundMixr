@@ -45,14 +45,32 @@ public:
 	/**
 	 * Constructor
 	 * Retrieves list of available devices.
+	 * @param bool only asio
 	 */
-	Asio();
+	Asio(bool = true);
 
 	/**
 	 * Destructor
 	 * Makes sure the stream is closed.
 	 */
 	~Asio();
+
+	/**
+	 * Loads all available devices into a map.
+	 */
+	void ReloadDevices();
+
+	/**
+	 * Set the sample rate.
+	 * @param sr sample rate
+	 */
+	void SampleRate(int sr) { m_Samplerate = sr; }
+
+	/**
+	 * Get the sample rate.
+	 * @return sample rate
+	 */
+	int SampleRate() const { return m_Samplerate; }
 
 	/**
 	 * Get all available devices.
@@ -64,24 +82,24 @@ public:
 	 * Set the device that should be opened.
 	 * @param d device
 	 */
-	void Device(::Device& d) { m_Device = &d; }
+	void Device(::Device& d) { m_Device = d.id; }
 
 	/**
 	 * Set the device that should be opened using its id.
 	 * @param d id
 	 */
-	void Device(int d) { m_Device = &Devices()[d]; }
+	void Device(int d) { m_Device = d; }
 	
 	/**
 	 * Clear the device, sets it to nullptr.
 	 */
-	void NoDevice() { m_Device = nullptr; }
+	void NoDevice() { m_Device = -1; }
 
 	/**
 	 * Get the current device.
 	 * @return device
 	 */
-	auto Device() -> ::Device& { return *m_Device; }
+	auto Device() -> ::Device* { return m_Device != -1 ? &m_Devices.at(m_Device) : nullptr; }
 
 	/**
 	 * Returns true if the stream is currently running.
@@ -99,7 +117,7 @@ public:
 	 * Get the device id of the device that is currently open. -1 if no device.
 	 * @return device id
 	 */
-	int DeviceId() const { return m_Device ? m_Device->id : -1; }
+	int DeviceId() const { return m_Device != -1 ? m_Devices.at(m_Device).id : -1; }
 	
 	/**
 	 * Opens a stream with the set device and the given callback and userdata.
@@ -137,6 +155,8 @@ public:
 	 */
 	std::vector<Endpoint>& Outputs() { return m_Outputs; }
 
+	PaStream* Stream() { return stream; }
+
 private:
 	std::vector<Endpoint> m_Inputs;
 	std::vector<Endpoint> m_Outputs;
@@ -144,9 +164,12 @@ private:
 	double m_Samplerate;
 	int m_BufferSize;
 	bool m_Opened = false;
+	bool m_IsAsioOnly = true;
 
 	PaStream* stream = nullptr;
-	::Device* m_Device = nullptr;
+	int m_Device = -1;
 
 	std::unordered_map<int, ::Device> m_Devices;
+
+	static bool m_PortAudioInit;
 };

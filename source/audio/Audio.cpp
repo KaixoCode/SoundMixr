@@ -57,6 +57,7 @@ Audio::Audio()
     m_ForwardsPanel.Width(70);
     m_ForwardsPanel.Layout<Layout::SidewaysStack>(8, 8);
     m_ForwardsPanel.AutoResize(true, false);
+    m_ForwardsPanel.Emplace<ForwardChannel>();
     /*m_GeneratorPanel.Hide();
     m_Divider2.Hide();*/
 
@@ -138,6 +139,16 @@ Audio::Audio()
                     ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
                     if (s)
                         _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
+                }
+
+                auto& _sub4 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                    ("Show Forwards");
+                _sub4.MenuBase().ButtonSize({ 180, 20 });
+                for (auto& _c : m_ForwardsPanel.Components())
+                {
+                    ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
+                    if (s)
+                        _sub4.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
                 }
 
                 auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
@@ -329,7 +340,7 @@ bool Audio::OpenDevice(int id)
     }
 
     // Set device name
-    m_DeviceName.Content(m_Asio.Device().info.name);
+    m_DeviceName.Content(m_Asio.Device()->info.name);
     return true;
 }
 
@@ -374,7 +385,7 @@ void Audio::ShowControlPanel()
     m_Asio.CloseStream();
 
     // Show control panel.
-    PaAsio_ShowControlPanel(m_Asio.Device().id, nullptr);
+    PaAsio_ShowControlPanel(m_Asio.Device()->id, nullptr);
 
     // Open and start the stream
     m_Asio.OpenStream(AsioCallback, this);
@@ -417,16 +428,16 @@ void Audio::LoadRouting()
     // Keep track which channels have been loaded from the file so
     // we can later add the ones that weren't added separately.
     std::unordered_map<int, bool> _inputIdsLoaded, _outputIdsLoaded;
-    for (int i = 0; i < m_Asio.Device().info.maxInputChannels; i++)
+    for (int i = 0; i < m_Asio.Device()->info.maxInputChannels; i++)
         _inputIdsLoaded.emplace(i, false);
 
-    for (int i = 0; i < m_Asio.Device().info.maxOutputChannels; i++)
+    for (int i = 0; i < m_Asio.Device()->info.maxOutputChannels; i++)
         _outputIdsLoaded.emplace(i, false);
 
     // Open the routing file for the current device.
     LOG("Loading Routing");
     std::ifstream _in;
-    _in.open("./settings/routing" + std::to_string(m_Asio.Device().id));
+    _in.open("./settings/routing" + std::to_string(m_Asio.Device()->id));
 
     bool _error = true;
     if (!_in.fail())
@@ -553,7 +564,7 @@ void Audio::DefaultRouting()
 {
     Clear();
     int i = 0;
-    for (i = 0; i < m_Asio.Device().info.maxInputChannels - 1; i += 2)
+    for (i = 0; i < m_Asio.Device()->info.maxInputChannels - 1; i += 2)
     {
         // Add a ChannelPanel with all the inputs
         auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
@@ -570,7 +581,7 @@ void Audio::DefaultRouting()
     }
 
     // if there were an uneven amount of channels, add one last mono channel
-    if (i == m_Asio.Device().info.maxInputChannels - 1)
+    if (i == m_Asio.Device()->info.maxInputChannels - 1)
     {
         // Add a ChannelPanel with all the inputs
         auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
@@ -585,7 +596,7 @@ void Audio::DefaultRouting()
         _c.volume.Value(1);
     }
 
-    for (i = 0; i < m_Asio.Device().info.maxOutputChannels - 1; i += 2)
+    for (i = 0; i < m_Asio.Device()->info.maxOutputChannels - 1; i += 2)
     {
         // Add a ChannelPanel with all the outputs
         auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
@@ -602,7 +613,7 @@ void Audio::DefaultRouting()
     }
 
     // if there were an uneven amount of channels, add one last mono channel
-    if (i == m_Asio.Device().info.maxOutputChannels - 1)
+    if (i == m_Asio.Device()->info.maxOutputChannels - 1)
     {
         // Add a ChannelPanel with all the outputs
         auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
@@ -726,8 +737,8 @@ int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned lo
     float* _inBuffer = (float*)inputBuffer;
     float* _outBuffer = (float*)outputBuffer;
 
-    int _inChannelCount = _this.Asio().Device().info.maxInputChannels;
-    int _outChannelCount = _this.Asio().Device().info.maxOutputChannels;
+    int _inChannelCount = _this.Asio().Device()->info.maxInputChannels;
+    int _outChannelCount = _this.Asio().Device()->info.maxOutputChannels;
 
     auto& _inputs = _this.Asio().Inputs();
     auto& _outputs = _this.Asio().Outputs();

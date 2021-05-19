@@ -1,33 +1,47 @@
 #include "audio/Asio.hpp"
 
 int Asio::SAMPLE_RATE = -1;
+bool Asio::m_PortAudioInit = false;
 
-Asio::Asio()
-	: m_BufferSize(256), m_Samplerate(48000)
+Asio::Asio(bool asio)
+	: m_IsAsioOnly(asio), m_BufferSize(256), m_Samplerate(48000)
 {
-	LOG("Initializing Portaudio library");
-	PaError err;
-	err = Pa_Initialize();
-	if (err != paNoError)
+	if (!m_PortAudioInit)
 	{
-		LOG(Pa_GetErrorText(err));
-		return;
+		m_PortAudioInit = true;
+		LOG("Initializing Portaudio library");
+
+		PaError err;
+		err = Pa_Initialize();
+		if (err != paNoError)
+		{
+			LOG(Pa_GetErrorText(err));
+			return;
+		}
 	}
 
 	LOG("Finding Asio devices");
-	const PaDeviceInfo* info;
-	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
-	{
-		info = Pa_GetDeviceInfo(i);
-		if (std::string(Pa_GetHostApiInfo(info->hostApi)->name) == "ASIO")
-			m_Devices.emplace(i, ::Device{ i, *info });
-	}
+	ReloadDevices();
 }
 
 Asio::~Asio()
 {
 	LOG("Destructing Asio device ");
 	CloseStream();
+}
+
+void Asio::ReloadDevices()
+{
+	const PaDeviceInfo* info;
+	m_Devices.clear();
+	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
+	{
+		info = Pa_GetDeviceInfo(i);
+		LOG(Pa_GetHostApiInfo(info->hostApi)->name);
+		if (m_IsAsioOnly && std::string(Pa_GetHostApiInfo(info->hostApi)->name) == "ASIO"
+			|| !m_IsAsioOnly)
+			m_Devices.emplace(i, ::Device{ i, *info });
+	}
 }
 
 bool Asio::OpenStream(PaStreamCallback c, void* userdata)
@@ -37,24 +51,24 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 	PaStreamParameters ip, op;
 
 	// Input device settings
-	ip.device = Device().id;
-	ip.channelCount = Device().info.maxInputChannels;
+	ip.device = Device()->id;
+	ip.channelCount = Device()->info.maxInputChannels;
 	ip.sampleFormat = paFloat32;
-	ip.suggestedLatency = Device().info.defaultLowInputLatency;
+	ip.suggestedLatency = Device()->info.defaultLowInputLatency;
 	ip.hostApiSpecificStreamInfo = NULL;
 
 	// Output device settings
-	op.device = Device().id;
-	op.channelCount = Device().info.maxOutputChannels;
+	op.device = Device()->id;
+	op.channelCount = Device()->info.maxOutputChannels;
 	op.sampleFormat = paFloat32;
-	op.suggestedLatency = Device().info.defaultLowOutputLatency;
+	op.suggestedLatency = Device()->info.defaultLowOutputLatency;
 	op.hostApiSpecificStreamInfo = NULL;
 
 	// Add all input channels to vector
 	for (int i = 0; i < ip.channelCount; i++)
 	{
 		const char* name;
-		PaAsio_GetInputChannelName(Device().id, i, &name);
+		PaAsio_GetInputChannelName(Device()->id, i, &name);
 		std::string n = name;
 		n.resize(n.find_last_of(' '));
 		auto& a = m_Inputs.emplace_back(i, n, true);
@@ -64,7 +78,7 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 	for (int i = 0; i < op.channelCount; i++)
 	{
 		const char* name;
-		PaAsio_GetOutputChannelName(Device().id, i, &name);
+		PaAsio_GetOutputChannelName(Device()->id, i, &name);
 		std::string n = name;
 		n.resize(n.find_last_of(' '));
 		auto& a = m_Outputs.emplace_back(i, n, false);
@@ -72,7 +86,7 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 
 	// Try common sample rates
 	int tries = 0;
-	double _srates[]{ Device().info.defaultSampleRate, 48000.0, 44100.0, 96000, 192000 };
+	double _srates[]{ Device()->info.defaultSampleRate, 48000.0, 44100.0, 96000, 192000 };
 	do
 	{
 		if (tries == sizeof(_srates)/sizeof(double))
@@ -91,7 +105,7 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 	SAMPLE_RATE = m_Samplerate;
 
 	// Logging
-	LOG("Opened stream (" << Device().info.name << ")" <<
+	LOG("Opened stream (" << Device()->info.name << ")" <<
 		"\n type:       " << "Asio" <<
 		"\n samplerate: " << m_Samplerate <<
 		"\n buffersize: " << m_BufferSize <<
