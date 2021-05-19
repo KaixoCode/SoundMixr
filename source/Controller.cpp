@@ -1,5 +1,6 @@
 #include "Controller.hpp"
 #include <audio/SoundboardChannel.hpp>
+#include <audio\ForwardChannel.hpp>
 
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
@@ -136,7 +137,9 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
             {
                 // If device opened successfully, enable the controlpanel button and save settings.
                 if (Audio().OpenDevice(i - 1))
+                {
                     _asioControlPanel.Enable(), SaveSettings();
+                }
             });
     
     auto& _refreshMidiDevices = _settingsPanel.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([this] { LoadMidi(); }, "Refresh List");
