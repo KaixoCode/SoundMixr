@@ -121,6 +121,8 @@ private:
     VerticalMenuDivider& m_Divider;
     Panel& m_OutputsPanel;
     VerticalMenuDivider& m_Divider2;
+    Panel& m_ForwardsPanel;
+    VerticalMenuDivider& m_Divider3;
     Panel& m_GeneratorPanel;
     EffectPanel& m_EffectPanel;
 

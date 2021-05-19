@@ -1,6 +1,7 @@
 #include "audio/Audio.hpp"
 #include "audio/EndpointChannel.hpp"
 #include "audio/GeneratorChannel.hpp"
+#include "audio/ForwardChannel.hpp"
 
 Audio::Audio()
     :
@@ -17,6 +18,8 @@ Audio::Audio()
     m_Divider(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
     m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>()),
     m_Divider2(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
+    m_ForwardsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>()),
+    m_Divider3(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
     m_GeneratorPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>())
 {
     // This panel layout is border with no padding/resizing.
@@ -50,6 +53,10 @@ Audio::Audio()
     m_GeneratorPanel.Width(70);
     m_GeneratorPanel.Layout<Layout::SidewaysStack>(8, 8);
     m_GeneratorPanel.AutoResize(true, false);
+    m_ForwardsPanel.MinWidth(70);
+    m_ForwardsPanel.Width(70);
+    m_ForwardsPanel.Layout<Layout::SidewaysStack>(8, 8);
+    m_ForwardsPanel.AutoResize(true, false);
     /*m_GeneratorPanel.Hide();
     m_Divider2.Hide();*/
 
@@ -85,6 +92,8 @@ Audio::Audio()
                 GenerateMenu(m_InputsPanel), RightClickMenu::Get().Open(&m_Menu);
             else if (m_OutputsPanel.HoveringComponent())
                 GenerateMenu(m_OutputsPanel), RightClickMenu::Get().Open(&m_Menu);
+            else if (m_ForwardsPanel.HoveringComponent())
+                GenerateMenu(m_ForwardsPanel), RightClickMenu::Get().Open(&m_Menu);
             else if (m_GeneratorPanel.Hovering())
             {
                 m_Menu.Clear();
