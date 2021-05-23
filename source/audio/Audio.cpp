@@ -457,7 +457,7 @@ void Audio::LoadRouting()
                 else if (_type & ChannelBase::Type::SoundBoard)
                 {
                     _soundBoardLoaded = true;
-                    auto& _c = m_InputsPanel.Emplace<SoundboardChannel>(*Soundboard::Instance());
+                    auto& _c = m_InputsPanel.Emplace<SoundboardChannel>();
                     _base = &_c;
                     m_Channels.push_back(&_c);
                 }
@@ -534,7 +534,7 @@ void Audio::LoadRouting()
 
     if (!_soundBoardLoaded)
     {
-        auto& _c = m_InputsPanel.Emplace<SoundboardChannel>(*Soundboard::Instance());
+        auto& _c = m_InputsPanel.Emplace<SoundboardChannel>();
         m_Channels.push_back(&_c);
     }
 }
@@ -544,7 +544,7 @@ void Audio::DefaultRouting()
     Clear();
 
     // Soundboard channel
-    auto& _c = m_InputsPanel.Emplace<SoundboardChannel>(*Soundboard::Instance());
+    auto& _c = m_InputsPanel.Emplace<SoundboardChannel>();
     m_Channels.push_back(&_c);
 
     // Endpoint channels

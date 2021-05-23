@@ -3,10 +3,15 @@
 #include "audio/ChannelBase.hpp"
 #include "audio/Asio.hpp"
 
+/*
+ * TODO:
+ *  - Add GeneratorBase repo
+ *  - Generator base class pointer in this channel.
+ *  - GeneratorLoader singleton, just like EffectLoader
+ */
+
 /**
- * Endpoint channel, for input and outputs provided by the opened asio device,
- * a channel contains 1 or more endpoints, the endpoints are always sorted on their
- * ids.
+ * Little test generator channel. TODO
  */
 class GeneratorChannel : public ChannelBase
 {
@@ -21,12 +26,6 @@ public:
 		m_Oscillator.WaveTable(Wavetables::Saw);
 	}
 
-	/**
-	 * Processing for the endpoint channel happens as follows:
-	 *  - Get the levels from the endpoints
-	 *  - Apply effectchain, panning, volume, mute, and mono.
-	 *  - Forward to all connections.
-	 */
 	virtual void Process() override
 	{
 		m_Lock.lock();

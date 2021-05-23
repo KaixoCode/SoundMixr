@@ -3,10 +3,9 @@
 #include "ui/Graphics.hpp"
 #include "EffectBase.hpp"
 
-// -------------------------------------------------------------------------- \\
-// -------------------------- DropDown Option ------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
+/**
+ * Single
+ */
 template<typename Enum>
 class DropDownOption : public Button<SoundMixrGraphics::Menu, ButtonType::List>
 {
@@ -35,16 +34,16 @@ private:
 	Enum m_Value;
 };
 
-// -------------------------------------------------------------------------- \\
-// ------------------------------ DropDown ---------------------------------- \\
-// -------------------------------------------------------------------------- \\
-
 template<typename Enum, typename Graphics>
 class DropDown : public ButtonType::Normal
 {
 public:
 	using Callback = std::function<void(Enum)>;
 
+	/**
+	 * Constructor.
+	 * Normal dropdown constructor.
+	 */
 	DropDown()
 		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu, false, m_AbsPos); m_Active = false; } },
 		m_Key(ButtonType::List::NewKey())
@@ -52,6 +51,10 @@ public:
 		m_Menu.ButtonSize({ 140, 20 });
 	}
 
+	/**
+	 * Constructor.
+	 * Wrapper for the EffectBase dropdown.
+	 */
 	DropDown(Effects::DropDown& d)
 		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu, false, m_AbsPos); m_Active = false; } },
 		m_DropDown(&d),
@@ -59,18 +62,16 @@ public:
 	{
 		m_Menu.ButtonSize({ 140, 20 });
 		for (auto& i : d.Options())
-		{
 			AddOption(d, i);
-		} 
 	}
 
-	DropDown(RightClickMenu* r)
-		: ButtonType::Normal{ [this, r] { if (r) r->Open(&m_Menu); } },
-		m_Key(ButtonType::List::NewKey())
-	{
-		m_Menu.ButtonSize({ 140, 20 });
-	}
-
+	/**
+	 * Add an option to the <code>DropDown</code>. It will automatically select the option if it is the
+	 * first one to be added.
+	 * @param name name
+	 * @param value value
+	 * @param e callback specific for this option
+	 */
 	DropDownOption<Enum>& AddOption(const std::string& name, Enum value, Callback e = [](Enum v) {})
 	{
 		auto& a = m_Menu.Emplace<DropDownOption<Enum>>(name, value, m_Key, this, e);
@@ -82,6 +83,13 @@ public:
 		return a;
 	}
 
+	/**
+	 * Add an option to the <code>DropDown</code>. It will automatically select the option if it is the
+	 * first one to be added.
+	 * @param d EffectBase dropdown
+	 * @param i EffectBase dropdown option
+	 * @param e callback specific for this option
+	 */
 	DropDownOption<Enum>& AddOption(Effects::DropDown& d, Effects::DropDown::Option& i, Callback e = [](Enum v) {})
 	{
 		auto& a = m_Menu.Emplace<DropDownOption<Enum>>(d, i, m_Key, this, e);
@@ -93,6 +101,10 @@ public:
 		return a;
 	}
 
+	/**
+	 * Select value.
+	 * @param v value
+	 */
 	void Select(Enum v) 
 	{
 		for (auto& i : m_Menu.Components())
@@ -105,6 +117,10 @@ public:
 		}
 	}
 
+	/**
+	 * Get the value.
+	 * @return value of this dropdown.
+	 */
 	Enum Value() { return m_Value; }
 
 	void Update(const Vec4<int>& v) override

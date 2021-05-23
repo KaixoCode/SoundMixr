@@ -60,7 +60,6 @@ public:
 	virtual bool   Hovering() const { return m_Hovering; }
 	virtual bool   Dragging() const { return m_Dragging; }
 
-
 	bool WithinBounds(const Vec2<int>& pos) const override
 	{
 		//if (m_Parameter.Type() == Effects::ParameterType::VolumeSlider)

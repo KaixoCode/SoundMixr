@@ -5,10 +5,11 @@
 #include "audio/ChannelBase.hpp"
 #include "audio/EffectPanel.hpp"
 
-class ChannelPanel : public Panel
-{
-    friend class Audio;
-};
+/**
+ * Channel Panel class, simply to make the Audio class have access to
+ * the private member <code>m_Components</code>.
+ */
+class ChannelPanel : public Panel { friend class Audio; };
 
 /**
  * The main panel for displaying any audio channel and their effect chain.
@@ -91,6 +92,11 @@ public:
      */
     void UpdateEffects();
 
+    /**
+     * Emplace a new channel.
+     * @tparam Type type of channel
+     * @tparam Args arguments to construct the channel
+     */
     template<typename Type, typename ... Args>
     void EmplaceChannel(Args&& ... args)
     {

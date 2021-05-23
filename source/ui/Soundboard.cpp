@@ -2,8 +2,8 @@
 #include "FileDialog.hpp"
 #include "audio/Asio.hpp"
 
-SoundboardButton::SoundboardButton(Soundboard& soundboard)
-	: Parent([&] {}, ""), m_Name(Emplace<SMXRTextBox>()), m_Soundboard(&soundboard)
+SoundboardButton::SoundboardButton()
+	: Parent([&] {}, ""), m_Name(Emplace<SMXRTextBox>())
 {
 	// Add an event listener for mouse click events
 	m_Listener += [this](Event::MousePressed& e)
@@ -57,7 +57,7 @@ SoundboardButton::SoundboardButton(Soundboard& soundboard)
 			Key k = e;
 			m_Hotkey = k;
 			m_HotkeyLinking = false;
-			m_HotkeyId = m_Soundboard->AddHotKey(k, [this] { PlayFile(false, true); });
+			m_HotkeyId = Soundboard::Get().AddHotKey(k, [this] { PlayFile(false, true); });
 		}
 	};
 }
@@ -88,7 +88,7 @@ void SoundboardButton::RemoveFile()
 void SoundboardButton::RemoveHotKey()
 {
 	if (m_HotkeyId != -1)
-		m_Soundboard->RemoveHotKey(m_HotkeyId);
+		Soundboard::Get().RemoveHotKey(m_HotkeyId);
 	m_Hotkey = -1;
 	m_HotkeyId = -1;
 }
@@ -118,9 +118,9 @@ void SoundboardButton::ShowMenu()
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_MidiLinking, m_MidiLink.x == -1 ? "Link Midi" :
 		"Linked: " + std::to_string(m_MidiLink.x) + ":" + std::to_string(m_MidiLink.y) + ":" + std::to_string(m_MidiLink.z));
 	if (m_MidiLink.x == -1)
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link").Disable();
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Unlink").Disable();
 	else
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Remove Midi Link");
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { m_MidiLink = { -1, -1, -1 }; }, "Unlink");
 
 	m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 
@@ -128,9 +128,9 @@ void SoundboardButton::ShowMenu()
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_HotkeyLinking, m_Hotkey == -1 ? "Link Hotkey" :
 		"Linked: " + m_Hotkey.ToString());
 	if (m_Hotkey == -1)
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveHotKey(); }, "Remove Hotkey").Disable();
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveHotKey(); }, "Unlink").Disable();
 	else
-		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveHotKey(); }, "Remove Hotkey");
+		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] { RemoveHotKey(); }, "Unlink");
 
 	RightClickMenu::Get().Open(&m_Menu);
 }
@@ -213,23 +213,37 @@ void SoundboardButton::PlayFile(bool forceOpen, bool dontOpen)
 	}
 };
 
-Soundboard* Soundboard::m_Instance = nullptr;
+SoundboardButton::operator nlohmann::json()
+{
+	nlohmann::json _json = nlohmann::json::object();
+	_json["filepath"] = m_Filepath;
+	_json["filename"] = m_Name.Content();
+	_json["midi"] = nlohmann::json::array();
+	_json["midi"][0] = m_MidiLink.x;
+	_json["midi"][1] = m_MidiLink.y;
+	_json["midi"][2] = m_MidiLink.z;
+
+	return _json;
+}
+
+void SoundboardButton::operator=(const nlohmann::json& json)
+{
+	this->LoadFile(json.at("filepath"), json.at("filename"));
+
+	m_MidiLink = { json.at("midi")[0], json.at("midi")[1], json.at("midi")[2] };
+}
+
+Soundboard* Soundboard::instance = nullptr;
 
 Soundboard::Soundboard()
 	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 300, 300 }, false, false, true, false, true, true, m_MainWindow))
 {
-	if (!m_Instance)
-		m_Instance = this;
-	
-	else 
-		throw std::exception("More than 1 instance of Soundboard instantiated.");
-	
 	Panel().Layout<Layout::Grid>(1, 1, 8, 8);
 	m_SubP = &Panel().Emplace<::Panel>();
 	m_SubP->Layout<Layout::Grid>(4, 4, 8, 8);
 
 	for (int i = 0; i < 16; i++)
-		m_Buttons.push_back(&m_SubP->Emplace<SoundboardButton>(*this));	
+		m_Buttons.push_back(&m_SubP->Emplace<SoundboardButton>());	
 }
 
 float Soundboard::GetLevel(int channel)

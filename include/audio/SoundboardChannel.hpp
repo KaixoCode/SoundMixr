@@ -2,17 +2,26 @@
 #include "pch.hpp"
 #include "audio/ChannelBase.hpp"
 #include "audio/Asio.hpp"
-#include <ui/Soundboard.hpp>
+#include "ui/Soundboard.hpp"
 
+/**
+ * The Soundboard channel. Simply gets the levels from the soundboard.
+ */
 class SoundboardChannel : public ChannelBase
 {
 public:
-	SoundboardChannel(Soundboard& soundboard)
-		: ChannelBase(ChannelBase::Type::Input | ChannelBase::Type::SoundBoard | ChannelBase::Type::Generator),
-		m_Soundboard(soundboard)
+
+	/**
+	 * Constructor.
+	 */
+	SoundboardChannel()
+		: ChannelBase(ChannelBase::Type::Input | ChannelBase::Type::SoundBoard | ChannelBase::Type::Generator)
 	{
+		// Always has 2 lines
 		Lines(2);
 		name.Content("Soundboard");
+
+		// Id of the soundboard is -1
 		m_Id = -1;
 	}
 
@@ -26,8 +35,11 @@ public:
 	{
 		m_Lock.lock();
 
-		m_Levels[0] = m_Soundboard.GetLevel(0);
-		m_Levels[1] = m_Soundboard.GetLevel(1);
+		if (Soundboard::Get())
+		{
+			m_Levels[0] = Soundboard::Get().GetLevel(0);
+			m_Levels[1] = Soundboard::Get().GetLevel(1);
+		}
 
 		// Process main channel things
 		ChannelBase::Process();
@@ -38,7 +50,4 @@ public:
 
 		m_Lock.unlock();
 	};
-
-private:
-	Soundboard& m_Soundboard;
 };

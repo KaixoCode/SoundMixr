@@ -6,57 +6,91 @@
 namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
 class Soundboard;
 
+/**
+ * Soundboard button, stores the audio file associated with it.
+ */
 class SoundboardButton : public Button<MuteButton, BT::Normal>
 {
 	using Parent = Button<MuteButton, BT::Normal>;
 public:
-	SoundboardButton(Soundboard&);
 
+	/**
+	 * Constructor.
+	 */
+	SoundboardButton();
+
+	/**
+	 * Get the level in the given channel.
+	 * @param channel channel
+	 * @return level
+	 */
 	float GetLevel(int channel);
+
+	/**
+	 * Load an audio file given the path.
+	 * @param path path
+	 * @param filename filename
+	 */
 	void LoadFile(const std::string& path, const std::string& filename);
+
+	/**
+	 * Play the opened file, if no file is open it will open
+	 * a dialog. If forceopen is true it will always open dialog
+	 * if midi is true it will never open a dialog.
+	 * @param forceOpen force new file dialog
+	 * @param midi midi triggered, so don't open file dialog
+	 */
 	void PlayFile(bool forceOpen = false, bool midi = false);
+
+	/**
+	 * Show the RightClickMenu.
+	 */
 	void ShowMenu();
+
+	/**
+	 * Rename the button.
+	 */
 	void Rename();
-	void Update(const Vec4<int>&) override;
-	void Render(CommandCollection&) override;
+
+	/**
+	 * Remove the file from the button.
+	 */
 	void RemoveFile();
+
+	/**
+	 * Remove the linked hotkey.
+	 */
 	void RemoveHotKey();
 
-	operator nlohmann::json()
-	{
-		nlohmann::json _json = nlohmann::json::object();
-		_json["filepath"] = m_Filepath;
-		_json["filename"] = m_Name.Content();
-		_json["midi"] = nlohmann::json::array();
-		_json["midi"][0] = m_MidiLink.x;
-		_json["midi"][1] = m_MidiLink.y;
-		_json["midi"][2] = m_MidiLink.z;
+	void Update(const Vec4<int>&) override;
+	void Render(CommandCollection&) override;
 
-		return _json;
-	}
-
-	void operator = (const nlohmann::json& json)
-	{
-		this->LoadFile(json.at("filepath"), json.at("filename"));
-
-		m_MidiLink = { json.at("midi")[0], json.at("midi")[1], json.at("midi")[2] };
-	}
+	operator nlohmann::json();
+	void operator = (const nlohmann::json& json);
 
 private:
 	std::string m_Filepath;
-	AudioFile<double> m_File;
-	int m_SampleNum = -1;
-	int m_MaxSamples = -1;
-	bool m_MidiLinking = false;
-	float m_MultiplicationFactor = 1.0F;
-	SMXRTextBox& m_Name;
-	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
-	Vec3<int> m_MidiLink {-1, -1, -1};
-	Key m_Hotkey = -1;
-	int m_HotkeyId = -1;
-	bool m_HotkeyLinking = false;
-	Soundboard* m_Soundboard;
 
+	AudioFile<double> m_File;
+
+	int m_SampleNum = -1,
+	    m_MaxSamples = -1,
+	    m_HotkeyId = -1;
+
+	bool m_MidiLinking = false,
+		m_HotkeyLinking = false;
+	
+	float m_MultiplicationFactor = 1.0F;
+
+	SMXRTextBox& m_Name;
+
+	::Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
+
+	Vec3<int> m_MidiLink {-1, -1, -1};
+
+	Key m_Hotkey = -1;
+
+	// Midi events.
 	Midi::EventStorage _1{ Midi::Get() += [this](Midi::Event::NoteOn& a)
 	{
 		if (m_MidiLinking)
@@ -76,6 +110,9 @@ private:
 	} };
 };
 
+/**
+ * Soundboard singleton.
+ */
 class Soundboard : public SoundMixrFrame
 {
 public:
@@ -91,13 +128,16 @@ public:
 		SoundMixrFrame::Update(v);
 	}
 
-	static inline Soundboard* Instance() { return m_Instance; }
+	static inline Soundboard& Get() 
+	{ 
+		return *instance;
+	}
 	
 private:
 	std::map<int, AudioFile<double>> m_files;
 	std::vector<SoundboardButton*> m_Buttons;
 	::Panel* m_SubP;
 
-
-	static Soundboard* m_Instance;
+	static Soundboard* instance;
+	friend class Controller;
 };

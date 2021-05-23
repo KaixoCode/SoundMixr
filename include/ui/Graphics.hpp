@@ -275,6 +275,9 @@ public:
 		menu_border{ 64, 64, 64, 255 },
 		menu_divider{ 51, 51, 51, 255 };
 
+	Color // Selection
+		text_selection{ 128, 128, 255, 255 };
+
 	int font = Graphics::Fonts::Gidole;
 
 	ThemeT()
@@ -555,6 +558,8 @@ public:
 			SetColor(menu_background, "menu", "background");
 			SetColor(menu_border    , "menu", "border");
 			SetColor(menu_divider   , "menu", "divider");
+
+			SetColor(text_selection, "window", "selection");
 
 			LoadFont();
 		}
@@ -2015,6 +2020,7 @@ public:
 		else if (FontSize() == 16) Font(ThemeT::Get().font, 16);
 		else if (FontSize() == 8) Font(ThemeT::Get().font, 8);
 
+		SelectColor(ThemeT::Get().text_selection);
 		TextBox::Update(v);
 	}
 

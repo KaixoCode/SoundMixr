@@ -38,7 +38,6 @@ private:
 
     Gui m_Gui;
     SoundMixrFrame& mainWindow, &settings, &effectWindow;
-    Soundboard& soundboard;
 
     std::vector<std::string> 
         m_MidiInEnabled,
@@ -55,6 +54,7 @@ private:
     DropDown<std::string, DropdownButton2>* m_ThemeDropDown;
     DropDown<int, DropdownButton2>* m_AsioDropDown;
     Parameter<SliderGraphics>* m_ScaleSlider;
+    Parameter<SliderGraphics>* m_HueSlider;
 
     ::Audio* m_Audio;
 };

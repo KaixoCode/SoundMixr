@@ -8,12 +8,13 @@
 Controller::Controller()
     : mainWindow(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "SoundMixr", { 728, 500 }, false, false, true, true, true, true, nullptr })),
     settings(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "Settings", { 400, 526 }, false, false, true, false, true, true, &mainWindow })),
-    effectWindow(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "Effect Chain", { 348, 316 }, false, false, true, false, true, true, &mainWindow })),
-    soundboard(m_Gui.AddWindow<Soundboard>())
+    effectWindow(m_Gui.AddWindow<SoundMixrFrame>(WindowData{ "Effect Chain", { 348, 316 }, false, false, true, false, true, true, &mainWindow }))
 {}
 
 void Controller::Run()
 {
+    Soundboard::instance = &m_Gui.AddWindow<Soundboard>();
+
     // For the first time we need to load effects separately, since
     // Controller::LoadEffects assumes a device is already running.
     EffectLoader::LoadEffects();
@@ -22,7 +23,7 @@ void Controller::Run()
     // Set window icons.
     mainWindow.Icon(IDI_ICON1);
     settings.Icon(IDI_ICON1);
-    soundboard.Icon(IDI_ICON1);
+    Soundboard::Get().Icon(IDI_ICON1);
 
     // Add shell icon.
     Menu<GR::Vertical, MT::Normal> _shellIconMenu;
@@ -58,7 +59,7 @@ void Controller::Run()
     _file.MenuBase().ButtonSize({ 220, 20 });
     _file.Emplace<MenuButton>([&] { settings.Show(); }, "Settings...", Key::CTRL_COMMA);
 db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, "Debug Overlay", Key::CTRL_D);
-    _file.Emplace<MenuButton>([&] { soundboard.Show(); }, "Soundboard...", Key::CTRL_SHIFT_S);
+    _file.Emplace<MenuButton>([&] { Soundboard::Get().Show(); }, "Soundboard...", Key::CTRL_SHIFT_S);
     _file.Emplace<MenuButton>([&] { effectWindow.Show(); }, "Effect Window...", Key::CTRL_SHIFT_E);
 db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", Key::CTRL_S);
     _file.Emplace<MenuToggleButton>(&_fullscreen, "FullScreen", Key::F11);
@@ -138,7 +139,17 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
                 if (Audio().OpenDevice(i - 1))
                     _asioControlPanel.Enable(), SaveSettings();
             });
-    
+
+    Effects::Parameter _hueParam{ "Hue", Effects::ParameterType::Slider };
+    m_HueSlider = &_settingsPanel.Emplace<Parameter<SliderGraphics>>(_hueParam);
+    m_HueSlider->Size({ 98, 18 });
+    m_HueSlider->DisplayName(false);
+    m_HueSlider->Range({ 0, 360 });
+    m_HueSlider->Decimals(0);
+    m_HueSlider->Vertical(false);
+    m_HueSlider->ResetValue(0);
+    m_HueSlider->Unit("");
+
     auto& _refreshMidiDevices = _settingsPanel.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>([this] { LoadMidi(); }, "Refresh List");
     _refreshMidiDevices.Size({ 98, 18 });
 
@@ -189,30 +200,30 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
     midi[0][0].DivSize(20);
 
     // General part
-    auto& gnrl = _settingsPanel.Div()[1] = { 2, Div::Alignment::Vertical, 0, true, 174 };
+    auto& gnrl = _settingsPanel.Div()[1] = { 2, Div::Alignment::Vertical, 0, true, 200 };
     gnrl[1] = { _evenmore, Div::Alignment::Center, 36 };
     gnrl[0] = { 3, Div::Alignment::Vertical };
     gnrl[0][2].DivSize(4);
-    gnrl[0][1] = { 4, Div::Alignment::Horizontal, 0, false, 130 };
+    gnrl[0][1] = { 4, Div::Alignment::Horizontal, 0, false, 156 };
     gnrl[0][1][0].DivSize(10);
-    gnrl[0][1][1] = { 5, Div::Alignment::Vertical };
-    gnrl[0][1][2] = { 5, Div::Alignment::Vertical };
+    gnrl[0][1][1] = { 6, Div::Alignment::Vertical };
+    gnrl[0][1][2] = { 6, Div::Alignment::Vertical };
     gnrl[0][1][1][0] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Themes"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][0] = { _reloadThemes, Div::Alignment::Left, 26};
-    gnrl[0][1][1][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Theme"), Div::Alignment::Left, 26 };
-    gnrl[0][1][2][1] = { *m_ThemeDropDown, Div::Alignment::Left, 26 };
-    gnrl[0][1][1][2] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Effects"), Div::Alignment::Left, 26 };
-    gnrl[0][1][2][2] = { _refreshEffects, Div::Alignment::Left, 26};
-    gnrl[0][1][1][3] = { _settingsPanel.Emplace<SMXRTextComponent>("Reset Channel Grouping"), Div::Alignment::Left, 26 };
-    gnrl[0][1][2][3] = { _resetGrouping, Div::Alignment::Left, 26 };
-    gnrl[0][1][1][4] = { _settingsPanel.Emplace<SMXRTextComponent>("Zoom Display"), Div::Alignment::Left, 26 };
-    gnrl[0][1][2][4] = { *m_ScaleSlider, Div::Alignment::Left, 26 };
+    gnrl[0][1][1][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Hue Offset"), Div::Alignment::Left, 26 };
+    gnrl[0][1][2][1] = { *m_HueSlider, Div::Alignment::Left, 26 };
+    gnrl[0][1][1][2] = { _settingsPanel.Emplace<SMXRTextComponent>("Theme"), Div::Alignment::Left, 26 };
+    gnrl[0][1][2][2] = { *m_ThemeDropDown, Div::Alignment::Left, 26 };
+    gnrl[0][1][1][3] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Effects"), Div::Alignment::Left, 26 };
+    gnrl[0][1][2][3] = { _refreshEffects, Div::Alignment::Left, 26};
+    gnrl[0][1][1][4] = { _settingsPanel.Emplace<SMXRTextComponent>("Reset Channel Grouping"), Div::Alignment::Left, 26 };
+    gnrl[0][1][2][4] = { _resetGrouping, Div::Alignment::Left, 26 };
+    gnrl[0][1][1][5] = { _settingsPanel.Emplace<SMXRTextComponent>("Zoom Display"), Div::Alignment::Left, 26 };
+    gnrl[0][1][2][5] = { *m_ScaleSlider, Div::Alignment::Left, 26 };
     gnrl[0][1][3].DivSize(40);
     gnrl[0][0].DivSize(4);
 
     _settingsPanel.Div()[0].DivSize(20);
-
-    m_Audio->EmplaceChannel<SoundboardChannel>(soundboard);
 
     //
     // Main loop
@@ -221,7 +232,7 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
     LoadMidi();
     LoadThemes();
     LoadSettings();
-    soundboard.Load();
+    Soundboard::Get().Load();
 
     double pscale = 0;
     int _saveCounter = 5 * 60 * 60;
@@ -239,10 +250,10 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
 
         // Coloring
         mainWindow.Color(ThemeT::Get().window_border);
-        soundboard.Color(ThemeT::Get().window_border);
+        Soundboard::Get().Color(ThemeT::Get().window_border);
         settings.Color(ThemeT::Get().window_border);
         mainWindow.Panel().Background(ThemeT::Get().window_border);
-        soundboard.Panel().Background(ThemeT::Get().window_border);
+        Soundboard::Get().Panel().Background(ThemeT::Get().window_border);
         effectWindow.Panel().Background(ThemeT::Get().window_border);
         effectWindow.Color(ThemeT::Get().window_border);
         _settingsPanel.LayoutManager().DividerColor(ThemeT::Get().divider);
@@ -250,6 +261,8 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
         _midiInScrollPanel.Background(ThemeT::Get().window_frame);
         _midiOutScrollPanel.Background(ThemeT::Get().window_frame);
         _settingsScrollPanel.Background(ThemeT::Get().window_panel);
+
+        Graphics::OffsetHsv(Vec3<float>{ (float)_hueParam.Value(), 0, 0 });
 
         Midi::Get().ReadMessages();
 
@@ -291,14 +304,14 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
             _saveCounter = 5 * 60 * 60;
             SaveSettings();
             m_Audio->SaveRouting();
-            soundboard.Save();
+            Soundboard::Get().Save();
         }
     }
 
     // Final save to make sure it is saved when exited.
     SaveSettings();
     m_Audio->SaveRouting();
-    soundboard.Save();
+    Soundboard::Get().Save();
 }
 
 void Controller::LoadSettings()
@@ -318,6 +331,7 @@ void Controller::LoadSettings()
         auto& theme = _json.at("theme").get<std::string>();
         auto device = _json.at("device").get<int>() + 1;
         auto zoom = _json.at("zoom").get<double>();
+        auto hue = _json.at("hue").get<double>();
 
         for (auto& i : _json.at("midiin-enabled"))
         {
@@ -342,6 +356,7 @@ void Controller::LoadSettings()
         m_ScaleSlider->Value(zoom);
         m_AsioDropDown->Select(device);
         m_ThemeDropDown->Select(theme);
+        m_HueSlider->Value(hue);
 
         SaveSettings();
     }
@@ -363,6 +378,7 @@ void Controller::SaveSettings()
         nlohmann::json _json = nlohmann::json::object();
         _json["device"] = m_Audio->Asio().DeviceId();
         _json["zoom"] = m_ScaleSlider->Value();
+        _json["hue"] = m_HueSlider->Value();
         _json["theme"] = ThemeT::Get().Name();
         _json["midiin-enabled"] = nlohmann::json::array();
         for (auto& m : m_MidiInEnabled)

@@ -2,7 +2,7 @@
 #include "pch.hpp"
 
 /**
- * Device class contains information regarting an Asio device.
+ * Device class contains information regarding an Asio device.
  */
 class Device
 {
