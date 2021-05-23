@@ -63,7 +63,7 @@ void Effect::GetMenu(MenuBase& menu)
 		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
 			{
 				RightClickMenu::Get().Close();
-				std::string path = FileDialog::SaveFile();
+				std::string path = FileDialog::SaveFile(FileType::JSON);
 				if (path.empty())
 					return;
 				try
@@ -84,7 +84,7 @@ void Effect::GetMenu(MenuBase& menu)
 		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
 			{
 				RightClickMenu::Get().Close();
-				std::string path = FileDialog::OpenFile();
+				std::string path = FileDialog::OpenFile(FileType::JSON);
 				if (path.empty())
 					return;
 
