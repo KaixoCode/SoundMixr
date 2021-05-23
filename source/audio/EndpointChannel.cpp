@@ -86,23 +86,7 @@ void EndpointChannel::CalcWidth()
 
 EndpointChannel::operator nlohmann::json()
 {
-	nlohmann::json _json = m_EffectChain;
-	_json["id"] = Id();
-	_json["volume"] = volume;
-	_json["muted"] = mute.Active();
-	_json["mono"] = mono.Active();
-	_json["pan"] = pan;
-	_json["name"] = name.Content();
-	_json["visible"] = m_Visible;
-
-	if (Type() & Type::Input)
-	{
-		std::vector<int> _connections{};
-		for (auto i : m_Connections)
-			_connections.push_back(i->Id());
-
-		_json["connections"] = _connections;
-	}
+	nlohmann::json _json = ChannelBase::operator nlohmann::json();
 
 	std::vector<int> _channels{};
 	for (auto& i : m_Endpoints)
@@ -111,15 +95,4 @@ EndpointChannel::operator nlohmann::json()
 	_json["channels"] = _channels;
 
 	return _json;
-};
-
-void EndpointChannel::operator=(const nlohmann::json& json) 
-{
-	mono.Active(json.at("mono").get<bool>());
-	mute.Active(json.at("muted").get<bool>());
-	pan = json.at("pan");
-	volume = json.at("volume");
-	name.Content(json.at("name").get<std::string>());
-	m_EffectChain = json;
-	m_Visible = json.at("visible");
 };

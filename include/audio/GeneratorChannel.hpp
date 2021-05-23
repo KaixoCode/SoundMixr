@@ -48,9 +48,6 @@ public:
 		m_Lock.unlock();
 	};
 
-	virtual operator nlohmann::json() override { return {}; };
-	virtual void operator=(const nlohmann::json& json) override {};
-
 private:
 	VoiceBank<Oscillator> m_Oscillator{ 64 };
 

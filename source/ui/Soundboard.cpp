@@ -213,9 +213,17 @@ void SoundboardButton::PlayFile(bool forceOpen, bool dontOpen)
 	}
 };
 
+Soundboard* Soundboard::m_Instance = nullptr;
+
 Soundboard::Soundboard()
 	: SoundMixrFrame(WindowData("Soundboard", Vec2<int> { 300, 300 }, false, false, true, false, true, true, m_MainWindow))
 {
+	if (!m_Instance)
+		m_Instance = this;
+	
+	else 
+		throw std::exception("More than 1 instance of Soundboard instantiated.");
+	
 	Panel().Layout<Layout::Grid>(1, 1, 8, 8);
 	m_SubP = &Panel().Emplace<::Panel>();
 	m_SubP->Layout<Layout::Grid>(4, 4, 8, 8);

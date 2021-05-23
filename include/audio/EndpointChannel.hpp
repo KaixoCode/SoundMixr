@@ -52,7 +52,6 @@ public:
 	auto Endpoints() -> std::vector<Endpoint*>& { return m_Endpoints; }
 
 	virtual operator nlohmann::json() override;
-	virtual void operator=(const nlohmann::json& json) override;
 
 private:
 	std::vector<Endpoint*> m_Endpoints;

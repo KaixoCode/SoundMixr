@@ -90,9 +90,14 @@ public:
 		m_SubP->Background(ThemeT::Get().window_frame);
 		SoundMixrFrame::Update(v);
 	}
+
+	static inline Soundboard* Instance() { return m_Instance; }
 	
 private:
 	std::map<int, AudioFile<double>> m_files;
 	std::vector<SoundboardButton*> m_Buttons;
 	::Panel* m_SubP;
+
+
+	static Soundboard* m_Instance;
 };

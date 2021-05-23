@@ -117,8 +117,8 @@ public:
 
 	void Update(const Vec4<int>& v);
 
-	virtual operator nlohmann::json() = 0;
-	virtual void operator=(const nlohmann::json&) = 0;
+	virtual operator nlohmann::json();
+	virtual void operator=(const nlohmann::json&);
 
 	Effects::VolumeSlider volumeParam;
 	Effects::Parameter panParam{ "Pan", Effects::ParameterType::Slider };

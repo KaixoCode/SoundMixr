@@ -1,6 +1,7 @@
 #include "audio/Audio.hpp"
 #include "audio/EndpointChannel.hpp"
 #include "audio/GeneratorChannel.hpp"
+#include "audio/SoundboardChannel.hpp"
 
 Audio::Audio()
     :
@@ -13,11 +14,9 @@ Audio::Audio()
     // The panel in the channel scrollpanel contains the input panel and output panel
     // also add a divider inbetween. The order off addition is important! First added will
     // be on the left of the panel.
-    m_InputsPanel(m_ChannelScrollPanel.Panel<Panel>().Emplace<Panel>()),
+    m_InputsPanel(m_ChannelScrollPanel.Panel<Panel>().Emplace<ChannelPanel>()),
     m_Divider(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
-    m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>()),
-    m_Divider2(m_ChannelScrollPanel.Panel().Emplace<VerticalMenuDivider>(1, 2, 4, 0)),
-    m_GeneratorPanel(m_ChannelScrollPanel.Panel().Emplace<Panel>())
+    m_OutputsPanel(m_ChannelScrollPanel.Panel().Emplace<ChannelPanel>())
 {
     // This panel layout is border with no padding/resizing.
     Layout<Layout::Border>(0, false);
@@ -46,12 +45,6 @@ Audio::Audio()
     m_InputsPanel.AutoResize(true, false);
     m_OutputsPanel.Layout<Layout::SidewaysStack>(8, 8);
     m_OutputsPanel.AutoResize(true, false);
-    m_GeneratorPanel.MinWidth(70);
-    m_GeneratorPanel.Width(70);
-    m_GeneratorPanel.Layout<Layout::SidewaysStack>(8, 8);
-    m_GeneratorPanel.AutoResize(true, false);
-    /*m_GeneratorPanel.Hide();
-    m_Divider2.Hide();*/
 
     // Initially hide the effect panel, will be shown when double click on channel.
     m_EffectPanel.Hide();
@@ -85,26 +78,6 @@ Audio::Audio()
                 GenerateMenu(m_InputsPanel), RightClickMenu::Get().Open(&m_Menu);
             else if (m_OutputsPanel.HoveringComponent())
                 GenerateMenu(m_OutputsPanel), RightClickMenu::Get().Open(&m_Menu);
-            else if (m_GeneratorPanel.Hovering())
-            {
-                m_Menu.Clear();
-                m_Menu.ButtonSize({ 180, 20 });
-                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>("Add Generator").Disable();
-                m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
-                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
-                    [&]
-                    {
-                        m_Lock.lock();
-
-                        // Emplace a channelgroup to the list
-                        auto& _c = m_GeneratorPanel.Emplace<GeneratorChannel>();
-                        m_Channels.push_back(&_c);
-
-                        m_Lock.unlock();
-                    }, " + Test Thing");
-                RightClickMenu::Get().Open(&m_Menu);
-
-            }
             else
             {
                 m_Menu.Clear();
@@ -130,16 +103,14 @@ Audio::Audio()
                     if (s)
                         _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
                 }
-
-                auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
-                    ("Show Generators");
-                _sub3.MenuBase().ButtonSize({ 180, 20 });
-                for (auto& _c : m_GeneratorPanel.Components())
-                {
-                    ChannelBase* s = dynamic_cast<ChannelBase*>(_c.get());
-                    if (s)
-                        _sub3.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
-                }
+                m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+                    [&]
+                    {
+                        m_Lock.lock();
+                        EmplaceChannel<GeneratorChannel>();
+                        m_Lock.unlock();
+                    }, " + Test Thing");
 
                 RightClickMenu::Get().Open(&m_Menu);
             }
@@ -386,13 +357,6 @@ void Audio::Clear()
     m_InputsPanel.Clear();
     m_OutputsPanel.Clear();
 
-    for (auto& c : m_GeneratorPanel.Components())
-    {
-        ChannelBase* s = dynamic_cast<ChannelBase*>(c.get());
-        if (s)
-            m_Channels.push_back(s);
-    }
-
     //m_GeneratorPanel.Clear();
 }
 
@@ -408,6 +372,7 @@ void Audio::LoadRouting()
     // Keep track which channels have been loaded from the file so
     // we can later add the ones that weren't added separately.
     std::unordered_map<int, bool> _inputIdsLoaded, _outputIdsLoaded;
+    bool _soundBoardLoaded = false;
     for (int i = 0; i < m_Asio.Device().info.maxInputChannels; i++)
         _inputIdsLoaded.emplace(i, false);
 
@@ -429,47 +394,76 @@ void Audio::LoadRouting()
             _in >> _json;
 
             // First load all the output channels
-            auto _outputs = _json.at("output_channels");
-            for (auto& i : _outputs)
+            auto _channels = _json.at("channels");
+            for (auto& i : _channels)
             {
-                // Emplace a channelgroup to the list
-                auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
-                    ChannelBase::Type::Output | ChannelBase::Type::Endpoint);
-                m_Channels.push_back(&_c);
+                int _type = i["type"].get<int>();
+                if (_type & ChannelBase::Type::Input)
+                    continue;
 
-                // Add all channels that are in this channelgroup
-                nlohmann::json _channels = i.at("channels");
-                for (int i : _channels)
+                ChannelBase* _base = nullptr;
+
+                // Emplace a channelgroup to the list
+                if (_type & ChannelBase::Type::Endpoint)
                 {
-                    if (i >= _outputIdsLoaded.size())
-                        break;
-                    _outputIdsLoaded[i] = true;
-                    _c.AddEndpoint(&m_Asio.Outputs()[i]);
+                    auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(_type);
+                    _base = &_c;
+                    m_Channels.push_back(&_c);
+
+                    // Add all channels that are in this channelgroup
+                    nlohmann::json _channels = i.at("channels");
+                    for (int i : _channels)
+                    {
+                        if (i >= _outputIdsLoaded.size())
+                            break;
+                        _outputIdsLoaded[i] = true;
+                        _c.AddEndpoint(&m_Asio.Outputs()[i]);
+                    }
                 }
 
-                // Set the rest of the parameters
-                _c = i;
+                if (!_base)
+                    continue;
+
+                *_base = i;
             }
 
             // Load all the input channels
-            auto _inputs = _json.at("input_channels");
-            for (auto& i : _inputs)
+            for (auto& i : _channels)
             {
+                int _type = i["type"].get<int>();
+                if (_type & ChannelBase::Type::Output)
+                    continue;
+
+                ChannelBase* _base = nullptr;
+
                 // Emplace a channelgroup to the list
-                auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
-                    ChannelBase::Type::Input | ChannelBase::Type::Endpoint);
-                m_Channels.push_back(&_c);
-
-                // Add all channels that are in this channelgroup
-                nlohmann::json _channels = i.at("channels");
-                for (int i : _channels)
+                if (_type & ChannelBase::Type::Endpoint)
                 {
-                    if (i >= _inputIdsLoaded.size())
-                        break;
+                    auto& _c = m_InputsPanel.Emplace<EndpointChannel>(_type);
+                    _base = &_c;
+                    m_Channels.push_back(&_c);
 
-                    _inputIdsLoaded[i] = true;
-                    _c.AddEndpoint(&m_Asio.Inputs()[i]);
+                    // Add all channels that are in this channelgroup
+                    nlohmann::json _channels = i.at("channels");
+                    for (int i : _channels)
+                    {
+                        if (i >= _inputIdsLoaded.size())
+                            break;
+
+                        _inputIdsLoaded[i] = true;
+                        _c.AddEndpoint(&m_Asio.Inputs()[i]);
+                    }
                 }
+                else if (_type & ChannelBase::Type::SoundBoard)
+                {
+                    _soundBoardLoaded = true;
+                    auto& _c = m_InputsPanel.Emplace<SoundboardChannel>(*Soundboard::Instance());
+                    _base = &_c;
+                    m_Channels.push_back(&_c);
+                }
+
+                if (!_base)
+                    continue;
 
                 // Then add all the connections of this channelgroup
                 nlohmann::json _connections = i.at("connections");
@@ -486,10 +480,10 @@ void Audio::LoadRouting()
 
                     // If it exists, connect with it.
                     if (_it != Channels().end())
-                        _c.Connect(*_it);
+                        _base->Connect(*_it);
                 }
 
-                _c = i;
+                *_base = i;
             }
         }
 
@@ -536,13 +530,24 @@ void Audio::LoadRouting()
             _c.AddEndpoint(&m_Asio.Outputs()[i.first]);
             m_Channels.push_back(&_c);
         }
+    }
 
+    if (!_soundBoardLoaded)
+    {
+        auto& _c = m_InputsPanel.Emplace<SoundboardChannel>(*Soundboard::Instance());
+        m_Channels.push_back(&_c);
     }
 }
 
 void Audio::DefaultRouting()
 {
     Clear();
+
+    // Soundboard channel
+    auto& _c = m_InputsPanel.Emplace<SoundboardChannel>(*Soundboard::Instance());
+    m_Channels.push_back(&_c);
+
+    // Endpoint channels
     int i = 0;
     for (i = 0; i < m_Asio.Device().info.maxInputChannels - 1; i += 2)
     {
@@ -617,23 +622,11 @@ void Audio::SaveRouting()
     LOG("Saving Routing");
 
     nlohmann::json _json;
-    _json["input_channels"] = nlohmann::json::array();
+    _json["channels"] = nlohmann::json::array();
 
     // Inputs
     for (auto& _ch : Channels())
-    {
-        if (_ch->Type() == (ChannelBase::Type::Input | ChannelBase::Type::Endpoint))
-            _json["input_channels"].push_back(*_ch);
-    }
-
-    _json["output_channels"] = nlohmann::json::array();
-
-    // Outputs
-    for (auto& _ch : Channels())
-    {
-        if (_ch->Type() == (ChannelBase::Type::Output | ChannelBase::Type::Endpoint))
-            _json["output_channels"].push_back(*_ch);
-    }
+        _json["channels"].push_back(*_ch);
 
     std::ofstream _out;
     _out.open("./settings/routing" + std::to_string(m_Asio.DeviceId()));
@@ -681,13 +674,9 @@ void Audio::Update(const Vec4<int>& v)
 
     bool ivis = false; for (auto& _c : m_InputsPanel.Components()) if (_c->Visible()) { ivis = true; break; }
     bool ovis = false; for (auto& _c : m_OutputsPanel.Components()) if (_c->Visible()) { ovis = true; break; }
-    bool gvis = false; for (auto& _c : m_GeneratorPanel.Components()) if (_c->Visible()) { gvis = true; break; }
     m_InputsPanel.Visible(ivis);
     m_OutputsPanel.Visible(ovis);
-    m_GeneratorPanel.Visible(gvis);
-    int vis = ivis + ovis + gvis;
-    m_Divider.Visible((gvis || ovis) && ivis);
-    m_Divider2.Visible(gvis && ovis);
+    m_Divider.Visible(ovis && ivis);
 
     Panel::Update(v);
 }

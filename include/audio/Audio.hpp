@@ -5,6 +5,11 @@
 #include "audio/ChannelBase.hpp"
 #include "audio/EffectPanel.hpp"
 
+class ChannelPanel : public Panel
+{
+    friend class Audio;
+};
+
 /**
  * The main panel for displaying any audio channel and their effect chain.
  * Also used by the main Controller to open/close asio streams/devices.
@@ -89,8 +94,16 @@ public:
     template<typename Type, typename ... Args>
     void EmplaceChannel(Args&& ... args)
     {
-        auto& _c = m_GeneratorPanel.Emplace<Type>(std::forward<Args>(args)...);
-        m_Channels.push_back(&_c);
+        auto _c = std::make_unique<Type>(std::forward<Args>(args)...);
+
+        ChannelBase* _channel = nullptr;
+        if (_c->Type() & ChannelBase::Type::Input)
+            _channel = reinterpret_cast<ChannelBase*>(m_InputsPanel.m_Components.emplace_back(std::move(_c)).get());
+        else if (_c->Type() & ChannelBase::Type::Output)
+            _channel = reinterpret_cast<ChannelBase*>(m_OutputsPanel.m_Components.emplace_back(std::move(_c)).get());
+    
+        if (_channel)
+           m_Channels.emplace_back(_channel);
     }
 
     void Update(const Vec4<int>& v) override;
@@ -117,11 +130,9 @@ private:
     // them in the constructor.
     SMXRTextComponent& m_DeviceName;
     SMXRScrollPanel& m_ChannelScrollPanel;
-    Panel& m_InputsPanel;
+    ChannelPanel& m_InputsPanel;
     VerticalMenuDivider& m_Divider;
-    Panel& m_OutputsPanel;
-    VerticalMenuDivider& m_Divider2;
-    Panel& m_GeneratorPanel;
+    ChannelPanel& m_OutputsPanel;
     EffectPanel& m_EffectPanel;
 
     /**
