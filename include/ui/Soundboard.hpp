@@ -1,10 +1,9 @@
 #pragma once
 #include "pch.hpp"
 #include "ui/Frame.hpp"
-#include <Midi.hpp>
+#include "Midi.hpp"
 
 namespace G = ButtonGraphics; namespace BT = ButtonType; namespace MG = MenuGraphics; namespace MT = MenuType;
-class Soundboard;
 
 /**
  * Soundboard button, stores the audio file associated with it.
