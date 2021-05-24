@@ -39,6 +39,7 @@ Effect::Effect(Effects::EffectBase* effect)
 
 void Effect::GetMenu(MenuBase& menu)
 {
+	// Generate rightclick menu
 	menu.Clear();
 	menu.ButtonSize({ 160, 20 });
 	menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([] {}, m_Effect->Name()).Disable();
@@ -46,87 +47,84 @@ void Effect::GetMenu(MenuBase& menu)
 	menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Enabled, "Enable");
 	menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&m_Small, "Minimize");
 	menu.Emplace<MenuDivider>(160, 1, 0, 2);
-	menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
+	menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] {
+		try
 		{
-			try
-			{
-				std::ofstream _of{ m_Preset };
-				nlohmann::json _json = operator nlohmann::json();
-				_of << _json;
-				_of.close();
-			}
-			catch (...)
-			{
-				LOG("Failed to save preset");
-			}
-		}, "Save Preset").Enabled(m_Preset != "");
-		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
-			{
-				RightClickMenu::Get().Close();
-				std::string path = FileDialog::SaveFile(FileType::JSON);
-				if (path.empty())
-					return;
-				try
-				{
-					std::ofstream _of{ path };
-					nlohmann::json _json = operator nlohmann::json();
-					_of << _json;
-					_of.close();
+			std::ofstream _of{ m_Preset };
+			nlohmann::json _json = operator nlohmann::json();
+			_of << _json;
+			_of.close();
+		}
+		catch (...)
+		{
+			LOG("Failed to save preset");
+		}
+	}, "Save Preset").Enabled(m_Preset != "");
+	menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] {
+		RightClickMenu::Get().Close();
+		std::string path = FileDialog::SaveFile(FileType::JSON);
+		if (path.empty())
+			return;
+		try
+		{
+			std::ofstream _of{ path };
+			nlohmann::json _json = operator nlohmann::json();
+			_of << _json;
+			_of.close();
 
-					m_Preset = path;
-					m_Name = m_Effect->Name() + " - " + m_Preset.stem().string();
-				}
-				catch (...)
-				{
-					LOG("Failed to save preset");
-				}
-			}, "Save Preset As...");
-		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
-			{
-				RightClickMenu::Get().Close();
-				std::string path = FileDialog::OpenFile(FileType::JSON);
-				if (path.empty())
-					return;
+			m_Preset = path;
+			m_Name = m_Effect->Name() + " - " + m_Preset.stem().string();
+		}
+		catch (...)
+		{
+			LOG("Failed to save preset");
+		}
+	}, "Save Preset As...");
+	menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] {
+		RightClickMenu::Get().Close();
+		std::string path = FileDialog::OpenFile(FileType::JSON);
+		if (path.empty())
+			return;
 
-				try
-				{
-					std::ifstream _in{ path };
-					nlohmann::json _json;
-					_json << _in;
-					_in.close();
+		try
+		{
+			std::ifstream _in{ path };
+			nlohmann::json _json;
+			_json << _in;
+			_in.close();
 
-					if (_json.at("type") != Name())
-						return;
+			if (_json.at("type") != Name())
+				return;
 
-					*this = _json;
-					m_Preset = path;
-					m_Name = m_Effect->Name() + " - " + m_Preset.stem().string();
-				}
-				catch (...)
-				{
-					LOG("Failed to load preset");
-				}
-			}, "Load Preset...");
-		menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
-			{
-				try
-				{
-					m_Preset = "";
-					m_Name = m_Effect->Name();
+			*this = _json;
+			m_Preset = path;
+			m_Name = m_Effect->Name() + " - " + m_Preset.stem().string();
+		}
+		catch (...)
+		{
+			LOG("Failed to load preset");
+		}
+	}, "Load Preset...");
+	menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this] {
+		try
+		{
+			m_Preset = "";
+			m_Name = m_Effect->Name();
 
-					for (auto& i : m_Effect->Objects())
-						i->Default();
-				}
-				catch (...)
-				{
-					LOG("Failed to set to default");
-				}
-			}, "Default Preset");
-		menu.Emplace<MenuDivider>(160, 1, 0, 2);
+			for (auto& i : m_Effect->Objects())
+				i->Default();
+		}
+		catch (...)
+		{
+			LOG("Failed to set to default");
+		}
+	}, "Default Preset");
+	menu.Emplace<MenuDivider>(160, 1, 0, 2);
 }
 
 double Effect::NextSample(double s, int c)
 {
+	// Only process when not bypassed or disabled.
 	if (m_Bypass || !m_Enabled)
 		return s;
 
@@ -138,19 +136,27 @@ void Effect::Bypass(bool b)
 	m_Bypass = b;
 	if (!m_Bypass)
 	{
+		// Enable the enable button
 		m_Enable->Enable();
+
+		// If not enabled, don't enable the parameters/buttons.
 		if (!m_Enabled)
 			return;
 
+		// Otherwise enable the parameters/buttons again
 		for (auto& i : Components())
 			if (auto p = dynamic_cast<ParameterBase*>(i.get()))
 				p->Enable();
 			else if (auto p = dynamic_cast<ButtonBase*>(i.get()))
 				p->Enable();
+
+		// And trigger an update in the effect.
 		m_Effect->Update();
 	}
 	else
 	{
+		// When bypassing, disable all parameters/buttons 
+		// except the minimize button.
 		for (auto& i : Components())
 			if (i.get() == m_MinimB)
 				continue;
@@ -163,6 +169,7 @@ void Effect::Bypass(bool b)
 
 void Effect::UpdateEffect()
 {
+	// Only update if not bypassed or disabled.
 	if (m_Bypass || !m_Enabled)
 		return;
 
@@ -171,6 +178,8 @@ void Effect::UpdateEffect()
 
 void Effect::Update(const Vec4<int>& v)
 {
+	// Makes sure the parameters/buttons are enabled/disabled
+	// whenever they should be.
 	if (m_Enabled && !m_PEnabled && !m_Bypass)
 	{
 		m_PEnabled = true;
@@ -193,6 +202,7 @@ void Effect::Update(const Vec4<int>& v)
 				p->Disable();
 	}
 
+	// Small was toggled on.
 	if (m_Small && !m_PSmall)
 	{
 		NeedsRecalc(true);
@@ -200,6 +210,8 @@ void Effect::Update(const Vec4<int>& v)
 		m_RealHeight = Height();
 		Height(24);
 	}
+
+	// Small was toggled off.
 	else if (!m_Small && m_PSmall)
 	{
 		NeedsRecalc(true);

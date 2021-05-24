@@ -58,9 +58,9 @@ ChannelBase::ChannelBase(ChannelType type)
 	Div()[0] = { route, Div::Alignment::Center, 25, true };
 
 	/**
-		* Listener for mousepressed which sets the static selected to 'this' if it's
-		* not hovering over any buttons.
-		*/
+	* Listener for mousepressed which sets the static selected to 'this' if it's
+	* not hovering over any buttons.
+	*/
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		// Only select if not hovering over any button/parameter
@@ -74,10 +74,15 @@ ChannelBase::ChannelBase(ChannelType type)
 
 void ChannelBase::Connect(ChannelBase* c)
 {
+	// If connecting an output channel to a channel, something
+	// went wrong, since only input channels store the connection
+	// to an output channel.
 	if (Type() & Type::Output)
 	{
-		LOG("This shit don goofed");
+		LOG("Connect was called on an output channel");
 	}
+
+	// If not connected already, connect.
 	if (!std::contains(m_Connections, c))
 	{
 		m_Lock.lock();
@@ -88,6 +93,7 @@ void ChannelBase::Connect(ChannelBase* c)
 
 void ChannelBase::Disconnect(ChannelBase* c)
 {
+	// If connected, disconnect. 
 	auto& it = std::find(m_Connections.begin(), m_Connections.end(), c);
 	if (it != m_Connections.end())
 	{
@@ -99,7 +105,9 @@ void ChannelBase::Disconnect(ChannelBase* c)
 
 void ChannelBase::Input(float s, int c)
 {
+	m_Lock.lock();
 	m_Levels[c % m_Lines] += s;
+	m_Lock.unlock();
 }
 
 void ChannelBase::Process()
@@ -262,6 +270,8 @@ bool ChannelBase::Connected(ChannelBase* c) const
 
 void ChannelBase::Lines(int c)
 {
+	std::lock_guard<std::mutex> _{ m_Lock };
+
 	// Don't update if same.
 	if (c == m_Lines)
 		return;
@@ -380,6 +390,8 @@ void ChannelBase::operator=(const nlohmann::json& json)
 
 void ChannelBase::UpdatePans()
 {
+	std::lock_guard<std::mutex> _{ m_Lock };
+	
 	double _p = pan.Value() / 50.0;
 	double _a = 1.0 - std::abs((Lines() - 1) / 2.0 * _p);
 	for (int i = 0; i < Lines(); i++)

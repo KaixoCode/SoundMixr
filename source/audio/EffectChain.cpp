@@ -190,20 +190,15 @@ void EffectChain::Clear()
 	m_Lock.unlock();
 }
 
-auto EffectChain::AddEffect(Effects::EffectBase* effect) -> Effect&
+Effect& EffectChain::AddEffect(Effects::EffectBase* effect)
 {
-	// Lock to not cause concurrency issues.
-	m_Lock.lock();
+	std::lock_guard<std::mutex>_{m_Lock};
 
 	// Set amount of channels.
 	effect->Channels(m_Lines);
 
 	// Add effect
-	auto& e = m_EffectPanel->Emplace<Effect>(effect);
-
-	m_Lock.unlock();
-
-	return e;
+	return m_EffectPanel->Emplace<Effect>(effect);;
 }
 
 void EffectChain::Lines(int c)

@@ -69,6 +69,7 @@ public:
 
 	/**
 	 * Process the current samples. Also call this when overriding!
+	 * !! Make sure to lock m_Lock at the start of the function when overriding. !!
 	 */
 	virtual void Process();
 

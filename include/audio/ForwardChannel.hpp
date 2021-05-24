@@ -57,7 +57,7 @@ public:
 	 */
 	virtual void Process() override
 	{
-		m_Lock.lock();
+		std::lock_guard<std::mutex> _{ m_Lock };
 
 
 
@@ -68,7 +68,6 @@ public:
 		for (auto& i : m_Levels)
 			i = 0;
 
-		m_Lock.unlock();
 	};
 
 private:

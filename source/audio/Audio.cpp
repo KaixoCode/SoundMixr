@@ -50,9 +50,9 @@ Audio::Audio()
     m_EffectPanel.Hide();
 
     /**
-        * Add unfocused event listener to channel scrollpanel and set selected channel to nullptr
-        * to unselect channel if clicked outside of channel area.
-        */
+    * Add unfocused event listener to channel scrollpanel and set selected channel to nullptr
+    * to unselect channel if clicked outside of channel area.
+    */
     m_ChannelScrollPanel.Listener() += [this](Event::Unfocused& e)
     {
         ChannelBase::selected = nullptr;
@@ -71,7 +71,6 @@ Audio::Audio()
         }
 
         // If rightclick, check if hovering over a channel and show a rightclick
-        // menu generated from that channel.
         if (e.button == Event::MouseButton::RIGHT && !RightClickMenu::Get().Opened())
         {
             if (m_InputsPanel.HoveringComponent())
@@ -371,8 +370,8 @@ void Audio::LoadRouting()
 
     // Keep track which channels have been loaded from the file so
     // we can later add the ones that weren't added separately.
-    std::unordered_map<int, bool> _inputIdsLoaded, _outputIdsLoaded;
     bool _soundBoardLoaded = false;
+    std::unordered_map<int, bool> _inputIdsLoaded, _outputIdsLoaded;
     for (int i = 0; i < m_Asio.Device().info.maxInputChannels; i++)
         _inputIdsLoaded.emplace(i, false);
 
@@ -384,26 +383,32 @@ void Audio::LoadRouting()
     std::ifstream _in;
     _in.open("./settings/routing" + std::to_string(m_Asio.Device().id));
 
+    // Start the loading process if the file opened successfully
+    // otherwise we got an error!
     bool _error = true;
     if (!_in.fail())
     {
         _error = false;
         try
         {
+            // Parse the json.
             nlohmann::json _json;
             _in >> _json;
 
-            // First load all the output channels
+            // Get the channels from the json
             auto _channels = _json.at("channels");
+
+            // First load all the output channels
             for (auto& i : _channels)
             {
+                // Skip input channels
                 int _type = i["type"].get<int>();
                 if (_type & ChannelBase::Type::Input)
                     continue;
 
                 ChannelBase* _base = nullptr;
 
-                // Emplace a channelgroup to the list
+                // If type is Endpoint, add endpoint to outputspanel
                 if (_type & ChannelBase::Type::Endpoint)
                 {
                     auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(_type);
@@ -421,22 +426,25 @@ void Audio::LoadRouting()
                     }
                 }
 
+                // If no compatible type was found, continue.
                 if (!_base)
                     continue;
 
+                // Send json to the channel to load channel settings.
                 *_base = i;
             }
 
-            // Load all the input channels
+            // Then go through all input channels
             for (auto& i : _channels)
             {
+                // Skip output channels
                 int _type = i["type"].get<int>();
                 if (_type & ChannelBase::Type::Output)
                     continue;
 
                 ChannelBase* _base = nullptr;
 
-                // Emplace a channelgroup to the list
+                // If type is Endpoint, add endpoint channel to inputspanel
                 if (_type & ChannelBase::Type::Endpoint)
                 {
                     auto& _c = m_InputsPanel.Emplace<EndpointChannel>(_type);
@@ -454,6 +462,8 @@ void Audio::LoadRouting()
                         _c.AddEndpoint(&m_Asio.Inputs()[i]);
                     }
                 }
+
+                // If type is soundboard, add soundboard channel to inputspanel
                 else if (_type & ChannelBase::Type::SoundBoard)
                 {
                     _soundBoardLoaded = true;
@@ -462,14 +472,15 @@ void Audio::LoadRouting()
                     m_Channels.push_back(&_c);
                 }
 
+                // If no compatible type was found, continue.
                 if (!_base)
                     continue;
 
-                // Then add all the connections of this channelgroup
+                // Then add all the connections to the channel
                 nlohmann::json _connections = i.at("connections");
                 for (int i : _connections)
                 {
-                    // Find the output channelgroup by id.
+                    // Find the outputchannel using its id.
                     auto& _it = std::find_if(Channels().begin(), Channels().end(),
                         [=](ChannelBase* c)
                         {
@@ -483,19 +494,21 @@ void Audio::LoadRouting()
                         _base->Connect(*_it);
                 }
 
+                // Send json to the channel to load channel settings.
                 *_base = i;
             }
         }
 
         // If error occured (either file didn't exist or was parced incorrectly
         // load all the channels as stereo channels.
-        catch (std::exception)
+        catch (std::exception e)
         {
+            LOG("Error loading routing: " << e.what());
             _error = true;
         }
     }
 
-    // If error, just use default routing;
+    // If error, just use default routing and return
     if (_error)
     {
         DefaultRouting();
@@ -616,6 +629,7 @@ void Audio::DefaultRouting()
 
 void Audio::SaveRouting()
 {
+    // If no device is loaded there is nothing to save.
     if (m_Asio.DeviceId() == -1)
         return;
 
@@ -624,13 +638,14 @@ void Audio::SaveRouting()
     nlohmann::json _json;
     _json["channels"] = nlohmann::json::array();
 
-    // Inputs
+    // Put all channels in the json (channels have json operator)
     for (auto& _ch : Channels())
         _json["channels"].push_back(*_ch);
 
+    // Save to routing file.
     std::ofstream _out;
     _out.open("./settings/routing" + std::to_string(m_Asio.DeviceId()));
-    _out << std::setw(4) << _json;
+    _out << std::setw(4) << _json; // Pretty print
     _out.close();
 }
 
@@ -642,8 +657,8 @@ void Audio::SortChannels()
         std::sort(p.Components().begin(), p.Components().end(),
             [](const std::unique_ptr<Component>& a, const std::unique_ptr<Component>& b) -> bool
             {
-                auto channel1 = (ChannelBase*)a.get();
-                auto channel2 = (ChannelBase*)b.get();
+                auto channel1 = dynamic_cast<ChannelBase*>(a.get());
+                auto channel2 = dynamic_cast<ChannelBase*>(b.get());
 
                 if (channel1 != nullptr && channel2 != nullptr)
                     return channel1->Id() < channel2->Id();
@@ -672,6 +687,7 @@ void Audio::Update(const Vec4<int>& v)
     m_ChannelScrollPanel.Background(ThemeT::Get().window_panel);
     m_DeviceName.TextColor(ThemeT::Get().text);
 
+    // Make sure the panels and dividers are visible when any channel is visible in them
     bool ivis = false; for (auto& _c : m_InputsPanel.Components()) if (_c->Visible()) { ivis = true; break; }
     bool ovis = false; for (auto& _c : m_OutputsPanel.Components()) if (_c->Visible()) { ovis = true; break; }
     m_InputsPanel.Visible(ivis);

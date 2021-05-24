@@ -2,7 +2,7 @@
 
 void EndpointChannel::Process()
 {
-	m_Lock.lock();
+	std::lock_guard<std::mutex> _{ m_Lock };
 
 	// Input takes sample from endpoint and sends to connections
 	if (Type() & ChannelBase::Type::Input)
@@ -29,8 +29,6 @@ void EndpointChannel::Process()
 	// Reset levels
 	for (auto& i : m_Levels)
 		i = 0;
-
-	m_Lock.unlock();
 }
 
 void EndpointChannel::AddEndpoint(Endpoint* e)
