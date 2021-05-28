@@ -26,11 +26,11 @@ target_include_directories(SoundMixr PUBLIC
   libs/AudioFile
   include/
   resources/
-  libs/EffectBase/include
-  libs/EffectBase/libs/json/include
+  libs/PluginBase/include
+  libs/PluginBase/libs/json/include
 )
 
-set_target_properties(EffectBase PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(PluginBase PROPERTIES LINKER_LANGUAGE CXX)
 
 source_group(TREE ${SRC} FILES ${SOURCE})
 
@@ -52,8 +52,8 @@ foreach(file ${files})
   )
   
   target_include_directories(${effectname} PUBLIC
-    libs/EffectBase/include
-    libs/EffectBase/libs/json/include
+    libs/PluginBase/include
+    libs/PluginBase/libs/json/include
   )
   
   set_target_properties(${effectname} PROPERTIES FOLDER "Effects")

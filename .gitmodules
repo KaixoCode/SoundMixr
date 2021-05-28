@@ -7,9 +7,9 @@
 [submodule "libs/AudioFile"]
 	path = libs/AudioFile
 	url = https://github.com/adamstark/AudioFile.git
-[submodule "libs/EffectBase"]
-	path = libs/EffectBase
-	url = https://github.com/KaixoCode/EffectBase.git
+[submodule "libs/PluginBase"]
+	path = libs/PluginBase
+	url = https://github.com/KaixoCode/PluginBase.git
 [submodule "libs/rtmidi"]
 	path = libs/rtmidi
 	url = https://github.com/thestk/rtmidi.git
