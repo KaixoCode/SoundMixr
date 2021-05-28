@@ -46,7 +46,7 @@ public:
 	 * Add an effect to this chain.
 	 * @param effect effectbase
 	 */
-	auto AddEffect(Effects::EffectBase* effect) -> Effect&;
+	auto AddEffect(SoundMixr::EffectBase* effect) -> Effect&;
 
 	/**
 	 * Set the amount of lines in this chain. Resize all buffers etc.

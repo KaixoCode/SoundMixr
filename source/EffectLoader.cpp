@@ -12,11 +12,11 @@ DynamicEffect::DynamicEffect(const std::string& name, HMODULE h)
 	instfunc = reinterpret_cast<InstanceFunction>(GetProcAddress(m_Module, "NewInstance"));
 }
 
-Effects::EffectBase* DynamicEffect::CreateInstance()
+SoundMixr::EffectBase* DynamicEffect::CreateInstance()
 {
 	if (instfunc)
 	{
-		Effects::EffectBase* p = static_cast<Effects::EffectBase*>(instfunc());
+		SoundMixr::EffectBase* p = static_cast<SoundMixr::EffectBase*>(instfunc());
 		p->SampleRate(Asio::SAMPLE_RATE);
 		return p;
 	}
@@ -85,7 +85,7 @@ std::unordered_map<std::string, std::unique_ptr<DynamicEffect>>& EffectLoader::E
 	return m_Effects;
 }
 
-Effects::EffectBase* EffectLoader::CreateInstance(const std::string& name)
+SoundMixr::EffectBase* EffectLoader::CreateInstance(const std::string& name)
 {
 	return m_Effects[name]->CreateInstance();
 }

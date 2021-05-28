@@ -1,11 +1,11 @@
-#include "EffectBase.hpp"
+#include "Base.hpp"
 #include "Compressor.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------- Dynamics Effect -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-namespace Effects
+namespace SoundMixr
 {
 	class Dynamics : public EffectBase
 	{
@@ -153,14 +153,14 @@ namespace Effects
 	private:
 		static inline const double DC_OFFSET = 1.0E-25;
 	
-		Effects::Parameter
+		SoundMixr::Parameter
 			&m_PreGain,
 			&m_Attack,
 			&m_Release,
 			&m_PostGain,
 			&m_Mix;
 
-		Effects::DynamicsSlider& m_Slider;
+		SoundMixr::DynamicsSlider& m_Slider;
 
 		std::vector<float> m_Levels;
 		std::vector<float> m_Peaks;
@@ -174,5 +174,5 @@ namespace Effects
 
 extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	return new Effects::Dynamics;
+	return new SoundMixr::Dynamics;
 }

@@ -1,9 +1,9 @@
-#include "EffectBase.hpp"
+#include "Base.hpp"
 #include "Oscillator.hpp"
 #include "Filters.hpp"
 #include <Compressor.hpp>
 
-namespace Effects
+namespace SoundMixr
 {
 	class Delay : public EffectBase
 	{
@@ -276,16 +276,16 @@ namespace Effects
 
 		bool m_Dragging = false;
 		int m_Mode = 1;
-		Effects::Parameter& m_DelayKnob, & m_MixKnob, & m_Freq, & m_Width;
-		Effects::Parameter& m_ModAmountKnob, & m_ModRateKnob, & m_FeedbackKnob, &m_InputGainKnob;
-		Effects::RadioButton& m_PingPong, & m_Normal;
-		Effects::ToggleButton& m_EnableFilter;
+		SoundMixr::Parameter& m_DelayKnob, & m_MixKnob, & m_Freq, & m_Width;
+		SoundMixr::Parameter& m_ModAmountKnob, & m_ModRateKnob, & m_FeedbackKnob, &m_InputGainKnob;
+		SoundMixr::RadioButton& m_PingPong, & m_Normal;
+		SoundMixr::ToggleButton& m_EnableFilter;
 		
-		Effects::SimpleFilterCurve& m_Curve;
+		SoundMixr::SimpleFilterCurve& m_Curve;
 	};
 }
 
 extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	return new Effects::Delay;
+	return new SoundMixr::Delay;
 }

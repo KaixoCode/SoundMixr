@@ -111,7 +111,7 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
     m_ThemeDropDown->ButtonSize({ 98, 20 });
     m_ThemeDropDown->Name("No Themes");
 
-    Effects::Parameter _scaleParam{ "Zoom Display", Effects::ParameterType::Slider };
+    SoundMixr::Parameter _scaleParam{ "Zoom Display", SoundMixr::ParameterType::Slider };
     m_ScaleSlider = &_settingsPanel.Emplace<Parameter<SliderGraphics>>(_scaleParam);
     m_ScaleSlider->Size({ 98, 18 });
     m_ScaleSlider->Unit("%");
@@ -140,7 +140,7 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
                     _asioControlPanel.Enable(), SaveSettings();
             });
 
-    Effects::Parameter _hueParam{ "Hue", Effects::ParameterType::Slider };
+    SoundMixr::Parameter _hueParam{ "Hue", SoundMixr::ParameterType::Slider };
     m_HueSlider = &_settingsPanel.Emplace<Parameter<SliderGraphics>>(_hueParam);
     m_HueSlider->Size({ 98, 18 });
     m_HueSlider->DisplayName(false);

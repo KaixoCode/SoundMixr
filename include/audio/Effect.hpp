@@ -18,7 +18,7 @@ public:
 	 * Constructor
 	 * @param effect EffectBase from a DLL
 	 */
-	Effect(Effects::EffectBase* effect);
+	Effect(SoundMixr::EffectBase* effect);
 
 	/**
 	 * Destructor
@@ -89,7 +89,7 @@ private:
 		m_Enabled = true,
 		m_Bypass = false;
 
-	Effects::EffectBase* m_Effect;
+	SoundMixr::EffectBase* m_Effect;
 
 	Button<ToggleButtonGraphics, ButtonType::Toggle>* m_Enable;
 	Button<NOTHING, ButtonType::Toggle>* m_MinimB;
@@ -101,7 +101,7 @@ private:
 	// Radio button keys are stored in the effect, keeps track of radio
 	// button groups and their keys, convert to ListButton keys.
 	std::unordered_map<int, int> m_RadioButtonKeys;
-	std::unordered_map<int, std::vector<Effects::RadioButton*>> m_RadioButtons;
+	std::unordered_map<int, std::vector<SoundMixr::RadioButton*>> m_RadioButtons;
 
 	// Used for tab objects when initializing the effect div, and dividers
 	Component* m_PrevObj = nullptr;
@@ -118,12 +118,12 @@ private:
 	 * @param div div to init
 	 * @param dim dimensions this div gets
 	 */
-	void Effect::InitDiv(Effects::Div& div, const Vec4<int>& dim);
+	void Effect::InitDiv(SoundMixr::Div& div, const Vec4<int>& dim);
 
 	/**
 	 * Set the object in the given div.
 	 * @param div the div
 	 * @param dim dimensions this object gets
 	 */
-	void Effect::SetObject(Effects::Div& div, const Vec4<int>& dim);
+	void Effect::SetObject(SoundMixr::Div& div, const Vec4<int>& dim);
 };

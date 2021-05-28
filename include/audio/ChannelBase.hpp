@@ -121,8 +121,8 @@ public:
 	virtual operator nlohmann::json();
 	virtual void operator=(const nlohmann::json&);
 
-	Effects::VolumeSlider volumeParam;
-	Effects::Parameter panParam{ "Pan", Effects::ParameterType::Slider };
+	SoundMixr::VolumeSlider volumeParam;
+	SoundMixr::Parameter panParam{ "Pan", SoundMixr::ParameterType::Slider };
 	VolumeSlider& volume;
 	PanSlider& pan;
 	SMXRTextComponent& name, &volumeVal;

@@ -9,7 +9,7 @@
 class ParameterBase : public Container
 {
 public:
-	ParameterBase(Effects::Parameter& param);
+	ParameterBase(SoundMixr::Parameter& param);
 
 	/**
 	 * I really can't be bothered to add comments to all these things, I think they
@@ -75,7 +75,7 @@ public:
 	void Render(CommandCollection& d) override;
 
 protected:
-	Effects::Parameter& m_Parameter;
+	SoundMixr::Parameter& m_Parameter;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 	Vec4<int> m_Dims;
 
@@ -106,7 +106,7 @@ protected:
 			m_Linking = false;
 		}
 
-		if (m_Parameter.MidiLink() == Effects::MidiCCLink{ a.channel, a.control, a.device })
+		if (m_Parameter.MidiLink() == SoundMixr::MidiCCLink{ a.channel, a.control, a.device })
 		{
 			float v = a.value / 127.0;
 			if (std::abs(v - 0.5) < 1 / 127.0)

@@ -4,7 +4,7 @@
 // ---------------------------- Radio Button -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-RadioButton::RadioButton(Effects::RadioButton& t, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons)
+RadioButton::RadioButton(SoundMixr::RadioButton& t, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<SoundMixr::RadioButton*>>& buttons)
 	: m_RadioButton(t), Button<RadioButtonGraphics, ButtonType::List>([&]
 		{
 			// Get the ButtonType::List id using the radio button id and the lookup.
@@ -43,14 +43,14 @@ void RadioButton::Update(const Vec4<int>& v)
 	Button<RadioButtonGraphics, ButtonType::List>::Update(v);
 }
 
-int RadioButton::GetKey(Effects::RadioButton& k, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons)
+int RadioButton::GetKey(SoundMixr::RadioButton& k, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<SoundMixr::RadioButton*>>& buttons)
 {
 	int id = 0;
 	auto& _it = keys.find(k.Id());
 	if (_it == keys.end())
 	{
 		id = keys.emplace(k.Id(), ButtonType::List::NewKey()).first->second;
-		auto& i = buttons.emplace(id, std::vector<Effects::RadioButton*>{});
+		auto& i = buttons.emplace(id, std::vector<SoundMixr::RadioButton*>{});
 		i.first->second.push_back(&k);
 	}
 	else
@@ -65,7 +65,7 @@ int RadioButton::GetKey(Effects::RadioButton& k, std::unordered_map<int, int>& k
 // --------------------------- Toggle Button -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-ToggleButton::ToggleButton(Effects::ToggleButton& t)
+ToggleButton::ToggleButton(SoundMixr::ToggleButton& t)
 	: m_Toggle(t), Button<ToggleButtonGraphics, ButtonType::Toggle>(&t.state, t.Name())
 {}
 
@@ -82,7 +82,7 @@ void ToggleButton::Update(const Vec4<int>& v)
 // --------------------------- XY Controller -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-XYController::XYController(Effects::XYController& c)
+XYController::XYController(SoundMixr::XYController& c)
 	: controller(c)
 {
 	m_Listener += [this](Event::MousePressed& e)
@@ -193,7 +193,7 @@ void XYController::Update(const Vec4<int>& v)
 // --------------------------- Volume Slider -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-VolumeSlider::VolumeSlider(Effects::VolumeSlider& s)
+VolumeSlider::VolumeSlider(SoundMixr::VolumeSlider& s)
 	: Parameter<VolumeSliderGraphics>(s), m_Slider(s)
 {
 	m_Parameter.Range({ 0.0, 3.98107 });
@@ -372,7 +372,7 @@ void VolumeSlider::Render(CommandCollection& d)
 // ----------------------------- Pan Slider --------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-PanSlider::PanSlider(Effects::Parameter& param)
+PanSlider::PanSlider(SoundMixr::Parameter& param)
 	: Parameter<PanSliderGraphics>(param)
 {
 	Name("pan");
@@ -392,7 +392,7 @@ PanSlider::PanSlider(Effects::Parameter& param)
 // -------------------------- Dynamics Slider ------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-DynamicsSlider::DynamicsSlider(Effects::DynamicsSlider& o)
+DynamicsSlider::DynamicsSlider(SoundMixr::DynamicsSlider& o)
 	: m_Object(o)
 {
 	UpdateStrings();
@@ -738,7 +738,7 @@ float FilterCurve::Magnitude(float freq)
 // ------------------------- Simple Filter Curve ---------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-SimpleFilterCurve::SimpleFilterCurve(Effects::SimpleFilterCurve& params)
+SimpleFilterCurve::SimpleFilterCurve(SoundMixr::SimpleFilterCurve& params)
 	: m_Curve(params)
 {
 	m_Listener += [this](Event::MousePressed& e)

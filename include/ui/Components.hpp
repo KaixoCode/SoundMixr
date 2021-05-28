@@ -24,7 +24,7 @@ public:
 	 * @param keys conversion map from effect RadioButton group key to ButtonType::List key
 	 * @param buttons map from key to group of buttons
 	 */
-	RadioButton(Effects::RadioButton& t, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons);
+	RadioButton(SoundMixr::RadioButton& t, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<SoundMixr::RadioButton*>>& buttons);
 
 	void Update(const Vec4<int>& v);
 
@@ -32,9 +32,9 @@ private:
 	// Store a refernce to the keymap and buttongroup map received from the effect this RadioButton
 	// belongs to so we can unselect the Effects::RadioButton when pressing this RadioButton.
 	std::unordered_map<int, int> &m_Keys;
-	std::unordered_map<int, std::vector<Effects::RadioButton*>>& m_RButtons;
+	std::unordered_map<int, std::vector<SoundMixr::RadioButton*>>& m_RButtons;
 
-	Effects::RadioButton& m_RadioButton;
+	SoundMixr::RadioButton& m_RadioButton;
 
 	/**
 	 * Look in the keymap to see if the key in m_RadioButton already exists, if it does, it takes
@@ -46,7 +46,7 @@ private:
 	 * @param keys key map received from the effect
 	 * @param buttons button map received from the effect
 	 */
-	static inline int GetKey(Effects::RadioButton& k, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<Effects::RadioButton*>>& buttons);
+	static inline int GetKey(SoundMixr::RadioButton& k, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<SoundMixr::RadioButton*>>& buttons);
 };
 
 /**
@@ -60,12 +60,12 @@ public:
 	 * Constructor
 	 * @param t Effects::ToggleButton
 	 */
-	ToggleButton(Effects::ToggleButton& t);
+	ToggleButton(SoundMixr::ToggleButton& t);
 
 	void Update(const Vec4<int>& v);
 
 private:
-	Effects::ToggleButton& m_Toggle;
+	SoundMixr::ToggleButton& m_Toggle;
 };
 
 /**
@@ -79,7 +79,7 @@ public:
 	 * Constructor
 	 * @param c Effects::XYController
 	 */
-	XYController(Effects::XYController& c);
+	XYController(SoundMixr::XYController& c);
 
 	void Render(CommandCollection& d) override;
 	void Update(const Vec4<int>& v) override;
@@ -89,7 +89,7 @@ private:
 	bool m_Dragging = false,
 		m_Hovering = false;
 
-	Effects::XYController& controller;
+	SoundMixr::XYController& controller;
 };
 
 /**
@@ -104,7 +104,7 @@ public:
 	 * Constructor
 	 * @param s Effects::VolumeSlider
 	 */
-	VolumeSlider(Effects::VolumeSlider& s);
+	VolumeSlider(SoundMixr::VolumeSlider& s);
 
 	/**
 	 * Get the value of the parameter in decibels.
@@ -115,7 +115,7 @@ public:
 	/**
 	 * Returns the Effects::VolumeSlider.
 	 */
-	Effects::VolumeSlider& Slider() { return m_Slider; }
+	SoundMixr::VolumeSlider& Slider() { return m_Slider; }
 
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;
@@ -129,7 +129,7 @@ private:
 	static inline std::unordered_map<int, std::string> m_Numbers;
 	static inline std::string m_NegInf = "Inf";
 
-	Effects::VolumeSlider& m_Slider;
+	SoundMixr::VolumeSlider& m_Slider;
 };
 
 /**
@@ -139,7 +139,7 @@ private:
 class PanSlider : public Parameter<PanSliderGraphics>
 {
 public:
-	PanSlider(Effects::Parameter&);
+	PanSlider(SoundMixr::Parameter&);
 
 	virtual operator nlohmann::json() { return m_Parameter.operator nlohmann::json(); };
 	virtual void operator=(const nlohmann::json& json) { m_Parameter = json; };
@@ -156,7 +156,7 @@ public:
 	 * Constuctor
 	 * @param o Effects::DynamicsSlider
 	 */
-	DynamicsSlider(Effects::DynamicsSlider& o);
+	DynamicsSlider(SoundMixr::DynamicsSlider& o);
 
 	/**
 	 * Convert the pixel on the screen to decibels.
@@ -184,7 +184,7 @@ private:
 		RT1 = 3,
 		RT2 = 4;
 
-	Effects::DynamicsSlider& m_Object;
+	SoundMixr::DynamicsSlider& m_Object;
 	
 	std::string 
 		m_TH1Str = "",
@@ -216,7 +216,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	FilterCurve(Effects::FilterCurve& params)
+	FilterCurve(SoundMixr::FilterCurve& params)
 		: m_Curve(params)
 	{}
 
@@ -305,7 +305,7 @@ private:
 
 	std::vector<float> m_Mags;
 
-	Effects::FilterCurve& m_Curve;
+	SoundMixr::FilterCurve& m_Curve;
 };
 
 /**
@@ -319,7 +319,7 @@ public:
 	 * Constructor
 	 * @param params Effects::SimpleFilterCurve
 	 */
-	SimpleFilterCurve(Effects::SimpleFilterCurve& params);
+	SimpleFilterCurve(SoundMixr::SimpleFilterCurve& params);
 	
 	void Update(const Vec4<int>& v) override;
 	void Render(CommandCollection& d) override;
@@ -340,7 +340,7 @@ private:
 
 	std::vector<float> m_Mags;
 
-	Effects::SimpleFilterCurve& m_Curve;
+	SoundMixr::SimpleFilterCurve& m_Curve;
 
 	/**
 	 * Updates all the magnitudes if it is necessary.

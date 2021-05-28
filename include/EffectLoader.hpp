@@ -46,7 +46,7 @@ public:
 	 * loaded from the HMODULE
 	 * @return pointer to effect in DLL
 	 */
-	Effects::EffectBase* CreateInstance();
+	SoundMixr::EffectBase* CreateInstance();
 
 private:
 	InstanceFunction instfunc;
@@ -79,7 +79,7 @@ public:
 	 * @param name name of the effect to create an instance of
 	 * @return EffectBase
 	 */
-	static Effects::EffectBase* CreateInstance(const std::string& name);
+	static SoundMixr::EffectBase* CreateInstance(const std::string& name);
 
 private:
 	static std::unordered_map<std::string, std::unique_ptr<DynamicEffect>> m_Effects;

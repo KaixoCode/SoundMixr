@@ -1,6 +1,6 @@
 #include "audio/Effect.hpp"
 
-Effect::Effect(Effects::EffectBase* effect)
+Effect::Effect(SoundMixr::EffectBase* effect)
 		: m_Effect(effect)
 {
 	// Init the div
@@ -295,25 +295,25 @@ void Effect::Init()
 	InitDiv(m_Effect->Div(), { 0, 0, 300, m_Effect->Height() });
 }
 
-void Effect::InitDiv(Effects::Div& div, const Vec4<int>& dim)
+void Effect::InitDiv(SoundMixr::Div& div, const Vec4<int>& dim)
 {
 	// If it's an object, set the object
-	if (div.DivType() == Effects::Div::Type::Object)
+	if (div.DivType() == SoundMixr::Div::Type::Object)
 		SetObject(div, dim);
 
 	// Otherwise divide the space between divs and recurse to next divs.
 	else
 
 		// Dividing depends on the alignment of the div.
-		if (div.Align() == Effects::Div::Alignment::Horizontal)
+		if (div.Align() == SoundMixr::Div::Alignment::Horizontal)
 		{
 			// Get all the sizes of the sub-divs
 			std::vector<int> sizes;
 			int width = dim.width, amt = 0, obamt = 0;
 			for (auto& i : div.Divs())
-				if (i->DivSize() == Effects::Div::AUTO)
+				if (i->DivSize() == SoundMixr::Div::AUTO)
 				{
-					if (i->DivType() == Effects::Div::Type::Object)
+					if (i->DivType() == SoundMixr::Div::Type::Object)
 						sizes.push_back(i->Object().Size().width + i->Padding()), width -= i->Object().Size().width + i->Padding(), obamt++;
 					else
 						sizes.push_back(0), amt++;
@@ -363,9 +363,9 @@ void Effect::InitDiv(Effects::Div& div, const Vec4<int>& dim)
 			std::vector<int> sizes;
 			int height = dim.height, amt = 0, obamt = 0;
 			for (auto& i : div.Divs())
-				if (i->DivSize() == Effects::Div::AUTO)
+				if (i->DivSize() == SoundMixr::Div::AUTO)
 				{
-					if (i->DivType() == Effects::Div::Type::Object)
+					if (i->DivType() == SoundMixr::Div::Type::Object)
 						sizes.push_back(i->Object().Size().height + i->Padding()), height -= i->Object().Size().height + i->Padding(), obamt++;
 					else
 						sizes.push_back(0), amt++;
@@ -411,86 +411,86 @@ void Effect::InitDiv(Effects::Div& div, const Vec4<int>& dim)
 		}
 }
 
-void Effect::SetObject(Effects::Div& div, const Vec4<int>& dim)
+void Effect::SetObject(SoundMixr::Div& div, const Vec4<int>& dim)
 {
 	// Get the object from the div
-	Effects::Object* object = &div.Object();
+	SoundMixr::Object* object = &div.Object();
 
 	// Calculate the position using the alignment
 	Vec2<int> position = { dim.x, dim.y };
-	if (div.Align() == Effects::Div::Alignment::Center)
+	if (div.Align() == SoundMixr::Div::Alignment::Center)
 		position += { dim.width / 2 - object->Size().width / 2, dim.height / 2 - object->Size().height / 2 };
-	else if (div.Align() == Effects::Div::Alignment::Right)
+	else if (div.Align() == SoundMixr::Div::Alignment::Right)
 		position += { dim.width - object->Size().width, dim.height / 2 - object->Size().height / 2 };
-	else if (div.Align() == Effects::Div::Alignment::Left)
+	else if (div.Align() == SoundMixr::Div::Alignment::Left)
 		position += { 0, dim.height / 2 - object->Size().height / 2 };
-	else if (div.Align() == Effects::Div::Alignment::Bottom)
+	else if (div.Align() == SoundMixr::Div::Alignment::Bottom)
 		position += { dim.width / 2 - object->Size().width / 2, 0 };
-	else if (div.Align() == Effects::Div::Alignment::Top)
+	else if (div.Align() == SoundMixr::Div::Alignment::Top)
 		position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
 
 	// Determine type and add to effect.
 	Component* ob = nullptr;
-	auto xy = dynamic_cast<Effects::XYController*>(object);
+	auto xy = dynamic_cast<SoundMixr::XYController*>(object);
 	if (xy != nullptr)
 	{
 		ob = &Emplace<XYController>(*xy), xy->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto fc = dynamic_cast<Effects::FilterCurve*>(object);
+	auto fc = dynamic_cast<SoundMixr::FilterCurve*>(object);
 	if (fc != nullptr)
 	{
 		ob = &Emplace<FilterCurve>(*fc), fc->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto sc = dynamic_cast<Effects::SimpleFilterCurve*>(object);
+	auto sc = dynamic_cast<SoundMixr::SimpleFilterCurve*>(object);
 	if (sc != nullptr)
 	{
 		ob = &Emplace<SimpleFilterCurve>(*sc), sc->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto rb = dynamic_cast<Effects::RadioButton*>(object);
+	auto rb = dynamic_cast<SoundMixr::RadioButton*>(object);
 	if (rb != nullptr)
 	{
 		ob = &Emplace<RadioButton>(*rb, m_RadioButtonKeys, m_RadioButtons), rb->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto dy = dynamic_cast<Effects::DynamicsSlider*>(object);
+	auto dy = dynamic_cast<SoundMixr::DynamicsSlider*>(object);
 	if (dy != nullptr)
 	{
 		ob = &Emplace<DynamicsSlider>(*dy), dy->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto vs = dynamic_cast<Effects::VolumeSlider*>(object);
+	auto vs = dynamic_cast<SoundMixr::VolumeSlider*>(object);
 	if (vs != nullptr)
 	{
 		ob = &Emplace<VolumeSlider>(*vs), vs->Position({ position.x, position.y - 5 });
 		goto theback;
 	}
 
-	auto param = dynamic_cast<Effects::Parameter*>(object);
+	auto param = dynamic_cast<SoundMixr::Parameter*>(object);
 	if (param != nullptr)
 	{
-		if (param->Type() == Effects::ParameterType::Slider)
+		if (param->Type() == SoundMixr::ParameterType::Slider)
 			ob = &Emplace<Slider>(*param), param->Position({ position.x, position.y });
-		else if (param->Type() == Effects::ParameterType::Knob)
+		else if (param->Type() == SoundMixr::ParameterType::Knob)
 			ob = &Emplace<Knob>(*param), param->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto dd = dynamic_cast<Effects::DropDown*>(object);
+	auto dd = dynamic_cast<SoundMixr::DropDown*>(object);
 	if (dd != nullptr)
 	{
 		ob = &Emplace<DropDown<int, DropdownButton>>(*dd), dd->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto toggle = dynamic_cast<Effects::ToggleButton*>(object);
+	auto toggle = dynamic_cast<SoundMixr::ToggleButton*>(object);
 	if (toggle != nullptr)
 	{
 		ob = &Emplace<ToggleButton>(*toggle), toggle->Position({ position.x, position.y });

@@ -1,4 +1,4 @@
-#include "EffectBase.hpp"
+#include "Base.hpp"
 #include "Compressor.hpp"
 #include "Filters.hpp"
 
@@ -6,7 +6,7 @@
 // ------------------------- Dynamics Effect -------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-namespace Effects
+namespace SoundMixr
 {
 
 	class Utility : public EffectBase
@@ -319,11 +319,11 @@ namespace Effects
 		double r = 0.9;
 		int m_Channels = 0;
 
-		Effects::Parameter& m_Low, & m_Mid, & m_High, & m_Gain, & m_Release;
-		Effects::Parameter& m_LowFreq, & m_HighFreq;
-		Effects::Parameter& m_Pan;
-		Effects::VolumeSlider& m_Limiter;
-		Effects::ToggleButton& m_Mono, & m_Mute, & m_EnableEq, & m_PhaseInvert;
+		SoundMixr::Parameter& m_Low, & m_Mid, & m_High, & m_Gain, & m_Release;
+		SoundMixr::Parameter& m_LowFreq, & m_HighFreq;
+		SoundMixr::Parameter& m_Pan;
+		SoundMixr::VolumeSlider& m_Limiter;
+		SoundMixr::ToggleButton& m_Mono, & m_Mute, & m_EnableEq, & m_PhaseInvert;
 
 		std::vector<float> m_Pans;
 		float m_Level1 = 0;
@@ -348,5 +348,5 @@ namespace Effects
 
 extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	return new Effects::Utility;
+	return new SoundMixr::Utility;
 }

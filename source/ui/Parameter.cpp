@@ -1,6 +1,6 @@
 #include "ui/Parameter.hpp"
 
-ParameterBase::ParameterBase(Effects::Parameter& param)
+ParameterBase::ParameterBase(SoundMixr::Parameter& param)
 	: m_Parameter(param),
 	m_Value(Emplace<SMXRTextBox>())
 {
@@ -199,7 +199,7 @@ void ParameterBase::Update(const Vec4<int>& vp)
 
 	if (!DisplayValue())
 		m_Value.Visible(false);
-	if (m_Parameter.Type() == Effects::ParameterType::Knob)
+	if (m_Parameter.Type() == SoundMixr::ParameterType::Knob)
 	{
 		m_Dims = { m_Pos.x - 15, m_Pos.y - 15, m_Size.width + 30, m_Size.height + 15 };
 	}
@@ -211,7 +211,7 @@ void ParameterBase::Update(const Vec4<int>& vp)
 	m_Value.Size({ m_Dims.width, 20 });
 	m_Value.Position({ m_Dims.x, m_Dims.y });
 	
-	if (m_Parameter.Type() == Effects::ParameterType::Slider)
+	if (m_Parameter.Type() == SoundMixr::ParameterType::Slider)
 	{
 		m_Value.Position({ m_Dims.x, m_Dims.y + m_Dims.height / 2 - 10 });
 	}

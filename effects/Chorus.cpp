@@ -1,8 +1,8 @@
-#include "EffectBase.hpp"
+#include "Base.hpp"
 #include "Oscillator.hpp"
 #include "Filters.hpp"
 
-namespace Effects
+namespace SoundMixr
 {
 	class Chorus : public EffectBase
 	{
@@ -141,7 +141,7 @@ namespace Effects
 			Div()[2][1][0].DivSize(56);
 			Div()[2][1][0] = m_AmountKnob;
 			Div()[2][1][1] = m_RateKnob;
-			Div()[2][2].Align(Effects::Div::Alignment::Bottom);
+			Div()[2][2].Align(SoundMixr::Div::Alignment::Bottom);
 			Div()[2][2] = m_Controller;
 			Div()[3].Align(Div::Alignment::Vertical);
 			Div()[3].Divs(2);
@@ -268,14 +268,14 @@ namespace Effects
 		bool m_Dragging = false;
 		int m_Key1, m_Key2;
 		int m_Delay2Type = 0, m_Polarity = 1;
-		Effects::Parameter& m_Delay1Knob, & m_Delay2Knob, & m_MixKnob, & m_Highpass;
-		Effects::Parameter& m_AmountKnob, & m_RateKnob, & m_FeedbackKnob;
-		Effects::RadioButton & m_Delay2Type1, & m_Delay2Type2, & m_Delay2Type3, & m_PolarityP, & m_PolarityM;
-		Effects::XYController& m_Controller;
+		SoundMixr::Parameter& m_Delay1Knob, & m_Delay2Knob, & m_MixKnob, & m_Highpass;
+		SoundMixr::Parameter& m_AmountKnob, & m_RateKnob, & m_FeedbackKnob;
+		SoundMixr::RadioButton & m_Delay2Type1, & m_Delay2Type2, & m_Delay2Type3, & m_PolarityP, & m_PolarityM;
+		SoundMixr::XYController& m_Controller;
 	};
 }
 
 extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	return new Effects::Chorus;
+	return new SoundMixr::Chorus;
 }

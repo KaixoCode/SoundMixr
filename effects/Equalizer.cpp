@@ -1,11 +1,11 @@
-#include "EffectBase.hpp"
+#include "Base.hpp"
 #include "Filters.hpp"
 
 // -------------------------------------------------------------------------- \\
 // ------------------------- Equalizer Effect ------------------------------- \\
 // -------------------------------------------------------------------------- \\
 
-namespace Effects
+namespace SoundMixr
 {
 	class Equalizer : public EffectBase
 	{
@@ -140,8 +140,8 @@ namespace Effects
 	private:
 		static inline constexpr int N = 5;
 
-		Effects::Parameter * m_Knob1[N], * m_Knob2[N], * m_Knob3[N];
-		Effects::DropDown * m_Dropdown[N];
+		SoundMixr::Parameter * m_Knob1[N], * m_Knob2[N], * m_Knob3[N];
+		SoundMixr::DropDown * m_Dropdown[N];
 
 		std::vector<Params> m_Parameters;
 		std::vector<ChannelEqualizer<N, Filter, Params>> m_Equalizers;
@@ -150,5 +150,5 @@ namespace Effects
 
 extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	return new Effects::Equalizer;
+	return new SoundMixr::Equalizer;
 }

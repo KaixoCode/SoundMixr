@@ -1,8 +1,8 @@
-#include "EffectBase.hpp"
+#include "Base.hpp"
 #include "Oscillator.hpp"
 #include "Filters.hpp"
 
-namespace Effects
+namespace SoundMixr
 {
 	class Flanger : public EffectBase
 	{
@@ -122,7 +122,7 @@ namespace Effects
 			Div()[1][1][0].DivSize(62);
 			Div()[1][1][0] = m_DelayKnob;
 			Div()[1][1][1] = m_FeedbackKnob;
-			Div()[1][2].Align(Effects::Div::Alignment::Bottom);
+			Div()[1][2].Align(SoundMixr::Div::Alignment::Bottom);
 			Div()[1][2] = m_Controller;
 			Div()[2].Align(Div::Alignment::Vertical);
 			Div()[2].DivSize(60);
@@ -233,15 +233,15 @@ namespace Effects
 		std::vector<ChannelEqualizer<1, BiquadFilter<>>> m_Equalizers;
 
 		int m_Polarity = 1;
-		Effects::Parameter& m_DelayKnob, & m_FeedbackKnob, & m_MixKnob, & m_Highpass;
-		Effects::Parameter& m_AmountKnob, & m_RateKnob, & m_PhaseKnob;
-		Effects::DropDown& m_Wavetable;
-		Effects::RadioButton& m_PolarityP, & m_PolarityM;
-		Effects::XYController& m_Controller;
+		SoundMixr::Parameter& m_DelayKnob, & m_FeedbackKnob, & m_MixKnob, & m_Highpass;
+		SoundMixr::Parameter& m_AmountKnob, & m_RateKnob, & m_PhaseKnob;
+		SoundMixr::DropDown& m_Wavetable;
+		SoundMixr::RadioButton& m_PolarityP, & m_PolarityM;
+		SoundMixr::XYController& m_Controller;
 	};
 }
 
 extern "C" DLLDIR void* __cdecl NewInstance()
 {
-	return new Effects::Flanger;
+	return new SoundMixr::Flanger;
 }

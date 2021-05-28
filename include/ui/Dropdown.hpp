@@ -1,7 +1,6 @@
 #pragma once
 #include "pch.hpp"
 #include "ui/Graphics.hpp"
-#include "EffectBase.hpp"
 
 /**
  * Single
@@ -19,7 +18,7 @@ public:
 	{}
 
 	template<typename T>
-	DropDownOption(Effects::DropDown& d, Effects::DropDown::Option& i, int key, T* parent, Callback e = [](Enum v) {})
+	DropDownOption(SoundMixr::DropDown& d, SoundMixr::DropDown::Option& i, int key, T* parent, Callback e = [](Enum v) {})
 		: Button<SoundMixrGraphics::Menu, ButtonType::List>([parent, &i, &d, e] { d.Select(i.id); parent->SelectP(i.id); parent->Name(i.name); e(i.id); }, i.name, key),
 		m_Value(i.id), m_Callback(e)
 	{}
@@ -55,7 +54,7 @@ public:
 	 * Constructor.
 	 * Wrapper for the EffectBase dropdown.
 	 */
-	DropDown(Effects::DropDown& d)
+	DropDown(SoundMixr::DropDown& d)
 		: ButtonType::Normal{ [this] { RightClickMenu::Get().Open(&m_Menu, false, m_AbsPos); m_Active = false; } },
 		m_DropDown(&d),
 		m_Key(ButtonType::List::NewKey())
@@ -90,7 +89,7 @@ public:
 	 * @param i EffectBase dropdown option
 	 * @param e callback specific for this option
 	 */
-	DropDownOption<Enum>& AddOption(Effects::DropDown& d, Effects::DropDown::Option& i, Callback e = [](Enum v) {})
+	DropDownOption<Enum>& AddOption(SoundMixr::DropDown& d, SoundMixr::DropDown::Option& i, Callback e = [](Enum v) {})
 	{
 		auto& a = m_Menu.Emplace<DropDownOption<Enum>>(d, i, m_Key, this, e);
 
@@ -182,7 +181,7 @@ private:
 
 	Vec2<int> m_AbsPos{ 0, 0 };
 
-	Effects::DropDown* m_DropDown = nullptr;
+	SoundMixr::DropDown* m_DropDown = nullptr;
 
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 };

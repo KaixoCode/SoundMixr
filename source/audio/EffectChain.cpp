@@ -190,7 +190,7 @@ void EffectChain::Clear()
 	m_Lock.unlock();
 }
 
-Effect& EffectChain::AddEffect(Effects::EffectBase* effect)
+Effect& EffectChain::AddEffect(SoundMixr::EffectBase* effect)
 {
 	std::lock_guard<std::mutex>_{m_Lock};
 
@@ -322,7 +322,7 @@ void EffectChain::operator=(const nlohmann::json& json)
 				auto& _it = EffectLoader::Effects().find(type);
 				if (_it != EffectLoader::Effects().end())
 				{
-					Effects::EffectBase* e = (*_it).second->CreateInstance();
+					SoundMixr::EffectBase* e = (*_it).second->CreateInstance();
 					if (e != nullptr)
 					{
 						auto& a = AddEffect(e);

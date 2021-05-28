@@ -37,7 +37,7 @@
 #include <AudioFile.h>
 
 #define _TESTLINK
-#include "EffectBase.hpp"
+#include "Base.hpp"
 #include "Filters.hpp"
 #include "Compressor.hpp"
 #include "Oscillator.hpp"
