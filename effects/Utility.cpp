@@ -1,3 +1,4 @@
+#define EFFECT_PLUGIN
 #include "Base.hpp"
 #include "Compressor.hpp"
 #include "Filters.hpp"
@@ -204,7 +205,7 @@ namespace SoundMixr
 			}
 		}
 
-		float NextSample(float sin, int c) override
+		float Process(float sin, int c) override
 		{
 			if (m_Mute.State())
 				return 0;
@@ -222,7 +223,7 @@ namespace SoundMixr
 			// Predelay
 			auto& _pd = m_PreDelay[c];
 			float predelay = _pd[(m_PreDC + 144) % PRE_BUFFER_SIZE] = filter * m_PreGain;
-			m_Compressor.NextSample(predelay, c);
+			m_Compressor.Process(predelay, c);
 
 			float prelimit = _pd[(m_PreDC) % PRE_BUFFER_SIZE];
 			float limit = prelimit * m_Compressor.compressMult;
@@ -306,7 +307,7 @@ namespace SoundMixr
 
 		void operator=(const nlohmann::json& json) override
 		{
-			EffectBase::operator=(json);
+			PluginBase::operator=(json);
 			UpdateParams();
 		}
 

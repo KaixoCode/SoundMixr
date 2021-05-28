@@ -60,4 +60,20 @@ foreach(file ${files})
   
 endforeach()
 
+file(GLOB files "generators/*.cpp")
+foreach(file ${files})
+  get_filename_component(generatorname ${file} NAME_WE)
+  add_library(${generatorname} SHARED 
+	${file}
+  )
+  
+  target_include_directories(${generatorname} PUBLIC
+    libs/PluginBase/include
+    libs/PluginBase/libs/json/include
+  )
+  
+  set_target_properties(${generatorname} PROPERTIES FOLDER "Generators")
+  
+endforeach()
+
 add_definitions(-DABSOLUTE_ASSETS_PATH=\"${SRCGUI}assets/\")

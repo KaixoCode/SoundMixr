@@ -63,10 +63,16 @@ void EffectLoader::LoadEffects()
 					if (versfunc)
 						version = versfunc();
 
+					TypeFunction typefunc = reinterpret_cast<TypeFunction>(GetProcAddress(module, "Type"));
+					int type = -1;
+					if (typefunc)
+						type = typefunc();
+
+
 					LOG(loadpath);
 					LOG(module);
 
-					if (version == VERSION)
+					if (version == VERSION && type == 1)
 						m_Effects.emplace(name, std::make_unique<DynamicEffect>(name, module));
 				}
 			}

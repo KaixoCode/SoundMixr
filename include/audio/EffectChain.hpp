@@ -71,7 +71,7 @@ public:
 	 * @param s input sample
 	 * @param c line number
 	 */
-	double NextSample(double s, int c);
+	double Process(double s, int c);
 
 	/**
 	 * Update the effects, happens separately because this needs to always happens, not

@@ -122,13 +122,13 @@ void Effect::GetMenu(MenuBase& menu)
 	menu.Emplace<MenuDivider>(160, 1, 0, 2);
 }
 
-double Effect::NextSample(double s, int c)
+double Effect::Process(double s, int c)
 {
 	// Only process when not bypassed or disabled.
 	if (m_Bypass || !m_Enabled)
 		return s;
 
-	return m_Effect->NextSample(s, c);
+	return m_Effect->Process(s, c);
 }
 
 void Effect::Bypass(bool b)

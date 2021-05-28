@@ -217,7 +217,7 @@ void EffectChain::Bypass(bool v)
 	m_Bypassed = v;
 }
 
-double EffectChain::NextSample(double s, int c)
+double EffectChain::Process(double s, int c)
 {
 	double out = s;
 
@@ -226,7 +226,7 @@ double EffectChain::NextSample(double s, int c)
 
 	// Apply all the effects
 	for (auto& i : m_EffectPanel->Components())
-		out = ((Effect*)i.get())->NextSample(out, c);
+		out = ((Effect*)i.get())->Process(out, c);
 
 	m_Lock.unlock();
 	return out;

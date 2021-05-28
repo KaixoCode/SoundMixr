@@ -1,3 +1,4 @@
+#define EFFECT_PLUGIN
 #include "Base.hpp"
 #include "Compressor.hpp"
 
@@ -112,7 +113,7 @@ namespace SoundMixr
 			m_Slider.Channels(c);
 		}
 
-		float NextSample(float sin, int c) override
+		float Process(float sin, int c) override
 		{
 			if (c == 0)
 			{
@@ -122,7 +123,7 @@ namespace SoundMixr
 				counter++;
 			}
 
-			float out = m_Compressor.NextSample(sin, c);
+			float out = m_Compressor.Process(sin, c);
 
 			float abs = out;
 			myabs(abs);

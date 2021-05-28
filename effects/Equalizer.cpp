@@ -1,3 +1,4 @@
+#define EFFECT_PLUGIN
 #include "Base.hpp"
 #include "Filters.hpp"
 
@@ -91,7 +92,7 @@ namespace SoundMixr
 				m_Equalizers.emplace_back(m_Parameters);
 		}
 
-		float NextSample(float sin, int c) override
+		float Process(float sin, int c) override
 		{
 			return m_Equalizers[c].Apply(sin);
 		}

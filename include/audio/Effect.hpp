@@ -45,7 +45,7 @@ public:
 	 * @param s input sample
 	 * @param c channel
 	 */
-	double NextSample(double s, int c);
+	double Process(double s, int c);
 
 	/**
 	 * Bypass this effect. Different from enable/disable, this is used when the

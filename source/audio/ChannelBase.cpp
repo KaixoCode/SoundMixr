@@ -126,7 +126,7 @@ void ChannelBase::Process()
 			// If muted set sample to 0
 			if (!mute.Active())
 			{
-				_sample = m_EffectChain.NextSample(_sample, i);
+				_sample = m_EffectChain.Process(_sample, i);
 				_sample *= volume.Value();
 				_sample *= m_Pans[i];
 			}
@@ -196,7 +196,7 @@ void ChannelBase::Process()
 			// If muted set sample to 0
 			if (!mute.Active())
 			{
-				_sample = m_EffectChain.NextSample(_sample, i);
+				_sample = m_EffectChain.Process(_sample, i);
 				_sample *= volume.Value();
 				if (!_mono)
 					_sample *= m_Pans[i];

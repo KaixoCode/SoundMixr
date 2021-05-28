@@ -1,3 +1,4 @@
+#define EFFECT_PLUGIN
 #include "Base.hpp"
 #include "Oscillator.hpp"
 #include "Filters.hpp"
@@ -207,13 +208,13 @@ namespace SoundMixr
 		}
 
 		int wait = 0;
-		float NextSample(float sin, int c) override
+		float Process(float sin, int c) override
 		{
 			float in = sin * m_InputGain;
 			if (c == 0)
 			{
 				m_Position = (m_Position + 1) % BUFFER_SIZE;
-				m_Oscillator.NextSample();
+				m_Oscillator.Process();
 			}
 
 			int s = m_Mode == 0 ? 0 : ((c % 2) * 0.5);

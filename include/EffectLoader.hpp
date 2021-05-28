@@ -22,6 +22,11 @@ typedef void* (__cdecl* InstanceFunction)();
 typedef int (__cdecl* VersionFunction)();
 
 /**
+ * Type of the version function in the effect DLL
+ */
+typedef int(__cdecl* TypeFunction)();
+
+/**
  * Wrapper for an effect DLL, stores the HMODULE and the CreateInstance function pointer
  * that was loaded from the DLL.
  */

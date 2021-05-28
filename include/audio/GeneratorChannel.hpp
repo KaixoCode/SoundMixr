@@ -32,7 +32,7 @@ public:
 
 		float _generatedSample = 0;
 		if (!mute.Active())
-			_generatedSample = m_Oscillator.NextSample();
+			_generatedSample = m_Oscillator.Process();
 
 		m_Levels[0] = _generatedSample;
 		m_Levels[1] = _generatedSample;
