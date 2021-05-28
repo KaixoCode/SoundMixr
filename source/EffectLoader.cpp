@@ -1,12 +1,12 @@
 #include "EffectLoader.hpp"
 #include "Audio/Asio.hpp"
 
-DynamicEffect::~DynamicEffect()
+DynamicPlugin::~DynamicPlugin()
 {
 	FreeLibrary(m_Module);
 }
 
-DynamicEffect::DynamicEffect(const std::string& name, HMODULE h)
+DynamicPlugin::DynamicPlugin(const std::string& name, HMODULE h)
 	: m_Module(h), m_Name(name)
 {
 	instfunc = reinterpret_cast<InstanceFunction>(GetProcAddress(m_Module, "NewInstance"));
@@ -24,15 +24,28 @@ SoundMixr::EffectBase* DynamicEffect::CreateInstance()
 		return nullptr;
 }
 
-std::unordered_map<std::string, std::unique_ptr<DynamicEffect>> EffectLoader::m_Effects;
+SoundMixr::GeneratorBase* DynamicGenerator::CreateInstance()
+{
+	if (instfunc)
+	{
+		SoundMixr::GeneratorBase* p = static_cast<SoundMixr::GeneratorBase*>(instfunc());
+		p->SampleRate(Asio::SAMPLE_RATE);
+		return p;
+	}
+	else
+		return nullptr;
+}
 
-void EffectLoader::LoadEffects()
+std::unordered_map<std::string, std::unique_ptr<DynamicEffect>> PluginLoader::m_Effects;
+std::unordered_map<std::string, std::unique_ptr<DynamicGenerator>> PluginLoader::m_Generators;
+
+void PluginLoader::LoadPlugins()
 {
 	try
 	{
 		m_Effects.clear();
 
-		std::string path = EFFECTS_DIR;
+		std::string path = PLUGIN_DIR;
 
 		std::filesystem::create_directory(path);
 
@@ -86,12 +99,18 @@ void EffectLoader::LoadEffects()
 		LOG(i.first);
 }
 
-std::unordered_map<std::string, std::unique_ptr<DynamicEffect>>& EffectLoader::Effects()
+std::unordered_map<std::string, std::unique_ptr<DynamicEffect>>& PluginLoader::Effects()
 {
 	return m_Effects;
 }
 
-SoundMixr::EffectBase* EffectLoader::CreateInstance(const std::string& name)
+
+std::unordered_map<std::string, std::unique_ptr<DynamicGenerator>>& PluginLoader::Generators()
 {
-	return m_Effects[name]->CreateInstance();
+	return m_Generators;
 }
+
+//SoundMixr::EffectBase* EffectLoader::CreateInstance(const std::string& name)
+//{
+//	return m_Effects[name]->CreateInstance();
+//}

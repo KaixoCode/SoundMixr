@@ -171,7 +171,7 @@ void EffectChain::GenerateMenu()
 			Clear();
 		}, "Remove All Effects");
 	m_Menu.Emplace<MenuDivider>(160, 1, 0, 2);
-	for (auto& i : EffectLoader::Effects())
+	for (auto& i : PluginLoader::Effects())
 	{
 		m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&]
 			{
@@ -319,8 +319,8 @@ void EffectChain::operator=(const nlohmann::json& json)
 			{
 				auto& type = effect.at("type").get<std::string>();
 
-				auto& _it = EffectLoader::Effects().find(type);
-				if (_it != EffectLoader::Effects().end())
+				auto& _it = PluginLoader::Effects().find(type);
+				if (_it != PluginLoader::Effects().end())
 				{
 					SoundMixr::EffectBase* e = (*_it).second->CreateInstance();
 					if (e != nullptr)

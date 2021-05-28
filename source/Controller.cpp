@@ -17,7 +17,7 @@ void Controller::Run()
 
     // For the first time we need to load effects separately, since
     // Controller::LoadEffects assumes a device is already running.
-    EffectLoader::LoadEffects();
+    PluginLoader::LoadPlugins();
     ThemeT::ReloadThemes();
 
     // Set window icons.
@@ -587,7 +587,7 @@ void Controller::LoadEffects()
     m_Audio->Clear();
 
     // Load effects.
-    EffectLoader::LoadEffects();
+    PluginLoader::LoadPlugins();
 
     // Now we can load the routing again, which will load all channels and effects again.
     m_Audio->LoadRouting();

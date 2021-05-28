@@ -6,9 +6,9 @@
  * it is debug mode or not.
  */
 #ifdef _DEBUG
-#define EFFECTS_DIR "./debug"
+#define PLUGIN_DIR "./debug"
 #else
-#define EFFECTS_DIR "./effects"
+#define PLUGIN_DIR "./plugins"
 #endif
 
 /**
@@ -27,24 +27,38 @@ typedef int (__cdecl* VersionFunction)();
 typedef int(__cdecl* TypeFunction)();
 
 /**
- * Wrapper for an effect DLL, stores the HMODULE and the CreateInstance function pointer
+ * Wrapper for a plugin DLL, stores the HMODULE and the CreateInstance function pointer
  * that was loaded from the DLL.
  */
-class DynamicEffect
+class DynamicPlugin
 {
 public:
 
 	/**
 	 * Make sure we FreeLibrary the HMODULE
 	 */
-	~DynamicEffect();
+	virtual ~DynamicPlugin();
 
 	/**
 	 * Constructor
-	 * @param name effect name
+	 * @param name plugin name
 	 * @param h HMODULE
 	 */
-	DynamicEffect(const std::string& name, HMODULE h);
+	DynamicPlugin(const std::string& name, HMODULE h);
+
+protected:
+	InstanceFunction instfunc;
+	std::string m_Name;
+	HMODULE m_Module;
+};
+
+/**
+ * Wrapper for the Effect DLL
+ */
+class DynamicEffect : public DynamicPlugin
+{
+public:
+	using DynamicPlugin::DynamicPlugin;
 
 	/**
 	 * Creates an instance of the effect using the InstanceFunction 
@@ -52,25 +66,37 @@ public:
 	 * @return pointer to effect in DLL
 	 */
 	SoundMixr::EffectBase* CreateInstance();
-
-private:
-	InstanceFunction instfunc;
-	std::string m_Name;
-	HMODULE m_Module;
 };
 
 /**
- * Singleton that loads all DynamicEffects using the DLLs found in
- * the EFFECTS_DIR.
+ * Wrapper for the Generator DLL
  */
-class EffectLoader
+class DynamicGenerator : public DynamicPlugin
+{
+public:
+
+	using DynamicPlugin::DynamicPlugin;
+
+	/**
+	 * Creates an instance of the generator using the InstanceFunction
+	 * loaded from the HMODULE
+	 * @return pointer to effect in DLL
+	 */
+	SoundMixr::GeneratorBase* CreateInstance();
+};
+
+/**
+ * Singleton that loads all DynamicPlugins using the DLLs found in
+ * the PLUGIN_DIR.
+ */
+class PluginLoader
 {
 public:
 
 	/**
-	 * Loads all effect DLLs located in EFFECTS_DIR.
+	 * Loads all plugins DLLs located in PLUGIN_DIR.
 	 */
-	static void LoadEffects();
+	static void LoadPlugins();
 
 	/**
 	 * Returns an unordered map with the effect names as keys and a unique_ptr to
@@ -80,12 +106,13 @@ public:
 	static std::unordered_map<std::string, std::unique_ptr<DynamicEffect>>& Effects();
 
 	/**
-	 * Creates an instance of the effect with the given name
-	 * @param name name of the effect to create an instance of
-	 * @return EffectBase
+	 * Returns an unordered map with the generator names as keys and a unique_ptr to
+	 * the DynamicGenerator as the value.
+	 * @return generators
 	 */
-	static SoundMixr::EffectBase* CreateInstance(const std::string& name);
+	static std::unordered_map<std::string, std::unique_ptr<DynamicGenerator>>& Generators();
 
 private:
 	static std::unordered_map<std::string, std::unique_ptr<DynamicEffect>> m_Effects;
+	static std::unordered_map<std::string, std::unique_ptr<DynamicGenerator>> m_Generators;
 };

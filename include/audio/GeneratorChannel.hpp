@@ -7,7 +7,7 @@
  * TODO:
  *  - Add GeneratorBase repo
  *  - Generator base class pointer in this channel.
- *  - GeneratorLoader singleton, just like EffectLoader
+ *  - GeneratorLoader singleton, just like PluginLoader
  */
 
 /**

@@ -44,36 +44,21 @@ target_link_libraries(SoundMixr
   rtmidi
 )
 
-file(GLOB files "effects/*.cpp")
+file(GLOB files "plugins/*.cpp")
 foreach(file ${files})
-  get_filename_component(effectname ${file} NAME_WE)
-  add_library(${effectname} SHARED 
+  get_filename_component(pluginname ${file} NAME_WE)
+  add_library(${pluginname} SHARED 
 	${file}
   )
   
-  target_include_directories(${effectname} PUBLIC
+  target_include_directories(${pluginname} PUBLIC
     libs/PluginBase/include
     libs/PluginBase/libs/json/include
   )
   
-  set_target_properties(${effectname} PROPERTIES FOLDER "Effects")
+  set_target_properties(${pluginname} PROPERTIES FOLDER "Plugins")
   
 endforeach()
 
-file(GLOB files "generators/*.cpp")
-foreach(file ${files})
-  get_filename_component(generatorname ${file} NAME_WE)
-  add_library(${generatorname} SHARED 
-	${file}
-  )
-  
-  target_include_directories(${generatorname} PUBLIC
-    libs/PluginBase/include
-    libs/PluginBase/libs/json/include
-  )
-  
-  set_target_properties(${generatorname} PROPERTIES FOLDER "Generators")
-  
-endforeach()
 
 add_definitions(-DABSOLUTE_ASSETS_PATH=\"${SRCGUI}assets/\")
