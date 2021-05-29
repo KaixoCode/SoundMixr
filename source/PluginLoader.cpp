@@ -1,4 +1,4 @@
-#include "EffectLoader.hpp"
+#include "PluginLoader.hpp"
 #include "Audio/Asio.hpp"
 
 DynamicPlugin::~DynamicPlugin()
@@ -44,6 +44,7 @@ void PluginLoader::LoadPlugins()
 	try
 	{
 		m_Effects.clear();
+		m_Generators.clear();
 
 		std::string path = PLUGIN_DIR;
 
@@ -85,15 +86,20 @@ void PluginLoader::LoadPlugins()
 					LOG(loadpath);
 					LOG(module);
 
-					if (version == VERSION && type == 1)
-						m_Effects.emplace(name, std::make_unique<DynamicEffect>(name, module));
+					if (version == VERSION)
+					{
+						if (type == EFFECT)
+							m_Effects.emplace(name, std::make_unique<DynamicEffect>(name, module));
+						else if (type == GENERATOR)
+							m_Generators.emplace(name, std::make_unique<DynamicGenerator>(name, module));
+					}
 				}
 			}
 	}
 	catch (std::exception e)
 	{
 		LOG(e.what());
-		LOG("Something went wrong during Effect loading.");
+		LOG("Something went wrong during Plugin loading.");
 	}
 	for (auto& i : m_Effects)
 		LOG(i.first);

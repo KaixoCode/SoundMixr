@@ -16,7 +16,7 @@ void Controller::Run()
     Soundboard::instance = &m_Gui.AddWindow<Soundboard>();
 
     // For the first time we need to load effects separately, since
-    // Controller::LoadEffects assumes a device is already running.
+    // Controller::LoadPlugins assumes a device is already running.
     PluginLoader::LoadPlugins();
     ThemeT::ReloadThemes();
 
@@ -96,7 +96,7 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
 
     auto& _refreshEffects = _settingsPanel.Emplace<Button<NormalButtonGraphics, ButtonType::Normal>>(
         [this] { 
-            LoadEffects(); 
+            LoadPlugins(); 
         }, "Reload");
     _refreshEffects.Size({ 98, 18 });
 
@@ -214,7 +214,7 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
     gnrl[0][1][2][1] = { *m_HueSlider, Div::Alignment::Left, 26 };
     gnrl[0][1][1][2] = { _settingsPanel.Emplace<SMXRTextComponent>("Theme"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][2] = { *m_ThemeDropDown, Div::Alignment::Left, 26 };
-    gnrl[0][1][1][3] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Effects"), Div::Alignment::Left, 26 };
+    gnrl[0][1][1][3] = { _settingsPanel.Emplace<SMXRTextComponent>("Reload Plugins"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][3] = { _refreshEffects, Div::Alignment::Left, 26};
     gnrl[0][1][1][4] = { _settingsPanel.Emplace<SMXRTextComponent>("Reset Channel Grouping"), Div::Alignment::Left, 26 };
     gnrl[0][1][2][4] = { _resetGrouping, Div::Alignment::Left, 26 };
@@ -574,7 +574,7 @@ void Controller::LoadMidi()
     m_MidiOutDevices->LayoutManager().Refresh();
 }
 
-void Controller::LoadEffects()
+void Controller::LoadPlugins()
 {
     // In order to load effects we need to stop the stream, because when reloading effects
     // we will deallocate all effects from the DLLs, so no audio can be routed when reloading.

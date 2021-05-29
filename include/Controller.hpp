@@ -5,7 +5,7 @@
 #include "ui/Graphics.hpp"
 #include "ui/Frame.hpp"
 #include "audio/Audio.hpp"
-#include "EffectLoader.hpp"
+#include "PluginLoader.hpp"
 #include "Midi.hpp"
 
 // Some namespace thingies
@@ -29,7 +29,7 @@ public:
 
     void LoadThemes();
     void LoadMidi();
-    void LoadEffects();
+    void LoadPlugins();
 
     auto Audio() -> Audio& { return *m_Audio; }
 

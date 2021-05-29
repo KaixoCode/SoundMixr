@@ -3,7 +3,7 @@
 #include "ui/Components.hpp"
 #include "ui/Graphics.hpp"
 #include "ui/Dropdown.hpp"
-#include "EffectLoader.hpp"
+#include "PluginLoader.hpp"
 #include "FileDialog.hpp"
 
 /**
