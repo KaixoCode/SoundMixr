@@ -8,10 +8,25 @@ namespace SoundMixr
 	class SimpleSynth : public GeneratorBase
 	{
 	public:
+
 		SimpleSynth()
-			: GeneratorBase("SimpleSynth")
+			: GeneratorBase("SimpleSynth"),
+			freq(Parameter("Freq", ParameterType::Knob))
 		{
+			freq.Range({ 10, 22000 });
+			freq.Log(10);
+			freq.ResetValue(22000);
+			freq.ResetValue();
+			freq.Unit("Hz");
+			freq.Unit("kHz", 3);
+			freq.Size({ 30, 30 });
+			freq.Multiplier(0.4);
+
 			voices.WaveTable(Wavetables::Saw);
+			Width(400);
+			Height(500);
+
+			Div() = {};
 		}
 
 		float val = 0;
@@ -19,7 +34,7 @@ namespace SoundMixr
 		{
 			if (c == 0)
 			{
-				val = voices.Process();
+				val = eq.Apply(voices.Process(), params);
 			}
 
 			return val;
@@ -33,7 +48,10 @@ namespace SoundMixr
 				voices.NoteRelease(data.noteoff.note);
 		}
 
+		SoundMixr::Parameter& freq;
 		VoiceBank<Oscillator> voices{ 64 };
+		BiquadParameters params;
+		BiquadFilter<> eq;
 	};
 
 

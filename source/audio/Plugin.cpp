@@ -101,6 +101,7 @@ void Plugin::Update(const Vec4<int>& v)
 void Plugin::Render(CommandCollection& d)
 {
 	using namespace Graphics;
+	Panel::Render(d);
 
 	d.Command<PushMatrix>();
 	d.Command<Translate>(Position());

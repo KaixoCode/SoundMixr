@@ -7,3 +7,9 @@ GeneratorFrame::GeneratorFrame(SoundMixr::GeneratorBase* generator)
 {
 	Panel().Layout<Layout::Grid>(1, 1, 8, 8);
 }
+
+void GeneratorFrame::Update(const Vec4<int>& v)
+{
+	Color(ThemeT::Get().window_border);
+	SoundMixrFrame::Update(v);
+}
