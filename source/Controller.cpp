@@ -312,6 +312,8 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
     SaveSettings();
     m_Audio->SaveRouting();
     Soundboard::Get().Save();
+    m_Audio->Clear();
+    m_Gui.Clear();
 }
 
 void Controller::LoadSettings()

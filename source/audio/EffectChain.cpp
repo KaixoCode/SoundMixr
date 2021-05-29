@@ -235,7 +235,7 @@ double EffectChain::Process(double s, int c)
 void EffectChain::UpdateEffects()
 {
 	for (auto& i : m_EffectPanel->Components())
-		((Effect*)i.get())->UpdateEffect();
+		((Effect*)i.get())->UpdatePlugin();
 }
 
 int EffectChain::Cursor() const 

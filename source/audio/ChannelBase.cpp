@@ -12,6 +12,8 @@ ChannelBase::ChannelBase(ChannelType type)
 	mono(Emplace<Button<MonoButton, ButtonType::Toggle>>("MONO")),
 	route(Emplace<Button<RouteButton, ButtonType::Toggle>>((type & Type::Input) ? "in" : ""))
 {
+	m_EffectChain = std::make_unique<::EffectChain>();
+
 	// Standard width of channel is 70.
 	Width(70);
 
@@ -126,7 +128,7 @@ void ChannelBase::Process()
 			// If muted set sample to 0
 			if (!mute.Active())
 			{
-				_sample = m_EffectChain.Process(_sample, i);
+				_sample = m_EffectChain->Process(_sample, i);
 				_sample *= volume.Value();
 				_sample *= m_Pans[i];
 			}
@@ -196,7 +198,7 @@ void ChannelBase::Process()
 			// If muted set sample to 0
 			if (!mute.Active())
 			{
-				_sample = m_EffectChain.Process(_sample, i);
+				_sample = m_EffectChain->Process(_sample, i);
 				_sample *= volume.Value();
 				if (!_mono)
 					_sample *= m_Pans[i];
@@ -295,7 +297,7 @@ void ChannelBase::Lines(int c)
 		m_Pans.push_back(0);
 
 	// Also make sure the effect chain has the amount of lines.
-	m_EffectChain.Lines(c);
+	m_EffectChain->Lines(c);
 
 	// Set lines
 	m_Lines = c;
@@ -356,7 +358,7 @@ void ChannelBase::Update(const Vec4<int>& v)
 
 ChannelBase::operator nlohmann::json()
 {
-	nlohmann::json _json = m_EffectChain;
+	nlohmann::json _json = *m_EffectChain;
 	_json["id"] = Id();
 	_json["type"] = Type();
 	_json["volume"] = volume;
@@ -385,7 +387,7 @@ void ChannelBase::operator=(const nlohmann::json& json)
 	volume = json.at("volume");
 	name.Content(json.at("name").get<std::string>());
 	m_Visible = json.at("visible");
-	m_EffectChain = json;
+	*m_EffectChain = json;
 }
 
 void ChannelBase::UpdatePans()

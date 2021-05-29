@@ -22,7 +22,12 @@ using SubMenuButton = Button<GR::SubMenu, BT::Menu<GR::Vertical, MT::Normal, BT:
 class Controller
 {
 public:
-    Controller();
+    static inline Controller& Get()
+    {
+        static Controller controller;
+        return controller;
+    }
+    
     void Run();
     void LoadSettings();
     void SaveSettings();
@@ -33,11 +38,13 @@ public:
 
     auto Audio() -> Audio& { return *m_Audio; }
 
+    Gui m_Gui;
+    SoundMixrFrame& mainWindow, & settings, & effectWindow;
+
 private:
+    Controller();
     bool m_LoadedSettings = false;
 
-    Gui m_Gui;
-    SoundMixrFrame& mainWindow, &settings, &effectWindow;
 
     std::vector<std::string> 
         m_MidiInEnabled,

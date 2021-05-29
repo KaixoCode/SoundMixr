@@ -103,13 +103,17 @@ Audio::Audio()
                         _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
                 }
                 m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
-                m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
-                    [&]
-                    {
+                auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                    ("Add Generator");
+                _sub3.MenuBase().ButtonSize({ 180, 20 });
+                for (auto& _c : PluginLoader::Generators())
+                {
+                    _sub3.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] {
                         m_Lock.lock();
-                        EmplaceChannel<GeneratorChannel>();
+                        EmplaceChannel<GeneratorChannel>(_c.second->CreateInstance());
                         m_Lock.unlock();
-                    }, " + Test Thing");
+                        }, _c.first);
+                }
 
                 RightClickMenu::Get().Open(&m_Menu);
             }

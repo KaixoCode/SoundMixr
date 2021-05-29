@@ -1,7 +1,9 @@
 #pragma once
 #include "pch.hpp"
 #include "audio/ChannelBase.hpp"
+#include "audio/GeneratorChain.hpp"
 #include "audio/Asio.hpp"
+#include "audio/GeneratorFrame.hpp"
 
 /*
  * TODO:
@@ -16,45 +18,15 @@
 class GeneratorChannel : public ChannelBase
 {
 public:
+	GeneratorChannel(SoundMixr::GeneratorBase* generator);
 
-	GeneratorChannel()
-		: ChannelBase(ChannelBase::Type::Input | ChannelBase::Type::Generator)
-	{
-		name.Content("Generator");
-		Lines(2);
-
-		m_Oscillator.WaveTable(Wavetables::Saw);
-	}
-
-	virtual void Process() override
-	{
-		std::lock_guard<std::mutex> _{ m_Lock };
-
-		float _generatedSample = 0;
-		if (!mute.Active())
-			_generatedSample = m_Oscillator.Process();
-
-		m_Levels[0] = _generatedSample;
-		m_Levels[1] = _generatedSample;
-
-		// Process main channel things
-		ChannelBase::Process();
-
-		// Reset levels
-		for (auto& i : m_Levels)
-			i = 0;
-	};
+	virtual void Process() override;
 
 private:
-	VoiceBank<Oscillator> m_Oscillator{ 64 };
+	GeneratorFrame& m_Generator;
 
-	Midi::EventStorage _1{ Midi::Get() += [this](Midi::Event::NoteOn& e)
+	Midi::EventStorage _1{ Midi::Get() += [this](Midi::Event&e)
 	{
-		m_Oscillator.NotePress(e.note);
-	} };
-
-	Midi::EventStorage _2{ Midi::Get() += [this](Midi::Event::NoteOff& e)
-	{
-		m_Oscillator.NoteRelease(e.note);
+		m_Generator.Generator().ReceiveMidi({ (int)e.type, e.data });
 	} };
 };

@@ -95,7 +95,7 @@ public:
 	 * Get the effect chain of this channel.
 	 * @return effect chain
 	 */
-	auto EffectChain() -> ::EffectChain& { return m_EffectChain; }
+	auto EffectChain() -> ::EffectChain& { return *m_EffectChain; }
 
 	/**
 	 * Get all the connections this channel has.
@@ -148,7 +148,7 @@ protected:
 		m_Peaks,
 		m_Pans;
 
-	::EffectChain m_EffectChain;
+	std::unique_ptr<::EffectChain> m_EffectChain;
 
 	mutable std::mutex m_Lock;
 

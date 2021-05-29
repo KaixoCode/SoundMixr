@@ -3,8 +3,7 @@
 #ifdef _DEBUG
 int main()
 {
-	Controller _c;
-	_c.Run();
+	Controller::Get().Run();
 	return 0;
 }
 #else
@@ -15,8 +14,7 @@ int WINAPI WinMain(
 	int nCmdShow             /* [input] show state of window */
 ) 
 {
-	Controller _c;
-	_c.Run();
+	Controller::Get().Run();
 	return 0;
 }
 #endif
