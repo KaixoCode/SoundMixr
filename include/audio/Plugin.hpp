@@ -70,6 +70,8 @@ protected:
 		m_Enabled = true,
 		m_Bypass = false;
 
+	Vec4<int> m_PrevDim;
+
 	SoundMixr::PluginBase* m_Plugin;
 
 	Button<ToggleButtonGraphics, ButtonType::Toggle>* m_Enable;
@@ -96,14 +98,14 @@ protected:
 	 * Init the layout of the effect, uses the same mechanics as Layout::Divs to creaté
 	 * a complex layout.
 	 */
-	void Init();
+	void Update();
 
 	/**
 	 * Recursive init method for a single div.
 	 * @param div div to init
 	 * @param dim dimensions this div gets
 	 */
-	void InitDiv(SoundMixr::Div& div, const Vec4<int>& dim);
+	void UpdateDiv(SoundMixr::Div& div, const Vec4<int>& dim);
 
 	/**
 	 * Set the object in the given div.

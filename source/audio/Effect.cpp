@@ -3,9 +3,6 @@
 Effect::Effect(SoundMixr::EffectBase* effect)
 		: m_Effect(effect), Plugin(effect)
 {
-	// Init the div
-	Init();
-
 	// Set the name to the effect name
 	m_Name = effect->Name();
 

@@ -4,7 +4,7 @@ Plugin::Plugin(SoundMixr::PluginBase* plugin)
 	: m_Plugin(plugin)
 {
 	// Init the div
-	Init();
+	Update();
 
 	m_Enable = &Emplace<Button<ToggleButtonGraphics, ButtonType::Toggle>>(&m_Enabled, "");
 	m_Enable->Size({ 18, 18 });
@@ -71,6 +71,8 @@ void Plugin::UpdatePlugin()
 
 void Plugin::Update(const Vec4<int>& v)
 {
+	Update();
+
 	// Makes sure the parameters/buttons are enabled/disabled
 	// whenever they should be.
 	if (m_Enabled && !m_PEnabled && !m_Bypass)
@@ -229,22 +231,23 @@ void Plugin::DefaultPreset()
 	}
 }
 
-
-void Plugin::Init()
+void Plugin::Update()
 {
-	InitDiv(m_Plugin->Div(), { 0, 0, 300, m_Plugin->Height() });
+	Vec4<int> dim = { 0, 0, m_Plugin->Width(), m_Plugin->Height() };
+	if (m_PrevDim == dim)
+		return;
+
+	m_PrevDim = dim;
+	m_Dividers.clear();
+	UpdateDiv(m_Plugin->Div(), dim);
 }
 
-void Plugin::InitDiv(SoundMixr::Div& div, const Vec4<int>& dim)
+void Plugin::UpdateDiv(SoundMixr::Div& div, const Vec4<int>& dim)
 {
-	// If it's an object, set the object
 	if (div.DivType() == SoundMixr::Div::Type::Object)
 		SetObject(div, dim);
 
-	// Otherwise divide the space between divs and recurse to next divs.
 	else
-
-		// Dividing depends on the alignment of the div.
 		if (div.Align() == SoundMixr::Div::Alignment::Horizontal)
 		{
 			// Get all the sizes of the sub-divs
@@ -253,7 +256,7 @@ void Plugin::InitDiv(SoundMixr::Div& div, const Vec4<int>& dim)
 			for (auto& i : div.Divs())
 				if (i->DivSize() == SoundMixr::Div::AUTO)
 				{
-					if (i->DivType() == SoundMixr::Div::Type::Object)
+					if (!i->ResizeComponent() && i->DivType() == SoundMixr::Div::Type::Object)
 						sizes.push_back(i->Object().Size().width + i->Padding()), width -= i->Object().Size().width + i->Padding(), obamt++;
 					else
 						sizes.push_back(0), amt++;
@@ -289,12 +292,12 @@ void Plugin::InitDiv(SoundMixr::Div& div, const Vec4<int>& dim)
 			for (int i = 0; i < div.Divs().size(); i++)
 			{
 				if (div.Dividers() && i != 0)
-					m_Dividers.emplace_back(Vec4<int>{ x, dim.y + 8, 1, dim.height - 16 });
+					m_Dividers.emplace_back(Vec4<int>{ x, dim.y + div.Padding(), 1, dim.height - 2 * div.Padding() });
 
 				if (sizes[i] < 0) // If div with given space, size is negative so negate
-					InitDiv(*div.Divs()[i], { x + div.Padding(), dim.y + div.Padding(), -sizes[i] - 2 * div.Padding(), dim.height - 2 * div.Padding() }), x += -sizes[i];
+					UpdateDiv(*div.Divs()[i], { x + div.Padding(), dim.y + div.Padding(), -sizes[i] - 2 * div.Padding(), dim.height - 2 * div.Padding() }), x += -sizes[i];
 				else // Otherwise just recurse
-					InitDiv(*div.Divs()[i], { x + div.Padding(), dim.y + div.Padding(), sizes[i] - 2 * div.Padding(), dim.height - 2 * div.Padding() }), x += sizes[i];
+					UpdateDiv(*div.Divs()[i], { x + div.Padding(), dim.y + div.Padding(), sizes[i] - 2 * div.Padding(), dim.height - 2 * div.Padding() }), x += sizes[i];
 			}
 		}
 		else
@@ -303,9 +306,9 @@ void Plugin::InitDiv(SoundMixr::Div& div, const Vec4<int>& dim)
 			std::vector<int> sizes;
 			int height = dim.height, amt = 0, obamt = 0;
 			for (auto& i : div.Divs())
-				if (i->DivSize() == SoundMixr::Div::AUTO)
+				if (i->DivSize() == Div::AUTO)
 				{
-					if (i->DivType() == SoundMixr::Div::Type::Object)
+					if (!i->ResizeComponent() && i->DivType() == SoundMixr::Div::Type::Object)
 						sizes.push_back(i->Object().Size().height + i->Padding()), height -= i->Object().Size().height + i->Padding(), obamt++;
 					else
 						sizes.push_back(0), amt++;
@@ -341,33 +344,47 @@ void Plugin::InitDiv(SoundMixr::Div& div, const Vec4<int>& dim)
 			for (int i = 0; i < div.Divs().size(); i++)
 			{
 				if (div.Dividers() && i != 0)
-					m_Dividers.emplace_back(Vec4<int>{ dim.x + 8, y, dim.width - 16, 1 });
+					m_Dividers.emplace_back(Vec4<int>{ dim.x + div.Padding(), y, dim.width - 2 * div.Padding(), 1 });
 
 				if (sizes[i] < 0) // If div with given space, size is negative so negate
-					InitDiv(*div.Divs()[i], { dim.x + div.Padding(), y + div.Padding(), dim.width - 2 * div.Padding(), -sizes[i] - 2 * div.Padding() }), y += -sizes[i];
+					UpdateDiv(*div.Divs()[i], { dim.x + div.Padding(), y + div.Padding(), dim.width - 2 * div.Padding(), -sizes[i] - 2 * div.Padding() }), y += -sizes[i];
 				else // Otherwise just recurse
-					InitDiv(*div.Divs()[i], { dim.x + div.Padding(), y + div.Padding(), dim.width - 2 * div.Padding(), sizes[i] - 2 * div.Padding() }), y += sizes[i];
+					UpdateDiv(*div.Divs()[i], { dim.x + div.Padding(), y + div.Padding(), dim.width - 2 * div.Padding(), sizes[i] - 2 * div.Padding() }), y += sizes[i];
 			}
 		}
 }
 
 void Plugin::SetObject(SoundMixr::Div& div, const Vec4<int>& dim)
-{
+{        
 	// Get the object from the div
 	SoundMixr::Object* object = &div.Object();
 
 	// Calculate the position using the alignment
 	Vec2<int> position = { dim.x, dim.y };
-	if (div.Align() == SoundMixr::Div::Alignment::Center)
-		position += { dim.width / 2 - object->Size().width / 2, dim.height / 2 - object->Size().height / 2 };
-	else if (div.Align() == SoundMixr::Div::Alignment::Right)
-		position += { dim.width - object->Size().width, dim.height / 2 - object->Size().height / 2 };
-	else if (div.Align() == SoundMixr::Div::Alignment::Left)
-		position += { 0, dim.height / 2 - object->Size().height / 2 };
-	else if (div.Align() == SoundMixr::Div::Alignment::Bottom)
-		position += { dim.width / 2 - object->Size().width / 2, 0 };
-	else if (div.Align() == SoundMixr::Div::Alignment::Top)
-		position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
+
+	// If resize component, set size
+	if (div.ResizeComponent())
+	{
+		if (object->Size().width != dim.size.width && object->Size().height != dim.size.height)
+			m_PrevDim = { 0, 0, 0, 0 },
+			object->Size().width = dim.size.width, object->Size().height = dim.size.height;
+	}
+
+	// Otherwise adjust positioning
+	else
+	{
+		if (div.Align() == SoundMixr::Div::Alignment::Center)
+			position += { dim.width / 2 - object->Size().width / 2, dim.height / 2 - object->Size().height / 2 };
+		else if (div.Align() == SoundMixr::Div::Alignment::Right)
+			position += { dim.width - object->Size().width, dim.height / 2 - object->Size().height / 2 };
+		else if (div.Align() == SoundMixr::Div::Alignment::Left)
+			position += { 0, dim.height / 2 - object->Size().height / 2 };
+		else if (div.Align() == SoundMixr::Div::Alignment::Bottom)
+			position += { dim.width / 2 - object->Size().width / 2, 0 };
+		else if (div.Align() == SoundMixr::Div::Alignment::Top)
+			position += { dim.width / 2 - object->Size().width / 2, dim.height - object->Size().height };
+	}
+	object->Position({ position.x, position.y });
 
 	// Determine type and add to effect.
 	Component* ob = nullptr;

@@ -11,5 +11,11 @@ public:
 
 	SoundMixr::GeneratorBase& Generator() { return *m_Generator.generator; }
 
+	void Loop() override
+	{
+		m_Generator.UpdatePlugin();
+		Window::Loop();
+	}
+
 	::Generator& m_Generator;
 };
