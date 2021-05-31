@@ -197,7 +197,7 @@ VolumeSlider::VolumeSlider(SoundMixr::VolumeSlider& s)
 	: Parameter<VolumeSliderGraphics>(s), m_Slider(s)
 {
 	m_Parameter.Range({ 0.0, 3.98107 });
-	m_Parameter.Power(4);
+	m_Parameter.Scaling(4);
 	m_Parameter.Value(1);
 	m_Parameter.ResetValue(1);
 	m_Parameter.Vertical(true);
@@ -377,7 +377,7 @@ PanSlider::PanSlider(SoundMixr::Parameter& param)
 {
 	Name("pan");
 	Range({ -50, 50 });
-	Power(1);
+	Scaling(1);
 	Decimals(-1);
 	ResetValue(0);
 	Vertical(false);

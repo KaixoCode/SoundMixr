@@ -31,7 +31,8 @@ namespace SoundMixr
 			m_PreGain.Decimals(2);
 
 			m_Attack.Range({ .1f, 300 });
-			m_Attack.Log(10);
+			m_Attack.ScalingType(ParameterData::Scaling::Log);
+			m_Attack.Scaling(10);
 			m_Attack.Multiplier(0.4);
 			m_Attack.ResetValue(3);
 			m_Attack.ResetValue();
@@ -39,7 +40,8 @@ namespace SoundMixr
 			m_Attack.Size({ 30, 30 });
 
 			m_Release.Range({ 1, 5000 });
-			m_Release.Log(10);
+			m_Release.ScalingType(ParameterData::Scaling::Log);
+			m_Release.Scaling(10);
 			m_Release.ResetValue(30);
 			m_Release.ResetValue();
 			m_Release.Multiplier(0.4);

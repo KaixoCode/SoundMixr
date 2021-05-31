@@ -23,8 +23,6 @@ namespace SoundMixr
 				params.f0 = filterfreq + env2data * filterenvamt;
 				params.RecalculateParameters();
 
-
-
 				return envdata * eq.Apply(wavetable(phase), params);
 			}
 
@@ -95,140 +93,126 @@ namespace SoundMixr
 			fr(Parameter("Release",  ParameterType::Slider)),
 			frc(Parameter("Curve",   ParameterType::Slider))
 		{
-			freq.Range({ 10, 22000 });
-			freq.Log(10);
+			auto _ms = a.Data();
+			_ms.range = { 10, 2000 };
+			_ms.scalingType = ParameterData::Scaling::Log;
+			_ms.scaling = 2;
+			_ms.vertical = false;
+
+			auto _fr = a.Data();
+			_fr.range = { 10, 22000 };
+			_fr.scalingType = ParameterData::Scaling::Log;
+			_fr.scaling = 2;
+			_fr.multiplier = 0.4;
+
+			auto _pr = a.Data();
+			_pr.range = { 0, 100 };
+			_pr.vertical = false;
+			_pr.displayName = false;
+
+			freq.Data(_fr);
 			freq.ResetValue(22000);
 			freq.ResetValue();
 			freq.Unit("Hz");
 			freq.Unit("kHz", 3);
 			freq.Size({ 30, 30 });
-			freq.Multiplier(0.4);
 
-			famt.Range({ 10, 22000 });
-			famt.Log(10);
+			famt.Data(_fr);
 			famt.ResetValue(22000);
 			famt.ResetValue();
 			famt.Unit("Hz");
 			famt.Unit("kHz", 3);
 			famt.Size({ 30, 30 });
-			famt.Multiplier(0.4);
-
-			a.Range({ 10, 2000 });
-			a.Log(10);
+			
+			a.Data(_ms);
 			a.ResetValue(10);
 			a.ResetValue();
 			a.Unit("ms");
 			a.Unit("s", 3);
 			a.Size({ 48, 18 });		
-			a.Vertical(false);
 
-			ac.Range({ 0, 100 });
+			ac.Data(_pr);
 			ac.ResetValue(50);
 			ac.ResetValue();
 			ac.Unit("%");
 			ac.Size({ 48, 18 });
-			ac.Vertical(false);
-			ac.DisplayName(false);
 
-			d.Range({ 10, 2000 });
-			d.Log(10);
+			d.Data(_ms);
 			d.ResetValue(10);
 			d.ResetValue();
 			d.Unit("ms");
 			d.Unit("s", 3);
 			d.Size({ 48, 18 });
-			d.Vertical(false);
 
-			dc.Range({ 0, 100 });
+			dc.Data(_pr);
 			dc.ResetValue(50);
 			dc.ResetValue();
 			dc.Unit("%");
 			dc.Size({ 48, 18 });
-			dc.Vertical(false);
-			dc.DisplayName(false);
 
-			s.Range({ 0, 100 });
+			s.Data(_pr);
 			s.ResetValue(50);
 			s.ResetValue();
 			s.Unit("%");
 			s.Size({ 48, 18 });
-			s.Vertical(false);
 
-			r.Range({ 10, 2000 });
-			r.Log(10);
+			r.Data(_ms);
 			r.ResetValue(10);
 			r.ResetValue();
 			r.Unit("ms");
 			r.Unit("s", 3);
 			r.Size({ 48, 18 });
-			r.Multiplier(0.4);
-			r.Vertical(false);
 
-			rc.Range({ 0, 100 });
+			rc.Data(_pr);
 			rc.ResetValue(50);
 			rc.ResetValue();
 			rc.Unit("%");
 			rc.Size({ 48, 18 });
-			rc.Vertical(false);
-			rc.DisplayName(false);
 
-			fa.Range({ 10, 2000 });
-			fa.Log(10);
+			fa.Data(_ms);
 			fa.ResetValue(10);
 			fa.ResetValue();
 			fa.Unit("ms");
 			fa.Unit("s", 3);
 			fa.Size({ 48, 18 });
-			fa.Vertical(false);
 			
-			fac.Range({ 0, 100 });
+			fac.Data(_pr);
 			fac.ResetValue(50);
 			fac.ResetValue();
 			fac.Unit("%");
 			fac.Size({ 48, 18 });
-			fac.Vertical(false);
-			fac.DisplayName(false);
 
-			fd.Range({ 10, 2000 });
-			fd.Log(10);
+			fd.Data(_ms);
 			fd.ResetValue(10);
 			fd.ResetValue();
 			fd.Unit("ms");
 			fd.Unit("s", 3);
 			fd.Size({ 48, 18 });
-			fd.Vertical(false);
 
-			fdc.Range({ 0, 100 });
+			fdc.Data(_pr);
 			fdc.ResetValue(50);
 			fdc.ResetValue();
 			fdc.Unit("%");
 			fdc.Size({ 48, 18 });
-			fdc.Vertical(false);
-			fdc.DisplayName(false);
 
-			fs.Range({ 0, 100 });
+			fs.Data(_pr);
 			fs.ResetValue(50);
 			fs.ResetValue();
 			fs.Unit("%");
 			fs.Size({ 48, 18 });
-			fs.Vertical(false);
 			
-			fr.Range({ 10, 2000 });
-			fr.Log(10);
+			fr.Data(_ms);
 			fr.ResetValue(10);
 			fr.ResetValue();
 			fr.Unit("ms");
 			fr.Unit("s", 3);
 			fr.Size({ 48, 18 });
-			fr.Vertical(false);
 
-			frc.Range({ 0, 100 });
+			frc.Data(_pr);
 			frc.ResetValue(50);
 			frc.ResetValue();
 			frc.Unit("%");
 			frc.Size({ 48, 18 });
-			frc.Vertical(false);
-			frc.DisplayName(false);
 
 			Width(350);
 			Height(166);

@@ -40,7 +40,8 @@ namespace SoundMixr
 
 			m_Release.Size({ 30, 30 });
 			m_Release.Range({ 1, 5000 });
-			m_Release.Log(10);
+			m_Release.ScalingType(ParameterData::Scaling::Log);
+			m_Release.Scaling(10);
 			m_Release.ResetValue(300);
 			m_Release.ResetValue();
 			m_Release.Multiplier(0.4);
@@ -84,6 +85,8 @@ namespace SoundMixr
 			m_Gain.ResetValue();
 			m_Gain.Unit("dB");
 			m_Gain.Multiplier(0.4);
+			m_Gain.Data().enableSmoothing = true;
+			m_Gain.Data().smoothingAmount = 0.001;
 
 			m_Mute.Size({ 45, 18 });
 			m_Mono.Size({ 45, 18 });
@@ -92,7 +95,8 @@ namespace SoundMixr
 
 			m_LowFreq.Size({ 58, 18 });
 			m_LowFreq.Range({ 10, 6000 });
-			m_LowFreq.Log(10);
+			m_LowFreq.ScalingType(ParameterData::Scaling::Log);
+			m_LowFreq.Scaling(10);
 			m_LowFreq.ResetValue(600);
 			m_LowFreq.ResetValue();
 			m_LowFreq.Unit("Hz");
@@ -104,7 +108,8 @@ namespace SoundMixr
 
 			m_HighFreq.Size({ 58, 18 });
 			m_HighFreq.Range({ 2000, 22000 });
-			m_HighFreq.Log(10);
+			m_HighFreq.ScalingType(ParameterData::Scaling::Log);
+			m_HighFreq.Scaling(10);
 			m_HighFreq.ResetValue(7000);
 			m_HighFreq.ResetValue();
 			m_HighFreq.Unit("Hz");
@@ -214,6 +219,7 @@ namespace SoundMixr
 
 			if (c == 0)
 			{
+				m_PreGain = db2lin(m_Gain.Value());
 				if (counter > 512)
 					counter = 0;
 
@@ -289,7 +295,7 @@ namespace SoundMixr
 			m_Compressor.compressThreshhold = lin2db(std::max(m_Limiter.Value(), 0.000001));
 			m_Compressor.compressRatio = 0;
 			m_Compressor.mix = 1;
-			m_PreGain = db2lin(m_Gain.Value());
+			
 
 			m_LimiterValue = m_Limiter.Value();
 

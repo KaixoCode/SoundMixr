@@ -28,7 +28,7 @@ namespace SoundMixr
 
 			Height(155);
 			m_ModAmountKnob.Range({ 0, 100 });
-			m_ModAmountKnob.Power(2);
+			m_ModAmountKnob.Scaling(2);
 			m_ModAmountKnob.ResetValue(0.3);
 			m_ModAmountKnob.ResetValue();
 			m_ModAmountKnob.Unit(" %");
@@ -38,7 +38,8 @@ namespace SoundMixr
 			m_ModAmountKnob.Vertical(false);
 
 			m_ModRateKnob.Range({ 0.1, 15 });
-			m_ModRateKnob.Log(10);
+			m_ModRateKnob.ScalingType(ParameterData::Scaling::Log);
+			m_ModRateKnob.Scaling(10);
 			m_ModRateKnob.ResetValue(3);
 			m_ModRateKnob.ResetValue();
 			m_ModRateKnob.Unit(" Hz");
@@ -49,7 +50,8 @@ namespace SoundMixr
 			m_ModRateKnob.DisplayName(false);
 
 			m_Freq.Range({ 10, 22000 });
-			m_Freq.Log(10);
+			m_Freq.ScalingType(ParameterData::Scaling::Log);
+			m_Freq.Scaling(10);
 			m_Freq.ResetValue(1000);
 			m_Freq.ResetValue();
 			m_Freq.Unit(" Hz");
@@ -70,7 +72,8 @@ namespace SoundMixr
 			m_Width.DisplayName(false);
 
 			m_DelayKnob.Range({ 1, 2000 });
-			m_DelayKnob.Log(10);
+			m_DelayKnob.ScalingType(ParameterData::Scaling::Log);
+			m_DelayKnob.Scaling(10);
 			m_DelayKnob.ResetValue(300);
 			m_DelayKnob.ResetValue();
 			m_DelayKnob.Unit(" ms");
@@ -88,7 +91,6 @@ namespace SoundMixr
 			m_InputGainKnob.Multiplier(0.4);
 
 			m_MixKnob.Range({ 0, 100 });
-			m_MixKnob.Power(1);
 			m_MixKnob.ResetValue(50);
 			m_MixKnob.ResetValue();
 			m_MixKnob.Unit(" %");
@@ -97,7 +99,6 @@ namespace SoundMixr
 			m_MixKnob.Multiplier(0.4);
 
 			m_FeedbackKnob.Range({ 0, 99 });
-			m_FeedbackKnob.Power(1);
 			m_FeedbackKnob.ResetValue(10);
 			m_FeedbackKnob.ResetValue();
 			m_FeedbackKnob.Unit(" %");

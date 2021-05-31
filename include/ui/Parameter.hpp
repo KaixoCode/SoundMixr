@@ -41,8 +41,10 @@ public:
 	virtual double DefaultReset() { return m_Parameter.DefaultReset(); }
 	virtual void   Multiplier(double v) { m_Parameter.Multiplier(v); }
 	virtual double Multiplier() { return m_Parameter.Multiplier(); }
-	virtual void   Power(double v) { m_Parameter.Power(v); }
-	virtual double Power() { return m_Parameter.Power(); }
+	virtual void   Scaling(double v) { m_Parameter.Scaling(v); }
+	virtual double Scaling() { return m_Parameter.Scaling(); }
+	virtual void   ScalingType(SoundMixr::ParameterData::Scaling v) { m_Parameter.ScalingType(v); }
+	virtual auto   ScalingType() -> SoundMixr::ParameterData::Scaling { return m_Parameter.ScalingType(); }
 	virtual bool   Vertical() { return m_Parameter.Vertical(); }
 	virtual void   Vertical(bool v) { m_Parameter.Vertical(v); }
 	virtual auto   ValueText() -> std::string& const { return m_ValueText; }
