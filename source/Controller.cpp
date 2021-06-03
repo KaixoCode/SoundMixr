@@ -63,9 +63,7 @@ db_ _file.Emplace<MenuToggleButton>([&](bool c) { Graphics::DebugOverlay(c); }, 
     _file.Emplace<MenuButton>([&] { effectWindow.Show(); }, "Effect Window...", Key::CTRL_SHIFT_E);
 db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", Key::CTRL_S);
     _file.Emplace<MenuToggleButton>(&_fullscreen, "FullScreen", Key::F11);
-    _file.Emplace<MenuToggleButton>([&](bool c) {
-        SetWindowPos(mainWindow.GetWin32Handle(), c ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE); 
-        }, "Always On Top", Key::CTRL_SPACE);
+    _file.Emplace<MenuToggleButton>([&](bool c) { mainWindow.AlwaysOnTop(c); }, "Always On Top", Key::CTRL_SPACE);
     _file.Emplace<MenuButton>([&] { m_Audio->Asio().CloseStream(); m_Gui.Close(); }, "Exit", Key::ALT_F4);
 
     // Settings window.
