@@ -14,7 +14,7 @@ file(GLOB_RECURSE SOURCE
   "${SRC}resources/*.rc"
 )
 
-add_executable(SoundMixr WIN32
+add_executable(SoundMixr
   ${SOURCE}
 )
 
