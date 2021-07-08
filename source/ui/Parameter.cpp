@@ -46,7 +46,7 @@ ParameterBase::ParameterBase(SoundMixr::Parameter& param)
 	{
 		if (e.button == Event::MouseButton::LEFT)
 		{
-			if (m_PressBox < 80)
+			if (m_PressBox < 90)
 			{
 				m_Value.Focused(true);
 				m_FocusedComponent = &m_Value;

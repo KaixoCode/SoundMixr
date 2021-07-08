@@ -173,7 +173,7 @@ void SoundboardButton::LoadFile(const std::string& path, const std::string& file
 	if (!std::filesystem::exists(path))
 	{
 		if (path != "")
-			LOG("File doesn't exist anymore, skipping file: " + path);
+			CrashLog("File doesn't exist anymore, skipping file: " + path);
 		return;
 	}
 
@@ -259,7 +259,7 @@ float Soundboard::GetLevel(int channel)
 void Soundboard::Save()
 {
 	try {
-		LOG("Saving Soundboard");
+		CrashLog("Saving Soundboard");
 		nlohmann::json _json;
 		_json["data"] = nlohmann::json::array();
 
@@ -270,7 +270,7 @@ void Soundboard::Save()
 		// Save the soundboard data
 		std::ofstream _out;
 
-		LOG(std::filesystem::current_path().string());
+		CrashLog(std::filesystem::current_path().string());
 		_out.open("./settings/soundboarddata.json", std::ios::out);
 		if (_out.is_open())
 		{
@@ -278,16 +278,16 @@ void Soundboard::Save()
 			_out.close();
 		}
 		else
-			LOG("Couldn't open the soundboard save file.");
+			CrashLog("Couldn't open the soundboard save file.");
 	}
 	catch (const std::exception& ex) {
-		LOG("Failed to save SoundBoard.");
+		CrashLog("Failed to save SoundBoard.");
 	}
 }
 
 void Soundboard::Load()
 {
-	LOG("Loading Soundboard");
+	CrashLog("Loading Soundboard");
 	std::ifstream _in;
 	_in.open("./settings/soundboarddata.json");
 
@@ -308,7 +308,7 @@ void Soundboard::Load()
 		catch (std::exception& e) { _error = true; }
 
 		if (_error) {
-			LOG("Failed to load the soundboard");
+			CrashLog("Failed to load the soundboard");
 		}
 
 		_in.close();

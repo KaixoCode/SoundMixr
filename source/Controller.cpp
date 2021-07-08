@@ -1,6 +1,17 @@
 #include "Controller.hpp"
 #include <audio/SoundboardChannel.hpp>
 
+class LoadingPanel : public Panel
+{
+    void Render(CommandCollection& d)
+    {
+        static std::string loading = "Loading SoundMixr...";
+        d.Command<Graphics::Fill>(Color{ 33, 33, 33, 255 });
+        d.Command<Graphics::Quad>(Vec4<int>{ X(), Y(), Width(), Height() });
+    }
+};
+
+
 // -------------------------------------------------------------------------- \\
 // ---------------------------- Controller ---------------------------------- \\
 // -------------------------------------------------------------------------- \\
@@ -13,7 +24,14 @@ Controller::Controller()
 
 void Controller::Run()
 {
+    CrashLog("Initializing the Controller");
     Soundboard::instance = &m_Gui.AddWindow<Soundboard>();
+
+    mainWindow.Color({ 23, 23, 23, 255 });
+    mainWindow.Panel().Emplace<LoadingPanel>();
+    mainWindow.Panel().Layout<Layout::Grid>(1, 1, 8, 8);
+    m_Gui.Loop();
+    mainWindow.Panel().Clear();
 
     // For the first time we need to load effects separately, since
     // Controller::LoadPlugins assumes a device is already running.
@@ -26,6 +44,7 @@ void Controller::Run()
     Soundboard::Get().Icon(IDI_ICON1);
 
     // Add shell icon.
+    CrashLog("Adding shell icon");
     Menu<GR::Vertical, MT::Normal> _shellIconMenu;
     _shellIconMenu.ButtonSize({ 150, 20 });
     _shellIconMenu.Emplace<MenuButton>([] {}, "SoundMixr").Disable();
@@ -65,6 +84,7 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
     _file.Emplace<MenuToggleButton>(&_fullscreen, "FullScreen", Key::F11);
     _file.Emplace<MenuToggleButton>([&](bool c) { mainWindow.AlwaysOnTop(c); }, "Always On Top", Key::CTRL_SPACE);
     _file.Emplace<MenuButton>([&] { m_Audio->Asio().CloseStream(); m_Gui.Close(); }, "Exit", Key::ALT_F4);
+db_ _file.Emplace<MenuButton>([] { throw nullptr; }, "Crash");
 
     // Settings window.
     settings.Panel().Layout<Layout::Grid>(1, 1, 8, 8);
@@ -82,6 +102,7 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
     auto& _midiOutScrollPanel = _settingsPanel.Emplace<SMXRScrollPanel>();
     _midiOutScrollPanel.Size({ 384, 100 });
     _midiOutScrollPanel.EnableScrollbars(false, true);
+    _midiOutScrollPanel.Visible(false); // TODO
     m_MidiOutDevices = &_midiOutScrollPanel.Panel<Panel>();
     m_MidiOutDevices->Layout<Layout::Divs>();
 
@@ -134,8 +155,16 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
         m_AsioDropDown->AddOption(_d.second.info.name, _d.second.id + 1, [&](int i)
             {
                 // If device opened successfully, enable the controlpanel button and save settings.
-                if (Audio().OpenDevice(i - 1))
-                    _asioControlPanel.Enable(), SaveSettings();
+                try{
+                    CrashLog("==============================");
+                    CrashLog("Opening audio device with id " << i - 1);
+                    if (Audio().OpenDevice(i - 1))
+                        _asioControlPanel.Enable(), SaveSettings();
+                }
+                catch (...)
+                {
+                    CrashLog("Failed to open audio device...");
+                }
             });
 
     SoundMixr::Parameter _hueParam{ "Hue", SoundMixr::ParameterType::Slider };
@@ -188,12 +217,12 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
     midi[1] = { _moretext, Div::Alignment::Center, 36 };
     midi[0] = { 5, Div::Alignment::Vertical };
     midi[0][4].DivSize(8);
-    midi[0][3] = { 2, Div::Alignment::Horizontal, 8, false, 16 };
+    midi[0][3] = { 1, Div::Alignment::Horizontal, 8, false, 16 };
     midi[0][3][0] = { _settingsPanel.Emplace<SMXRTextComponent>("Inputs"), Div::Alignment::Center, Div::AUTO };
-    midi[0][3][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Outputs"), Div::Alignment::Center, Div::AUTO };
-    midi[0][2] = { 2, Div::Alignment::Horizontal, 8 };
+    //midi[0][3][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Outputs"), Div::Alignment::Center, Div::AUTO };
+    midi[0][2] = { 1, Div::Alignment::Horizontal, 8 };
     midi[0][2][0] = { _midiInScrollPanel, Div::Alignment::Center, Div::AUTO, true };
-    midi[0][2][1] = { _midiOutScrollPanel, Div::Alignment::Center, Div::AUTO, true };
+    //midi[0][2][1] = { _midiOutScrollPanel, Div::Alignment::Center, Div::AUTO, true }; // TODO
     midi[0][1] = { _refreshMidiDevices, Div::Alignment::Center, 26, false };
     midi[0][0].DivSize(20);
 
@@ -316,6 +345,7 @@ db_ _file.Emplace<MenuButton>([&] { m_Audio->SaveRouting(); }, "Save Routing", K
 
 void Controller::LoadSettings()
 {
+    CrashLog("Loading settings...");
     m_LoadedSettings = false;
     try
     {
@@ -360,16 +390,17 @@ void Controller::LoadSettings()
 
         SaveSettings();
     }
-    catch (std::exception)
+    catch (...)
     {
         m_LoadedSettings = true;
-        LOG("Failed to load settings.");
+        CrashLog("Failed to load settings.");
     }
     m_LoadedSettings = true;
 }
 
 void Controller::SaveSettings()
 {
+    CrashLog("Saving settings...");
     if (!m_LoadedSettings)
         return;
 
@@ -391,14 +422,13 @@ void Controller::SaveSettings()
         std::ofstream _of;
         std::filesystem::path dir("./settings");
         std::filesystem::create_directories(dir);
-        LOG(std::filesystem::current_path());
         _of.open("./settings/settings");
         _of << /*std::setw(4) <<*/ _json;
         _of.close();
     }
     catch (...)
     {
-        LOG("Failed to save settings.");
+        CrashLog("Failed to save settings.");
     }
 }
 

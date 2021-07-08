@@ -81,7 +81,7 @@ void ChannelBase::Connect(ChannelBase* c)
 	// to an output channel.
 	if (Type() & Type::Output)
 	{
-		LOG("Connect was called on an output channel");
+		CrashLog("Connect was called on an output channel");
 	}
 
 	// If not connected already, connect.

@@ -162,7 +162,7 @@ void Plugin::SavePreset()
 	}
 	catch (...)
 	{
-		LOG("Failed to save preset");
+		CrashLog("Failed to save preset");
 	}
 }
 
@@ -184,7 +184,7 @@ void Plugin::SavePresetAs()
 	}
 	catch (...)
 	{
-		LOG("Failed to save preset");
+		CrashLog("Failed to save preset");
 	}
 }
 
@@ -211,7 +211,7 @@ void Plugin::LoadPreset()
 	}
 	catch (...)
 	{
-		LOG("Failed to load preset");
+		CrashLog("Failed to load preset");
 	}
 }
 
@@ -227,7 +227,7 @@ void Plugin::DefaultPreset()
 	}
 	catch (...)
 	{
-		LOG("Failed to set to default");
+		CrashLog("Failed to set to default");
 	}
 }
 

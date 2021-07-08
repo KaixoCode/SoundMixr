@@ -142,7 +142,7 @@ void EffectChain::GenerateMenu()
 			}
 			catch (...)
 			{
-				LOG("Failed to save effect chain");
+				CrashLog("Failed to save effect chain");
 			}
 		}, "Save Effect Chain...");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]
@@ -163,7 +163,7 @@ void EffectChain::GenerateMenu()
 			}
 			catch (...)
 			{
-				LOG("Failed to load effect chain");
+				CrashLog("Failed to load effect chain");
 			}
 		}, "Load Effect Chain...");
 	m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([this]

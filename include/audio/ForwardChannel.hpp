@@ -82,7 +82,7 @@ private:
 
 	void OpenDevices()
 	{
-		LOG("Attempting to open Asio stream");
+		CrashLog("Attempting to open Asio stream");
 		PaError err;
 		PaStreamParameters ip, op;
 
@@ -131,30 +131,30 @@ private:
 			{
 				// If wasn't able to find working samplerate, 
 				// close stream and stop trying.
-				LOG(Pa_GetErrorText(err));
+				CrashLog(Pa_GetErrorText(err));
 				m_Asio.CloseStream();
 				return;
 			}
 			m_Asio.SampleRate(_srates[tries]);
-			LOG("Trying samplerate " << m_Asio.SampleRate());
+			CrashLog("Trying samplerate " << m_Asio.SampleRate());
 			tries++;
 		} while ((err = Pa_OpenStream(&stream, &ip, &op, m_Asio.SampleRate(), 256, paClipOff, AsioCallback, this)) != 0);
 
 		// Logging
-		LOG("Opened stream (" << m_Asio.Devices()[m_InputDevice].info.name << ")" <<
+		CrashLog("Opened stream (" << m_Asio.Devices()[m_InputDevice].info.name << ")" <<
 			"\n samplerate: " << m_Asio.SampleRate() <<
 			"\n buffersize: " << 256 <<
 			"\n inchannels: " << ip.channelCount <<
 			"\n outchannels:" << op.channelCount
 		);
 
-		LOG("Input channel names: ");
+		CrashLog("Input channel names: ");
 		for (auto& i : m_Inputs)
-			LOG(i.name);
+			CrashLog(i.name);
 
-		LOG("Output channel names: ");
+		CrashLog("Output channel names: ");
 		for (auto& i : m_Outputs)
-			LOG(i.name);
+			CrashLog(i.name);
 
 		// It's now opened
 

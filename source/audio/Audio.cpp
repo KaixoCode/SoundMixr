@@ -102,18 +102,18 @@ Audio::Audio()
                     if (s)
                         _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
                 }
-                m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
-                auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
-                    ("Add Generator");
-                _sub3.MenuBase().ButtonSize({ 180, 20 });
-                for (auto& _c : PluginLoader::Generators())
-                {
-                    _sub3.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] {
-                        m_Lock.lock();
-                        EmplaceChannel<GeneratorChannel>(_c.second->CreateInstance());
-                        m_Lock.unlock();
-                        }, _c.first);
-                }
+                //m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+                //auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
+                //    ("Add Generator");
+                //_sub3.MenuBase().ButtonSize({ 180, 20 });
+                //for (auto& _c : PluginLoader::Generators())
+                //{
+                //    _sub3.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] {
+                //        m_Lock.lock();
+                //        EmplaceChannel<GeneratorChannel>(_c.second->CreateInstance());
+                //        m_Lock.unlock();
+                //        }, _c.first);
+                //}
 
                 RightClickMenu::Get().Open(&m_Menu);
             }
@@ -383,7 +383,7 @@ void Audio::LoadRouting()
         _outputIdsLoaded.emplace(i, false);
 
     // Open the routing file for the current device.
-    LOG("Loading Routing");
+    CrashLog("Loading Routing");
     std::ifstream _in;
     _in.open("./settings/routing" + std::to_string(m_Asio.Device().id));
 
@@ -507,8 +507,12 @@ void Audio::LoadRouting()
         // load all the channels as stereo channels.
         catch (std::exception e)
         {
-            LOG("Error loading routing: " << e.what());
+            CrashLog("Error loading routing: " << e.what());
             _error = true;
+        }
+        catch (...)
+        {
+            CrashLog("Error loading routing");
         }
     }
 
@@ -637,20 +641,27 @@ void Audio::SaveRouting()
     if (m_Asio.DeviceId() == -1)
         return;
 
-    LOG("Saving Routing");
+    CrashLog("Saving Routing");
+    try
+    {
 
-    nlohmann::json _json;
-    _json["channels"] = nlohmann::json::array();
+        nlohmann::json _json;
+        _json["channels"] = nlohmann::json::array();
 
-    // Put all channels in the json (channels have json operator)
-    for (auto& _ch : Channels())
-        _json["channels"].push_back(*_ch);
+        // Put all channels in the json (channels have json operator)
+        for (auto& _ch : Channels())
+            _json["channels"].push_back(*_ch);
 
-    // Save to routing file.
-    std::ofstream _out;
-    _out.open("./settings/routing" + std::to_string(m_Asio.DeviceId()));
-    _out << std::setw(4) << _json; // Pretty print
-    _out.close();
+        // Save to routing file.
+        std::ofstream _out;
+        _out.open("./settings/routing" + std::to_string(m_Asio.DeviceId()));
+        _out << std::setw(4) << _json; // Pretty print
+        _out.close();
+    }
+    catch (...)
+    {
+        CrashLog("Failed to save routing");
+    }
 }
 
 void Audio::SortChannels()

@@ -565,7 +565,7 @@ public:
 		}
 		catch (...)
 		{
-			LOG("Error loading theme");
+			CrashLog("Error loading theme");
 		}
 	}
 
@@ -579,7 +579,7 @@ public:
 		}
 		catch (std::exception)
 		{
-			LOG("Error loading color : " << name);
+			CrashLog("Error loading color : " << name);
 		}
 	}
 
@@ -620,12 +620,19 @@ public:
 
 	static inline void ReloadThemes()
 	{
+		CrashLog("==============================");
+		CrashLog("Loading themes...");
 		m_Theme = nullptr;
+		CrashLog("Free any existing fonts from memory");
 		for (auto& i : m_Themes)
+		{
+			CrashLog("Deleting font: " << i.first);
 			i.second->FreeFonts();
+		}
 
 		m_Themes.clear();
 		std::filesystem::create_directory("./themes");
+		CrashLog("Iterating through ./themes directory");
 		for (auto& p : std::filesystem::directory_iterator("./themes"))
 		{
 			if (!p.is_regular_file())
@@ -636,26 +643,34 @@ public:
 			if (_path.filename().extension() != ".json")
 				continue;
 
+			CrashLog("-----------------------------");
+			CrashLog("Found json entry: " << _path);
+
 			try
 			{
+				CrashLog("Opening file...");
 				std::ifstream _if{ p };
 				nlohmann::json _json;
+				CrashLog("Parsing json...");
 				_json = nlohmann::json::parse(_if, nullptr, false);
 
 				if (_json.is_discarded())
 					throw(nullptr);
 
+				CrashLog("Create Theme object");
 				auto _theme = std::make_unique<ThemeT>(_json);
 				auto _name = _theme->Name();
+				CrashLog("Add to theme list");
 				m_Themes.emplace(_name, std::move(_theme));
 				if (m_Theme == nullptr)
 					SetTheme(_name);
 
+				CrashLog("Close file");
 				_if.close();
 			}
 			catch (...)
 			{
-				LOG("Failed to load theme : " << _path.filename());
+				CrashLog("Failed to load theme : " << _path.filename());
 			}
 		}
 	}
@@ -678,15 +693,18 @@ private:
 
 	void LoadFont()
 	{
+		CrashLog("Loading font...");
 		if (m_Font.empty())
 		{
+			CrashLog("No special font found, so using default");
 			font = Graphics::Fonts::Gidole;
 			return;
 		}
 		std::filesystem::path abspath = "./themes/" + m_Font;
+		CrashLog("Absolute path of font: " << abspath);
 		font = Graphics::LoadFont(abspath.string());
+		CrashLog("Loaded font id: " << font);
 	}
-
 	
 	static inline std::unordered_map<std::string, std::unique_ptr<ThemeT>> m_Themes;
 	static inline ThemeT* m_Theme = nullptr;

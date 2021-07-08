@@ -48,3 +48,10 @@
 #define myabs(f) if (f < 0) f = -f;
 
 #define VERSION 13
+
+
+#include "CrashLogger.hpp"
+
+#define CrashLog(x) \
+std::cout << x << std::endl, \
+CrashLogger::crashlog << CrashLogger::CrashLogPrefix() << x << std::endl

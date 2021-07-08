@@ -5,34 +5,42 @@ int Asio::SAMPLE_RATE = -1;
 Asio::Asio()
 	: m_BufferSize(256), m_Samplerate(48000)
 {
-	LOG("Initializing Portaudio library");
+	CrashLog("Initializing Portaudio library");
 	PaError err;
 	err = Pa_Initialize();
 	if (err != paNoError)
 	{
-		LOG(Pa_GetErrorText(err));
+		CrashLog("Error: " << Pa_GetErrorText(err));
 		return;
 	}
 
-	LOG("Finding Asio devices");
+	CrashLog("Finding Asio devices...");
 	const PaDeviceInfo* info;
 	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
 	{
 		info = Pa_GetDeviceInfo(i);
 		if (std::string(Pa_GetHostApiInfo(info->hostApi)->name) == "ASIO")
+		{
+			CrashLog("Found ASIO device:");
+			CrashLog("Id:          " << i);
+			CrashLog("Name:        " << info->name);
+			CrashLog("Inputs:      " << info->maxInputChannels);
+			CrashLog("Outputs:     " << info->maxOutputChannels);
+			CrashLog("Sample Rate: " << info->defaultSampleRate);
 			m_Devices.emplace(i, ::Device{ i, *info });
+		}
 	}
 }
 
 Asio::~Asio()
 {
-	LOG("Destructing Asio device ");
+	CrashLog("Destructing Asio device ");
 	CloseStream();
 }
 
 bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 {
-	LOG("Attempting to open Asio stream");
+	CrashLog("Attempting to open Asio stream");
 	PaError err;
 	PaStreamParameters ip, op;
 
@@ -79,19 +87,20 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 		{
 			// If wasn't able to find working samplerate, 
 			// close stream and stop trying.
-			LOG(Pa_GetErrorText(err));
+			CrashLog(Pa_GetErrorText(err));
 			CloseStream();
 			return false;
 		}
 		m_Samplerate = _srates[tries];
-		LOG("Trying samplerate " << m_Samplerate);
+		CrashLog("Trying samplerate " << m_Samplerate);
 		tries++;
 	} while ((err = Pa_OpenStream(&stream, &ip, &op, m_Samplerate, m_BufferSize, paClipOff, c, userdata)) != 0);
 
 	SAMPLE_RATE = m_Samplerate;
 
 	// Logging
-	LOG("Opened stream (" << Device().info.name << ")" <<
+	CrashLog(
+		   "Opened stream (" << Device().info.name << ")" <<
 		"\n type:       " << "Asio" <<
 		"\n samplerate: " << m_Samplerate <<
 		"\n buffersize: " << m_BufferSize <<
@@ -99,13 +108,13 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 		"\n outchannels:" << op.channelCount
 	);
 
-	LOG("Input channel names: ");
+	CrashLog("Input channel names: ");
 	for (auto& i : m_Inputs)
-		LOG(i.name);
+		CrashLog(i.name);
 
-	LOG("Output channel names: ");
+	CrashLog("Output channel names: ");
 	for (auto& i : m_Outputs)
-		LOG(i.name);
+		CrashLog(i.name);
 
 	// It's now opened
 	m_Opened = true;
@@ -120,13 +129,13 @@ void Asio::CloseStream()
 
 	// Close stream
 	m_Opened = false;
-	LOG("Closing Asio stream...");
+	CrashLog("Closing Asio stream...");
 	PaError err;
 	err = Pa_CloseStream(stream);
 	if (err != paNoError)
-		LOG(Pa_GetErrorText(err));
+		CrashLog(Pa_GetErrorText(err));
 	else
-		LOG("Closed Asio stream");
+		CrashLog("Closed Asio stream");
 
 	// Clear the vectors of endpoints.
 	m_Inputs.clear();
@@ -143,15 +152,15 @@ bool Asio::StartStream()
 	if (StreamRunning())
 		return false;
 
-	LOG("Starting Asio stream...");
+	CrashLog("Starting Asio stream...");
 	PaError err = Pa_StartStream(stream);
 	if (err != paNoError)
 	{
-		LOG(Pa_GetErrorText(err));
+		CrashLog(Pa_GetErrorText(err));
 		return false;
 	}
 	else
-		LOG("Started Asio stream");
+		CrashLog("Started Asio stream");
 
 	return true;
 }
@@ -161,15 +170,15 @@ bool Asio::StopStream()
 	if (!StreamRunning())
 		return false;
 
-	LOG("Stopping Asio stream...");
+	CrashLog("Stopping Asio stream...");
 	PaError err = Pa_StopStream(stream);
 	if (err != paNoError)
 	{
-		LOG(Pa_GetErrorText(err));
+		CrashLog(Pa_GetErrorText(err));
 		return false;
 	}
 	else
-		LOG("Stopped Asio stream");
+		CrashLog("Stopped Asio stream");
 
 	return true;
 }

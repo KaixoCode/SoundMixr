@@ -45,7 +45,6 @@ private:
     Controller();
     bool m_LoadedSettings = false;
 
-
     std::vector<std::string> 
         m_MidiInEnabled,
         m_MidiOutEnabled;
@@ -64,4 +63,8 @@ private:
     Parameter<SliderGraphics>* m_HueSlider;
 
     ::Audio* m_Audio;
-};
+
+    friend int main();
+    friend int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
+};                            
+
