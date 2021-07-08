@@ -58,23 +58,37 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 	op.suggestedLatency = Device().info.defaultLowOutputLatency;
 	op.hostApiSpecificStreamInfo = NULL;
 
+	CrashLog("Input settings:");
+	CrashLog("Device:   " << ip.device);
+	CrashLog("Channels: " << ip.channelCount);
+	CrashLog("Latency:  " << ip.suggestedLatency);
+
+	CrashLog("Output settings:");
+	CrashLog("Device:   " << op.device);
+	CrashLog("Channels: " << op.channelCount);
+	CrashLog("Latency:  " << op.suggestedLatency);
+
 	// Add all input channels to vector
+	CrashLog("Retrieving input channel names:");
 	for (int i = 0; i < ip.channelCount; i++)
 	{
 		const char* name;
 		PaAsio_GetInputChannelName(Device().id, i, &name);
 		std::string n = name;
-		n.resize(n.find_last_of(' '));
+		CrashLog(n);
+		//n.resize(n.find_last_of(' '));
 		auto& a = m_Inputs.emplace_back(i, n, true);
 	}
 
 	// Add all output channels to vector
+	CrashLog("Retrieving output channel names:");
 	for (int i = 0; i < op.channelCount; i++)
 	{
 		const char* name;
 		PaAsio_GetOutputChannelName(Device().id, i, &name);
 		std::string n = name;
-		n.resize(n.find_last_of(' '));
+		CrashLog(n);
+		//n.resize(n.find_last_of(' '));
 		auto& a = m_Outputs.emplace_back(i, n, false);
 	}
 
