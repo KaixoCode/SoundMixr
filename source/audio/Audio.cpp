@@ -2,6 +2,7 @@
 #include "audio/EndpointChannel.hpp"
 #include "audio/GeneratorChannel.hpp"
 #include "audio/SoundboardChannel.hpp"
+#include "audio/ForwardChannel.hpp"
 
 Audio::Audio()
     :
@@ -102,6 +103,15 @@ Audio::Audio()
                     if (s)
                         _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
                 }
+                m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+                auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>
+                    ([&]() {                 
+                        m_Lock.lock();
+                        EmplaceChannel<ForwardChannel>();
+                        m_Lock.unlock();
+                        }, "Add Forward Channel");
+                
+
                 //m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
                 //auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
                 //    ("Add Generator");

@@ -33,6 +33,7 @@ public:
 		constexpr static inline const int Generator = 0x4;
 		constexpr static inline const int SoundBoard = 0x8;
 		constexpr static inline const int Endpoint = 0x10;
+		constexpr static inline const int Forward = 0x20;
 	};
 	typedef int ChannelType;
 

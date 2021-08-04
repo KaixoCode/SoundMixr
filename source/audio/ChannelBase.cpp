@@ -185,7 +185,7 @@ void ChannelBase::Process()
 	}
 
 	// Otherwise it's output
-	else
+	if (Type() & ChannelBase::Type::Output)
 	{
 		float _avg = 0;
 		bool _mono = mono.Active();

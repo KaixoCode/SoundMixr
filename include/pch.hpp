@@ -33,6 +33,7 @@
 #include "pa_asio.h"
 
 #include "RtMidi.h"
+#include "RtAudio.h"
 
 #include <AudioFile.h>
 

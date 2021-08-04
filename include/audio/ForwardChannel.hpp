@@ -20,58 +20,37 @@ public:
 				m_Menu.ButtonSize({ 180, 20 });
 				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(name.Content()).Disable();
 				m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
-				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { OpenDevices(); }, "Open Device");
 				auto& _sub = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
 					("Input Device");
 				_sub.MenuBase().ButtonSize({ 250, 20 });
 				auto& _sub2 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
 					("Output Device");
 				_sub2.MenuBase().ButtonSize({ 250, 20 });
+				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { OpenStream(); }, "Start Stream");
+				m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&] { CloseStream(); }, "Stop Stream");
 				int _id1 = ButtonType::List::NewKey();
 				int _id2 = ButtonType::List::NewKey();
-				m_Asio.ReloadDevices();
-				for (auto& _c : m_Asio.Devices())
-				{
-					std::string name = std::string(Pa_GetHostApiInfo(_c.second.info.hostApi)->name);
-					name += ": ";
-					name += _c.second.info.name;
-					int _devid = _c.second.id;
-					if (_c.second.info.maxInputChannels != 0)
-						_sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([=]
-							{ m_InputDevice = _devid; }, name, _id1);
 
-					if (_c.second.info.maxOutputChannels != 0)
+				for (int i = 0; i < m_Asio.getDeviceCount(); i++)
+				{
+					auto device = m_Asio.getDeviceInfo(i);
+					std::string name = device.name;
+					int _devid = i;
+					if (device.inputChannels != 0)
+						_sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([=]
+							{ m_InputDevice = _devid; }, name, _id1).Selected(m_InputDevice == i);
+
+					if (device.outputChannels != 0)
 						_sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([=]
-							{ m_OutputDevice = _devid; }, name, _id2);
+							{ m_OutputDevice = _devid; }, name, _id2).Selected(m_OutputDevice == i);
 				}
 				RightClickMenu::Get().Open(&m_Menu);
 			}
 		};
 	}
 
-	/**
-	 * Processing for the endpoint channel happens as follows:
-	 *  - Get the levels from the endpoints
-	 *  - Apply effectchain, panning, volume, mute, and mono.
-	 *  - Forward to all connections.
-	 */
-	virtual void Process() override
-	{
-		std::lock_guard<std::mutex> _{ m_Lock };
-
-
-
-		// Process main channel things
-		ChannelBase::Process();
-
-		// Reset levels
-		for (auto& i : m_Levels)
-			i = 0;
-
-	};
-
 private:
-	Asio m_Asio{ false };
+	RtAudio m_Asio;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 
 	std::vector<Endpoint> m_Inputs;
@@ -80,72 +59,62 @@ private:
 	int m_InputDevice = -1;
 	int m_OutputDevice = -1;
 
-	void OpenDevices()
+	void CloseStream() 
 	{
+		if (!m_Asio.isStreamRunning())
+			return;
+		
+		m_Asio.stopStream();
+	}
+
+	void OpenStream()
+	{
+		if (m_Asio.isStreamRunning())
+			return;
+
+		if (m_Asio.isStreamOpen())
+			m_Asio.closeStream();
+
 		CrashLog("Attempting to open Asio stream");
-		PaError err;
-		PaStreamParameters ip, op;
+		RtAudio::StreamParameters ip, op;
 
 		// Input device settings
-		ip.device = m_Asio.Devices()[m_InputDevice].id;
-		ip.channelCount = m_Asio.Devices()[m_InputDevice].info.maxInputChannels;
-		ip.sampleFormat = paFloat32;
-		ip.suggestedLatency = m_Asio.Devices()[m_InputDevice].info.defaultLowInputLatency;
-		ip.hostApiSpecificStreamInfo = NULL;
-
+		ip.deviceId = m_InputDevice;
+		ip.nChannels = m_Asio.getDeviceInfo(m_InputDevice).inputChannels;
+		
 		// Output device settings
-		op.device = m_Asio.Devices()[m_OutputDevice].id;
-		op.channelCount = m_Asio.Devices()[m_OutputDevice].info.maxOutputChannels;
-		op.sampleFormat = paFloat32;
-		op.suggestedLatency = m_Asio.Devices()[m_OutputDevice].info.defaultLowOutputLatency;
-		op.hostApiSpecificStreamInfo = NULL;
+		op.deviceId = m_OutputDevice;
+		op.nChannels = m_Asio.getDeviceInfo(m_OutputDevice).outputChannels;
 
 		// Add all input channels to vector
-		for (int i = 0; i < ip.channelCount; i++)
+		m_Inputs.clear();
+		for (int i = 0; i < ip.nChannels; i++)
 		{
-			const char* name = "";
-			//PaAsio_GetInputChannelName(m_Asio.Devices()[m_InputDevice].id, i, &name);
-			std::string n = name;
-			//n.resize(n.find_last_of(' '));
+			std::string n = m_Asio.getDeviceInfo(m_InputDevice).name;
 			auto& a = m_Inputs.emplace_back(i, n, true);
 		}
 
 		// Add all output channels to vector
-		for (int i = 0; i < op.channelCount; i++)
+		m_Outputs.clear();
+		for (int i = 0; i < op.nChannels; i++)
 		{
-			const char* name = "";
-			//PaAsio_GetOutputChannelName(m_Asio.Devices()[m_OutputDevice].id, i, &name);
-			std::string n = name;
-			//n.resize(n.find_last_of(' '));
+			std::string n = m_Asio.getDeviceInfo(m_OutputDevice).name;
 			auto& a = m_Outputs.emplace_back(i, n, false);
 		}
 
-		PaStream* stream = m_Asio.Stream();
-
 		// Try common sample rates
-		int tries = 0;
-		double _srates[]{ m_Asio.Devices()[m_OutputDevice].info.defaultSampleRate, 48000.0, 44100.0, 96000, 192000 };
-		do
-		{
-			if (tries == sizeof(_srates) / sizeof(double))
-			{
-				// If wasn't able to find working samplerate, 
-				// close stream and stop trying.
-				CrashLog(Pa_GetErrorText(err));
-				m_Asio.CloseStream();
-				return;
-			}
-			m_Asio.SampleRate(_srates[tries]);
-			CrashLog("Trying samplerate " << m_Asio.SampleRate());
-			tries++;
-		} while ((err = Pa_OpenStream(&stream, &ip, &op, m_Asio.SampleRate(), 256, paClipOff, AsioCallback, this)) != 0);
+		unsigned int frames = 256;
+		m_Asio.openStream(&op, &ip, RTAUDIO_FLOAT32, 48000, &frames, &AsioCallback, this);
+		m_Asio.startStream();
+
+		Lines(ip.nChannels);
 
 		// Logging
-		CrashLog("Opened stream (" << m_Asio.Devices()[m_InputDevice].info.name << ")" <<
-			"\n samplerate: " << m_Asio.SampleRate() <<
+		CrashLog("Opened stream (" << m_Asio.getDeviceInfo(m_InputDevice).name << ")" <<
+			"\n samplerate: " << 48000 <<
 			"\n buffersize: " << 256 <<
-			"\n inchannels: " << ip.channelCount <<
-			"\n outchannels:" << op.channelCount
+			"\n inchannels: " << ip.nChannels <<
+			"\n outchannels:" << op.nChannels
 		);
 
 		CrashLog("Input channel names: ");
@@ -161,9 +130,36 @@ private:
 		return;
 	}
 
-	static inline int AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
-		const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData)
+	static inline int AsioCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
+		double streamTime, RtAudioStreamStatus status, void* data)
 	{
+		ForwardChannel& _this = *static_cast<ForwardChannel*>(data);
+
+		float* _inBuffer = (float*)inputBuffer;
+		float* _outBuffer = (float*)outputBuffer;
+
+		auto& _inputs = _this.m_Inputs;
+		auto& _outputs = _this.m_Outputs;
+
+		for (int i = 0; i < nBufferFrames; i++)
+		{
+			std::lock_guard<std::mutex> _{ _this.m_Lock };
+			
+			int index = i * _inputs.size();
+			for (auto& level : _this.m_Levels)
+				level = _inBuffer[index++];
+
+			// Process main channel things
+			_this.ChannelBase::Process();
+
+			index = i * _inputs.size();
+			for (auto& level : _this.m_Levels)
+				_outBuffer[index++] = level;
+
+			// Reset levels
+			for (auto& i : _this.m_Levels)
+				i = 0;
+		}
 		return 0;
 	}
 
