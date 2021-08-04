@@ -155,7 +155,7 @@ db_ _file.Emplace<MenuButton>([] { throw nullptr; }, "Crash");
         m_AsioDropDown->AddOption(_d.second.info.name, _d.second.id + 1, [&](int i)
             {
                 // If device opened successfully, enable the controlpanel button and save settings.
-                try{
+                try {
                     CrashLog("==============================");
                     CrashLog("Opening audio device with id " << i - 1);
                     if (Audio().OpenDevice(i - 1))

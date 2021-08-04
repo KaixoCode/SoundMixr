@@ -19,7 +19,7 @@ Asio::Asio()
 	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
 	{
 		info = Pa_GetDeviceInfo(i);
-		if (std::string(Pa_GetHostApiInfo(info->hostApi)->name) == "ASIO")
+		if (Pa_GetHostApiInfo(info->hostApi)->type == paASIO)
 		{
 			CrashLog("Found ASIO device:");
 			CrashLog("Id:          " << i);
@@ -48,14 +48,14 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 	ip.device = Device().id;
 	ip.channelCount = Device().info.maxInputChannels;
 	ip.sampleFormat = paFloat32;
-	ip.suggestedLatency = Device().info.defaultLowInputLatency;
+	ip.suggestedLatency = Device().info.defaultHighInputLatency;
 	ip.hostApiSpecificStreamInfo = NULL;
 
 	// Output device settings
 	op.device = Device().id;
 	op.channelCount = Device().info.maxOutputChannels;
 	op.sampleFormat = paFloat32;
-	op.suggestedLatency = Device().info.defaultLowOutputLatency;
+	op.suggestedLatency = Device().info.defaultHighOutputLatency;
 	op.hostApiSpecificStreamInfo = NULL;
 
 	CrashLog("Input settings:");

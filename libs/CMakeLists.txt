@@ -6,3 +6,5 @@ add_subdirectory(portaudio)
 add_subdirectory(PluginBase)
 
 add_subdirectory(rtmidi)
+
+add_subdirectory(rtaudio)

@@ -60,9 +60,9 @@ ChannelBase::ChannelBase(ChannelType type)
 	Div()[0] = { route, Div::Alignment::Center, 25, true };
 
 	/**
-	* Listener for mousepressed which sets the static selected to 'this' if it's
-	* not hovering over any buttons.
-	*/
+	 * Listener for mousepressed which sets the static selected to 'this' if it's
+	 * not hovering over any buttons.
+	 */
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		// Only select if not hovering over any button/parameter

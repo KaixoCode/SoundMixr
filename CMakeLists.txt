@@ -23,6 +23,7 @@ target_include_directories(SoundMixr PUBLIC
   libs/GuiCode/libs
   libs/portaudio/include
   libs/rtmidi
+  libs/rtaudio
   libs/AudioFile
   include/
   resources/
