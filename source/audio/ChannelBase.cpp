@@ -66,10 +66,9 @@ ChannelBase::ChannelBase(ChannelType type)
 	m_Listener += [this](Event::MousePressed& e)
 	{
 		// Only select if not hovering over any button/parameter
-		bool hovering = pan.Hovering() || mute.Hovering() ||
-			mono.Hovering() || (route.Hovering() && !route.Disabled());
+		bool hovering = Hovering() || volume.Hovering();
 
-		if (!hovering && e.button == Event::MouseButton::LEFT)
+		if (hovering && e.button == Event::MouseButton::LEFT)
 			selected = this;
 	};
 }

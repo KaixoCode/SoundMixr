@@ -103,13 +103,13 @@ Audio::Audio()
                     if (s)
                         _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
                 }
-                m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
-                auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>
-                    ([&]() {                 
-                        m_Lock.lock();
-                        EmplaceChannel<ForwardChannel>();
-                        m_Lock.unlock();
-                        }, "Add Forward Channel");
+                //m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+                //auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>
+                //    ([&]() {                 
+                //        m_Lock.lock();
+                //        EmplaceChannel<ForwardChannel>();
+                //        m_Lock.unlock();
+                //        }, "Add Forward Channel");
                 
 
                 //m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
@@ -142,9 +142,7 @@ Audio::Audio()
         {
             // Also make sure we're not hovering over the volume or pan parameter, because
             // double clicking on those will reset their value and should not open the effect panel.
-            if (!ChannelBase::selected->volume.Hovering() && !ChannelBase::selected->pan.Hovering() &&
-                !ChannelBase::selected->mute.Hovering() && !ChannelBase::selected->mono.Hovering() &&
-                !ChannelBase::selected->name.Hovering())
+            if (ChannelBase::selected->Hovering())
             {
                 m_EffectPanel.EffectChain(&ChannelBase::selected->EffectChain());
                 m_EffectPanel.Name(ChannelBase::selected->name.Content());
@@ -185,9 +183,43 @@ void Audio::GenerateMenu(Panel& panel)
 
     bool canAdd = (hover->Type() & ChannelBase::Type::Generator);
 
+    bool canVirtual = (hover->Type() & ChannelBase::Type::Endpoint);
+
     // Add divider if any of the 2 are possible
-    if (canSplit || canCombine || canAdd)
+    if (canSplit || canCombine || canAdd || canVirtual)
         m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+
+    // If the channel can become a virtual channel
+    if (canVirtual)
+    {
+        auto hovere = (EndpointChannel*)hover;
+        auto& _sub = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<
+            SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>("Make Virtual");
+        _sub.MenuBase().ButtonSize({ 220, 20 });
+        int _key = ButtonType::List::NewKey();
+        auto& _nb = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, hovere]() {
+            hovere->m_SubChannels.m_VirtualChannel = -1;
+            hovere->m_SubChannels.Hide();
+            hovere->LayoutManager().Refresh();
+            }, "None", _key);
+        if (hovere->m_SubChannels.m_VirtualChannel == -1)
+            _nb.Selected(true);
+        for (int i = 0; i < hovere->m_Physical.getDeviceCount(); i++)
+        {
+            auto _info = hovere->m_Physical.getDeviceInfo(i);
+            if ((_info.inputChannels == 0 && (hovere->m_Type & ChannelBase::Type::Input)) 
+                || _info.outputChannels == 0 && (hovere->m_Type & ChannelBase::Type::Output))
+                continue;
+            auto& _button = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, i, hovere]() {
+                hovere->m_SubChannels.m_VirtualChannel = i;
+                if (hovere->m_SubChannels.m_Channels.size() == 0);
+                    hovere->m_SubChannels.EmplaceChannel<ForwardChannel>();
+                hovere->m_SubChannels.Show();
+                }, _info.name, _key);
+            if (hovere->m_SubChannels.m_VirtualChannel == i)
+                _button.Selected(true);
+        }
+    }
 
     // If can combine, add combine button
     if (canCombine)

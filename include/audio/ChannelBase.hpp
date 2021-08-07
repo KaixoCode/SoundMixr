@@ -117,6 +117,12 @@ public:
 	 */
 	void Lines(int c);
 
+	virtual bool Hovering() const override
+	{
+		return !(pan.Hovering() || mute.Hovering() || volume.Hovering() || 
+			mono.Hovering() || (route.Hovering() && !route.Disabled()));
+	}
+
 	void Update(const Vec4<int>& v);
 
 	virtual operator nlohmann::json();

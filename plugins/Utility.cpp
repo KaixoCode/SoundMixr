@@ -85,8 +85,6 @@ namespace SoundMixr
 			m_Gain.ResetValue();
 			m_Gain.Unit("dB");
 			m_Gain.Multiplier(0.4);
-			m_Gain.Data().enableSmoothing = true;
-			m_Gain.Data().smoothingAmount = 0.001;
 
 			m_Mute.Size({ 45, 18 });
 			m_Mono.Size({ 45, 18 });
