@@ -6,8 +6,8 @@
 class ForwardChannel : public ChannelBase
 {
 public:
-	ForwardChannel()
-		: ChannelBase(ChannelBase::Type::Forward | ChannelBase::Type::Output | ChannelBase::Type::Input)
+	ForwardChannel(int t)
+		: ChannelBase(ChannelBase::Type::Forward | t)
 	{
 		name.Content("Forward");
 
@@ -20,8 +20,8 @@ public:
 	std::vector<Endpoint> m_Inputs;
 	std::vector<Endpoint> m_Outputs;
 
-	int m_InputDevice = -1;
-	int m_OutputDevice = -1;
+	int m_VirtualDevice = -1;
+	int m_PhysicalDevice = -1;
 
 	void CloseStream() 
 	{
@@ -33,8 +33,11 @@ public:
 
 	void OpenStream()
 	{
-		if (m_Asio.isStreamRunning())
+		if (m_VirtualDevice == -1 || m_PhysicalDevice == -1)
 			return;
+
+		if (m_Asio.isStreamRunning())
+			m_Asio.stopStream();
 
 		if (m_Asio.isStreamOpen())
 			m_Asio.closeStream();
@@ -42,19 +45,27 @@ public:
 		CrashLog("Attempting to open Asio stream");
 		RtAudio::StreamParameters ip, op;
 
+		int input = m_VirtualDevice;
+		int output = m_PhysicalDevice;
+		if (Type() & ChannelBase::Type::Input)
+		{
+			input = m_PhysicalDevice;
+			output = m_VirtualDevice;
+		}
+
 		// Input device settings
-		ip.deviceId = m_InputDevice;
-		ip.nChannels = m_Asio.getDeviceInfo(m_InputDevice).inputChannels;
+		ip.deviceId = input;
+		ip.nChannels = m_Asio.getDeviceInfo(input).inputChannels;
 		
 		// Output device settings
-		op.deviceId = m_OutputDevice;
-		op.nChannels = m_Asio.getDeviceInfo(m_OutputDevice).outputChannels;
+		op.deviceId = output;
+		op.nChannels = m_Asio.getDeviceInfo(output).outputChannels;
 
 		// Add all input channels to vector
 		m_Inputs.clear();
 		for (int i = 0; i < ip.nChannels; i++)
 		{
-			std::string n = m_Asio.getDeviceInfo(m_InputDevice).name;
+			std::string n = m_Asio.getDeviceInfo(input).name;
 			auto& a = m_Inputs.emplace_back(i, n, true);
 		}
 
@@ -62,7 +73,7 @@ public:
 		m_Outputs.clear();
 		for (int i = 0; i < op.nChannels; i++)
 		{
-			std::string n = m_Asio.getDeviceInfo(m_OutputDevice).name;
+			std::string n = m_Asio.getDeviceInfo(output).name;
 			auto& a = m_Outputs.emplace_back(i, n, false);
 		}
 
@@ -74,7 +85,7 @@ public:
 		Lines(ip.nChannels);
 
 		// Logging
-		CrashLog("Opened stream (" << m_Asio.getDeviceInfo(m_InputDevice).name << ")" <<
+		CrashLog("Opened stream (" << m_Asio.getDeviceInfo(input).name << ")" <<
 			"\n samplerate: " << 48000 <<
 			"\n buffersize: " << 256 <<
 			"\n inchannels: " << ip.nChannels <<
@@ -93,6 +104,21 @@ public:
 
 		return;
 	}
+
+	virtual operator nlohmann::json() override 
+	{
+		nlohmann::json _json = ChannelBase::operator nlohmann::json();
+
+		_json["physical"] = m_PhysicalDevice;
+
+		return _json;
+	};
+
+	virtual void operator=(const nlohmann::json& json) override 
+	{
+		ChannelBase::operator =(json);
+		m_PhysicalDevice = json.at("physical").get<int>();
+	};
 
 	static inline int AsioCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
 		double streamTime, RtAudioStreamStatus status, void* data)

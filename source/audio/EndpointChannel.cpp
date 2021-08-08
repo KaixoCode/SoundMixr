@@ -112,10 +112,14 @@ void EndpointChannel::SortEndpoints()
 void EndpointChannel::CalcWidth()
 {
 	int prev = Width();
+	int add = m_SubChannels.Width();
+	if (!m_SubChannels.Visible())
+		add = 0;
+
 	if (Lines() <= 4)
-		Width(70 + m_SubChannels.Width());
+		Width(70 + add);
 	else
-		Width(Lines() * 7 + 42 + m_SubChannels.Width());
+		Width(Lines() * 7 + 42 + add);
 	if (prev != Width())
 		LayoutManager().Refresh();
 }
@@ -137,6 +141,7 @@ EndpointChannel::operator nlohmann::json()
 
 	_json["channels"] = _channels;
 	_json["virtual"] = m_SubChannels.m_VirtualChannel;
+	_json["subchannels"] = m_SubChannels;
 
 	return _json;
 };
@@ -145,4 +150,6 @@ void EndpointChannel::operator=(const nlohmann::json& json)
 {
 	ChannelBase::operator=(json);
 	m_SubChannels.m_VirtualChannel = json.at("virtual").get<int>();
+	m_SubChannels.m_Type = Type() & (ChannelBase::Type::Input | ChannelBase::Type::Output);
+	m_SubChannels = json.at("subchannels");
 };

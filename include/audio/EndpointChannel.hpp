@@ -38,13 +38,21 @@ public:
 		d.Command<Graphics::PopMatrix>();
 	}
 
+	void UpdateEffects()
+	{
+		for (auto& i : m_Channels)
+		{
+			i->EffectChain().UpdateEffects();
+		}
+	}
+
 	/**
 	 * Emplace a new channel.
 	 * @tparam Type type of channel
 	 * @tparam Args arguments to construct the channel
 	 */
 	template<typename Type, typename ... Args>
-	void EmplaceChannel(Args&& ... args)
+	Type& EmplaceChannel(Args&& ... args)
 	{
 		auto _c = std::make_unique<Type>(std::forward<Args>(args)...);
 
@@ -53,11 +61,40 @@ public:
 
 		if (_channel)
 			m_Channels.emplace_back(_channel);
+
+		return *static_cast<Type*>(_channel);
 	}    
+
+
+	virtual operator nlohmann::json() 
+	{
+		nlohmann::json _json = nlohmann::json::object();
+
+		_json["devices"] = nlohmann::json::array();
+		for (auto& i : m_Channels)
+			_json["devices"].push_back(i->operator nlohmann::json());
+
+		return _json;
+	};
+
+	virtual void operator=(const nlohmann::json& json)
+	{
+		bool show = false;
+		for (auto& i : json.at("devices"))
+		{
+			show = true;
+			auto& _c = EmplaceChannel<ForwardChannel>(m_Type);
+			_c.m_VirtualDevice = m_VirtualChannel;
+			_c = i;
+			_c.OpenStream();
+		}
+		Visible(show);
+	}
 	
 	// Vector of pointers to all channels
 	std::vector<ChannelBase*> m_Channels;
 	int m_VirtualChannel = -1;
+	int m_Type;
 };
 
 /**

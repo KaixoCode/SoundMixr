@@ -159,6 +159,17 @@ void Audio::GenerateMenu(Panel& panel)
     auto hover = (ChannelBase*)panel.HoveringComponent();
     auto focus = ChannelBase::selected;
 
+    if (hover->Type() & ChannelBase::Type::Endpoint)
+    {
+        auto hovera = (EndpointChannel*)hover;
+        if (hovera->HoveringComponent() == &hovera->m_SubChannels)
+        {
+           ChannelBase* s = (ChannelBase*)hovera->m_SubChannels.HoveringComponent();
+           if (s)
+               hover = s;
+        }
+    }
+
     m_Menu.Clear();
     m_Menu.ButtonSize({ 180, 20 });
     m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(hover->name.Content()).Disable();
@@ -168,10 +179,11 @@ void Audio::GenerateMenu(Panel& panel)
             m_EffectPanel.EffectChain(&hover->EffectChain());
             m_EffectPanel.Name(hover->name.Content());
         }, "Show Effects");
-    m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
-        [&, hover] {
-            hover->Visible(false);
-        }, "Hide Channel");
+    if (!(hover->Type() & ChannelBase::Type::Forward))
+        m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>(
+            [&, hover] {
+                hover->Visible(false);
+            }, "Hide Channel");
 
     // A channel can split if it has more than 1 line, and is an endpoint
     bool canSplit = (hover->Type() & ChannelBase::Type::Endpoint) && hover->Lines() > 1;
@@ -185,9 +197,40 @@ void Audio::GenerateMenu(Panel& panel)
 
     bool canVirtual = (hover->Type() & ChannelBase::Type::Endpoint);
 
+    bool canForward = (hover->Type() & ChannelBase::Type::Forward);
+
     // Add divider if any of the 2 are possible
     if (canSplit || canCombine || canAdd || canVirtual)
         m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+
+
+    if (canForward)
+    {
+        auto hovere = (ForwardChannel*)hover;
+        auto& _sub = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<
+            SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>("Forward");
+        _sub.MenuBase().ButtonSize({ 220, 20 });
+        int _key = ButtonType::List::NewKey();
+        auto& _nb = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, hovere]() {
+            hovere->CloseStream();
+            hovere->m_PhysicalDevice = -1;
+            }, "None", _key);
+        if (hovere->m_PhysicalDevice == -1)
+            _nb.Selected(true);
+        for (int i = 0; i < hovere->m_Asio.getDeviceCount(); i++)
+        {
+            auto _info = hovere->m_Asio.getDeviceInfo(i);
+            if ((_info.outputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Input))
+                || _info.inputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Output))
+                continue;
+            auto& _button = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, i, hovere]() {
+                hovere->m_PhysicalDevice = i;
+                hovere->OpenStream();
+                }, _info.name, _key);
+            if (hovere->m_PhysicalDevice == i)
+                _button.Selected(true);
+        }
+    }
 
     // If the channel can become a virtual channel
     if (canVirtual)
@@ -199,7 +242,13 @@ void Audio::GenerateMenu(Panel& panel)
         int _key = ButtonType::List::NewKey();
         auto& _nb = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, hovere]() {
             hovere->m_SubChannels.m_VirtualChannel = -1;
+            for (auto& i : hovere->m_SubChannels.m_Channels)
+            {
+                ((ForwardChannel*)i)->m_VirtualDevice = -1;
+                ((ForwardChannel*)i)->CloseStream();
+            }
             hovere->m_SubChannels.Hide();
+            hovere->m_SubChannels.Width(0);
             hovere->LayoutManager().Refresh();
             }, "None", _key);
         if (hovere->m_SubChannels.m_VirtualChannel == -1)
@@ -207,13 +256,18 @@ void Audio::GenerateMenu(Panel& panel)
         for (int i = 0; i < hovere->m_Physical.getDeviceCount(); i++)
         {
             auto _info = hovere->m_Physical.getDeviceInfo(i);
-            if ((_info.inputChannels == 0 && (hovere->m_Type & ChannelBase::Type::Input)) 
-                || _info.outputChannels == 0 && (hovere->m_Type & ChannelBase::Type::Output))
+            if ((_info.inputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Input)) 
+                || _info.outputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Output))
                 continue;
             auto& _button = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, i, hovere]() {
                 hovere->m_SubChannels.m_VirtualChannel = i;
-                if (hovere->m_SubChannels.m_Channels.size() == 0);
-                    hovere->m_SubChannels.EmplaceChannel<ForwardChannel>();
+                if (hovere->m_SubChannels.m_Channels.size() == 0)
+                    hovere->m_SubChannels.EmplaceChannel<ForwardChannel>(hovere->m_SubChannels.m_Type);
+                for (auto& a : hovere->m_SubChannels.m_Channels)
+                {
+                    ((ForwardChannel*)a)->m_VirtualDevice = i;
+                    ((ForwardChannel*)a)->OpenStream();
+                }
                 hovere->m_SubChannels.Show();
                 }, _info.name, _key);
             if (hovere->m_SubChannels.m_VirtualChannel == i)
@@ -732,7 +786,11 @@ void Audio::SortChannels()
 void Audio::UpdateEffects()
 {
     for (auto& i : m_Channels)
+    {
         i->EffectChain().UpdateEffects();
+        if (i->Type() & ChannelBase::Type::Endpoint)
+            ((EndpointChannel*)i)->m_SubChannels.UpdateEffects();
+    }
 }
 
 void Audio::Update(const Vec4<int>& v)
