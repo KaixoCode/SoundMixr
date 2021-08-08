@@ -117,7 +117,7 @@ void ChannelBase::Process()
 	bool _mono = mono.Active();
 
 	// Input
-	if (Type() & ChannelBase::Type::Input)
+	if (Type() & ChannelBase::Type::Input || Type() & ChannelBase::Type::Forward)
 	{
 		// Go through all the lines 
 		for (int i = 0; i < m_Lines; i++)
@@ -184,7 +184,7 @@ void ChannelBase::Process()
 	}
 
 	// Otherwise it's output
-	if (Type() & ChannelBase::Type::Output)
+	if (Type() & ChannelBase::Type::Output || Type() & ChannelBase::Type::Forward)
 	{
 		float _avg = 0;
 		bool _mono = mono.Active();
@@ -314,14 +314,16 @@ void ChannelBase::Update(const Vec4<int>& v)
 
 		// Disable the route button if m_Selected is nullptr or
 		// if the type of the channel is the same as this channel, but only for input/output
-		if (!selected || (selected->Type() & Type() & (Type::Input | Type::Output)))
+		if (!selected || (selected->Type() & Type() & (Type::Input | Type::Output)) 
+			|| ((Type() & ChannelBase::Type::Forward) || (selected->Type() & ChannelBase::Type::Forward)))
 			route.Disable();
 		else
 			route.Enable(), route.Active(Connected(selected));
 	}
 
 	// Update connections given the state of the route button.
-	if (selected && selected != this)
+	if (selected && selected != this && 
+		!((Type() & ChannelBase::Type::Forward) || (selected->Type() & ChannelBase::Type::Forward)))
 		if (Type() & Type::Output && selected->Type() & Type::Input)
 			if (route.Active())
 				selected->Connect(this);

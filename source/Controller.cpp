@@ -102,7 +102,7 @@ db_ _file.Emplace<MenuButton>([] { throw nullptr; }, "Crash");
     auto& _midiOutScrollPanel = _settingsPanel.Emplace<SMXRScrollPanel>();
     _midiOutScrollPanel.Size({ 384, 100 });
     _midiOutScrollPanel.EnableScrollbars(false, true);
-    _midiOutScrollPanel.Visible(false); // TODO
+    _midiOutScrollPanel.Visible(true); // TODO
     m_MidiOutDevices = &_midiOutScrollPanel.Panel<Panel>();
     m_MidiOutDevices->Layout<Layout::Divs>();
 
@@ -217,12 +217,12 @@ db_ _file.Emplace<MenuButton>([] { throw nullptr; }, "Crash");
     midi[1] = { _moretext, Div::Alignment::Center, 36 };
     midi[0] = { 5, Div::Alignment::Vertical };
     midi[0][4].DivSize(8);
-    midi[0][3] = { 1, Div::Alignment::Horizontal, 8, false, 16 };
+    midi[0][3] = { 2, Div::Alignment::Horizontal, 8, false, 16 };
     midi[0][3][0] = { _settingsPanel.Emplace<SMXRTextComponent>("Inputs"), Div::Alignment::Center, Div::AUTO };
-    //midi[0][3][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Outputs"), Div::Alignment::Center, Div::AUTO };
-    midi[0][2] = { 1, Div::Alignment::Horizontal, 8 };
+    midi[0][3][1] = { _settingsPanel.Emplace<SMXRTextComponent>("Outputs"), Div::Alignment::Center, Div::AUTO };
+    midi[0][2] = { 2, Div::Alignment::Horizontal, 8 };
     midi[0][2][0] = { _midiInScrollPanel, Div::Alignment::Center, Div::AUTO, true };
-    //midi[0][2][1] = { _midiOutScrollPanel, Div::Alignment::Center, Div::AUTO, true }; // TODO
+    midi[0][2][1] = { _midiOutScrollPanel, Div::Alignment::Center, Div::AUTO, true }; // TODO
     midi[0][1] = { _refreshMidiDevices, Div::Alignment::Center, 26, false };
     midi[0][0].DivSize(20);
 
@@ -339,7 +339,7 @@ db_ _file.Emplace<MenuButton>([] { throw nullptr; }, "Crash");
     SaveSettings();
     m_Audio->SaveRouting();
     Soundboard::Get().Save();
-    m_Audio->Clear();
+    m_Audio->CloseDevice();
     m_Gui.Clear();
 }
 

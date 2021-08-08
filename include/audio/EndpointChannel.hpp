@@ -21,7 +21,10 @@ public:
 			i->Y(0);
 			x += i->Width() + 8;
 		}
-		Width(x - 8);
+		if (m_VirtualChannel == -1)
+			Width(0);
+		else
+			Width(x - 8);
 		Panel::Update(v);
 	}
 
@@ -88,7 +91,9 @@ public:
 			_c = i;
 			_c.OpenStream();
 		}
-		Visible(show);
+		Visible(show && m_VirtualChannel != -1);
+		if (!(show && m_VirtualChannel != -1))
+			Width(0);
 	}
 	
 	// Vector of pointers to all channels

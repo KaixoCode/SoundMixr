@@ -418,6 +418,12 @@ bool Audio::CloseDevice()
     // since it will otherwise be undefined.
     m_EffectPanel.EffectChain(nullptr);
 
+    // Open any sub-channels
+    for (auto& i : m_Channels)
+        if (i->Type() & ChannelBase::Type::Endpoint)
+            for (auto& k : ((EndpointChannel*)i)->m_SubChannels.m_Channels)
+                ((ForwardChannel*)k)->CloseStream();
+
     // Close the stream in case there was one open.
     m_Asio.CloseStream();
     SaveRouting();
