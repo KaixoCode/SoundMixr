@@ -242,10 +242,17 @@ void Audio::GenerateMenu(Panel& panel)
         int _key = ButtonType::List::NewKey();
         auto& _nb = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, hovere]() {
             hovere->m_SubChannels.m_VirtualChannel = -1;
-            for (auto& i : hovere->m_SubChannels.m_Channels)
+            try
             {
-                ((ForwardChannel*)i)->m_VirtualDevice = -1;
-                ((ForwardChannel*)i)->CloseStream();
+                for (auto& i : hovere->m_SubChannels.m_Channels)
+                {
+                    ((ForwardChannel*)i)->m_VirtualDevice = -1;
+                    ((ForwardChannel*)i)->CloseStream();
+                }
+            }
+            catch (...)
+            {
+                CrashLog("Failed to close virtual device");
             }
             hovere->m_SubChannels.Hide();
             hovere->m_SubChannels.Width(0);
@@ -263,10 +270,17 @@ void Audio::GenerateMenu(Panel& panel)
                 hovere->m_SubChannels.m_VirtualChannel = i;
                 if (hovere->m_SubChannels.m_Channels.size() == 0)
                     hovere->m_SubChannels.EmplaceChannel<ForwardChannel>(hovere->m_SubChannels.m_Type);
-                for (auto& a : hovere->m_SubChannels.m_Channels)
+                try
                 {
-                    ((ForwardChannel*)a)->m_VirtualDevice = i;
-                    ((ForwardChannel*)a)->OpenStream();
+                    for (auto& a : hovere->m_SubChannels.m_Channels)
+                    {
+                        ((ForwardChannel*)a)->m_VirtualDevice = i;
+                        ((ForwardChannel*)a)->OpenStream();
+                    }
+                }
+                catch (...)
+                {
+                    CrashLog("Failed to open virtual device: " << i);
                 }
                 hovere->m_SubChannels.Show();
                 }, _info.name, _key);
