@@ -23,7 +23,7 @@ int WINAPI WinMain(
 		a.SaveSettings();
 		a.m_Audio->SaveRouting();
 		Soundboard::Get().Save();
-		a.m_Audio->Clear();
+		a.m_Audio->CloseDevice();
 		a.m_Gui.Clear();
 	}
 
