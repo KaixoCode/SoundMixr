@@ -84,6 +84,8 @@ Audio::Audio()
                 m_Menu.ButtonSize({ 180, 20 });
                 m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>("Channels").Disable();
                 m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
+
+                // Sub-menu to show/hide input channels
                 auto& _sub = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
                     ("Show Inputs");
                 _sub.MenuBase().ButtonSize({ 180, 20 });
@@ -94,6 +96,7 @@ Audio::Audio()
                         _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
                 }
 
+                // Sub-menu to show/hide output channels
                 auto& _sub2 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
                     ("Show Outputs");
                 _sub2.MenuBase().ButtonSize({ 180, 20 });
@@ -103,14 +106,7 @@ Audio::Audio()
                     if (s)
                         _sub2.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Toggle>>(&s->m_Visible, s->name.Content());
                 }
-                //m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
-                //auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>
-                //    ([&]() {                 
-                //        m_Lock.lock();
-                //        EmplaceChannel<ForwardChannel>();
-                //        m_Lock.unlock();
-                //        }, "Add Forward Channel");
-                
+
 
                 //m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
                 //auto& _sub3 = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>
@@ -159,6 +155,8 @@ void Audio::GenerateMenu(Panel& panel)
     auto hover = (ChannelBase*)panel.HoveringComponent();
     auto focus = ChannelBase::selected;
 
+    // Get any subchannel hover, but store original hover as well.
+    auto orighover = hover;
     if (hover->Type() & ChannelBase::Type::Endpoint)
     {
         auto hovera = (EndpointChannel*)hover;
@@ -195,38 +193,70 @@ void Audio::GenerateMenu(Panel& panel)
 
     bool canAdd = (hover->Type() & ChannelBase::Type::Generator);
 
+    // An endpoint channel can be virtualized, but choosing its respective WASAPI device.
     bool canVirtual = (hover->Type() & ChannelBase::Type::Endpoint);
 
+    // A forward channel.
     bool canForward = (hover->Type() & ChannelBase::Type::Forward);
 
     // Add divider if any of the 2 are possible
-    if (canSplit || canCombine || canAdd || canVirtual)
+    if (canSplit || canCombine || canAdd || canVirtual || canForward)
         m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 
-
+    // If it's a forward channel
     if (canForward)
     {
         auto hovere = (ForwardChannel*)hover;
+        auto orighovere = (EndpointChannel*)orighover;
+        // First add a delete option
+        m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([&, hovere, orighovere]() 
+            {   
+                // if it was selected, set to nullptr and remove effect chain
+                if (ChannelBase::selected == hovere)
+                {
+                    ChannelBase::selected = nullptr;
+                    m_EffectPanel.EffectChain(nullptr);
+                }
+                // Erase it from the subchannels of the original hovering.
+                orighovere->m_SubChannels.Erase(*(Component*)hovere);
+                auto& a = orighovere->m_SubChannels.m_Channels;
+                a.erase(std::find(a.begin(), a.end(), hovere));
+            }, "Delete");
+
+        // Sub menu for selecting device to forward from/to.
         auto& _sub = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<
             SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>("Forward");
         _sub.MenuBase().ButtonSize({ 220, 20 });
+        
+        // Generate key for button List
         int _key = ButtonType::List::NewKey();
+
+        // None option, to close device.
         auto& _nb = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, hovere]() {
             hovere->CloseStream();
             hovere->m_PhysicalDevice = -1;
             }, "None", _key);
+
+        // Also auto select this one if it's the selected device.
         if (hovere->m_PhysicalDevice == -1)
             _nb.Selected(true);
-        for (int i = 0; i < hovere->m_Asio.getDeviceCount(); i++)
+
+        // For each device
+        for (int i = 0; i < hovere->m_Audio.getDeviceCount(); i++)
         {
-            auto _info = hovere->m_Asio.getDeviceInfo(i);
-            if ((_info.outputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Input))
-                || _info.inputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Output))
+            auto _info = hovere->m_Audio.getDeviceInfo(i);
+
+            // If this device is not input/output depending on channeltype, continue.
+            if ((_info.outputChannels > 0 && (orighovere->m_Type & ChannelBase::Type::Input))
+                || _info.inputChannels > 0 && (orighovere->m_Type & ChannelBase::Type::Output))
                 continue;
+
+            // Otherwise add a button to select the device.
             auto& _button = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, i, hovere]() {
                 hovere->m_PhysicalDevice = i;
                 hovere->OpenStream();
                 }, _info.name, _key);
+            // And select button if it's the currently selected device.
             if (hovere->m_PhysicalDevice == i)
                 _button.Selected(true);
         }
@@ -236,58 +266,99 @@ void Audio::GenerateMenu(Panel& panel)
     if (canVirtual)
     {
         auto hovere = (EndpointChannel*)hover;
+        bool isVirtual = hovere->m_SubChannels.m_VirtualChannel != -1;
+
+        // Option to add a new forward channel if the channel has been made virtual
+        if (isVirtual)
+            m_Menu.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::Normal>>([hovere]() 
+                {
+                    auto& a = hovere->m_SubChannels.EmplaceChannel<ForwardChannel>(hovere->m_SubChannels.m_Type); 
+                    a.m_VirtualDevice = hovere->m_SubChannels.m_VirtualChannel;
+                }, "Add Forward Channel");
+
+        // Submenu for selecting a WASAPI device.
         auto& _sub = m_Menu.Emplace<Button<SoundMixrGraphics::SubMenu, ButtonType::Menu<
-            SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>("Make Virtual");
+            SoundMixrGraphics::Vertical, MenuType::Normal, ButtonType::Hover, Align::RIGHT>>>("Set Forward Device");
         _sub.MenuBase().ButtonSize({ 220, 20 });
         int _key = ButtonType::List::NewKey();
-        auto& _nb = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, hovere]() {
-            hovere->m_SubChannels.m_VirtualChannel = -1;
-            try
+        
+        // None, for non-virtualized channels.
+        auto& _nb = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, hovere]() 
             {
-                for (auto& i : hovere->m_SubChannels.m_Channels)
-                {
-                    ((ForwardChannel*)i)->m_VirtualDevice = -1;
-                    ((ForwardChannel*)i)->CloseStream();
-                }
-            }
-            catch (...)
-            {
-                CrashLog("Failed to close virtual device");
-            }
-            hovere->m_SubChannels.Hide();
-            hovere->m_SubChannels.Width(0);
-            hovere->LayoutManager().Refresh();
-            }, "None", _key);
-        if (hovere->m_SubChannels.m_VirtualChannel == -1)
-            _nb.Selected(true);
-        for (int i = 0; i < hovere->m_Physical.getDeviceCount(); i++)
-        {
-            auto _info = hovere->m_Physical.getDeviceInfo(i);
-            if ((_info.inputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Input)) 
-                || _info.outputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Output))
-                continue;
-            auto& _button = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, i, hovere]() {
-                hovere->m_SubChannels.m_VirtualChannel = i;
-                if (hovere->m_SubChannels.m_Channels.size() == 0)
-                    hovere->m_SubChannels.EmplaceChannel<ForwardChannel>(hovere->m_SubChannels.m_Type);
+                hovere->m_SubChannels.m_VirtualChannel = -1;
                 try
                 {
-                    for (auto& a : hovere->m_SubChannels.m_Channels)
+                    // Close all the streams.
+                    for (auto& i : hovere->m_SubChannels.m_Channels)
                     {
-                        ((ForwardChannel*)a)->m_VirtualDevice = i;
-                        ((ForwardChannel*)a)->OpenStream();
+                        ((ForwardChannel*)i)->m_VirtualDevice = -1;
+                        ((ForwardChannel*)i)->CloseStream();
                     }
                 }
                 catch (...)
                 {
-                    CrashLog("Failed to open virtual device: " << i);
+                    CrashLog("Failed to close virtual device");
                 }
-                hovere->m_SubChannels.Show();
+                // Hide and width = 0, and force redraw of Layoutmanager.
+                hovere->m_SubChannels.Hide();
+                hovere->m_SubChannels.Width(0);
+                hovere->LayoutManager().Refresh();
+            }, "None", _key);
+
+        // Select if current device
+        if (hovere->m_SubChannels.m_VirtualChannel == -1)
+            _nb.Selected(true);
+
+        // Go through devices.
+        int biggestSize = 0;
+        for (int i = 0; i < hovere->m_Physical.getDeviceCount(); i++)
+        {
+            auto _info = hovere->m_Physical.getDeviceInfo(i);
+
+            // If this device is not input/output depending on channeltype, continue.
+            if ((_info.inputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Input)) 
+                || _info.outputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Output))
+                continue;
+
+            // Add button to select this device.
+            auto& _button = _sub.Emplace<Button<SoundMixrGraphics::Menu, ButtonType::List>>([&, i, hovere]() 
+                {
+                    // Set the virtual channel, and add a forward channel if none is present.
+                    hovere->m_SubChannels.m_VirtualChannel = i;
+                    if (hovere->m_SubChannels.m_Channels.size() == 0)
+                        hovere->m_SubChannels.EmplaceChannel<ForwardChannel>(hovere->m_SubChannels.m_Type);
+                    try
+                    {
+                        // Also set the virtual device for any existing channels, and open if possible.
+                        for (auto& a : hovere->m_SubChannels.m_Channels)
+                        {
+                            ((ForwardChannel*)a)->m_VirtualDevice = i;
+                            ((ForwardChannel*)a)->OpenStream();
+                        }
+                    }
+                    catch (...)
+                    {
+                        CrashLog("Failed to open virtual device: " << i);
+                    }
+
+                    // Show Subchannels
+                    hovere->m_SubChannels.Show();
                 }, _info.name, _key);
+
+            // Select if it's currently selected device.
             if (hovere->m_SubChannels.m_VirtualChannel == i)
                 _button.Selected(true);
+
+            int textWidth = Graphics::StringWidth(_info.name, ThemeT::Get().font, 16);
+            if (textWidth > biggestSize)
+                biggestSize = textWidth;
         }
+        // TODO: implement dynamic buttonSize feature.
+        _sub.MenuBase().ButtonSize({ biggestSize + 40, 20 });
     }
+
+    if ((canCombine || canSplit) && (canVirtual || canForward))
+        m_Menu.Emplace<MenuDivider>(180, 1, 0, 2);
 
     // If can combine, add combine button
     if (canCombine)

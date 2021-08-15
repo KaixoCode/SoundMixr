@@ -14,7 +14,7 @@ public:
 		Lines(2);
 	}
 
-	RtAudio m_Asio{ RtAudio::Api::WINDOWS_WASAPI };
+	RtAudio m_Audio{ RtAudio::Api::WINDOWS_WASAPI };
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 
 	std::vector<Endpoint> m_Inputs;
@@ -27,10 +27,10 @@ public:
 	{
 		try
 		{
-			if (!m_Asio.isStreamRunning())
+			if (!m_Audio.isStreamRunning())
 				return;
 		
-			m_Asio.stopStream();
+			m_Audio.stopStream();
 		}
 		catch (...)
 		{
@@ -42,17 +42,17 @@ public:
 	{
 		// This thing doesn't rely on anything outside of the channel. So do this.
 		std::thread([this](){
-			for (int tries = 0; tries < 10; tries++)
+			for (int tries = 0; tries < 3; tries++)
 			{
 				try {
 					if (m_VirtualDevice == -1 || m_PhysicalDevice == -1)
 						return;
 
-					if (m_Asio.isStreamRunning())
-						m_Asio.stopStream();
+					if (m_Audio.isStreamRunning())
+						m_Audio.stopStream();
 
-					if (m_Asio.isStreamOpen())
-						m_Asio.closeStream();
+					if (m_Audio.isStreamOpen())
+						m_Audio.closeStream();
 
 					CrashLog("Attempting to open stream");
 					RtAudio::StreamParameters ip, op;
@@ -67,17 +67,17 @@ public:
 
 					// Input device settings
 					ip.deviceId = input;
-					ip.nChannels = m_Asio.getDeviceInfo(input).inputChannels;
+					ip.nChannels = m_Audio.getDeviceInfo(input).inputChannels;
 		
 					// Output device settings
 					op.deviceId = output;
-					op.nChannels = m_Asio.getDeviceInfo(output).outputChannels;
+					op.nChannels = m_Audio.getDeviceInfo(output).outputChannels;
 
 					// Add all input channels to vector
 					m_Inputs.clear();
 					for (int i = 0; i < ip.nChannels; i++)
 					{
-						std::string n = m_Asio.getDeviceInfo(input).name;
+						std::string n = m_Audio.getDeviceInfo(input).name;
 						auto& a = m_Inputs.emplace_back(i, n, true);
 					}
 
@@ -85,19 +85,19 @@ public:
 					m_Outputs.clear();
 					for (int i = 0; i < op.nChannels; i++)
 					{
-						std::string n = m_Asio.getDeviceInfo(output).name;
+						std::string n = m_Audio.getDeviceInfo(output).name;
 						auto& a = m_Outputs.emplace_back(i, n, false);
 					}
 
 					// Try common sample rates
 					unsigned int frames = 512;
-					m_Asio.openStream(&op, &ip, RTAUDIO_FLOAT32, 48000, &frames, &AsioCallback, this);
-					m_Asio.startStream();
+					m_Audio.openStream(&op, &ip, RTAUDIO_FLOAT32, 48000, &frames, &AsioCallback, this);
+					m_Audio.startStream();
 
 					Lines(ip.nChannels);
 
 					// Logging
-					CrashLog("Opened stream (" << m_Asio.getDeviceInfo(input).name << ")" <<
+					CrashLog("Opened stream (" << m_Audio.getDeviceInfo(input).name << ")" <<
 						"\n samplerate: " << 48000 <<
 						"\n buffersize: " << 256 <<
 						"\n inchannels: " << ip.nChannels <<
