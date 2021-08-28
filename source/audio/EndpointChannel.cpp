@@ -86,7 +86,7 @@ void EndpointChannel::AddEndpoint(Endpoint* e)
 
 void EndpointChannel::RemoveEndpoint(Endpoint* e)
 {
-	auto& it = std::find(m_Endpoints.begin(), m_Endpoints.end(), e);
+	auto it = std::find(m_Endpoints.begin(), m_Endpoints.end(), e);
 	if (it != m_Endpoints.end())
 	{
 		// If not added, add endpoint.

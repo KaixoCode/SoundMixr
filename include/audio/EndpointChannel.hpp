@@ -165,7 +165,7 @@ private:
 
 	std::vector<Endpoint*> m_Endpoints;
 
-	RtAudio m_Physical{ RtAudio::Api::WINDOWS_WASAPI };
+	Stream<Api::Wasapi> m_Physical;
 
 	friend class Audio;
 };

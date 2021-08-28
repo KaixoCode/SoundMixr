@@ -95,7 +95,7 @@ void ChannelBase::Connect(ChannelBase* c)
 void ChannelBase::Disconnect(ChannelBase* c)
 {
 	// If connected, disconnect. 
-	auto& it = std::find(m_Connections.begin(), m_Connections.end(), c);
+	auto it = std::find(m_Connections.begin(), m_Connections.end(), c);
 	if (it != m_Connections.end())
 	{
 		m_Lock.lock();

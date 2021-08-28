@@ -152,7 +152,7 @@ db_ _file.Emplace<MenuButton>([] { throw nullptr; }, "Crash");
                 _asioControlPanel.Disable(), SaveSettings();
         });
     for (auto& _d : Audio().Asio().Devices())
-        m_AsioDropDown->AddOption(_d.second.info.name, _d.second.id + 1, [&](int i)
+        m_AsioDropDown->AddOption(_d.name, _d.id + 1, [&](int i)
             {
                 // If device opened successfully, enable the controlpanel button and save settings.
                 try {
@@ -358,7 +358,7 @@ void Controller::LoadSettings()
         _json << _if;
         _if.close();
 
-        auto& theme = _json.at("theme").get<std::string>();
+        auto theme = _json.at("theme").get<std::string>();
         auto device = _json.at("device").get<int>() + 1;
         auto zoom = _json.at("zoom").get<double>();
         auto hue = _json.at("hue").get<double>();
@@ -407,7 +407,7 @@ void Controller::SaveSettings()
     try
     {
         nlohmann::json _json = nlohmann::json::object();
-        _json["device"] = m_Audio->Asio().DeviceId();
+        _json["device"] = m_Audio->Asio().Information().input;
         _json["zoom"] = m_ScaleSlider->Value();
         _json["hue"] = m_HueSlider->Value();
         _json["theme"] = ThemeT::Get().Name();
@@ -446,7 +446,7 @@ void Controller::LoadThemes()
 
     for (auto& [key, val] : ThemeT::Themes())
     {
-        m_ThemeDropDown->AddOption(key, key, [&](std::string& t)
+        m_ThemeDropDown->AddOption(key, key, [&](const std::string& t)
             {
                 ThemeT::SetTheme(t);
                 SaveSettings();
@@ -516,7 +516,7 @@ void Controller::LoadMidi()
         m_MidiInButtons.push_back(&_b);
 
         // Open the device if it's in the midiEnabled vector.
-        auto& a = std::find(m_MidiInEnabled.begin(), m_MidiInEnabled.end(), _devices[i].name);
+        auto a = std::find(m_MidiInEnabled.begin(), m_MidiInEnabled.end(), _devices[i].name);
         if (a != m_MidiInEnabled.end())
             Midi::Get().OpenInputPort(i);
 
@@ -587,7 +587,7 @@ void Controller::LoadMidi()
         m_MidiOutButtons.push_back(&_b);
 
         // Open the device if it's in the midiEnabled vector.
-        auto& a = std::find(m_MidiOutEnabled.begin(), m_MidiOutEnabled.end(), _outdevices[i].name);
+        auto a = std::find(m_MidiOutEnabled.begin(), m_MidiOutEnabled.end(), _outdevices[i].name);
         if (a != m_MidiOutEnabled.end())
             Midi::Get().OpenOutputPort(i);
 

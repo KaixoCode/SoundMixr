@@ -242,9 +242,9 @@ void Audio::GenerateMenu(Panel& panel)
             _nb.Selected(true);
 
         // For each device
-        for (int i = 0; i < hovere->m_Audio.getDeviceCount(); i++)
+        for (int i = 0; i < hovere->m_Audio.DeviceCount(); i++)
         {
-            auto _info = hovere->m_Audio.getDeviceInfo(i);
+            auto& _info = hovere->m_Audio.Device(i);
 
             // If this device is not input/output depending on channeltype, continue.
             if ((_info.outputChannels > 0 && (orighovere->m_Type & ChannelBase::Type::Input))
@@ -311,9 +311,9 @@ void Audio::GenerateMenu(Panel& panel)
 
         // Go through devices.
         int biggestSize = 0;
-        for (int i = 0; i < hovere->m_Physical.getDeviceCount(); i++)
+        for (int i = 0; i < hovere->m_Physical.DeviceCount(); i++)
         {
-            auto _info = hovere->m_Physical.getDeviceInfo(i);
+            auto _info = hovere->m_Physical.Device(i);
 
             // If this device is not input/output depending on channeltype, continue.
             if ((_info.inputChannels > 0 && (hovere->m_Type & ChannelBase::Type::Input)) 
@@ -446,10 +446,6 @@ void Audio::GenerateMenu(Panel& panel)
 
 bool Audio::OpenDevice(int id)
 {
-    // Don't open if already same device.
-    if (m_Asio.DeviceId() == id)
-        return false;
-
     // Make sure the effect chain being displayed is set to nullptr
     // since it will otherwise be undefined.
     m_EffectPanel.EffectChain(nullptr);
@@ -458,33 +454,26 @@ bool Audio::OpenDevice(int id)
     m_Asio.CloseStream();
 
     // Set the device and open the stream
-    m_Asio.Device(id);
-    if (!m_Asio.OpenStream(AsioCallback, this))
-    {
-        m_Asio.NoDevice();
+    m_Asio.Callback(AsioCallback);
+    m_Asio.UserData(*this);
+    if (!m_Asio.OpenStream({ .input = id, .output = id }))
         return false;
-    }
 
     // Start stream
     LoadRouting();
     if (!m_Asio.StartStream())
     {
         m_Asio.CloseStream();
-        m_Asio.NoDevice();
         return false;
     }
 
     // Set device name
-    m_DeviceName.Content(m_Asio.Device().info.name);
+    m_DeviceName.Content(m_Asio.Device(id).name);
     return true;
 }
 
 bool Audio::CloseDevice()
 {
-    // Don't close if already closed.
-    if (m_Asio.DeviceId() == -1)
-        return false;
-
     // Make sure the effect chain being displayed is set to nullptr
     // since it will otherwise be undefined.
     m_EffectPanel.EffectChain(nullptr);
@@ -499,9 +488,6 @@ bool Audio::CloseDevice()
     m_Asio.CloseStream();
     SaveRouting();
 
-    // Set to no device.
-    m_Asio.NoDevice();
-
     // Clear the panel.
     Clear();
     m_DeviceName.Content("No Device");
@@ -510,30 +496,7 @@ bool Audio::CloseDevice()
 
 void Audio::ShowControlPanel()
 {
-    // Can't show control panel if no device.
-    if (m_Asio.DeviceId() == -1)
-        return;
-
-    // Save the routing before closing.
-    SaveRouting();
-
-    // Make sure everything is cleared before closing, since it will
-    // remove all input and output endpoints and leave them undefined
-    // inside all channels.
-    Clear();
-
-    // Close the stream so we can open the control panel.
-    m_Asio.CloseStream();
-
-    // Show control panel.
-    PaAsio_ShowControlPanel(m_Asio.Device().id, nullptr);
-
-    // Open and start the stream
-    m_Asio.OpenStream(AsioCallback, this);
-    m_Asio.StartStream();
-
-    // Load the routing again.
-    LoadRouting();
+    m_Asio.OpenControlPanel();
 }
 
 void Audio::Clear()
@@ -552,10 +515,6 @@ void Audio::Clear()
 
 void Audio::LoadRouting()
 {
-    // If no device, no routing.
-    if (m_Asio.DeviceId() == -1)
-        return;
-
     // First make sure everything is cleared.
     Clear();
 
@@ -563,16 +522,16 @@ void Audio::LoadRouting()
     // we can later add the ones that weren't added separately.
     bool _soundBoardLoaded = false;
     std::unordered_map<int, bool> _inputIdsLoaded, _outputIdsLoaded;
-    for (int i = 0; i < m_Asio.Device().info.maxInputChannels; i++)
+    for (int i = 0; i < m_Asio.Information().inputChannels; i++)
         _inputIdsLoaded.emplace(i, false);
 
-    for (int i = 0; i < m_Asio.Device().info.maxOutputChannels; i++)
+    for (int i = 0; i < m_Asio.Information().outputChannels; i++)
         _outputIdsLoaded.emplace(i, false);
 
     // Open the routing file for the current device.
     CrashLog("Loading Routing");
     std::ifstream _in;
-    _in.open("./settings/routing" + std::to_string(m_Asio.Device().id));
+    _in.open("./settings/routing" + std::to_string(m_Asio.Information().input));
 
     // Start the loading process if the file opened successfully
     // otherwise we got an error!
@@ -672,7 +631,7 @@ void Audio::LoadRouting()
                 for (int i : _connections)
                 {
                     // Find the outputchannel using its id.
-                    auto& _it = std::find_if(Channels().begin(), Channels().end(),
+                    auto _it = std::find_if(Channels().begin(), Channels().end(),
                         [=](ChannelBase* c)
                         {
                             bool output = (int)c->Type() & (int)ChannelBase::Type::Output;
@@ -757,7 +716,7 @@ void Audio::DefaultRouting()
 
     // Endpoint channels
     int i = 0;
-    for (i = 0; i < m_Asio.Device().info.maxInputChannels - 1; i += 2)
+    for (i = 0; i < m_Asio.Information().inputChannels - 1; i += 2)
     {
         // Add a ChannelPanel with all the inputs
         auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
@@ -774,7 +733,7 @@ void Audio::DefaultRouting()
     }
 
     // if there were an uneven amount of channels, add one last mono channel
-    if (i == m_Asio.Device().info.maxInputChannels - 1)
+    if (i == m_Asio.Information().inputChannels - 1)
     {
         // Add a ChannelPanel with all the inputs
         auto& _c = m_InputsPanel.Emplace<EndpointChannel>(
@@ -789,7 +748,7 @@ void Audio::DefaultRouting()
         _c.volume.Value(1);
     }
 
-    for (i = 0; i < m_Asio.Device().info.maxOutputChannels - 1; i += 2)
+    for (i = 0; i < m_Asio.Information().outputChannels - 1; i += 2)
     {
         // Add a ChannelPanel with all the outputs
         auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
@@ -806,7 +765,7 @@ void Audio::DefaultRouting()
     }
 
     // if there were an uneven amount of channels, add one last mono channel
-    if (i == m_Asio.Device().info.maxOutputChannels - 1)
+    if (i == m_Asio.Information().outputChannels - 1)
     {
         // Add a ChannelPanel with all the outputs
         auto& _c = m_OutputsPanel.Emplace<EndpointChannel>(
@@ -825,13 +784,12 @@ void Audio::DefaultRouting()
 void Audio::SaveRouting()
 {
     // If no device is loaded there is nothing to save.
-    if (m_Asio.DeviceId() == -1)
+    if (m_Asio.Information().input == -1)
         return;
 
     CrashLog("Saving Routing");
     try
     {
-
         nlohmann::json _json;
         _json["channels"] = nlohmann::json::array();
 
@@ -841,7 +799,7 @@ void Audio::SaveRouting()
 
         // Save to routing file.
         std::ofstream _out;
-        _out.open("./settings/routing" + std::to_string(m_Asio.DeviceId()));
+        _out.open("./settings/routing" + std::to_string(m_Asio.Information().input));
         _out << std::setw(4) << _json; // Pretty print
         _out.close();
     }
@@ -920,27 +878,18 @@ void Audio::Render(CommandCollection& d)
     Panel::Render(d);
 }
 
-int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
-    const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData)
+void Audio::AsioCallback(Buffer<float>& input, Buffer<float>& output, CallbackInfo info, Audio& _this)
 {
-    Audio& _this = *static_cast<Audio*>(userData);
-
-    float* _inBuffer = (float*)inputBuffer;
-    float* _outBuffer = (float*)outputBuffer;
-
-    int _inChannelCount = _this.Asio().Device().info.maxInputChannels;
-    int _outChannelCount = _this.Asio().Device().info.maxOutputChannels;
-
     auto& _inputs = _this.Asio().Inputs();
     auto& _outputs = _this.Asio().Outputs();
 
     auto& _channels = _this.Channels();
 
-    for (int i = 0; i < nBufferFrames; i++)
+    for (int i = 0; i < info.bufferSize; i++)
     {
         // First input the samples from the input buffer to the input endpoints
-        for (int j = 0; j < _inChannelCount; j++)
-            _inputs[j].sample = _inBuffer[i * _inChannelCount + j];
+        for (int j = 0; j < info.inputChannels; j++)
+            _inputs[j].sample = input[i][j];
 
         // Process all channels, this lock is here for splitting/combining channels
         _this.m_Lock.lock();
@@ -949,8 +898,7 @@ int Audio::AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned lo
         _this.m_Lock.unlock();
 
         // Output the samples from the output endpoints to the output buffer.
-        for (int j = 0; j < _outChannelCount; j++)
-            _outBuffer[i * _outChannelCount + j] = _outputs[j].sample;
+        for (int j = 0; j < info.outputChannels; j++)
+            output[i][j] = _outputs[j].sample;
     }
-    return 0;
 }

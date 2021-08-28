@@ -96,7 +96,7 @@ public:
 	bool OpenInputPort(int id)
 	{
 		CrashLog("Opening input midi port with id " << id);
-		auto& o = m_InOpened.try_emplace(id);
+		auto o = m_InOpened.try_emplace(id);
 		if (o.second)
 			try
 			{
@@ -117,7 +117,7 @@ public:
 	bool OpenOutputPort(int id)
 	{
 		CrashLog("Opening output midi port with id " << id);
-		auto& o = m_OutOpened.try_emplace(id);
+		auto o = m_OutOpened.try_emplace(id);
 		if (o.second)
 			try
 		{
@@ -138,7 +138,7 @@ public:
 	void CloseInputPort(int id)
 	{
 		CrashLog("Closing input midi port with id " << id);
-		auto& i = m_InOpened.find(id);
+		auto i = m_InOpened.find(id);
 		if (i != m_InOpened.end())
 			i->second.closePort(), m_InOpened.erase(i);
 	}
@@ -148,7 +148,7 @@ public:
 	void CloseOutputPort(int id)
 	{
 		CrashLog("Closing output midi port with id " << id);
-		auto& i = m_OutOpened.find(id);
+		auto i = m_OutOpened.find(id);
 		if (i != m_OutOpened.end())
 			i->second.closePort(), m_OutOpened.erase(i);
 	}
@@ -260,7 +260,7 @@ public:
 	auto AddCallback(Callback<Event::PitchWheel> a)        { m_PitchWheelCallbacks.emplace(m_Counter++, a);        int b = m_Counter; return [&, b] { Remove<Event::PitchWheel>(b - 1); }; }
 
 	template<typename T>
-	void Remove(int id) { RemoveCallback(id); }
+	void Remove(int id) { }
 	template<> void Remove<Event>(int id) { if (m_EventCallbacks.find(id) != m_EventCallbacks.end()) m_EventCallbacks.erase(m_EventCallbacks.find(id)); }
 	template<> void Remove<Event::NoteOff>(int id) { if (m_NoteOffCallbacks.find(id) != m_NoteOffCallbacks.end()) m_NoteOffCallbacks.erase(m_NoteOffCallbacks.find(id)); }
 	template<> void Remove<Event::NoteOn>(int id) { if (m_NoteOnCallbacks.find(id) != m_NoteOnCallbacks.end()) m_NoteOnCallbacks.erase(m_NoteOnCallbacks.find(id)); }

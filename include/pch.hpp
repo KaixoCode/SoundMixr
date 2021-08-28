@@ -29,13 +29,14 @@
 
 #include <nlohmann/json.hpp>
 
-#include "portaudio.h"
-#include "pa_asio.h"
+#include "Audijo/Audijo.hpp"
 
 #include "RtMidi.h"
-#include "RtAudio.h"
 
+namespace AudioFile
+{
 #include <AudioFile.h>
+}
 
 #define _TESTLINK
 #include "Base.hpp"

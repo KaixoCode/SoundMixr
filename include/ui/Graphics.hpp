@@ -1721,7 +1721,7 @@ namespace SoundMixrGraphics
 
 	struct TitleMenu
 	{ 
-		static void TitleMenu::Render(ButtonBase& b, CommandCollection& d)
+		static void Render(ButtonBase& b, CommandCollection& d)
 		 {
 			 Color _c1 = b.Active() ? ThemeT::Get().menu_background : b.Hovering() ? ThemeT::Get().menu_button_hovering_background : Color{ 0, 0, 0, 0 };
 			 Color _c2 = b.Active() ? ThemeT::Get().window_menu_text : b.Hovering() ? ThemeT::Get().menu_button_hovering_text : ThemeT::Get().window_menu_text;

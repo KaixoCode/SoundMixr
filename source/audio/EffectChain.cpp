@@ -317,9 +317,9 @@ void EffectChain::operator=(const nlohmann::json& json)
 		{
 			try
 			{
-				auto& type = effect.at("type").get<std::string>();
+				auto type = effect.at("type").get<std::string>();
 
-				auto& _it = PluginLoader::Effects().find(type);
+				auto _it = PluginLoader::Effects().find(type);
 				if (_it != PluginLoader::Effects().end())
 				{
 					SoundMixr::EffectBase* e = (*_it).second->CreateInstance();

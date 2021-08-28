@@ -42,7 +42,7 @@ public:
      * Get the Asio.
      * @return asio
      */
-    auto Asio() -> Asio& { return m_Asio; }
+    auto Asio() -> ::Asio& { return m_Asio; }
 
     /**
      * Open the asio device with the given id.
@@ -144,8 +144,7 @@ private:
     /**
      * Callback for the Asio, processes all audio.
      */
-    static int AsioCallback(const void* inputBuffer, void* outputBuffer, unsigned long nBufferFrames,
-        const PaStreamCallbackTimeInfo* timeInfo, PaStreamCallbackFlags statusFlags, void* userData);
+    static void AsioCallback(Buffer<float>&, Buffer<float>&, CallbackInfo, Audio&);
 
     friend class Controller;
 };

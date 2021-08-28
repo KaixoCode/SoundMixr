@@ -14,7 +14,7 @@ public:
 		Lines(2);
 	}
 
-	RtAudio m_Audio{ RtAudio::Api::WINDOWS_WASAPI };
+	Stream<Api::Wasapi> m_Audio;
 	Menu<SoundMixrGraphics::Vertical, MenuType::Normal> m_Menu;
 
 	std::vector<Endpoint> m_Inputs;
@@ -25,17 +25,7 @@ public:
 
 	void CloseStream() 
 	{
-		try
-		{
-			if (!m_Audio.isStreamRunning())
-				return;
-		
-			m_Audio.stopStream();
-		}
-		catch (...)
-		{
-			CrashLog("Failed to close stream of forwardchannel with ids " << m_VirtualDevice << ", " << m_PhysicalDevice << " and type " << m_Type);
-		}
+		m_Audio.Close();
 	}
 
 	void OpenStream()
@@ -48,14 +38,9 @@ public:
 					if (m_VirtualDevice == -1 || m_PhysicalDevice == -1)
 						return;
 
-					if (m_Audio.isStreamRunning())
-						m_Audio.stopStream();
-
-					if (m_Audio.isStreamOpen())
-						m_Audio.closeStream();
+					m_Audio.Close();
 
 					CrashLog("Attempting to open stream");
-					RtAudio::StreamParameters ip, op;
 
 					int input = m_VirtualDevice;
 					int output = m_PhysicalDevice;
@@ -65,43 +50,41 @@ public:
 						output = m_VirtualDevice;
 					}
 
-					// Input device settings
-					ip.deviceId = input;
-					ip.nChannels = m_Audio.getDeviceInfo(input).inputChannels;
-		
-					// Output device settings
-					op.deviceId = output;
-					op.nChannels = m_Audio.getDeviceInfo(output).outputChannels;
+					m_Audio.UserData(*this);
+					m_Audio.Callback(AsioCallback);
+					auto err = m_Audio.Open({
+						.input = input,
+						.output = output
+					});
+
+					if (err != NoError)
+						throw nullptr; // retry
+
+					auto& info = m_Audio.Information();
 
 					// Add all input channels to vector
 					m_Inputs.clear();
-					for (int i = 0; i < ip.nChannels; i++)
+					for (int i = 0; i < info.inputChannels; i++)
 					{
-						std::string n = m_Audio.getDeviceInfo(input).name;
-						auto& a = m_Inputs.emplace_back(i, n, true);
+						m_Inputs.emplace_back(i, m_Audio.Device(info.input).name, true);
 					}
 
 					// Add all output channels to vector
 					m_Outputs.clear();
-					for (int i = 0; i < op.nChannels; i++)
+					for (int i = 0; i < info.outputChannels; i++)
 					{
-						std::string n = m_Audio.getDeviceInfo(output).name;
-						auto& a = m_Outputs.emplace_back(i, n, false);
+						auto& a = m_Outputs.emplace_back(i, m_Audio.Device(info.input).name, false);
 					}
 
-					// Try common sample rates
-					unsigned int frames = 512;
-					m_Audio.openStream(&op, &ip, RTAUDIO_FLOAT32, 48000, &frames, &AsioCallback, this);
-					m_Audio.startStream();
-
-					Lines(ip.nChannels);
+					Lines(std::min(info.inputChannels, info.outputChannels));
+					m_Audio.Start();
 
 					// Logging
-					CrashLog("Opened stream (" << m_Audio.getDeviceInfo(input).name << ")" <<
-						"\n samplerate: " << 48000 <<
-						"\n buffersize: " << 256 <<
-						"\n inchannels: " << ip.nChannels <<
-						"\n outchannels:" << op.nChannels
+					CrashLog("Opened stream (" << m_Audio.Device(info.input).name << ")" <<
+						"\n samplerate: " << info.sampleRate <<
+						"\n buffersize: " << info.bufferSize <<
+						"\n inchannels: " << info.inputChannels <<
+						"\n outchannels:" << info.outputChannels
 					);
 
 					CrashLog("Input channel names: ");
@@ -143,37 +126,31 @@ public:
 		m_PhysicalDevice = json.at("physical").get<int>();
 	};
 
-	static inline int AsioCallback(void* outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
-		double streamTime, RtAudioStreamStatus status, void* data)
+	static inline void AsioCallback(Buffer<float>& input, Buffer<float>& output, CallbackInfo info, ForwardChannel& _this)
 	{
-		ForwardChannel& _this = *static_cast<ForwardChannel*>(data);
-
-		float* _inBuffer = (float*)inputBuffer;
-		float* _outBuffer = (float*)outputBuffer;
 
 		auto& _inputs = _this.m_Inputs;
 		auto& _outputs = _this.m_Outputs;
 
-		for (int i = 0; i < nBufferFrames; i++)
+		for (int i = 0; i < info.bufferSize; i++)
 		{
 			std::lock_guard<std::mutex> _{ _this.m_Lock };
 			
-			int index = i * _inputs.size();
+			int index = 0;
 			for (auto& level : _this.m_Levels)
-				level = _inBuffer[index++];
+				level = input[i][index++];
 
 			// Process main channel things
 			_this.ChannelBase::Process();
 
-			index = i * _inputs.size();
+			index = 0;
 			for (auto& level : _this.m_Levels)
-				_outBuffer[index++] = level;
+				output[i][index++] = level;
 
 			// Reset levels
 			for (auto& i : _this.m_Levels)
 				i = 0;
 		}
-		return 0;
 	}
 
 };

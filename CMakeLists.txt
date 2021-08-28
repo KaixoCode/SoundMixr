@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 project (SoundMixr)
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(libs)
 
@@ -14,16 +14,15 @@ file(GLOB_RECURSE SOURCE
   "${SRC}resources/*.rc"
 )
 
-add_executable(SoundMixr WIN32
+add_executable(SoundMixr
   ${SOURCE}
 )
 
 target_include_directories(SoundMixr PUBLIC
   libs/GuiCode/include
   libs/GuiCode/libs
-  libs/portaudio/include
   libs/rtmidi
-  libs/rtaudio
+  libs/Audijo/include
   libs/AudioFile
   include/
   resources/
@@ -41,9 +40,8 @@ target_precompile_headers(SoundMixr PUBLIC
 
 target_link_libraries(SoundMixr
   GuiCode
-  portaudio
   rtmidi
-  rtaudio
+  Audijo
 )
 
 file(GLOB files "plugins/*.cpp")

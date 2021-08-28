@@ -46,11 +46,11 @@ void RadioButton::Update(const Vec4<int>& v)
 int RadioButton::GetKey(SoundMixr::RadioButton& k, std::unordered_map<int, int>& keys, std::unordered_map<int, std::vector<SoundMixr::RadioButton*>>& buttons)
 {
 	int id = 0;
-	auto& _it = keys.find(k.Id());
+	auto _it = keys.find(k.Id());
 	if (_it == keys.end())
 	{
 		id = keys.emplace(k.Id(), ButtonType::List::NewKey()).first->second;
-		auto& i = buttons.emplace(id, std::vector<SoundMixr::RadioButton*>{});
+		auto i = buttons.emplace(id, std::vector<SoundMixr::RadioButton*>{});
 		i.first->second.push_back(&k);
 	}
 	else

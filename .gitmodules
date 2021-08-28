@@ -16,3 +16,6 @@
 [submodule "libs/rtaudio"]
 	path = libs/rtaudio
 	url = https://github.com/thestk/rtaudio.git
+[submodule "libs/Audijo"]
+	path = libs/Audijo
+	url = https://github.com/KaixoCode/Audijo.git

@@ -70,7 +70,7 @@ public:
 private:
 	std::string m_Filepath;
 
-	AudioFile<double> m_File;
+	AudioFile::AudioFile<double> m_File;
 
 	int m_SampleNum = -1,
 	    m_MaxSamples = -1,
@@ -133,7 +133,7 @@ public:
 	}
 	
 private:
-	std::map<int, AudioFile<double>> m_files;
+	std::map<int, AudioFile::AudioFile<double>> m_files;
 	std::vector<SoundboardButton*> m_Buttons;
 	::Panel* m_SubP;
 

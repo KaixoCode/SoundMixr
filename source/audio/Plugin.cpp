@@ -388,50 +388,43 @@ void Plugin::SetObject(SoundMixr::Div& div, const Vec4<int>& dim)
 
 	// Determine type and add to effect.
 	Component* ob = nullptr;
-	auto xy = dynamic_cast<SoundMixr::XYController*>(object);
-	if (xy != nullptr)
+	if (auto xy = dynamic_cast<SoundMixr::XYController*>(object))
 	{
 		ob = &Emplace<XYController>(*xy), xy->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto fc = dynamic_cast<SoundMixr::FilterCurve*>(object);
-	if (fc != nullptr)
+	if (auto fc = dynamic_cast<SoundMixr::FilterCurve*>(object))
 	{
 		ob = &Emplace<FilterCurve>(*fc), fc->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto sc = dynamic_cast<SoundMixr::SimpleFilterCurve*>(object);
-	if (sc != nullptr)
+	if (auto sc = dynamic_cast<SoundMixr::SimpleFilterCurve*>(object))
 	{
 		ob = &Emplace<SimpleFilterCurve>(*sc), sc->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto rb = dynamic_cast<SoundMixr::RadioButton*>(object);
-	if (rb != nullptr)
+	if (auto rb = dynamic_cast<SoundMixr::RadioButton*>(object))
 	{
 		ob = &Emplace<RadioButton>(*rb, m_RadioButtonKeys, m_RadioButtons), rb->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto dy = dynamic_cast<SoundMixr::DynamicsSlider*>(object);
-	if (dy != nullptr)
+	if (auto dy = dynamic_cast<SoundMixr::DynamicsSlider*>(object))
 	{
 		ob = &Emplace<DynamicsSlider>(*dy), dy->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto vs = dynamic_cast<SoundMixr::VolumeSlider*>(object);
-	if (vs != nullptr)
+	if (auto vs = dynamic_cast<SoundMixr::VolumeSlider*>(object))
 	{
 		ob = &Emplace<VolumeSlider>(*vs), vs->Position({ position.x, position.y - 5 });
 		goto theback;
 	}
 
-	auto param = dynamic_cast<SoundMixr::Parameter*>(object);
-	if (param != nullptr)
+	if (auto param = dynamic_cast<SoundMixr::Parameter*>(object))
 	{
 		if (param->Type() == SoundMixr::ParameterType::Slider)
 			ob = &Emplace<Slider>(*param), param->Position({ position.x, position.y });
@@ -440,15 +433,13 @@ void Plugin::SetObject(SoundMixr::Div& div, const Vec4<int>& dim)
 		goto theback;
 	}
 
-	auto dd = dynamic_cast<SoundMixr::DropDown*>(object);
-	if (dd != nullptr)
+	if (auto dd = dynamic_cast<SoundMixr::DropDown*>(object))
 	{
 		ob = &Emplace<DropDown<int, DropdownButton>>(*dd), dd->Position({ position.x, position.y });
 		goto theback;
 	}
 
-	auto toggle = dynamic_cast<SoundMixr::ToggleButton*>(object);
-	if (toggle != nullptr)
+	if (auto toggle = dynamic_cast<SoundMixr::ToggleButton*>(object))
 	{
 		ob = &Emplace<ToggleButton>(*toggle), toggle->Position({ position.x, position.y });
 		goto theback;

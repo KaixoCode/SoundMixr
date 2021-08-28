@@ -3,123 +3,59 @@
 int Asio::SAMPLE_RATE = -1;
 
 Asio::Asio()
-	: m_BufferSize(256), m_Samplerate(48000)
 {
-	CrashLog("Initializing Portaudio library");
-	PaError err;
-	err = Pa_Initialize();
-	if (err != paNoError)
-	{
-		CrashLog("Error: " << Pa_GetErrorText(err));
-		return;
-	}
-
 	CrashLog("Finding Asio devices...");
-	const PaDeviceInfo* info;
-	for (PaDeviceIndex i = 0; i < Pa_GetDeviceCount(); i++)
+	for (auto& _device : Devices())
 	{
-		info = Pa_GetDeviceInfo(i);
-		if (Pa_GetHostApiInfo(info->hostApi)->type == paASIO)
-		{
-			CrashLog("Found ASIO device:");
-			CrashLog("Id:          " << i);
-			CrashLog("Name:        " << info->name);
-			CrashLog("Inputs:      " << info->maxInputChannels);
-			CrashLog("Outputs:     " << info->maxOutputChannels);
-			CrashLog("Sample Rate: " << info->defaultSampleRate);
-			m_Devices.emplace(i, ::Device{ i, *info });
-		}
+		CrashLog("Found ASIO device:");
+		CrashLog("Id:          " << _device.id);
+		CrashLog("Name:        " << _device.name);
+		CrashLog("Inputs:      " << _device.inputChannels);
+		CrashLog("Outputs:     " << _device.outputChannels);
+		CrashLog("Sample Rate: " << _device.sampleRates[0]);
 	}
 }
 
 Asio::~Asio()
 {
 	CrashLog("Destructing Asio device ");
-	CloseStream();
+	Close();
 }
 
-bool Asio::OpenStream(PaStreamCallback c, void* userdata)
+bool Asio::OpenStream(const StreamParameters& s)
 {
 	CrashLog("Attempting to open Asio stream");
-	PaError err;
-	PaStreamParameters ip, op;
+	Stream::Open(s);
 
-	// Input device settings
-	ip.device = Device().id;
-	ip.channelCount = Device().info.maxInputChannels;
-	ip.sampleFormat = paFloat32;
-	ip.suggestedLatency = Device().info.defaultHighInputLatency;
-	ip.hostApiSpecificStreamInfo = NULL;
-
-	// Output device settings
-	op.device = Device().id;
-	op.channelCount = Device().info.maxOutputChannels;
-	op.sampleFormat = paFloat32;
-	op.suggestedLatency = Device().info.defaultHighOutputLatency;
-	op.hostApiSpecificStreamInfo = NULL;
-
-	CrashLog("Input settings:");
-	CrashLog("Device:   " << ip.device);
-	CrashLog("Channels: " << ip.channelCount);
-	CrashLog("Latency:  " << ip.suggestedLatency);
-
-	CrashLog("Output settings:");
-	CrashLog("Device:   " << op.device);
-	CrashLog("Channels: " << op.channelCount);
-	CrashLog("Latency:  " << op.suggestedLatency);
+	auto& _info = Information();
+	auto& _device = Stream::Device(_info.input);
 
 	// Add all input channels to vector
 	CrashLog("Retrieving input channel names:");
-	for (int i = 0; i < ip.channelCount; i++)
+	for (int i = 0; i < _device.inputChannels; i++)
 	{
-		const char* name;
-		PaAsio_GetInputChannelName(Device().id, i, &name);
-		std::string n = name;
-		CrashLog(n);
-		//n.resize(n.find_last_of(' '));
-		auto& a = m_Inputs.emplace_back(i, n, true);
+		auto& _channel = _device.Channel(i, true);
+		m_Inputs.emplace_back(i, _channel.name, true);
 	}
 
 	// Add all output channels to vector
 	CrashLog("Retrieving output channel names:");
-	for (int i = 0; i < op.channelCount; i++)
+	for (int i = 0; i < _device.outputChannels; i++)
 	{
-		const char* name;
-		PaAsio_GetOutputChannelName(Device().id, i, &name);
-		std::string n = name;
-		CrashLog(n);
-		//n.resize(n.find_last_of(' '));
-		auto& a = m_Outputs.emplace_back(i, n, false);
+		auto& _channel = _device.Channel(i, false);
+		m_Outputs.emplace_back(i, _channel.name, false);
 	}
 
-	// Try common sample rates
-	int tries = 0;
-	double _srates[]{ Device().info.defaultSampleRate, 48000.0, 44100.0, 96000, 192000 };
-	do
-	{
-		if (tries == sizeof(_srates)/sizeof(double))
-		{
-			// If wasn't able to find working samplerate, 
-			// close stream and stop trying.
-			CrashLog(Pa_GetErrorText(err));
-			CloseStream();
-			return false;
-		}
-		m_Samplerate = _srates[tries];
-		CrashLog("Trying samplerate " << m_Samplerate);
-		tries++;
-	} while ((err = Pa_OpenStream(&stream, &ip, &op, m_Samplerate, m_BufferSize, paClipOff, c, userdata)) != 0);
-
-	SAMPLE_RATE = m_Samplerate;
+	SAMPLE_RATE = _info.sampleRate;
 
 	// Logging
 	CrashLog(
-		   "Opened stream (" << Device().info.name << ")" <<
+		"Opened stream (" << _device.name << ")" <<
 		"\n type:       " << "Asio" <<
-		"\n samplerate: " << m_Samplerate <<
-		"\n buffersize: " << m_BufferSize <<
-		"\n inchannels: " << ip.channelCount <<
-		"\n outchannels:" << op.channelCount
+		"\n samplerate: " << _info.sampleRate <<
+		"\n buffersize: " << _info.bufferSize <<
+		"\n inchannels: " << _info.inputChannels <<
+		"\n outchannels:" << _info.outputChannels
 	);
 
 	CrashLog("Input channel names: ");
@@ -130,24 +66,15 @@ bool Asio::OpenStream(PaStreamCallback c, void* userdata)
 	for (auto& i : m_Outputs)
 		CrashLog(i.name);
 
-	// It's now opened
-	m_Opened = true;
 	return true;
 }
 
 void Asio::CloseStream()
 {
-	// If stream is not opened, can't close.
-	if (!m_Opened)
-		return;
-
-	// Close stream
-	m_Opened = false;
 	CrashLog("Closing Asio stream...");
-	PaError err;
-	err = Pa_CloseStream(stream);
-	if (err != paNoError)
-		CrashLog(Pa_GetErrorText(err));
+	Error err = Close();
+	if (err != NoError)
+		CrashLog("Failed to close Asio stream");
 	else
 		CrashLog("Closed Asio stream");
 
@@ -158,19 +85,11 @@ void Asio::CloseStream()
 
 bool Asio::StartStream()
 {
-	// Can't start if not opened
-	if (!m_Opened)
-		return false;
-
-	// Can't start if already running
-	if (StreamRunning())
-		return false;
-
 	CrashLog("Starting Asio stream...");
-	PaError err = Pa_StartStream(stream);
-	if (err != paNoError)
+	auto err = Start();
+	if (err != NoError)
 	{
-		CrashLog(Pa_GetErrorText(err));
+		CrashLog("Failed to start asio stream");
 		return false;
 	}
 	else
@@ -181,14 +100,11 @@ bool Asio::StartStream()
 
 bool Asio::StopStream()
 {
-	if (!StreamRunning())
-		return false;
-
 	CrashLog("Stopping Asio stream...");
-	PaError err = Pa_StopStream(stream);
-	if (err != paNoError)
+	Error err = Stop();
+	if (err != NoError)
 	{
-		CrashLog(Pa_GetErrorText(err));
+		CrashLog("Failed to stop");
 		return false;
 	}
 	else
