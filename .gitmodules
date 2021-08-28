@@ -1,9 +1,6 @@
 [submodule "libs/GuiCode"]
 	path = libs/GuiCode
 	url = https://github.com/KaixoCode/GuiCode.git
-[submodule "libs/portaudio"]
-	path = libs/portaudio
-	url = https://github.com/PortAudio/portaudio.git
 [submodule "libs/AudioFile"]
 	path = libs/AudioFile
 	url = https://github.com/adamstark/AudioFile.git
@@ -13,9 +10,6 @@
 [submodule "libs/rtmidi"]
 	path = libs/rtmidi
 	url = https://github.com/thestk/rtmidi.git
-[submodule "libs/rtaudio"]
-	path = libs/rtaudio
-	url = https://github.com/thestk/rtaudio.git
 [submodule "libs/Audijo"]
 	path = libs/Audijo
 	url = https://github.com/KaixoCode/Audijo.git
