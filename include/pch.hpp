@@ -29,6 +29,8 @@
 
 #include <nlohmann/json.hpp>
 
+#define AUDIJO_ASIO
+#define AUDIJO_WASAPI
 #include "Audijo/Audijo.hpp"
 
 #include "RtMidi.h"

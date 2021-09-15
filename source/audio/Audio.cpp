@@ -446,6 +446,10 @@ void Audio::GenerateMenu(Panel& panel)
 
 bool Audio::OpenDevice(int id)
 {
+    // Don't open if this device is already opened
+    if (m_Asio.Information().input == id && m_Asio.Information().state == Opened)
+        return true;
+
     // Make sure the effect chain being displayed is set to nullptr
     // since it will otherwise be undefined.
     m_EffectPanel.EffectChain(nullptr);
@@ -474,6 +478,10 @@ bool Audio::OpenDevice(int id)
 
 bool Audio::CloseDevice()
 {
+    // Don't close if already closed
+    if (m_Asio.Information().input == NoDevice)
+        return true;
+
     // Make sure the effect chain being displayed is set to nullptr
     // since it will otherwise be undefined.
     m_EffectPanel.EffectChain(nullptr);
