@@ -21,8 +21,6 @@
 
 #include <nlohmann/json.hpp>
 
-#define AUDIJO_ASIO
-#define AUDIJO_WASAPI
 #include "Audijo/Audijo.hpp"
 
 #include "RtMidi.h"
@@ -46,6 +44,7 @@ namespace AudioFile
 #define VERSION 13
 
 
+using namespace GuiCode;
 #include "CrashLogger.hpp"
 
 #define CrashLog(x) \

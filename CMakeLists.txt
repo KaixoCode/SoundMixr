@@ -22,7 +22,7 @@ target_include_directories(SoundMixr PUBLIC
   libs/GuiCode2/include
   libs/GuiCode2/libs
   libs/rtmidi
-  libs/Audijo/include
+  ${AUDIJO_INCLUDE_DIRS}
   libs/AudioFile
   include/
   resources/
