@@ -20,11 +20,6 @@ int WINAPI WinMain(
 	{
 		// Crash!! Exit normally and hope for the best.
 		auto& a = Controller::Get();
-		a.SaveSettings();
-		a.m_Audio->SaveRouting();
-		Soundboard::Get().Save();
-		a.m_Audio->CloseDevice();
-		a.m_Gui.Clear();
 	}
 
 	std::filesystem::create_directory("./logs");

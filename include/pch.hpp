@@ -2,22 +2,14 @@
 
 #include <any>
 
-#include "GuiCode/pch.hpp"
-#include "GuiCode/Gui.hpp"
-#include "GuiCode/ui/components/panels/Panel.hpp"
-#include "GuiCode/ui/components/panels/ScrollPanel.hpp"
-#include "GuiCode/ui/components/menus/MenuAccessories.hpp"
-#include "GuiCode/ui/events/Event.hpp"
-#include "GuiCode/ui/graphics/Collection.hpp"
-#include "GuiCode/ui/graphics/Command.hpp"
-#include "GuiCode/ui/graphics/Graphics.hpp"
-#include "GuiCode/ui/window/Frame.hpp"
-#include "GuiCode/ui/window/ComponentFrame.hpp"
-#include "GuiCode/ui/window/SmallFrame.hpp"
-#include "GuiCode/ui/window/Window.hpp"
-#include "GuiCode/ui/components/text/TextComponent.hpp"
-#include "GuiCode/ui/components/text/TextBox.hpp"
-#include "GuiCode/ui/components/text/TextArea.hpp"
+#include "GuiCode2/pch.hpp"
+#include "GuiCode2/Panel.hpp"
+#include "GuiCode2/Menu.hpp"
+#include "GuiCode2/Event.hpp"
+#include "GuiCode2/Frame.hpp"
+#include "GuiCode2/ContextMenu.hpp"
+#include "GuiCode2/TextBox.hpp"
+#include "GuiCode2/TextArea.hpp"
 
 #define JSON_TRY_USER if(true)
 #define JSON_CATCH_USER(exception) if(false)

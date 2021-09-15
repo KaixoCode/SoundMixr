@@ -1,5 +1,4 @@
 #include "PluginLoader.hpp"
-#include "Audio/Asio.hpp"
 
 DynamicPlugin::~DynamicPlugin()
 {
@@ -17,7 +16,7 @@ SoundMixr::EffectBase* DynamicEffect::CreateInstance()
 	if (instfunc)
 	{
 		SoundMixr::EffectBase* p = static_cast<SoundMixr::EffectBase*>(instfunc());
-		p->SampleRate(Asio::SAMPLE_RATE);
+		//p->SampleRate(Asio::SAMPLE_RATE);
 		return p;
 	}
 	else
@@ -29,7 +28,7 @@ SoundMixr::GeneratorBase* DynamicGenerator::CreateInstance()
 	if (instfunc)
 	{
 		SoundMixr::GeneratorBase* p = static_cast<SoundMixr::GeneratorBase*>(instfunc());
-		p->SampleRate(Asio::SAMPLE_RATE);
+		//p->SampleRate(Asio::SAMPLE_RATE);
 		return p;
 	}
 	else
