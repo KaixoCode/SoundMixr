@@ -19,8 +19,8 @@ add_executable(SoundMixr
 )
 
 target_include_directories(SoundMixr PUBLIC
-  libs/GuiCode/include
-  libs/GuiCode/libs
+  libs/GuiCode2/include
+  libs/GuiCode2/libs
   libs/rtmidi
   libs/Audijo/include
   libs/AudioFile
@@ -39,7 +39,7 @@ target_precompile_headers(SoundMixr PUBLIC
 )
 
 target_link_libraries(SoundMixr
-  GuiCode
+  GuiCode2
   rtmidi
   Audijo
 )

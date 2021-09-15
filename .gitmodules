@@ -1,6 +1,3 @@
-[submodule "libs/GuiCode"]
-	path = libs/GuiCode
-	url = https://github.com/KaixoCode/GuiCode.git
 [submodule "libs/AudioFile"]
 	path = libs/AudioFile
 	url = https://github.com/adamstark/AudioFile.git
@@ -13,3 +10,6 @@
 [submodule "libs/Audijo"]
 	path = libs/Audijo
 	url = https://github.com/KaixoCode/Audijo.git
+[submodule "libs/GuiCode2"]
+	path = libs/GuiCode2
+	url = https://github.com/KaixoCode/GuiCode2.git

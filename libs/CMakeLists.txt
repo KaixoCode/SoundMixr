@@ -1,5 +1,5 @@
 
-add_subdirectory(GuiCode)
+add_subdirectory(GuiCode2)
 
 add_subdirectory(PluginBase)
 
