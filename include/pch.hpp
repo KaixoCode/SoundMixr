@@ -22,6 +22,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Audijo/Audijo.hpp"
+using namespace Audijo;
 
 #include "RtMidi.h"
 
