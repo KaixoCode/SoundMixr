@@ -24,6 +24,40 @@ Controller::Controller()
  * 
  */
 
+struct GainSlider : public Component
+{
+	GainSlider(float& gain, Pointer<ChannelBase>& channel)
+		: gain(gain), channel(channel)
+	{}
+
+	float& gain;
+	Pointer<ChannelBase>& channel;
+	
+	float scale = 2;
+	float min = -96;
+	float max = 12;
+
+	void Render(CommandCollection& d) const override
+	{
+		float _padding = 5;
+		float _x = x + _padding;
+		float _w = (width - _padding) / channel->lines;
+		for (int i = 0; i < channel->lines; i++)
+		{
+			float _db = lin2db(channel->smoothed[i]);
+			float _norm = std::max((_db - min) / (max - min), 0.f);
+			float _scaled = std::pow(_norm, scale);
+
+			float _h = _scaled * (height - 2 * _padding);
+			d.Fill({ 0, 0, 0 });
+			d.Quad({ _x, y + _padding, _w - _padding, height - 2 * _padding });
+			d.Fill({ 0, 255, 0 });
+			d.Quad({ _x, y + height - _padding, _w - _padding, -_h });
+			_x += _w;
+		}
+	}
+};
+
 
  /**
   * Button with menu graphics, that opens a
@@ -105,33 +139,184 @@ struct DeviceListButtonParser : public MenuButtonParser
 	}
 };
 
+struct Channel : public Panel
+{
+	static inline Channel* selected = nullptr;
+	Pointer<ChannelBase> channel;
+	Pointer<GainSlider> gain;
+
+	Channel(bool input)
+	{
+		channel = new EndpointChannel{ input };
+		gain = new GainSlider{ channel->volume, channel };
+
+		width = 50;
+		background = { 26, 26, 26 };
+		margin = { 4, 4, 4, 4 };
+		Controller::Get().audio.push_back(channel);
+		listener += [this, input](const MouseRelease& e) 
+		{
+			if (e.button == MouseButton::Right && !e.Handled())
+			{
+				menu.Clear();
+				auto& _endpoints = input ? Controller::Get().audio.inputs : Controller::Get().audio.outputs;
+				for (auto& i : _endpoints)
+				{
+					EndpointChannel& _channel = channel;
+					MenuButton& _button = menu.push_back(new MenuButton{ {
+						.type = Button::Toggle,
+						.callback = [&](bool v) {
+							if (v)
+								_channel.Add(i);
+							else
+								_channel.Remove(i);
+						},
+						.name = i->name
+					} });
+					_button.State<Selected>(_channel.Contains(i));
+				}
+				ContextMenu::Open(menu, e.pos, true);
+				e.Handle();
+			}
+		};
+
+		listener += [this](const MousePress& e)
+		{
+			Channel::selected = this;
+		};
+
+		panels.push_back(new Panel{ {.ratio = 1 }, gain });
+	}
+
+	~Channel()
+	{
+		Controller::Get().audio.remove(channel);
+	}
+
+	void Update()
+	{
+		width = std::max(50, channel->lines * 25);
+	}
+
+	Menu menu;
+};
+
+struct ChannelPanel : public Panel
+{
+	ChannelPanel()
+	{
+		layout = Layout::Row;
+		overflow = { Overflow::Scroll, Overflow::Hide };
+		background = { 16, 16, 16 };
+
+		outputs = panels.push_back(new Panel{ {
+			.padding{ 4, 4, 4, 4 },
+			.margin{ 0, 0, 4, 0 },
+			.size{ Auto, Inherit },
+			.background{ 16, 16, 16 }
+		} });
+
+		inputs = panels.push_back(new Panel{ {
+			.padding{ 4, 4, 4, 4 },
+			.margin{ 0, 0, 0, 0 }, 
+			.size{ Auto, Inherit }, 
+			.background{ 16, 16, 16 }
+		} });
+
+		menu.push_back(new MenuButton{ {
+			.callback = [this](bool) {
+				inputs->panels.push_back(new Channel{ true });
+			},
+			.name = "Add Input Channel"
+		} });
+
+		menu.push_back(new MenuButton{ {
+			.callback = [this](bool) {
+				outputs->panels.push_back(new Channel{ false });
+			},
+			.name = "Add Output Channel"
+		} });
+
+		listener += [this](const MouseRelease& e) 
+		{
+			if (e.button == MouseButton::Right && !e.Handled())
+				ContextMenu::Open(menu, e.pos, true);
+		};
+
+		listener += [this](const MousePress& e)
+		{
+			if (!e.Handled())
+				Channel::selected = nullptr;
+		};
+	}
+
+	Pointer<Panel> inputs;
+	Pointer<Panel> outputs;
+	Menu menu;
+};
+
 
 void Controller::Run()
 {
 	Parser::Link<DeviceListButtonParser>();
 	Parser::Link<FrameParser>();
+	Parser::Link<TextParser>();
+	Parser::Link<TextBoxParser>();
+	Parser::Link<TextAreaParser>();
+	Parser::Link<TextDisplayerParser>();
 	Parser::Callback("print", [](bool a, const std::string& b) { if (a) std::cout << b << std::endl; });
+
+	GraphicsBase::LoadFont("C:/Windows/fonts/segoeui.ttf", "segoeui");
+	GraphicsBase::DefaultFont = "segoeui";
+	GraphicsBase::LoadFont("C:/Windows/fonts/consola.ttf", "consolas");
+
+	Frame _frame{ {.name = "SoundMixr" } };
+
+	_frame.panel = {
+		{.padding{ 8, 8, 8, 8 }, .background{ 26, 26, 26 } },
+		new ChannelPanel{}
+	};
+
+	MenuBarButton& _button = _frame.titlebar.menu.push_back(new MenuBarButton{ {.name = "File" } });
+	_button.menu.push_back(new DeviceListButton{ {.name = "Devices" } });
+
+	Gui _gui;
+	_gui.push_back(_frame);
+
+	while (_gui.Loop());
+
+	audio.Close();
+
+	return;
+
 
 	{
 		Gui _gui;
 
 		auto parts = Parser::Parse(R"~(
-		<frame info.name="SoundMixr" position="{ 100, 100 }" size="{ 600, 600 }">
+		<frame info.name="SoundMixr" position="{ 100, 100 }" size="{ 600, 600 }" background="{ 26, 26, 26 }">
 			<titlebar>
 				<menu name="Select Stuff">
 					<button></button>
 					<device-list></device-list>
 				</menu>
 			</titlebar>
-			<panel layout="Column" padding="{ 8, 8, 8, 8 }">
-				<panel overflow="Scroll" ratio="1" background="{ 255, 0, 0 }">
-
+			<panel layout="column" margin="{ 8, 8, 8, 8 }" padding="{ 4, 4, 4, 4 }" background="{ 16, 16, 16 }">
+				<panel size.height="20" layout="row" margin="{ 4, 4, 4, 4 }">
+					<panel ratio="1">
+						<text align="center" text-color="{ 255, 255, 255 }" font-size="12" content="helloworld"></text>
+					</panel>
+					<panel ratio="1">
+						<menu-button height="20" name="helloworld"></menu-button>
+					</panel>
 				</panel>
-				<panel overflow="Scroll" ratio="2" background="{ 0, 255, 0 }">
-
-				</panel>
-				<panel overflow="Scroll" ratio="1" background="{ 255, 255, 0 }">
-
+				<panel size.height="20" layout="row" margin="{ 4, 4, 4, 4 }">
+					<panel ratio="1">
+						<text align="center" text-color="{ 255, 255, 255 }" font-size="12" content="helloworld"></text>
+					</panel>
+					<panel ratio="1">
+						<menu-button height="20" name="helloworld"></menu-button>
+					</panel>
 				</panel>
 			</panel>
 		</frame>
@@ -141,8 +326,6 @@ void Controller::Run()
 
 		for (auto& i : parts)
 			_frames.push_back(std::move(i.Generate()));
-
-		GraphicsBase::LoadFont("C:/Windows/fonts/segoeui.ttf", "segoeui");
 		
 		for (auto& i : _frames)
 			_gui.push_back(*i);

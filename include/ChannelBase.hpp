@@ -16,9 +16,10 @@ struct ChannelBase
 		};
 	};
 
-	ChannelBase(int type) : type(type) {};
+	ChannelBase(int type) : type(type) { UpdatePans(); };
 	~ChannelBase() { lock.lock(); lock.unlock(); };
 
+	int counter = 0;
 	int id = 0;
 	int lines = 0;
 	bool mono = false;
@@ -30,6 +31,7 @@ struct ChannelBase
 	mutable std::mutex lock;
 	std::vector<float> levels;
 	std::vector<float> peaks;
+	std::vector<float> smoothed;
 	std::vector<float> pans;
 
 	virtual void Level(float s, int c)
@@ -41,21 +43,6 @@ struct ChannelBase
 	virtual void Process()
 	{
 		float _avg = 0;
-
-		// Emplace to levels.
-		levels.reserve(lines);
-		while (levels.size() < lines)
-			levels.push_back(0);
-
-		// Emplace to peaks.
-		peaks.reserve(lines);
-		while (peaks.size() < lines)
-			peaks.push_back(0);
-
-		// Emplace to pans.
-		pans.reserve(lines);
-		while (pans.size() < lines)
-			pans.push_back(0);
 
 		// Input
 		if (type & ChannelBase::Type::Input || type & ChannelBase::Type::Forward)
@@ -173,6 +160,21 @@ struct ChannelBase
 				}
 			}
 		}
+
+		// Every 512 samples, set the value for the volume slider meter.
+		counter++;
+		if (counter > 512)
+		{
+			// Set the levels of the volume slider
+			for (int i = 0; i < lines; i++)
+			{
+				float r = smoothed[i];
+				smoothed[i] = r * 0.8 + 0.2 * peaks[i];
+				peaks[i] = 0;
+			}
+
+			counter = 0;
+		}
 	}
 
 	void Connect(const Pointer<ChannelBase>& c)
@@ -188,9 +190,8 @@ struct ChannelBase
 		// If not connected already, connect.
 		if (!contains(connections, c))
 		{
-			lock.lock();
+			std::lock_guard<std::mutex> _{ lock };
 			connections.push_back(c);
-			lock.unlock();
 		}
 	}
 
@@ -242,8 +243,16 @@ struct EndpointChannel : public ChannelBase
 {
 	std::vector<Pointer<Endpoint>> endpoints;
 
+	EndpointChannel(bool input)
+		: ChannelBase(Type::Endpoint | (input ? Type::Input : Type::Output))
+	{}
+
 	void Process() override
 	{
+		// Optimization when 0 lines
+		if (lines == 0)
+			return;
+
 		std::lock_guard<std::mutex> _{ lock };
 
 		// Input takes sample from endpoint and sends to connections
@@ -278,13 +287,20 @@ struct EndpointChannel : public ChannelBase
 		// Add if not already added.
 		if (!contains(endpoints, e))
 		{
+			std::lock_guard<std::mutex> _{ lock };
+
 			// Add and sort with new endpoint.
 			endpoints.push_back(e);
 			lines = lines + 1;
+			levels.push_back(0); // Add new levels entry
+			peaks.push_back(0); // Add new peaks entry
+			smoothed.push_back(0); // Add new pans entry
+			pans.push_back(1); // Add new pans entry
 
 			// if Endpoint added, set id to first endpoint.
 			id = endpoints[0]->id;
 		}
+		UpdatePans();
 	};
 
 	void Remove(const Pointer<Endpoint>& e)
@@ -292,6 +308,8 @@ struct EndpointChannel : public ChannelBase
 		auto it = std::find(endpoints.begin(), endpoints.end(), e);
 		if (it != endpoints.end())
 		{
+			std::lock_guard<std::mutex> _{ lock };
+
 			// If not added, add endpoint.
 			endpoints.erase(it);
 			lines = lines - 1;
@@ -301,4 +319,9 @@ struct EndpointChannel : public ChannelBase
 				id = endpoints[0]->id;
 		}
 	};
+
+	bool Contains(const Pointer<Endpoint>& e)
+	{
+		return std::find(endpoints.begin(), endpoints.end(), e) != endpoints.end();
+	}
 };
