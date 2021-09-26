@@ -9,7 +9,7 @@ struct Audio
     Stream<Asio> stream;
     std::vector<Pointer<Endpoint>> inputs;
     std::vector<Pointer<Endpoint>> outputs;
-    std::list<Pointer<ChannelBase>> channels;
+    std::vector<Pointer<ChannelBase>> channels;
 
     Audio()
     {
@@ -43,7 +43,7 @@ struct Audio
     void remove(const Pointer<ChannelBase>& channel)
     {
         std::lock_guard _{ lock };
-        channels.remove(channel);
+        channels.erase(std::remove(channels.begin(), channels.end(), channel));
     }
 
 
@@ -77,6 +77,5 @@ struct Audio
 
         inputs.clear();
         outputs.clear();
-        channels.clear();
     }
 };

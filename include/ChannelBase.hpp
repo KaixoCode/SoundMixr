@@ -36,6 +36,9 @@ struct ChannelBase
 
 	virtual void Level(float s, int c)
 	{
+		if (lines == 0)
+			return;
+
 		std::lock_guard<std::mutex> _{ lock };
 		levels[c % lines] += s;
 	}

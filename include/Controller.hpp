@@ -15,8 +15,11 @@ public:
     }
     
     void Run();
+    void OpenDevice(int device);
 
     Audio audio{};
+
+    Frame window;
 
 private:
     Controller();
