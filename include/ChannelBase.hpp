@@ -43,6 +43,13 @@ struct ChannelBase
 		levels[c % lines] += s;
 	}
 
+	virtual void NextCycle()
+	{
+		// Reset levels
+		for (auto& i : levels)
+			i = 0;
+	}
+
 	virtual void Process()
 	{
 		float _avg = 0;
@@ -250,6 +257,15 @@ struct EndpointChannel : public ChannelBase
 		: ChannelBase(Type::Endpoint | (input ? Type::Input : Type::Output))
 	{}
 
+	void NextCycle() override
+	{
+		if (type & ChannelBase::Type::Output)
+			for (int i = 0; i < lines; i++)
+				endpoints[i]->sample = 0;
+
+		ChannelBase::NextCycle();
+	}
+
 	void Process() override
 	{
 		// Optimization when 0 lines
@@ -277,12 +293,8 @@ struct EndpointChannel : public ChannelBase
 
 			// Then forward them to the endpoints
 			for (int i = 0; i < lines; i++)
-				endpoints[i]->sample = levels[i];
+				endpoints[i]->sample += levels[i];
 		}
-
-		// Reset levels
-		for (auto& i : levels)
-			i = 0;
 	}
 
 	void Add(const Pointer<Endpoint>& e)

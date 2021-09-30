@@ -21,9 +21,12 @@ struct Audio
                     for (int j = 0; j < info.inputChannels; j++)
                         inputs[j]->sample = input[i][j];
 
-                    // Process all channels, this lock is here for splitting/combining channels
+                    // Process all channels
                     lock.lock();
-                    for (auto& j : channels)
+                    for (auto& j : channels) // Prepare all channels for the next cycle
+                        j->NextCycle();
+
+                    for (auto& j : channels) // Then do all processing
                         j->Process();
                     lock.unlock();
 
@@ -45,7 +48,6 @@ struct Audio
         std::lock_guard _{ lock };
         channels.erase(std::remove(channels.begin(), channels.end(), channel));
     }
-
 
     bool Open(int id)
     {

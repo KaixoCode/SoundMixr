@@ -25,42 +25,193 @@ Controller::Controller()
  * 
  */
 
-struct GainSlider : public Component
+struct Parameter : public Component
 {
+	struct Settings
+	{
+		Vec2<float> range{ 0, 100 };
+		float value = 0;
+		float reset = 0;
+		float shift = 0.25;
+		bool vertical = true;
+		Function<float(float)> scaling = [](float in) { return in; };
+		Function<float(float)> inverse = [](float in) { return in; };
+	};
+
+	Settings settings;
+
+	Vec2<float>& range = settings.range;
+	float& value = settings.value;
+	float& reset = settings.reset;
+	float& shift = settings.shift;
+	bool& vertical = settings.vertical;
+	Function<float(float)>& scaling = settings.scaling;
+	Function<float(float)>& inverse = settings.inverse;
+
+	Parameter(const Settings& settings = {})
+		: settings(settings)
+	{
+		listener += [this](const MousePress& e)
+		{
+			m_PressVal = inverse((value - range.start) / (range.end - range.start));
+			m_PrevPos = vertical ? e.pos.y : e.pos.x;
+		};
+
+		listener += [this](const MouseDrag& e)
+		{
+			if (~e.buttons & MouseButton::Left)
+				return;
+
+			float _value = vertical
+				? (e.pos.y - m_PrevPos) / height
+				: (e.pos.x - m_PrevPos) / width;
+
+			m_PrevPos = vertical ? e.pos.y : e.pos.x;
+
+			if (e.mod & EventMods::Shift)
+				_value *= shift;
+
+			m_PressVal += _value;
+
+			if (scaling)
+				value = scaling(constrain(m_PressVal, 0.f, 1.f)) * (range.end - range.start) + range.start;
+		};
+
+		listener += [this](const MouseClick& e)
+		{
+			auto _now = std::chrono::steady_clock::now();
+			auto _duration = std::chrono::duration_cast<std::chrono::milliseconds>(_now - m_ChangeTime).count();
+			if (_duration < 500)
+				value = reset;
+
+			m_ChangeTime = _now; // Get changetime
+		};
+	}
+
+private:
+	std::chrono::steady_clock::time_point m_ChangeTime;
+	float m_PressVal = 0;
+	float m_PrevPos = 0;
+};
+
+struct GainSlider : public Parameter
+{
+
+	static inline std::map<int, std::string> strings;
 	GainSlider(float& gain, Pointer<ChannelBase>& channel)
-		: gain(gain), channel(channel)
+		: gain(gain), channel(channel),
+		Parameter{ {
+			.range{ -66, 12 },
+			.value = 0,
+			.reset = 0,
+			.vertical = true,
+			.scaling = [&](float v) {
+				float _a = 1 / std::tanh(b);
+				float _x = 1 + (std::atanh(((1 - v) - 1) / _a) / b);
+				if (_x < 0.001) _x = 0; // Completely mute below threshold
+				return _x;
+			},
+			.inverse = [&](float v) {
+				float _a = 1 / std::tanh(b);
+				return _a * std::tanh(b * (1 - v));
+			}
+		} }
 	{}
 
 	float& gain;
 	Pointer<ChannelBase>& channel;
-	
-	float scale = 2;
-	float min = -96;
-	float max = 12;
+	float b = 1.3;
+	float step = 3;
+	bool numbers = true;
+	bool lines = true;
+	StateColors bar{ {.link = this, .base{ 100, 100, 100 } } };
 
 	void Update() override
 	{
 		width = std::max(70, channel->lines * 16 + 8 + 30);
+
+		if (value == range.start)
+			gain = 0;
+		else
+			gain = db2lin(value);
 	}
 
 	void Render(CommandCollection& d) const override
 	{
+		float _step = step;
+		if (height < 300)
+			_step = step * 2;
+		if (height < 100)
+			_step = step * 4;
+		float _bx = 4;
+		float _sidepadding = 26;
+		float _a = 1 / std::tanh(b);
 		float _padding = 2;
-		float _x = 8 + x + _padding;
-		float _w = ((width - 30) - _padding) / channel->lines;
+		float _ypadding = 2;
+		float _x = _bx + x + _padding;
+		float _w = ((width - (_bx + _sidepadding)) - _padding) / channel->lines;
 		for (int i = 0; i < channel->lines; i++)
 		{
 			float _db = lin2db(channel->smoothed[i]);
-			float _norm = std::max((_db - min) / (max - min), 0.f);
-			float _scaled = std::pow(_norm, scale);
+			float _norm = std::max((_db - range.start) / (range.end - range.start), 0.f);
+			float _scaled = 1 - _a * std::tanh(b * (1 - _norm));
+			float _0db = std::max((0 - range.start) / (range.end - range.start), 0.f);
+			float _0scaled = 1 - _a * std::tanh(b * (1 - _0db));
 
-			float _h = _scaled * (height - 2 * _padding);
+			float _h = _scaled * (height - 2 * _ypadding);
+			float _0h = std::round(_0scaled * (height - 2 * _padding));
 			d.Fill({ 0, 0, 0 });
-			d.Quad({ _x, y + _padding, _w - _padding, height - 2 * _padding });
+			d.Quad({ _x, y + height - _ypadding, _w - _padding, -_0h + 1 });
+			d.Quad({ _x, y + _ypadding, _w - _padding, height - _0h - 2 * _ypadding });
 			d.Fill({ 0, 255, 0 });
-			d.Quad({ _x, y + height - _padding, _w - _padding, -_h });
+			d.Quad({ _x, y + height - _ypadding, _w - _padding, -_h });
 			_x += _w;
 		}
+		_x -= _padding;
+
+		if (lines)
+		{
+			d.Fill({ 128, 128, 128 });
+			d.TextAlign(Align::Left | Align::Middle);
+			for (int i = range.start + _step; i <= range.end; i += _step)
+			{
+				float _norm = std::max((i - range.start) / (range.end - range.start), 0.f);
+				float _scaled = 1 - _a * std::tanh(b * (1 - _norm));
+				float _y = std::round(y + height - _ypadding - _scaled * (height - 2 * _ypadding));
+				d.Quad({ _x, _y, 5, 1 });
+			}
+		}
+
+		if (numbers)
+		{
+			d.Fill({ 255, 255, 255 });
+			d.TextAlign(Align::Right | Align::Middle);
+			for (int i = range.start + step * 2; i <= range.end; i += _step * 2)
+			{
+				float _norm = std::max((i - range.start) / (range.end - range.start), 0.f);
+				float _scaled = 1 - _a * std::tanh(b * (1 - _norm));
+				float _y = std::round(y + height - _ypadding - _scaled * (height - 2 * _ypadding));
+				if (lines)
+					d.Quad({ _x, _y, 5, 1 });
+				
+				int abs = i < 0 ? -i : i;
+				if (!strings.contains(abs))
+					strings[abs] = std::to_string(abs);
+				d.Text(strings[abs], { x + width - 4, _y });
+			}
+		}
+
+		_padding = 6;
+		float _h = 25;
+		float _he = _h - _padding * 2;
+		float _norm = std::max((value - range.start) / (range.end - range.start), 0.f);
+		float _scaled = _a * std::tanh(b * (1 - _norm));
+		float _y = y + std::round(_scaled * (height - 2 * _ypadding)) - _padding + 1;
+		d.Fill(bar.Current());
+		d.Triangle(Vec4<float>{x + _bx, _y + _padding, 8, _he}, 0.0f);
+		d.Triangle(Vec4<float>{x + width - _sidepadding, _y + _padding, 8, _he}, 180.0f);
+		d.Quad(Vec4<float>{x + _bx, _y + _padding - 1, width - _sidepadding, 3});
+
 	}
 };
 
@@ -263,11 +414,12 @@ struct Channel : public Panel
 			if (e.button == MouseButton::Right && !e.Handled())
 			{
 				menu.Clear();
+				SubMenuButton& _sub = menu.push_back(new SubMenuButton{ {.name = "Select Channels"} });
 				auto& _endpoints = input ? Controller::Get().audio.inputs : Controller::Get().audio.outputs;
 				for (auto& i : _endpoints)
 				{
 					EndpointChannel& _channel = channel;
-					MenuButton& _button = menu.push_back(new MenuButton{ {
+					MenuButton& _button = _sub.menu.push_back(new MenuButton{ {
 						.type = Button::Toggle,
 						.callback = [&](bool v) {
 							if (v)
