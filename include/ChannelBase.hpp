@@ -3,6 +3,7 @@
 
 struct ChannelBase
 {
+	static inline int id_counter = 0;
 	struct Type
 	{
 		enum
@@ -20,7 +21,7 @@ struct ChannelBase
 	~ChannelBase();
 
 	int counter = 0;
-	int id = 0;
+	int id = id_counter++;
 	int lines = 0;
 	bool mono = false;
 	bool mute = false;
@@ -44,8 +45,8 @@ struct ChannelBase
 
 	void UpdatePans();
 
-	operator nlohmann::json();
-	void operator=(const nlohmann::json& json);
+	virtual operator nlohmann::json();
+	virtual void operator=(const nlohmann::json& json);
 };
 
 struct Endpoint
@@ -64,7 +65,10 @@ struct EndpointChannel : public ChannelBase
 	void NextCycle() override;
 	void Process() override;
 
-	void Add(const Pointer<Endpoint>& e);
-	void Remove(const Pointer<Endpoint>& e);
-	bool Contains(const Pointer<Endpoint>& e);
+	void Add(int id);
+	void Remove(int id);
+	bool Contains(int id);
+
+	virtual operator nlohmann::json() override;
+	virtual void operator=(const nlohmann::json& json) override;
 };

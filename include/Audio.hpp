@@ -20,5 +20,7 @@ struct Audio
     void Stop();
     void Close();
 
-    void SaveRouting();
+    void SaveRouting(const std::string& path = "");
+    void LoadRouting(const std::string& path = "");
+    void DefaultRouting();
 };

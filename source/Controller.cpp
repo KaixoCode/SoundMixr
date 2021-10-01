@@ -443,13 +443,13 @@ struct Channel : public Panel
 						.type = Button::Toggle,
 						.callback = [&](bool v) {
 							if (v)
-								_channel.Add(i);
+								_channel.Add(i->id);
 							else
-								_channel.Remove(i);
+								_channel.Remove(i->id);
 						},
 						.name = i->name
 					} });
-					_button.State<Selected>(_channel.Contains(i));
+					_button.State<Selected>(_channel.Contains(i->id));
 				}
 				ContextMenu::Open(menu, e.pos, false);
 				e.Handle();

@@ -220,12 +220,47 @@ void ChannelBase::UpdatePans()
 
 ChannelBase::operator nlohmann::json()
 {
-	return {};
+	nlohmann::json _json;
+	_json["id"] = id;
+	_json["type"] = type;
+	_json["mono"] = mono;
+	_json["mute"] = mute;
+	_json["pan"] = pan;
+	_json["volume"] = volume;
+
+	return _json;
 }
 
 void ChannelBase::operator=(const nlohmann::json& json)
 {
+	id = json.at("id").get<int>();
+	mono = json.at("mono").get<bool>();
+	mute = json.at("mute").get<bool>();
+	pan = json.at("pan").get<float>();
+	volume = json.at("volume").get<float>();
+}
 
+EndpointChannel::operator nlohmann::json()
+{
+	nlohmann::json _json = ChannelBase::operator nlohmann::json();
+	_json["endpoints"] = nlohmann::json::array();
+	for (auto& i : endpoints)
+		_json["endpoints"].push_back(i);
+
+	if (type & Type::Input)
+	{
+		_json["connections"] = nlohmann::json::array();
+		for (auto& i : connections)
+			_json["connections"].push_back(i->id);
+	}
+	return _json;
+}
+
+void EndpointChannel::operator=(const nlohmann::json& json)
+{
+	ChannelBase::operator=(json);
+	for (auto& i : json["endpoints"])
+		Add(i);
 }
 
 EndpointChannel::EndpointChannel(bool input)
@@ -275,15 +310,15 @@ void EndpointChannel::Process()
 	}
 }
 
-void EndpointChannel::Add(const Pointer<Endpoint>& e)
+void EndpointChannel::Add(int id)
 {
 	// Add if not already added.
-	if (!contains(endpoints, e->id))
+	if (!contains(endpoints, id))
 	{
 		std::lock_guard<std::mutex> _{ lock };
 
 		// Add and sort with new endpoint.
-		endpoints.push_back(e->id);
+		endpoints.push_back(id);
 		lines = lines + 1;
 		levels.push_back(0); // Add new levels entry
 		peaks.push_back(0); // Add new peaks entry
@@ -293,9 +328,9 @@ void EndpointChannel::Add(const Pointer<Endpoint>& e)
 	UpdatePans();
 };
 
-void EndpointChannel::Remove(const Pointer<Endpoint>& e)
+void EndpointChannel::Remove(int id)
 {
-	auto it = std::find(endpoints.begin(), endpoints.end(), e->id);
+	auto it = std::find(endpoints.begin(), endpoints.end(), id);
 	if (it != endpoints.end())
 	{
 		std::lock_guard<std::mutex> _{ lock };
@@ -306,7 +341,7 @@ void EndpointChannel::Remove(const Pointer<Endpoint>& e)
 	}
 };
 
-bool EndpointChannel::Contains(const Pointer<Endpoint>& e)
+bool EndpointChannel::Contains(int id)
 {
-	return std::find(endpoints.begin(), endpoints.end(), e->id) != endpoints.end();
+	return std::find(endpoints.begin(), endpoints.end(), id) != endpoints.end();
 }
