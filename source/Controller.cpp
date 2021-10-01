@@ -108,14 +108,11 @@ struct GainSlider : public Parameter
 			.reset = 0,
 			.vertical = true,
 			.scaling = [&](float v) {
-				float _a = 1 / std::tanh(b);
-				float _x = 1 + (std::atanh(((1 - v) - 1) / _a) / b);
-				if (_x < 0.001) _x = 0; // Completely mute below threshold
-				return _x;
+				float _x = 1 + (std::atanh(((1 - v) - 1) * std::tanh(b)) / b);
+				return _x < 0.001 ? 0 : _x;
 			},
 			.inverse = [&](float v) {
-				float _a = 1 / std::tanh(b);
-				return _a * std::tanh(b * (1 - v));
+				return std::tanh(b * (1 - v)) / std::tanh(b);
 			}
 		} }
 	{}
@@ -213,10 +210,8 @@ struct GainSlider : public Parameter
 		d.Triangle(Vec4<float>{x + _bx, _y + _padding, 8, _he}, 0.0f);
 		d.Triangle(Vec4<float>{x + width - _sidepadding, _y + _padding, 8, _he}, 180.0f);
 		d.Quad(Vec4<float>{x + _bx, _y + _padding - 1, width - _sidepadding, 3});
-
 	}
 };
-
 
  /**
   * Button with menu graphics, that opens a
