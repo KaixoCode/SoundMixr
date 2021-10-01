@@ -78,7 +78,9 @@ struct Parameter : public Component
 		};
 
 		listener += [this](const MouseClick& e)
-		{
+		{			
+			if (e.button != MouseButton::Left)
+				return;
 			auto _now = std::chrono::steady_clock::now();
 			auto _duration = std::chrono::duration_cast<std::chrono::milliseconds>(_now - m_ChangeTime).count();
 			if (_duration < 500)
@@ -98,8 +100,8 @@ struct GainSlider : public Parameter
 {
 
 	static inline std::map<int, std::string> strings;
-	GainSlider(float& gain, Pointer<ChannelBase>& channel)
-		: gain(gain), channel(channel),
+	GainSlider(Pointer<ChannelBase>& channel)
+		: channel(channel),
 		Parameter{ {
 			.range{ -66, 12 },
 			.value = 0,
@@ -118,7 +120,7 @@ struct GainSlider : public Parameter
 		} }
 	{}
 
-	float& gain;
+	float gain;
 	Pointer<ChannelBase>& channel;
 	float b = 1.3;
 	float step = 3;
@@ -346,10 +348,12 @@ struct RouteButton : public Button
 
 struct Channel : public Panel
 {
+	static inline Parser::Scope generator;
 	static inline Channel* selected = nullptr;
 
 	Pointer<ChannelBase> channel;
 
+	Menu menu;
 	GainSlider gain;
 	RouteButton button;
 	StateColors background{ {
@@ -371,19 +375,40 @@ struct Channel : public Panel
 		float width = 0;
 	} border;
 
+	Channel()
+		: gain(channel)
+	{}
+
 	Channel(bool input)
-		: gain(channel->volume, channel),
-		channel(new EndpointChannel{ input })
+		: gain(channel)
 	{
-		Controller::Get().audio.push_back(channel);
-		
+		Init(input);
+		if (generator.name == "channel")
+			*this = std::move((Channel&)generator.Generate());
+	}
+
+	Channel(Channel&&) = delete;
+	Channel(const Channel&) = delete;
+
+	Channel& operator=(Channel&& other)
+	{
+		settings = std::move(other.settings);
+		border = std::move(other.border);
+		background = std::move(other.background);
+		//button = std::move(other.button);
+		//gain = std::move(other.gain);
+		return *this;
+	}
+
+	void Init(bool input)
+	{
 		settings = {
 			.padding{ 2, 2, 2, 2 },
 			.margin{ 4, 4, 4, 4 },
 			.size{ Auto, Inherit },
 			.background{ 26, 26, 26 }
 		};
-		
+
 		border.color.Link(this);
 
 		width = 70;
@@ -409,7 +434,7 @@ struct Channel : public Panel
 		panels.push_back(new Panel{ {.ratio = 1, .size{ Auto, Inherit } }, gain });
 		panels.push_back(new Panel{ {.size{ Inherit, 25 } }, button });
 
-		listener += [this, input](const MouseRelease& e) 
+		listener += [this, input](const MouseRelease& e)
 		{
 			if (e.button == MouseButton::Right && !e.Handled())
 			{
@@ -462,6 +487,11 @@ struct Channel : public Panel
 			button.State<Disabled>(false), button.State<Selected>(channel->Connected(selected->channel));
 	}
 
+	void Update() override
+	{
+		channel->volume = gain.gain;
+	}
+
 	void Render(CommandCollection& d) const override
 	{
 		if (border.width != 0)
@@ -472,17 +502,18 @@ struct Channel : public Panel
 		d.Fill(background.Current());
 		d.Quad({ x + border.width, y + border.width, width - border.width * 2, height - border.width * 2 });
 	}
+};
 
-	~Channel()
+struct ChannelParser : public PanelParser
+{
+	ChannelParser()
 	{
-		Controller::Get().audio.remove(channel);
+		settings.name = "channel";
 	}
 
-	Menu menu;
-
-	void Init()
+	Pointer<Component> Create()
 	{
-
+		return new Channel{};
 	}
 };
 
@@ -494,20 +525,18 @@ struct ChannelPanel : public Panel
 		layout = Layout::Row;
 		overflow = { Overflow::Scroll, Overflow::Hide };
 		background = { 16, 16, 16 };
-		id = 8919451;
+		id = ID;
 
 		outputs = panels.push_back(new Panel{ {
 			.padding{ 4, 4, 4, 4 },
 			.margin{ 0, 0, 4, 0 },
-			.size{ Auto, Inherit },
-			.background{ 16, 16, 16 }
+			.size{ Auto, Inherit }
 		} });
 
 		inputs = panels.push_back(new Panel{ {
 			.padding{ 4, 4, 4, 4 },
 			.margin{ 0, 0, 0, 0 }, 
-			.size{ Auto, Inherit }, 
-			.background{ 16, 16, 16 }
+			.size{ Auto, Inherit }
 		} });
 
 		Init();
@@ -522,7 +551,7 @@ struct ChannelPanel : public Panel
 		settings = other.settings;
 		layout = Layout::Row;
 		overflow = { Overflow::Scroll, Overflow::Hide };
-		id = 8919451;
+		id = ID;
 
 		Init();
 	}
@@ -533,17 +562,16 @@ struct ChannelPanel : public Panel
 
 	void Init()
 	{
-
 		menu.push_back(new MenuButton{ {
 			.callback = [this](bool) {
-				inputs->panels.push_back(new Channel{ true });
+				Controller::Get().audio.push_back(new EndpointChannel{ true });
 			},
 			.name = "Add Input Channel"
 		} });
 
 		menu.push_back(new MenuButton{ {
 			.callback = [this](bool) {
-				outputs->panels.push_back(new Channel{ false });
+				Controller::Get().audio.push_back(new EndpointChannel{ false });
 			},
 			.name = "Add Output Channel"
 		} });
@@ -570,6 +598,51 @@ struct ChannelPanel : public Panel
 				i.NewSelect();
 		};
 	}
+
+	void Update() override
+	{
+		int _ins = 0;
+		int _outs = 0;
+		for (auto& i : Controller::Get().audio.channels)
+		{
+			if (i->type & ChannelBase::Type::Input) _ins++;
+			if (i->type & ChannelBase::Type::Output) _outs++;
+		}
+
+		while (inputs->panels.size() < _ins)
+			inputs->panels.push_back(new Channel{ true });
+
+		while (outputs->panels.size() < _outs)
+			outputs->panels.push_back(new Channel{ false });
+
+		while (inputs->panels.size() > _ins)
+			inputs->panels.pop_back(), Channel::selected = nullptr;
+
+		while (outputs->panels.size() > _outs)
+			outputs->panels.pop_back(), Channel::selected = nullptr;
+
+		_ins = 0;
+		_outs = 0;
+
+		auto _inputs = std::ranges::filter_view{ 
+			Controller::Get().audio.channels, 
+			[](auto& c) { return c->type & ChannelBase::Type::Input;} 
+		};
+
+		auto _outputs = std::ranges::filter_view{ 
+			Controller::Get().audio.channels,
+			[](auto& c) { return c->type & ChannelBase::Type::Output;} 
+		};
+
+		auto _itIn = _inputs.begin();
+		auto _itOut = _outputs.begin();
+
+		for (Channel& i : inputs->panels)
+			i.channel = *(_itIn++);
+
+		for (Channel& i : outputs->panels)
+			i.channel = *(_itOut++);
+	}
 };
 
 struct ChannelPanelParser : public PanelParser
@@ -583,6 +656,9 @@ struct ChannelPanelParser : public PanelParser
 	{
 		return new ChannelPanel{};
 	}
+
+	void Append(Component& c, Pointer<Component>&& obj) override
+	{}
 };
 
 void Controller::Run()
@@ -595,6 +671,7 @@ void Controller::Run()
 	Parser::Link<TextAreaParser>();
 	Parser::Link<ChannelPanelParser>();
 	Parser::Link<TextDisplayerParser>();
+	Parser::Link<ChannelParser>();
 	Parser::Callback("print", [](bool a, const std::string& b) { if (a) std::cout << b << std::endl; });
 	Parser::Callback("exit", [&](bool) { _gui.Close(); });
 
@@ -640,7 +717,14 @@ let menubarcolors = color="frameColor" color:pressed="palette1.6" color:hovering
 
 	)~~");
 
-	window = std::move(_components[0].Generate().Get<Frame>());
+	auto _frame = std::find_if(_components.begin(), _components.end(), [](Parser::Scope& scope) { return scope.name == "frame"; });
+	auto _channel = std::find_if(_components.begin(), _components.end(), [](Parser::Scope& scope) { return scope.name == "channel"; });
+
+	if (_frame != _components.end())
+		window = std::move(_frame->Generate().Get<Frame>());
+
+	if (_channel != _components.end())
+		Channel::generator = *_channel;
 
 	_gui.push_back(window);
 
@@ -707,21 +791,8 @@ void Controller::OpenDevice(int device)
 	if (audio.stream.Information().state != Closed)
 		audio.Close();
 
-	// Clear everything from the channel panel
-	Panel* _panel = window.panel.Find(ChannelPanel::ID);
-	if (_panel)
-	{
-		ChannelPanel* _channels = dynamic_cast<ChannelPanel*>(_panel);
-		_channels->inputs->panels.clear();
-		_channels->outputs->panels.clear();
-		Channel::selected = nullptr;
-	}
-
-	// Empty window when no device
 	if (device == -1)
-	{
 		return;
-	}
 
 	// Open and start the stream
 	audio.Open(device);

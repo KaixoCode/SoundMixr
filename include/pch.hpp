@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <any>
+#include <ranges>
 
 #include "GuiCode2/pch.hpp"
 #include "GuiCode2/Panel.hpp"
