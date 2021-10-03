@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.hpp"
-#include "ChannelBase.hpp"
+#include "Audio/Channel.hpp"
 
 struct Audio
 {

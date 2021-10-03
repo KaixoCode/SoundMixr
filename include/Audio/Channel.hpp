@@ -20,6 +20,7 @@ struct ChannelBase
 	ChannelBase(int type);
 	~ChannelBase();
 
+	std::string name;
 	int counter = 0;
 	int id = id_counter++;
 	int lines = 0;

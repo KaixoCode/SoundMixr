@@ -1,4 +1,4 @@
-#include "ChannelBase.hpp"
+#include "Audio/Channel.hpp"
 #include "Controller.hpp"
 
 ChannelBase::ChannelBase(int type) 
@@ -227,6 +227,7 @@ ChannelBase::operator nlohmann::json()
 	_json["mute"] = mute;
 	_json["pan"] = pan;
 	_json["volume"] = volume;
+	_json["name"] = name;
 
 	return _json;
 }
@@ -238,6 +239,7 @@ void ChannelBase::operator=(const nlohmann::json& json)
 	mute = json.at("mute").get<bool>();
 	pan = json.at("pan").get<float>();
 	volume = json.at("volume").get<float>();
+	name = json.at("name").get<std::string>();
 }
 
 EndpointChannel::operator nlohmann::json()
@@ -318,6 +320,17 @@ void EndpointChannel::Add(int id)
 		std::lock_guard<std::mutex> _{ lock };
 
 		// Add and sort with new endpoint.
+		if (endpoints.size() == 0)
+		{
+			if (type & ChannelBase::Type::Input)
+			{
+				if (id < Controller::Get().audio.inputs.size())
+					name = Controller::Get().audio.inputs[id]->name;
+			}
+			else
+				if (id < Controller::Get().audio.outputs.size())
+					name = Controller::Get().audio.outputs[id]->name;
+		}
 		endpoints.push_back(id);
 		lines = lines + 1;
 		levels.push_back(0); // Add new levels entry
