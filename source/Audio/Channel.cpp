@@ -9,7 +9,7 @@ ChannelBase::ChannelBase(int type)
 
 ChannelBase::~ChannelBase() 
 { 
-	lock.lock(); lock.unlock(); 
+	Controller::Get().audio.lock.lock(); Controller::Get().audio.lock.unlock();
 }
 
 void ChannelBase::Level(float s, int c)
@@ -17,7 +17,6 @@ void ChannelBase::Level(float s, int c)
 	if (lines == 0)
 		return;
 
-	std::lock_guard<std::mutex> _{ lock };
 	levels[c % lines] += s;
 }
 
@@ -178,7 +177,7 @@ void ChannelBase::Connect(const Pointer<ChannelBase>& c)
 	// If not connected already, connect.
 	if (!contains(connections, c))
 	{
-		std::lock_guard<std::mutex> _{ lock };
+		std::lock_guard<std::mutex> _{ Controller::Get().audio.lock };
 		connections.push_back(c);
 	}
 }
@@ -189,7 +188,7 @@ void ChannelBase::Disconnect(const Pointer<ChannelBase>& c)
 	auto it = std::find(connections.begin(), connections.end(), c);
 	if (it != connections.end())
 	{
-		std::lock_guard<std::mutex> _{ lock };
+		std::lock_guard<std::mutex> _{ Controller::Get().audio.lock };
 		connections.erase(it);
 	}
 }
@@ -207,7 +206,7 @@ bool ChannelBase::Connected(const Pointer<ChannelBase>& c) const
 
 void ChannelBase::UpdatePans()
 {
-	std::lock_guard<std::mutex> _{ lock };
+	std::lock_guard<std::mutex> _{ Controller::Get().audio.lock };
 
 	pans.reserve(lines);
 	while (pans.size() < lines)
@@ -285,8 +284,6 @@ void EndpointChannel::Process()
 	if (lines == 0)
 		return;
 
-	std::lock_guard<std::mutex> _{ lock };
-
 	// Input takes sample from endpoint and sends to connections
 	if (type & ChannelBase::Type::Input)
 	{
@@ -317,7 +314,7 @@ void EndpointChannel::Add(int id)
 	// Add if not already added.
 	if (!contains(endpoints, id))
 	{
-		std::lock_guard<std::mutex> _{ lock };
+		std::lock_guard<std::mutex> _{ Controller::Get().audio.lock };
 
 		// Add and sort with new endpoint.
 		if (endpoints.size() == 0 && name.empty())
@@ -346,7 +343,7 @@ void EndpointChannel::Remove(int id)
 	auto it = std::find(endpoints.begin(), endpoints.end(), id);
 	if (it != endpoints.end())
 	{
-		std::lock_guard<std::mutex> _{ lock };
+		std::lock_guard<std::mutex> _{ Controller::Get().audio.lock };
 
 		// If not added, add endpoint.
 		endpoints.erase(it);
