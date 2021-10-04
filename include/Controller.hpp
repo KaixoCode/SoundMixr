@@ -19,7 +19,8 @@ public:
 
     Audio::Audio audio{};
 
-    Frame window;
+    Pointer<Frame> window;
+    Pointer<Frame> settings;
 
 private:
     Controller();

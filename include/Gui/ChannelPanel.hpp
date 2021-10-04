@@ -20,6 +20,9 @@ struct ChannelPanel : public Panel
 
 	void Init();
 	void Update() override;
+
+private:
+	bool m_Search = true;
 };
 
 struct ChannelPanelParser : public PanelParser
