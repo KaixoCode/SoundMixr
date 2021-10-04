@@ -4,39 +4,16 @@
 
 ChannelPanel::ChannelPanel()
 {
-	layout = Layout::Row;
-	overflow = { Overflow::Scroll, Overflow::Hide };
-	background = { 16, 16, 16 };
-	id = ID;
-
-	outputs = panels.push_back(new Panel{ {
-		.padding{ 4, 4, 4, 4 },
-		.margin{ 0, 0, 4, 0 },
-		.size{ Auto, Inherit }
-	} });
-
-	inputs = panels.push_back(new Panel{ {
-		.padding{ 4, 4, 4, 4 },
-		.margin{ 0, 0, 0, 0 },
-		.size{ Auto, Inherit }
-	} });
-
+	//overflow = { Overflow::Scroll, Overflow::Hide };
 	Init();
 }
 
-ChannelPanel::ChannelPanel(ChannelPanel&& other)
-	: inputs(std::move(other.inputs)),
-	outputs(std::move(other.outputs)),
-	Panel(std::move(other))
-{
-	background = { 16, 16, 16 };
-	settings = other.settings;
-	layout = Layout::Row;
-	overflow = { Overflow::Scroll, Overflow::Hide };
-	id = ID;
-
-	Init();
-}
+//ChannelPanel& ChannelPanel::operator=(ChannelPanel&& other)
+//{
+//	Panel::operator=(std::move(other));
+//	overflow = { Overflow::Scroll, Overflow::Hide };
+//	return *this;
+//}
 
 void ChannelPanel::Init()
 {
@@ -86,6 +63,35 @@ void ChannelPanel::Init()
 
 void ChannelPanel::Update()
 {
+
+	if (!outputs)
+	{
+		if (auto _p = Find(OUTPUT_PANEL))
+		{
+			outputs = _p;
+		}
+		else
+			outputs = panels.push_back(new Panel{ {
+				.padding{ 4, 4, 4, 4 },
+				.margin{ 0, 0, 4, 0 },
+				.size{ Auto, Inherit }
+			} });
+	}
+
+	if (!inputs)
+	{
+		if (auto _p = Find(INPUT_PANEL))
+		{
+			inputs = _p;
+		}
+		else
+			inputs = panels.push_back(new Panel{ {
+				.padding{ 4, 4, 4, 4 },
+				.margin{ 0, 0, 0, 0 },
+				.size{ Auto, Inherit }
+			} });
+	}
+
 	int _ins = 0;
 	int _outs = 0;
 	for (auto& i : Controller::Get().audio.channels)
@@ -139,12 +145,13 @@ void ChannelPanel::Update()
 ChannelPanelParser::ChannelPanelParser()
 {
 	settings.name = "channel-panel";
+
+	enumMap["channel-panel"] = ChannelPanel::CHANNEL_PANEL;
+	enumMap["input-panel"] = ChannelPanel::INPUT_PANEL;
+	enumMap["output-panel"] = ChannelPanel::OUTPUT_PANEL;
 }
 
 Pointer<Component> ChannelPanelParser::Create()
 {
 	return new ChannelPanel{};
 }
-
-void ChannelPanelParser::Append(Component& c, Pointer<Component>&& obj)
-{}

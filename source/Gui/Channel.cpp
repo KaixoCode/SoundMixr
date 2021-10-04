@@ -23,6 +23,7 @@ void Channel::operator=(const Pointer<ChannelBase>& c)
 	gain->value = lin2db(c->volume);
 	mutebutton->State<Selected>(c->mute);
 	monobutton->State<Selected>(c->mono);
+	panslider->value = panslider->Unnormalize(c->pan * 0.5 + 0.5);
 }
 
 void Channel::Init(bool input)
@@ -65,6 +66,10 @@ void Channel::Init(bool input)
 	if (auto _p = Find(GAIN_SLIDER))
 		if (_p->component)
 			gain = _p->component;
+	
+	if (auto _p = Find(PAN_SLIDER))
+		if (_p->component)
+			panslider = _p->component;
 
 	border.color.Link(this);
 	background.Link(this);
@@ -141,7 +146,7 @@ void Channel::Init(bool input)
 	{
 		// Don't switch when pressing button
 		if (!routebutton->State<Disabled>() && routebutton->Hitbox(e.pos)
-			|| monobutton->Hitbox(e.pos) || mutebutton->Hitbox(e.pos))
+			|| monobutton->Hitbox(e.pos) || mutebutton->Hitbox(e.pos) || panslider->Hitbox(e.pos))
 		{
 			e.Handle();
 			return;
@@ -169,6 +174,8 @@ void Channel::Update()
 {
 	gain->channel = channel;
 	channel->volume = gain->Gain();
+	channel->pan = panslider->Normalize(panslider->value) * 2 - 1;
+	channel->UpdatePans();
 }
 
 void Channel::Render(CommandCollection& d) const 
@@ -196,6 +203,7 @@ ChannelParser::ChannelParser()
 	enumMap["mute-button"] = Channel::MUTE_BUTTON;
 	enumMap["gain-slider"] = Channel::GAIN_SLIDER;
 	enumMap["name-box"] = Channel::NAME_BOX;
+	enumMap["pan-slider"] = Channel::PAN_SLIDER;
 }
 
 Pointer<Component> ChannelParser::Create()

@@ -320,7 +320,7 @@ void EndpointChannel::Add(int id)
 		std::lock_guard<std::mutex> _{ lock };
 
 		// Add and sort with new endpoint.
-		if (endpoints.size() == 0)
+		if (endpoints.size() == 0 && name.empty())
 		{
 			if (type & ChannelBase::Type::Input)
 			{

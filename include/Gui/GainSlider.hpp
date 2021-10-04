@@ -6,6 +6,7 @@
 struct GainSlider : public Parameter
 {
 	static inline std::map<int, std::string> strings;
+
 	GainSlider();
 	GainSlider& operator=(GainSlider&&) = default;
 

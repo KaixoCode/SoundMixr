@@ -5,9 +5,14 @@
 
 struct ChannelPanel : public Panel
 {
-	static inline int ID = 8919451;
+	static inline int CHANNEL_PANEL = 0xA9FC3911;
+	static inline int INPUT_PANEL = 0xA9FC3912;
+	static inline int OUTPUT_PANEL = 0xA9FC3913;
 	ChannelPanel();
-	ChannelPanel(ChannelPanel&& other);
+	ChannelPanel(ChannelPanel&& other) = delete;
+	ChannelPanel(const ChannelPanel& other) = delete;
+	ChannelPanel& operator=(ChannelPanel&& other) = delete;
+	ChannelPanel& operator=(const ChannelPanel& other) = delete;
 
 	Pointer<Panel> inputs;
 	Pointer<Panel> outputs;
@@ -21,5 +26,4 @@ struct ChannelPanelParser : public PanelParser
 {
 	ChannelPanelParser();
 	Pointer<Component> Create();
-	void Append(Component& c, Pointer<Component>&& obj) override;
 };

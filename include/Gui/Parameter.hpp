@@ -6,6 +6,7 @@ struct Parameter : public Component
 {
 	struct Settings
 	{
+		std::string name;
 		Vec2<float> range{ 0, 100 };
 		float value = 0;
 		float reset = 0;
@@ -17,6 +18,7 @@ struct Parameter : public Component
 
 	Settings settings;
 
+	std::string& name = settings.name;
 	Vec2<float>& range = settings.range;
 	float& value = settings.value;
 	float& reset = settings.reset;
@@ -27,11 +29,15 @@ struct Parameter : public Component
 
 	Parameter(const Settings& settings = {});
 
+	float Normalize(float v) const { return (v - range.start) / (range.end - range.start); }
+	float Unnormalize(float v) const { return v * (range.end - range.start) + range.start; }
+
 private:
 	std::chrono::steady_clock::time_point m_ChangeTime;
 	float m_PressVal = 0;
 	float m_PrevPos = 0;
 
+	Ref<std::string> m_Name = settings.name;
 	Ref<Vec2<float>> m_Range = settings.range;
 	Ref<float> m_Value = settings.value;
 	Ref<float> m_Reset = settings.reset;
@@ -48,6 +54,7 @@ struct ParameterParser : public TagParser
 	ParameterParser()
 	{
 		settings.name = "parameter";
+		Attribute("name", &Parameter::m_Name);
 		Attribute("range", &Parameter::m_Range);
 		Attribute("value", &Parameter::m_Value);
 		Attribute("reset", &Parameter::m_Reset);

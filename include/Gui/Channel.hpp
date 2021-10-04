@@ -18,6 +18,7 @@ struct Channel : public Panel
 	static inline int MONO_BUTTON = 0xA9FB391C;
 	static inline int GAIN_SLIDER = 0xA9FB391D;
 	static inline int NAME_BOX = 0xA9FB391E;
+	static inline int PAN_SLIDER = 0xA9FB391F;
 
 	static inline Parser::Scope generator;
 	static inline Channel* selected = nullptr;
@@ -30,6 +31,7 @@ struct Channel : public Panel
 	Pointer<Button> routebutton = new RouteButton;
 	Pointer<Button> monobutton = new Button;
 	Pointer<Button> mutebutton = new Button;
+	Pointer<Parameter> panslider = new Parameter;
 
 	struct Settings
 	{
@@ -55,8 +57,9 @@ struct Channel : public Panel
 	Channel(const Settings& s = {});
 	Channel(Channel&& other) = delete;
 	Channel(const Channel&) = delete;
-
 	Channel& operator=(Channel&& other);
+	Channel& operator=(const Channel& other) = delete;
+
 	void operator=(const Pointer<ChannelBase>& c);
 
 	void Init(bool input);
