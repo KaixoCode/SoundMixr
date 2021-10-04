@@ -2,6 +2,7 @@
 #include "Gui/ChannelPanel.hpp"
 #include "Gui/DeviceList.hpp"
 #include "Gui/Channel.hpp"
+#include "Gui/Units.hpp"
 
 /**
  * Aspects of SoundMixr:
@@ -29,63 +30,7 @@ Controller::Controller()
  */
 
 
-struct Units
-{
-	struct Unit
-	{
-		struct Range
-		{
-			Vec2<float> range;
-			float mult = 1;
-			bool pre = false;
-			bool value = true;
-			std::string unit;
 
-			inline std::string Format(float value, int decimals)
-			{
-				float _value = value * mult;
-				char s[30];
-				std::sprintf(s, (std::string("%.") + std::to_string(decimals) + "f").c_str(), _value);
-
-				if (!value)
-					return unit;
-
-				if (pre)
-					return unit + s;
-
-				else
-					return s + unit;
-			}
-		};
-
-		inline std::string Format(float value, int decimals)
-		{
-			// Find range
-			for (auto& i : ranges)
-				if (i.range.InRange(value))
-					return i.Format(value, decimals);
-
-			// Otherwise just print value
-			char s[30];
-			std::sprintf(s, (std::string("%.") + std::to_string(decimals) + "f").c_str(), value);
-			return s;
-		}
-
-		std::vector<Range> ranges;
-	};
-
-	static inline int PAN = 0;
-	static inline std::map<int, Unit> units
-	{
-		{ PAN, {
-			{
-				{ .range{ 0, 0 }, .value = false, .unit = "C" },
-				{ .range{ -50, 0 }, .mult = -1, .unit = "L" },
-				{ .range{ 0, 50 }, .mult = 1, .unit = "R" },
-			}
-		} }
-	};
-};
 
 
 struct SliderParser;
@@ -242,7 +187,7 @@ void Controller::Run()
 
 	auto _components = Parser::Parse(content);
 
-	
+	// make Audio::Parameter to store midilink.
 
 	auto _frame = std::find_if(_components.begin(), _components.end(), [](Parser::Scope& scope) { return scope.name == "frame"; });
 	auto _channel = std::find_if(_components.begin(), _components.end(), [](Parser::Scope& scope) { return scope.name == "channel"; });
@@ -258,9 +203,14 @@ void Controller::Run()
 
 	OpenDevice(-1);
 
-	while (_gui.Loop());
+	Midi::Get().OpenInputPort(0);
 
+	while (_gui.Loop())
+	{
+		Midi::Get().ReadMessages();
+	}
 	audio.Close();
+	window.panel.panels.clear();
 
 	return;
 

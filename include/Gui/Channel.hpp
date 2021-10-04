@@ -23,7 +23,7 @@ struct Channel : public Panel
 	static inline Parser::Scope generator;
 	static inline Channel* selected = nullptr;
 
-	Pointer<ChannelBase> channel;
+	Pointer<Audio::Channel> channel;
 
 	Pointer<Menu> menu = new Menu;
 	Pointer<TextBox> name = new TextBox;
@@ -60,7 +60,7 @@ struct Channel : public Panel
 	Channel& operator=(Channel&& other);
 	Channel& operator=(const Channel& other) = delete;
 
-	void operator=(const Pointer<ChannelBase>& c);
+	void operator=(const Pointer<Audio::Channel>& c);
 
 	void Init(bool input);
 

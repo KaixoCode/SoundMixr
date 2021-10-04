@@ -17,7 +17,7 @@ public:
     void Run();
     void OpenDevice(int device);
 
-    Audio audio{};
+    Audio::Audio audio{};
 
     Frame window;
 

@@ -10,7 +10,7 @@ struct GainSlider : public Parameter
 	GainSlider();
 	GainSlider& operator=(GainSlider&&) = default;
 
-	Pointer<ChannelBase> channel;
+	Pointer<Audio::Channel> channel;
 
 	float b = 1.3;
 	float step = 3;
@@ -28,6 +28,9 @@ struct GainSlider : public Parameter
 
 	void Update() override;
 	void Render(CommandCollection& d) const override;
+
+private:
+	std::string m_Value;
 };
 
 struct GainSliderParser : public ParameterParser

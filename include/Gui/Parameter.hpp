@@ -1,5 +1,7 @@
 #pragma once
 #include "pch.hpp"
+#include "Midi.hpp"
+#include "Audio/Parameter.hpp"
 
 struct ParameterParser;
 struct Parameter : public Component
@@ -14,6 +16,7 @@ struct Parameter : public Component
 		bool vertical = true;
 		Function<float(float)> scaling = [](float in) { return in; };
 		Function<float(float)> inverse = [](float in) { return in; };
+		Audio::Parameter::MidiLink midi;
 	};
 
 	Settings settings;
@@ -26,16 +29,22 @@ struct Parameter : public Component
 	bool& vertical = settings.vertical;
 	Function<float(float)>& scaling = settings.scaling;
 	Function<float(float)>& inverse = settings.inverse;
+	Audio::Parameter::MidiLink& midi = settings.midi;
+	
+	Menu menu;
 
 	Parameter(const Settings& settings = {});
+	Parameter(Parameter&&) = delete;
+	Parameter(const Parameter&) = delete;
 
-	float Normalize(float v) const { return (v - range.start) / (range.end - range.start); }
-	float Unnormalize(float v) const { return v * (range.end - range.start) + range.start; }
+	float Normalize(float v) const { return (inverse(v) - range.start) / (range.end - range.start); }
+	float Unnormalize(float v) const { return scaling(v) * (range.end - range.start) + range.start; }
 
 private:
 	std::chrono::steady_clock::time_point m_ChangeTime;
 	float m_PressVal = 0;
 	float m_PrevPos = 0;
+	bool m_Linking = false;
 
 	Ref<std::string> m_Name = settings.name;
 	Ref<Vec2<float>> m_Range = settings.range;
@@ -45,9 +54,16 @@ private:
 	Ref<bool> m_Vertical = settings.vertical;
 	Ref<Function<float(float)>> m_Scaling = settings.scaling;
 	Ref<Function<float(float)>> m_Inverse = settings.inverse;
+	Ref<Audio::Parameter::MidiLink> m_MidiLink = settings.midi;
+	Ref<int> m_MidiDevice = settings.midi.device;
+	Ref<int> m_MidiCC = settings.midi.cc;
+
+	Midi::EventStorage m_CCLink;
 
 	friend class ParameterParser;
 };
+
+using Param = Parameter::Settings;
 
 struct ParameterParser : public TagParser
 {

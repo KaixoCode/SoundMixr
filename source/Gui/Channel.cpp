@@ -12,7 +12,7 @@ Channel& Channel::operator=(Channel&& other)
 	return *this;
 }
 
-void Channel::operator=(const Pointer<ChannelBase>& c)
+void Channel::operator=(const Pointer<Audio::Channel>& c)
 {
 	if (channel == c)
 		return;
@@ -21,9 +21,12 @@ void Channel::operator=(const Pointer<ChannelBase>& c)
 	name->content = c->name;
 	name->displayer.RecalculateLines();
 	gain->value = lin2db(c->volume);
+	gain->midi = c->volume.midi;
 	mutebutton->State<Selected>(c->mute);
 	monobutton->State<Selected>(c->mono);
 	panslider->value = panslider->Unnormalize(c->pan * 0.5 + 0.5);
+	panslider->midi = panslider->midi;
+
 }
 
 void Channel::Init(bool input)
@@ -81,12 +84,12 @@ void Channel::Init(bool input)
 	{
 		if (selected && selected != this)
 		{
-			if (channel->type & ChannelBase::Type::Output && selected->channel->type & ChannelBase::Type::Input)
+			if (channel->type & Audio::Channel::Type::Output && selected->channel->type & Audio::Channel::Type::Input)
 				if (v)
 					selected->channel->Connect(channel);
 				else
 					selected->channel->Disconnect(channel);
-			else if (channel->type & ChannelBase::Type::Input && selected->channel->type & ChannelBase::Type::Output)
+			else if (channel->type & Audio::Channel::Type::Input && selected->channel->type & Audio::Channel::Type::Output)
 				if (v)
 					channel->Connect(selected->channel);
 				else
@@ -115,7 +118,7 @@ void Channel::Init(bool input)
 			auto& _endpoints = input ? Controller::Get().audio.inputs : Controller::Get().audio.outputs;
 			for (auto& i : _endpoints)
 			{
-				EndpointChannel& _channel = channel;
+				Audio::EndpointChannel& _channel = channel;
 				MenuButton& _button = _sub.menu.push_back(new MenuButton{ {
 					.type = Button::Toggle,
 					.callback = [&](bool v) {
@@ -163,8 +166,8 @@ void Channel::Init(bool input)
 
 void Channel::NewSelect()
 {
-	if (!selected || (selected->channel->type & channel->type & (ChannelBase::Type::Input | ChannelBase::Type::Output))
-		|| ((channel->type & ChannelBase::Type::Forward) || (selected->channel->type & ChannelBase::Type::Forward)))
+	if (!selected || (selected->channel->type & channel->type & (Audio::Channel::Type::Input | Audio::Channel::Type::Output))
+		|| ((channel->type & Audio::Channel::Type::Forward) || (selected->channel->type & Audio::Channel::Type::Forward)))
 		routebutton->State<Disabled>(true);
 	else
 		routebutton->State<Disabled>(false), routebutton->State<Selected>(channel->Connected(selected->channel));
@@ -174,7 +177,9 @@ void Channel::Update()
 {
 	gain->channel = channel;
 	channel->volume = gain->Gain();
+	channel->volume.midi = gain->midi;
 	channel->pan = panslider->Normalize(panslider->value) * 2 - 1;
+	channel->pan.midi = panslider->midi;
 	channel->UpdatePans();
 }
 

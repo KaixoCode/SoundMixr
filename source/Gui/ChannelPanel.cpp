@@ -19,14 +19,14 @@ void ChannelPanel::Init()
 {
 	menu->push_back(new MenuButton{ {
 		.callback = [this](bool) {
-			Controller::Get().audio.push_back(new EndpointChannel{ true });
+			Controller::Get().audio.push_back(new Audio::EndpointChannel{ true });
 		},
 		.name = "Add Input Channel"
 	} });
 
 	menu->push_back(new MenuButton{ {
 		.callback = [this](bool) {
-			Controller::Get().audio.push_back(new EndpointChannel{ false });
+			Controller::Get().audio.push_back(new Audio::EndpointChannel{ false });
 		},
 		.name = "Add Output Channel"
 	} });
@@ -96,8 +96,8 @@ void ChannelPanel::Update()
 	int _outs = 0;
 	for (auto& i : Controller::Get().audio.channels)
 	{
-		if (i->type & ChannelBase::Type::Input) _ins++;
-		if (i->type & ChannelBase::Type::Output) _outs++;
+		if (i->type & Audio::Channel::Type::Input) _ins++;
+		if (i->type & Audio::Channel::Type::Output) _outs++;
 	}
 
 	while (inputs->panels.size() < _ins)
@@ -123,12 +123,12 @@ void ChannelPanel::Update()
 
 	auto _inputs = std::ranges::filter_view{
 		Controller::Get().audio.channels,
-		[](auto& c) { return c->type & ChannelBase::Type::Input;}
+		[](auto& c) { return c->type & Audio::Channel::Type::Input;}
 	};
 
 	auto _outputs = std::ranges::filter_view{
 		Controller::Get().audio.channels,
-		[](auto& c) { return c->type & ChannelBase::Type::Output;}
+		[](auto& c) { return c->type & Audio::Channel::Type::Output;}
 	};
 
 	auto _itIn = _inputs.begin();
