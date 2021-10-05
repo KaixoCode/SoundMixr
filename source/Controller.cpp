@@ -71,6 +71,7 @@ public:
 		} display;
 
 		int decimals = 0;
+		int unit = Units::NONE;
 	} settings;
 
 	Slider(const Settings& settings = {})
@@ -86,7 +87,7 @@ public:
 
 	void Update() override
 	{
-		m_Value = Units::units[Units::PAN].Format(value, settings.decimals);
+		m_Value = Units::units[settings.unit].Format(value, settings.decimals);
 	}
 
 	void Render(CommandCollection& d) const override
@@ -123,6 +124,7 @@ private:
 	Ref<StateColors> m_TextColor = settings.text.color;
 	Ref<float> m_FontSize = settings.text.size;
 	Ref<std::string> m_Font = settings.font;
+	Ref<int> m_Unit = settings.unit;
 
 	std::string m_Value;
 
@@ -151,6 +153,12 @@ struct SliderParser : public ParameterParser
 		Attribute("text-color", &Slider::m_TextColor);
 		Attribute("font-size", &Slider::m_FontSize);
 		Attribute("font", &Slider::m_Font);
+		Attribute("unit", &Slider::m_Unit);
+
+		enumMap["no-unit"] = Units::NONE;
+		enumMap["pan-unit"] = Units::PAN;
+		enumMap["decibel-unit"] = Units::DECIBEL;
+		enumMap["percent-unit"] = Units::PERCENT;
 	}
 
 	Pointer<Component> Create()
@@ -175,6 +183,7 @@ void Controller::Run()
 	Parser::Callback("print", [](bool a, const std::string& b) { if (a) std::cout << b << std::endl; });
 	Parser::Callback("exit", [&](bool) { _gui.Close(); });
 	Parser::Callback("showSettings", [&](bool) { settings->State<Visible>(Show); });
+	Parser::Callback("asioControlPanel", [&](bool) { audio.stream.OpenControlPanel(); });
 
 	GraphicsBase::LoadFont("C:/Windows/fonts/segoeui.ttf", "segoeui");
 	GraphicsBase::LoadFont("C:/Windows/fonts/consola.ttf", "consolas");

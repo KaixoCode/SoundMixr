@@ -46,10 +46,14 @@ struct Units
 		std::vector<Range> ranges;
 	};
 
-	static inline int PAN = 0;
-	static inline int DECIBEL = 1;
+	static inline int NONE = 0;
+	static inline int PAN = 1;
+	static inline int DECIBEL = 2;
+	static inline int PERCENT = 3;
 	static inline std::map<int, Unit> units
 	{
+		{ NONE, {
+		} },
 		{ PAN, {
 			{
 				{.range{ 0, 0 }, .value = false, .unit = "C" },
@@ -61,6 +65,11 @@ struct Units
 			{
 				{.range{ -10000, -66 }, .value = false, .unit = "-inf dB" },
 				{.range{ -66, 100000 }, .unit = " dB" },
+			}
+		} },
+		{ PERCENT, {
+			{
+				{.range{ -100000, 100000 }, .unit = " %" },
 			}
 		} }
 	};
