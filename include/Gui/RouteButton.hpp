@@ -1,9 +1,9 @@
 #pragma once
 #include "pch.hpp"
 
-enum State
+enum 
 {
-	Input = LastState
+	Input = 100
 };
 
 struct RouteButton : public Button
@@ -29,7 +29,7 @@ struct RouteButton : public Button
 
 	RouteButton()
 	{
-		State<Disabled>(true);
+		State(Disabled) = true;
 		settings = {
 			.type = Toggle
 		};
@@ -37,7 +37,7 @@ struct RouteButton : public Button
 
 	void Render(CommandCollection& d) const override
 	{
-		if (State<Disabled>())
+		if (State(Disabled))
 			return;
 
 		double _div = 3;
@@ -46,7 +46,7 @@ struct RouteButton : public Button
 		d.Fill(background.Current());
 		d.Quad(dimensions);
 		d.Fill(triangle.Current());
-		d.Triangle(Vec4<float>{ x + width / 2, y + height / 2, _w, _h }, State<Input>() ? -90.0f : 90.0f);
+		d.Triangle(Vec4<float>{ x + width / 2, y + height / 2, _w, _h }, State(Input) ? -90.0f : 90.0f);
 	}
 };
 

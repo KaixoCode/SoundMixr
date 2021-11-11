@@ -22,8 +22,8 @@ void Channel::operator=(const Pointer<Audio::Channel>& c)
 	name->displayer.RecalculateLines();
 	gain->value = lin2db(c->volume);
 	gain->midi = c->volume.midi;
-	mutebutton->State<Selected>(c->mute);
-	monobutton->State<Selected>(c->mono);
+	mutebutton->State(Selected) = c->mute;
+	monobutton->State(Selected) = c->mono;
 	panslider->value = panslider->Unnormalize(c->pan * 0.5 + 0.5);
 	panslider->midi = panslider->midi;
 
@@ -78,7 +78,7 @@ void Channel::Init(bool input)
 	background.Link(this);
 
 	width = 70;
-	routebutton->State<Input>(input);
+	routebutton->State(Input) = input;
 	routebutton->settings.type = Button::Toggle;
 	routebutton->settings.callback = [this](bool v)
 	{
@@ -129,7 +129,7 @@ void Channel::Init(bool input)
 					},
 					.name = i->name
 				} });
-				_button.State<Selected>(_channel.Contains(i->id));
+				_button.State(Selected) = _channel.Contains(i->id);
 			}
 
 			menu->push_back(new MenuButton{ {
@@ -148,7 +148,7 @@ void Channel::Init(bool input)
 	listener += [this](const MousePress& e)
 	{
 		// Don't switch when pressing button
-		if (!routebutton->State<Disabled>() && routebutton->Hitbox(e.pos)
+		if (!routebutton->State(Disabled) && routebutton->Hitbox(e.pos)
 			|| monobutton->Hitbox(e.pos) || mutebutton->Hitbox(e.pos) || panslider->Hitbox(e.pos))
 		{
 			e.Handle();
@@ -156,10 +156,10 @@ void Channel::Init(bool input)
 		}
 
 		if (Channel::selected)
-			Channel::selected->State<Selected>(false);
+			Channel::selected->State(Selected) = false;
 
 		Channel::selected = this;
-		State<Selected>(true);
+		State(Selected) = true;
 		e.Handle();
 	};
 }
@@ -168,9 +168,9 @@ void Channel::NewSelect()
 {
 	if (!selected || (selected->channel->type & channel->type & (Audio::Channel::Type::Input | Audio::Channel::Type::Output))
 		|| ((channel->type & Audio::Channel::Type::Forward) || (selected->channel->type & Audio::Channel::Type::Forward)))
-		routebutton->State<Disabled>(true);
+		routebutton->State(Disabled) = true;
 	else
-		routebutton->State<Disabled>(false), routebutton->State<Selected>(channel->Connected(selected->channel));
+		routebutton->State(Disabled) = false, routebutton->State(Selected) = channel->Connected(selected->channel);
 }
 
 void Channel::Update() 

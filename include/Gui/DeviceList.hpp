@@ -55,7 +55,7 @@ private:
 					} }
 
 						// Set selected state to true if currently selected
-					)->State<Selected>(id == selected);
+					)->State(Selected) = id == selected;
 				}
 				ContextMenu::Open(menu, { x + width, y });
 			}

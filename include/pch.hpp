@@ -4,13 +4,15 @@
 #include <ranges>
 
 #include "GuiCode2/pch.hpp"
-#include "GuiCode2/Panel.hpp"
-#include "GuiCode2/Menu.hpp"
-#include "GuiCode2/Event.hpp"
-#include "GuiCode2/Frame.hpp"
-#include "GuiCode2/ContextMenu.hpp"
-#include "GuiCode2/TextBox.hpp"
-#include "GuiCode2/TextArea.hpp"
+#include "GuiCode2/Components/Panel.hpp"
+#include "GuiCode2/Components/Menu.hpp"
+#include "GuiCode2/Events/Event.hpp"
+#include "GuiCode2/Window/Frame.hpp"
+#include "GuiCode2/Utils/ContextMenu.hpp"
+#include "GuiCode2/Text/TextBox.hpp"
+#include "GuiCode2/Text/TextArea.hpp"
+#include "GuiCode2/Text/TextComponent.hpp"
+#include "GuiCode2/Window/Gui.hpp"
 
 #define JSON_TRY_USER if(true)
 #define JSON_CATCH_USER(exception) if(false)

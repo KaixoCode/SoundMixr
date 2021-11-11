@@ -27,7 +27,7 @@ void GainSlider::Update()
 	if (!channel)
 		return;
 
-	width = std::max(70, channel->lines * 16 + 8 + 30);
+	width = std::max(70.f, channel->lines * meterWidth + meterPadding + 30);
 
 	m_Value = Units::units[Units::DECIBEL].Format(value, 1);
 }

@@ -51,9 +51,9 @@ namespace Audio
 
         for (auto& i : stream.Device(id).Channels())
             if (i.input)
-                inputs.push_back(new Endpoint{ .name = i.name, .id = i.id, .input = true });
+                inputs.emplace_back(new Endpoint{ i.name, i.id, true });
             else
-                outputs.push_back(new Endpoint{ .name = i.name, .id = i.id, .input = false });
+                outputs.emplace_back(new Endpoint{ i.name, i.id, false });
 
         LoadRouting();
 
@@ -140,7 +140,7 @@ namespace Audio
                     _in >> _json;
 
                     // Get the channels from the json
-                    auto _channels = _json.at("channels");
+                    auto& _channels = _json.at("channels");
 
                     // First load all the output channels
                     for (auto& i : _channels)

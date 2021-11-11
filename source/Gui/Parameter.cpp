@@ -37,7 +37,7 @@ Parameter::Parameter(const Settings& settings)
 
 		m_PrevPos = vertical ? e.pos.y : e.pos.x;
 
-		if (e.mod & EventMods::Shift)
+		if (e.mod & Mods::Shift)
 			_value *= shift;
 
 		m_PressVal += _value;
@@ -65,7 +65,7 @@ Parameter::Parameter(const Settings& settings)
 			m_Linking = false;
 			bool _linked = midi.device != -1 && midi.cc != -1 && midi.channel != -1;
 			menu.Clear();
-			menu.push_back(new MenuButton{ {.name = name } })->State<Disabled>(true);
+			menu.push_back(new MenuButton{ {.name = name } })->State(Disabled) = true;
 			menu.push_back(new Divider{});
 			menu.push_back(new MenuButton{ {.callback = [this](bool) { value = reset; }, .name = "Reset Value" } });
 			menu.push_back(new Divider{});
@@ -77,7 +77,7 @@ Parameter::Parameter(const Settings& settings)
 			else
 			{
 				menu.push_back(new MenuButton{ {.type = Button::Toggle, .callback = [this](bool) { m_Linking = true; }, .name = "Link Midi" } });
-				menu.push_back(new MenuButton{ {.name = "Unlink Midi" } })->State<Disabled>(true);
+				menu.push_back(new MenuButton{ {.name = "Unlink Midi" } })->State(Disabled) = true;
 			}
 			ContextMenu::Open(menu, e.pos, true);
 			e.Handle();

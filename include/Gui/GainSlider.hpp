@@ -12,6 +12,8 @@ struct GainSlider : public Parameter
 
 	Pointer<Audio::Channel> channel;
 
+	float meterWidth = 16;
+	float meterPadding = 8;
 	float b = 1.3;
 	float step = 3;
 	bool numbers = true;
@@ -48,6 +50,9 @@ struct GainSliderParser : public ParameterParser
 		Attribute("numbers", &GainSlider::numbers);
 		Attribute("font", &GainSlider::font);
 		Attribute("font-size", &GainSlider::fontSize);
+		Attribute("scaling", &GainSlider::b);
+		Attribute("meter-width", &GainSlider::meterWidth);
+		Attribute("meter-padding", &GainSlider::meterPadding);
 	}
 
 	Pointer<Component> Create()

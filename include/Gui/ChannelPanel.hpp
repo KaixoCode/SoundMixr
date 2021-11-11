@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.hpp"
-#include "GuiCode2/Panel.hpp"
+#include "GuiCode2/Components/Panel.hpp"
 #include "Audio/Channel.hpp"
 
 struct ChannelPanel : public Panel

@@ -40,7 +40,7 @@ void ChannelPanel::Init()
 	listener += [this](const Unfocus&)
 	{
 		if (Channel::selected)
-			Channel::selected->State<Selected>(false);
+			Channel::selected->State(Selected) = false;
 		Channel::selected = nullptr;
 	};
 
@@ -49,7 +49,7 @@ void ChannelPanel::Init()
 		if (!e.Handled())
 		{
 			if (Channel::selected)
-				Channel::selected->State<Selected>(false);
+				Channel::selected->State(Selected) = false;
 			Channel::selected = nullptr;
 		}
 
