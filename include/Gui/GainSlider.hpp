@@ -34,29 +34,3 @@ struct GainSlider : public Parameter
 private:
 	std::string m_Value;
 };
-
-struct GainSliderParser : public ParameterParser
-{
-	GainSliderParser()
-	{
-		Parser::Link<ParameterParser>();
-		settings.name = "gain-slider";
-		Attribute("bar-color", &GainSlider::bar);
-		Attribute("line-color", &GainSlider::line);
-		Attribute("number-color", &GainSlider::text);
-		Attribute("meter-color", &GainSlider::meter);
-		Attribute("meter-background", &GainSlider::background);
-		Attribute("lines", &GainSlider::lines);
-		Attribute("numbers", &GainSlider::numbers);
-		Attribute("font", &GainSlider::font);
-		Attribute("font-size", &GainSlider::fontSize);
-		Attribute("scaling", &GainSlider::b);
-		Attribute("meter-width", &GainSlider::meterWidth);
-		Attribute("meter-padding", &GainSlider::meterPadding);
-	}
-
-	Pointer<Component> Create()
-	{
-		return new GainSlider{};
-	}
-};

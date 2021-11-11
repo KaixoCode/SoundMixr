@@ -3,6 +3,7 @@
 
 GainSlider::GainSlider()
 	: Parameter{ {
+		.name = "Gain",
 		.range{ -66, 12 },
 		.value = 0,
 		.reset = 0,

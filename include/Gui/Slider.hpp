@@ -3,12 +3,6 @@
 #include "Gui/Parameter.hpp"
 #include "Gui/Units.hpp"
 
-struct SliderParser : public ParameterParser
-{
-	SliderParser();
-	Pointer<Component> Create();
-};
-
 class Slider : public Parameter
 {
 public:
@@ -60,17 +54,7 @@ public:
 	void Render(CommandCollection& d) const override;
 
 private:
-	Ref<float> m_BorderWidth = settings.border.width;
-	Ref<StateColors> m_Color = settings.color;
-	Ref<StateColors> m_BorderColor = settings.border.color;
-	Ref<StateColors> m_Background = settings.background;
-	Ref<StateColors> m_TextColor = settings.text.color;
-	Ref<float> m_FontSize = settings.text.size;
-	Ref<std::string> m_Font = settings.font;
-	Ref<int> m_Unit = settings.unit;
-
 	std::string m_Value;
 
 	void Init();
-	friend class SliderParser;
 };

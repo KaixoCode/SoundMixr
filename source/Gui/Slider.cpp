@@ -1,29 +1,5 @@
 #include "Gui/Slider.hpp"
 
-SliderParser::SliderParser()
-{
-	Parser::Link<ParameterParser>();
-	settings.name = "slider";
-	Attribute("border-width", &Slider::m_BorderWidth);
-	Attribute("border-color", &Slider::m_BorderColor);
-	Attribute("color", &Slider::m_Color);
-	Attribute("background", &Slider::m_Background);
-	Attribute("text-color", &Slider::m_TextColor);
-	Attribute("font-size", &Slider::m_FontSize);
-	Attribute("font", &Slider::m_Font);
-	Attribute("unit", &Slider::m_Unit);
-
-	enumMap["no-unit"] = Units::NONE;
-	enumMap["pan-unit"] = Units::PAN;
-	enumMap["decibel-unit"] = Units::DECIBEL;
-	enumMap["percent-unit"] = Units::PERCENT;
-}
-
-Pointer<Component> SliderParser::Create()
-{
-	return new Slider;
-}
-
 Slider::Slider(const Settings& settings)
 	: settings(settings)
 {

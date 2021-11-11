@@ -20,13 +20,13 @@ Parameter::Parameter(const Settings& settings)
 		}
 	})
 {
-	listener += [this](const MousePress& e)
+	*this += [this](const MousePress& e)
 	{
 		m_PressVal = inverse((value - range.start) / (range.end - range.start));
 		m_PrevPos = vertical ? e.pos.y : e.pos.x;
 	};
 
-	listener += [this](const MouseDrag& e)
+	*this += [this](const MouseDrag& e)
 	{
 		if (~e.buttons & MouseButton::Left)
 			return;
@@ -46,7 +46,7 @@ Parameter::Parameter(const Settings& settings)
 			value = scaling(constrain(m_PressVal, 0.f, 1.f)) * (range.end - range.start) + range.start;
 	};
 
-	listener += [this](const MouseClick& e)
+	*this += [this](const MouseClick& e)
 	{
 		if (e.button != MouseButton::Left)
 			return;
@@ -58,33 +58,33 @@ Parameter::Parameter(const Settings& settings)
 		m_ChangeTime = _now; // Get changetime
 	};
 
-	listener += [this](const MouseRelease& e)
+	*this += [this](const MouseRelease& e)
 	{
 		if (e.button == MouseButton::Right && !e.Handled())
 		{
 			m_Linking = false;
 			bool _linked = midi.device != -1 && midi.cc != -1 && midi.channel != -1;
-			menu.Clear();
-			menu.push_back(new MenuButton{ {.name = name } })->State(Disabled) = true;
-			menu.push_back(new Divider{});
-			menu.push_back(new MenuButton{ {.callback = [this](bool) { value = reset; }, .name = "Reset Value" } });
-			menu.push_back(new Divider{});
+			menu.components.clear();
+			menu.components.emplace_back(new Button{ {.name = name } })->State(Disabled) = true;
+			menu.components.emplace_back(new Divider{});
+			menu.components.emplace_back(new Button{ {.callback = [this](bool) { value = reset; }, .name = "Reset Value" } });
+			menu.components.emplace_back(new Divider{});
 			if (_linked)
 			{
-				menu.push_back(new MenuButton{ {.type = Button::Toggle, .callback = [this](bool) { m_Linking = true; }, .name = "Linked: " + std::to_string(midi.cc) + ":" + std::to_string(midi.channel) + ":" + std::to_string(midi.device) } });
-				menu.push_back(new MenuButton{ {.callback = [this](bool) { midi = { -1, -1, -1 }; }, .name = "Unlink Midi" } });
+				menu.components.emplace_back(new Button{ {.type = Button::Toggle, .callback = [this](bool) { m_Linking = true; }, .name = "Linked: " + std::to_string(midi.cc) + ":" + std::to_string(midi.channel) + ":" + std::to_string(midi.device) } });
+				menu.components.emplace_back(new Button{ {.callback = [this](bool) { midi = { -1, -1, -1 }; }, .name = "Unlink Midi" } });
 			}
 			else
 			{
-				menu.push_back(new MenuButton{ {.type = Button::Toggle, .callback = [this](bool) { m_Linking = true; }, .name = "Link Midi" } });
-				menu.push_back(new MenuButton{ {.name = "Unlink Midi" } })->State(Disabled) = true;
+				menu.components.emplace_back(new Button{ {.type = Button::Toggle, .callback = [this](bool) { m_Linking = true; }, .name = "Link Midi" } });
+				menu.components.emplace_back(new Button{ {.name = "Unlink Midi" } })->State(Disabled) = true;
 			}
 			ContextMenu::Open(menu, e.pos, true);
 			e.Handle();
 		}
 	};
 
-	listener += [this](const Unfocus&)
+	*this += [this](const Unfocus&)
 	{
 		m_Linking = false;
 	};

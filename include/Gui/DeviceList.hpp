@@ -26,8 +26,8 @@ private:
 
 				// Clear the menu and add all buttons to the menu
 				Button::Group group;
-				menu.Clear();
-				menu.push_back(new MenuButton{ {
+				menu.components.clear();
+				menu.components.push_back(new Button{ {
 					.group = group, // add button to group
 					.type = Radio,  // It's a radio selection
 
@@ -42,7 +42,7 @@ private:
 				for (auto& d : audio.stream.Devices())
 				{
 					int id = d.id;
-					menu.push_back(new MenuButton{ {
+					menu.components.emplace_back(new Button{ {
 						.group = group, // add button to group
 						.type = Radio,  // It's a radio selection
 
@@ -62,26 +62,5 @@ private:
 			else
 				ContextMenu::Close(menu);
 		};
-	}
-};
-
-struct DeviceListButtonParser : public MenuButtonParser
-{
-	DeviceListButtonParser()
-	{
-		settings.name = "device-list";
-		alias["button"] = "menu-button";
-		alias["menu"] = "sub-menu-button";
-	}
-
-	Pointer<Component> Create() override
-	{
-		return new DeviceListButton{};
-	}
-
-	void Append(Component& c, Pointer<Component>&& obj)
-	{
-		if (SubMenuButton* _t = dynamic_cast<SubMenuButton*>(&c))
-			_t->menu.push_back(std::move(obj));
 	}
 };

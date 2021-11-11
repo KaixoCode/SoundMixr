@@ -4,47 +4,49 @@
 
 ChannelPanel::ChannelPanel()
 {
-	//overflow = { Overflow::Scroll, Overflow::Hide };
+	overflow = { Overflow::Scroll, Overflow::Hide };
+	ratio = 1;
+	margin = { 8, 8, 8, 8 };
+
+	panels.push_back(inputs);
+	panels.push_back(new Panel{ {.size = { 4, Inherit }, .background = { {.base { 33, 37, 41  } } } } });
+	panels.push_back(outputs);
+
 	Init();
 }
 
-//ChannelPanel& ChannelPanel::operator=(ChannelPanel&& other)
-//{
-//	Panel::operator=(std::move(other));
-//	overflow = { Overflow::Scroll, Overflow::Hide };
-//	return *this;
-//}
-
 void ChannelPanel::Init()
 {
-	menu->push_back(new MenuButton{ {
+	menu.components.push_back(new Button{ {
 		.callback = [this](bool) {
 			Controller::Get().audio.push_back(new Audio::EndpointChannel{ true });
 		},
-		.name = "Add Input Channel"
+		.name = "Add Input Channel",
+		.graphics = new MenuButtonGraphics
 	} });
 
-	menu->push_back(new MenuButton{ {
+	menu.components.push_back(new Button{ {
 		.callback = [this](bool) {
 			Controller::Get().audio.push_back(new Audio::EndpointChannel{ false });
 		},
-		.name = "Add Output Channel"
+		.name = "Add Output Channel",
+		.graphics = new MenuButtonGraphics
 	} });
 
-	listener += [this](const MouseRelease& e)
+	*this += [this](const MouseRelease& e)
 	{
 		if (e.button == MouseButton::Right && !e.Handled())
 			ContextMenu::Open(menu, e.pos, true);
 	};
 
-	listener += [this](const Unfocus&)
+	*this += [this](const Unfocus&)
 	{
 		if (Channel::selected)
 			Channel::selected->State(Selected) = false;
 		Channel::selected = nullptr;
 	};
 
-	listener += [this](const MousePress& e)
+	*this += [this](const MousePress& e)
 	{
 		if (!e.Handled())
 		{
@@ -53,28 +55,16 @@ void ChannelPanel::Init()
 			Channel::selected = nullptr;
 		}
 
-		if (inputs)
-			for (Channel& i : inputs->panels)
-				i.NewSelect();
+		for (Channel& i : inputs.panels)
+			i.NewSelect();
 
-		if (outputs)
-			for (Channel& i : outputs->panels)
-				i.NewSelect();
+		for (Channel& i : outputs.panels)
+			i.NewSelect();
 	};
 }
 
 void ChannelPanel::Update()
 {
-	if (m_Search)
-	{
-		m_Search = false;
-		if (auto _p = Find(OUTPUT_PANEL))
-			outputs = _p;
-
-		if (auto _p = Find(INPUT_PANEL))
-			inputs = _p;
-	}
-
 	int _ins = 0;
 	int _outs = 0;
 	for (auto& i : Controller::Get().audio.channels)
@@ -83,66 +73,37 @@ void ChannelPanel::Update()
 		if (i->type & Audio::Channel::Type::Output) _outs++;
 	}
 
-	if (inputs)
-	{
-		while (inputs->panels.size() < _ins)
-		{
-			Pointer<Channel> _channel = Channel::generator.Generate();
-			_channel->Init(true);
-			inputs->panels.push_back(std::move(_channel));
-		}
+	while (inputs.panels.size() < _ins)
+		inputs.panels.push_back(new Channel{ true });
 
-		while (inputs->panels.size() > _ins)
-			inputs->panels.pop_back(), Channel::selected = nullptr;
+	while (inputs.panels.size() > _ins)
+		inputs.panels.pop_back(), Channel::selected = nullptr;
 
-		_ins = 0;
-		auto _inputs = std::ranges::filter_view{
-			Controller::Get().audio.channels,
-			[](auto& c) { return c->type & Audio::Channel::Type::Input;}
-		};
+	_ins = 0;
+	auto _inputs = std::ranges::filter_view{
+		Controller::Get().audio.channels,
+		[](auto& c) { return c->type & Audio::Channel::Type::Input;}
+	};
 
-		auto _itIn = _inputs.begin();
+	auto _itIn = _inputs.begin();
 
-		for (Channel& i : inputs->panels)
-			i = *(_itIn++);
-	}
+	for (Channel& i : inputs.panels)
+		i = *(_itIn++);
+	
+	while (outputs.panels.size() < _outs)
+		outputs.panels.push_back(new Channel{ false  });
 
-	if (outputs)
-	{
-		while (outputs->panels.size() < _outs)
-		{
-			Pointer<Channel> _channel = Channel::generator.Generate();
-			_channel->Init(false);
-			outputs->panels.push_back(std::move(_channel));
-		}
+	while (outputs.panels.size() > _outs)
+		outputs.panels.pop_back(), Channel::selected = nullptr;
 
-		while (outputs->panels.size() > _outs)
-			outputs->panels.pop_back(), Channel::selected = nullptr;
+	_outs = 0;
+	auto _outputs = std::ranges::filter_view{
+		Controller::Get().audio.channels,
+		[](auto& c) { return c->type & Audio::Channel::Type::Output;}
+	};
 
-		_outs = 0;
-		auto _outputs = std::ranges::filter_view{
-			Controller::Get().audio.channels,
-			[](auto& c) { return c->type & Audio::Channel::Type::Output;}
-		};
+	auto _itOut = _outputs.begin();
 
-		auto _itOut = _outputs.begin();
-
-		for (Channel& i : outputs->panels)
-			i = *(_itOut++);
-	}
-}
-
-
-ChannelPanelParser::ChannelPanelParser()
-{
-	settings.name = "channel-panel";
-
-	enumMap["channel-panel"] = ChannelPanel::CHANNEL_PANEL;
-	enumMap["input-panel"] = ChannelPanel::INPUT_PANEL;
-	enumMap["output-panel"] = ChannelPanel::OUTPUT_PANEL;
-}
-
-Pointer<Component> ChannelPanelParser::Create()
-{
-	return new ChannelPanel{};
+	for (Channel& i : outputs.panels)
+		i = *(_itOut++);
 }

@@ -3,7 +3,6 @@
 #include "Midi.hpp"
 #include "Audio/Parameter.hpp"
 
-struct ParameterParser;
 struct Parameter : public Component
 {
 	struct Settings
@@ -45,43 +44,7 @@ private:
 	float m_PressVal = 0;
 	float m_PrevPos = 0;
 	bool m_Linking = false;
-
-	Ref<std::string> m_Name = settings.name;
-	Ref<Vec2<float>> m_Range = settings.range;
-	Ref<float> m_Value = settings.value;
-	Ref<float> m_Reset = settings.reset;
-	Ref<float> m_Shift = settings.shift;
-	Ref<bool> m_Vertical = settings.vertical;
-	Ref<Function<float(float)>> m_Scaling = settings.scaling;
-	Ref<Function<float(float)>> m_Inverse = settings.inverse;
-	Ref<Audio::Parameter::MidiLink> m_MidiLink = settings.midi;
-	Ref<int> m_MidiDevice = settings.midi.device;
-	Ref<int> m_MidiCC = settings.midi.cc;
-
 	Midi::EventStorage m_CCLink;
-
-	friend class ParameterParser;
 };
 
 using Param = Parameter::Settings;
-
-struct ParameterParser : public TagParser
-{
-	ParameterParser()
-	{
-		settings.name = "parameter";
-		Attribute("name", &Parameter::m_Name);
-		Attribute("range", &Parameter::m_Range);
-		Attribute("value", &Parameter::m_Value);
-		Attribute("reset", &Parameter::m_Reset);
-		Attribute("shift", &Parameter::m_Shift);
-		Attribute("vertical", &Parameter::m_Vertical);
-		Attribute("scaling", &Parameter::m_Scaling);
-		Attribute("inverse", &Parameter::m_Inverse);
-	}
-
-	Pointer<Component> Create()
-	{
-		return new Parameter{};
-	}
-};

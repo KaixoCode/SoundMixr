@@ -1,21 +1,14 @@
 #pragma once
 #include "pch.hpp"
 
-enum 
-{
-	Input = 100
-};
-
-struct RouteButton : public Button
+struct RouteButtonGraphics : public Button::Graphics
 {
 	StateColors background{ {
-		.link = this,
 		.base = { 100, 100, 100, 0 },
 		.transition = 10.f,
 	} };
 
 	StateColors triangle{ {
-		.link = this,
 		.base = { 50, 50, 50, 255 },
 		.colors = {
 			{ Hovering, { 70, 70, 70, 255 } },
@@ -27,40 +20,24 @@ struct RouteButton : public Button
 
 	bool input = false;
 
-	RouteButton()
+	void Link(Button* button) 
 	{
-		State(Disabled) = true;
-		settings = {
-			.type = Toggle
-		};
+		background.Link(button);
+		triangle.Link(button);
+		button->State(Disabled) = true;
 	}
 
 	void Render(CommandCollection& d) const override
 	{
-		if (State(Disabled))
+		if (button->State(Disabled))
 			return;
 
 		double _div = 3;
-		float _w = 3 * height / _div;
-		float _h = 2 * height / _div;
+		float _w = 3 * button->height / _div;
+		float _h = 2 * button->height / _div;
 		d.Fill(background.Current());
-		d.Quad(dimensions);
+		d.Quad(button->dimensions);
 		d.Fill(triangle.Current());
-		d.Triangle(Vec4<float>{ x + width / 2, y + height / 2, _w, _h }, State(Input) ? -90.0f : 90.0f);
-	}
-};
-
-struct RouteButtonParser : public ButtonParser
-{
-	RouteButtonParser()
-	{
-		settings.name = "route-button";
-		Attribute("triangle", &RouteButton::triangle);
-		Attribute("background", &RouteButton::background);
-	}
-
-	Pointer<Component> Create()
-	{
-		return new RouteButton{};
+		d.Triangle(Vec4<float>{ button->x + button->width / 2, button->y + button->height / 2, _w, _h }, input ? -90.0f : 90.0f);
 	}
 };
