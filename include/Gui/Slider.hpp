@@ -44,7 +44,7 @@ public:
 		int unit = Units::NONE;
 	} settings;
 
-	Slider(const Settings& settings = {});
+	Slider(const Parameter::Settings& settings);
 	Slider(Slider&& other) = delete;
 	Slider(const Slider&) = delete;
 	Slider& operator=(Slider&& other) = delete;

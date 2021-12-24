@@ -1,6 +1,6 @@
 #include "Controller.hpp"
 
-#ifdef _DEBUG
+#ifdef DEBUG
 int main()
 #else
 int WINAPI WinMain(

@@ -9,7 +9,7 @@ struct Parameter : public Component
 	{
 		std::string name;
 		Vec2<float> range{ 0, 100 };
-		float value = 0;
+		float& value;
 		float reset = 0;
 		float shift = 0.25;
 		bool vertical = true;
@@ -32,7 +32,7 @@ struct Parameter : public Component
 	
 	Menu menu;
 
-	Parameter(const Settings& settings = {});
+	Parameter(const Settings& settings);
 	Parameter(Parameter&&) = delete;
 	Parameter(const Parameter&) = delete;
 

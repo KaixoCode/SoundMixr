@@ -1,7 +1,7 @@
 #include "Gui/Slider.hpp"
 
-Slider::Slider(const Settings& settings)
-	: settings(settings)
+Slider::Slider(const Parameter::Settings& settings)
+	: Parameter(settings)
 {
 	Init();
 }
@@ -19,16 +19,16 @@ void Slider::Render(CommandCollection& d) const
 	d.Fill(settings.background.Current());
 	d.Quad({ x + settings.border.width, y + settings.border.width, width - 2 * settings.border.width, height - 2 * settings.border.width });
 
-	float _width = width - 2 * settings.border.width;
-	float _start = x + settings.border.width;
-	float _end = Normalize(value) * _width;
+	float _height = height - 2 * settings.border.width;
+	float _start = y + settings.border.width + _height;
+	float _end = Normalize(value) * _height;
 	if (range.start < 0 && range.end > 0)
 	{
-		_start += _width / 2;
-		_end -= _width / 2;
+		_start += _height / 2;
+		_end -= _height / 2;
 	}
 	d.Fill(settings.color.Current());
-	d.Quad({ _start, y + settings.border.width, _end, height - 2 * settings.border.width });
+	d.Quad({ x + settings.border.width, _start, width - 2 * settings.border.width, -_end });
 
 	d.Fill(settings.text.color.Current());
 	d.TextAlign(Align::Center);
@@ -39,7 +39,7 @@ void Slider::Render(CommandCollection& d) const
 
 void Slider::Init()
 {
-	Parameter::settings.vertical = false;
+	Parameter::settings.vertical = true;
 	settings.background.Link(this);
 	settings.color.Link(this);
 	settings.border.color.Link(this);

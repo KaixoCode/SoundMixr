@@ -11,10 +11,13 @@ namespace Audio
                     for (int j = 0; j < info.inputChannels; j++)
                         inputs[j]->sample = input[i][j];
 
+                    for (int out = 0; out < outputs.size(); out++)
+                        outputs[out]->sample = 0;
+
                     // Mix levels
                     for (int in = 0; in < mix.size(); in++)
                         for (int out = 0; out < mix[in].size(); out++)
-                            outputs[out]->sample += inputs[in]->sample * mix[in][out];
+                            outputs[out]->sample += inputs[in]->sample * mix[in][out] * 0.01;
 
                     // Output the samples from the output endpoints to the output buffer.
                     for (int j = 0; j < info.outputChannels; j++)
