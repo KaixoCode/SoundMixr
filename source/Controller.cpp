@@ -25,7 +25,7 @@ void Controller::Run()
 	Gui _gui;
 
 	window = new Frame;
-	settings = new Frame;
+	settings = new Frame{ {.state = Hide, .hideOnClose = true} };
 
 	window->panel = Panel{ 
 		{},
@@ -34,10 +34,6 @@ void Controller::Run()
 
 	window->Create();
 	settings->Create();
-
-	settings->State(Visible) = Hide;
-	settings->Loop();
-	settings->settings.hideOnClose = true;
 
 	_gui.push(settings);
 	_gui.push(window);
@@ -52,8 +48,8 @@ void Controller::Run()
 	}
 
 	audio.Close();
-	window->panel.panels.clear();
-	settings->panel.panels.clear();
+	window = {};
+	settings = {};
 }
 
 
