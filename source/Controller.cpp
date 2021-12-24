@@ -1,19 +1,7 @@
 #include "Controller.hpp"
-#include "Gui/ChannelPanel.hpp"
 #include "Gui/DeviceList.hpp"
-#include "Gui/Channel.hpp"
 #include "Gui/Units.hpp"
 #include "Gui/Slider.hpp"
-
-/**
- * Aspects of SoundMixr:
- *  - Loading/Saving information.
- *  - Theme color loading.
- *  - Audio routing.
- *  - Choosing audio/midi device.
- *  - Midi linking to parameters.
- *  - Loading screen.
- */
 
 Controller::Controller()
 {
@@ -25,17 +13,13 @@ void Controller::Run()
 	Gui _gui;
 
 	window = new Frame;
-	settings = new Frame{ {.state = Hide, .hideOnClose = true} };
 
 	window->panel = Panel{ 
 		{},
-		new ChannelPanel
 	};
 
 	window->Create();
-	settings->Create();
 
-	_gui.push(settings);
 	_gui.push(window);
 
 	OpenDevice(1);
@@ -49,7 +33,6 @@ void Controller::Run()
 
 	audio.Close();
 	window = {};
-	settings = {};
 }
 
 

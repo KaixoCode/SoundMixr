@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.hpp"
-#include "PluginLoader.hpp"
 #include "Audio/Audio.hpp"
 #include "Midi.hpp"
 
@@ -20,7 +19,6 @@ public:
     Audio::Audio audio{};
 
     Pointer<Frame> window;
-    Pointer<Frame> settings;
 
 private:
     Controller();

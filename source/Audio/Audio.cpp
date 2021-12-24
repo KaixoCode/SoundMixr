@@ -11,37 +11,16 @@ namespace Audio
                     for (int j = 0; j < info.inputChannels; j++)
                         inputs[j]->sample = input[i][j];
 
-                    // Process all channels
-                    lock.lock();
-                    for (auto& j : channels) // Prepare all channels for the next cycle
-                        j->NextCycle();
-
-                    for (auto& j : channels) // Then do all input processing
-                        if (j->type & Channel::Type::Input)
-                            j->Process();
-
-                    for (auto& j : channels) // Then do all output processing
-                        if (j->type & Channel::Type::Output)
-                            j->Process();
-                    lock.unlock();
+                    // Mix levels
+                    for (int in = 0; in < mix.size(); in++)
+                        for (int out = 0; out < mix[in].size(); out++)
+                            outputs[out]->sample += inputs[in]->sample * mix[in][out];
 
                     // Output the samples from the output endpoints to the output buffer.
                     for (int j = 0; j < info.outputChannels; j++)
                         output[i][j] = outputs[j]->sample;
                 }
             });
-    }
-
-    void Audio::push_back(const Pointer<Channel>& channel)
-    {
-        std::lock_guard _{ lock };
-        channels.push_back(channel);
-    }
-
-    void Audio::remove(const Pointer<Channel>& channel)
-    {
-        std::lock_guard _{ lock };
-        channels.erase(std::remove(channels.begin(), channels.end(), channel));
     }
 
     bool Audio::Open(int id)
@@ -55,6 +34,8 @@ namespace Audio
             else
                 outputs.emplace_back(new Endpoint{ i.name, i.id, false });
 
+        mix = { inputs.size(), std::vector<float>(outputs.size()) };
+            
         LoadRouting();
 
         return true;
@@ -77,7 +58,6 @@ namespace Audio
 
         inputs.clear();
         outputs.clear();
-        channels.clear();
     }
 
     void Audio::SaveRouting(const std::string& path)
@@ -85,10 +65,10 @@ namespace Audio
         try
         {
             nlohmann::json _json = nlohmann::json::object();
-            _json["channels"] = nlohmann::json::array();
+            //_json["channels"] = nlohmann::json::array();
 
-            for (auto& i : channels)
-                _json["channels"].push_back(*i);
+            //for (auto& i : channels)
+            //    _json["channels"].push_back(*i);
 
             std::ofstream _out;
             if (path.empty())
@@ -129,7 +109,6 @@ namespace Audio
             // Start the loading process if the file opened successfully
             // otherwise we got an error!
             bool _error = true;
-            Channel::id_counter = 0;
             if (!_in.fail())
             {
                 _error = false;
@@ -138,72 +117,6 @@ namespace Audio
                     // Parse the json.
                     nlohmann::json _json;
                     _in >> _json;
-
-                    // Get the channels from the json
-                    auto& _channels = _json.at("channels");
-
-                    // First load all the output channels
-                    for (auto& i : _channels)
-                    {
-                        // Skip input channels
-                        int _type = i["type"].get<int>();
-                        if (_type & Channel::Type::Input)
-                            continue;
-
-                        // If type is Endpoint, add endpoint to outputspanel
-                        if (_type & Channel::Type::Endpoint)
-                        {
-                            auto _ptr = new EndpointChannel{ false };
-                            push_back(_ptr); // Takes ownership
-                            *_ptr = i;
-                            if (_ptr->id > Channel::id_counter)
-                                Channel::id_counter = _ptr->id;
-                        }
-                    }
-
-                    // Then go through all input channels
-                    for (auto& i : _channels)
-                    {
-                        // Skip output channels
-                        int _type = i.at("type").get<int>();
-                        if (_type & Channel::Type::Output)
-                            continue;
-
-                        Channel* _base = nullptr;
-
-                        // If type is Endpoint, add endpoint channel to inputspanel
-                        if (_type & Channel::Type::Endpoint)
-                        {
-                            auto _ptr = new EndpointChannel{ true };
-                            push_back(_ptr); // Takes ownership
-                            _base = _ptr;
-                            *_ptr = i;
-                            if (_ptr->id > Channel::id_counter)
-                                Channel::id_counter = _ptr->id;
-                        }
-
-                        // If no compatible type was found, continue.
-                        if (!_base)
-                            continue;
-
-                        // Then add all the connections to the channel
-                        nlohmann::json _connections = i.at("connections");
-                        for (int i : _connections)
-                        {
-                            // Find the outputchannel using its id.
-                            auto _it = std::find_if(channels.begin(), channels.end(),
-                                [=](Channel* c)
-                                {
-                                    bool output = (int)c->type & (int)Channel::Type::Output;
-                                    return output && c->id == i;
-                                }
-                            );
-
-                            // If it exists, connect with it.
-                            if (_it != channels.end())
-                                _base->Connect(*_it);
-                        }
-                    }
                 }
 
                 // If error occured (either file didn't exist or was parced incorrectly
@@ -222,91 +135,15 @@ namespace Audio
             // If error, just use default routing and return
             if (_error)
             {
-                DefaultRouting();
                 _in.close();// Close the file!! important!!
                 return;
             }
 
             _in.close();// Close the file!! important!!
-
-            if (!_soundBoardLoaded)
-            {
-                //auto& _c = m_InputsPanel.Emplace<SoundboardChannel>();
-                //m_Channels.push_back(&_c);
-            }
         }
         catch (...)
         {
             return;
-        }
-    }
-
-    void Audio::DefaultRouting()
-    {
-        // Soundboard channel
-        //auto& _c = m_InputsPanel.Emplace<SoundboardChannel>();
-        //m_Channels.push_back(&_c);
-
-        // Endpoint channels
-        int i = 0;
-        for (i = 0; i < stream.Information().inputChannels - 1; i += 2)
-        {
-            // Add a ChannelPanel with all the inputs
-            auto _ptr = new EndpointChannel{ true };
-            push_back(_ptr); // Takes ownership
-            _ptr->Add(i);
-            _ptr->Add(i + 1);
-
-            // Set all parameters of this Channel
-            _ptr->mono = false;
-            _ptr->mute = false;
-            _ptr->pan = 0;
-            _ptr->volume = 1;
-        }
-
-        // if there were an uneven amount of channels, add one last mono channel
-        if (i == stream.Information().inputChannels - 1)
-        {
-            // Add a ChannelPanel with all the inputs
-            auto _ptr = new EndpointChannel{ true };
-            push_back(_ptr); // Takes ownership
-            _ptr->Add(i);
-
-            // Set all parameters of this Channel
-            _ptr->mono = false;
-            _ptr->mute = false;
-            _ptr->pan = 0;
-            _ptr->volume = 1;
-        }
-
-        for (i = 0; i < stream.Information().outputChannels - 1; i += 2)
-        {
-            // Add a ChannelPanel with all the outputs
-            auto _ptr = new EndpointChannel{ false };
-            push_back(_ptr); // Takes ownership
-            _ptr->Add(i);
-            _ptr->Add(i + 1);
-
-            // Set all parameters of this Channel
-            _ptr->mono = false;
-            _ptr->mute = false;
-            _ptr->pan = 0;
-            _ptr->volume = 1;
-        }
-
-        // if there were an uneven amount of channels, add one last mono channel
-        if (i == stream.Information().outputChannels - 1)
-        {
-            // Add a ChannelPanel with all the outputs
-            auto _ptr = new EndpointChannel{ false };
-            push_back(_ptr); // Takes ownership
-            _ptr->Add(i);
-
-            // Set all parameters of this Channel
-            _ptr->mono = false;
-            _ptr->mute = false;
-            _ptr->pan = 0;
-            _ptr->volume = 1;
         }
     }
 }
