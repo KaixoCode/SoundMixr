@@ -28,7 +28,7 @@ public:
 			if (w > maxtextwidth)
 				maxtextwidth = w;
 		}
-		maxtextwidth += 16;
+		maxtextwidth += 8;
 
 		for (int i = -1; i < (int)audio.inputs.size(); i++)
 		{
@@ -67,6 +67,7 @@ Controller::Controller()
 
 void Controller::Run()
 {
+	GraphicsBase::LoadFont(GraphicsBase::DefaultFont);
 	Gui _gui;
 
 	window = new Frame;
@@ -80,7 +81,7 @@ void Controller::Run()
 
 	_gui.push(window);
 
-	OpenDevice(2);
+	OpenDevice(7);
 
 	Midi::Get().OpenInputPort(0);
 
